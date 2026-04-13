@@ -53,7 +53,7 @@ Our paper is available at: [main.pdf](main.pdf)
 ### Step 1: Clone the Repository
 
 ```bash
-git clone https://github.com/<your-username>/AffordSim.git
+git clone https://github.com/yangml071/AffordSim.git
 cd AffordSim
 ```
 
@@ -111,6 +111,17 @@ cd ..
 ```
 
 > **Note:** AnyGrasp SDK requires a license. Please refer to the [license registration](https://github.com/graspnet/anygrasp_sdk#license-registration) section to obtain your license file.
+
+### Step 7: Download Assets
+
+Download the simulation models (robot URDFs/USDs, object meshes, textures, etc.) from HuggingFace:
+
+```bash
+# Download the assets
+huggingface-cli download yangml071/simulation-models --local-dir models --repo-type model
+```
+
+> **Note:** This is a private repository. You must be granted access before downloading. Please contact the authors to request access.
 
 
 ## Usage
