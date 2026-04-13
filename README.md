@@ -283,26 +283,31 @@ AffordSim applies domain randomization along five axes to enable zero-shot sim-t
 
 Each task is trained on 300 demonstrations with object pose randomization applied during data collection; all evaluation rollouts also include object pose randomization to test generalization.
 
-| Category | Task | BC | ACT | DP | Pi 0.5 |
-|:---|:---|:---:|:---:|:---:|:---:|
-| Grasping | pick_banana | 53 | 63 | 87 | **93** |
-| | pick_red_cup | 17 | 77 | 63 | **80** |
-| Placing | pick_banana_place_plate | 37 | 60 | 84 | **93** |
-| | pick_cup_place_shelf | 5 | 7 | 3 | **47** |
-| | pick_kettle_place_coffee_machine | 27 | 43 | 49 | **65** |
-| Stacking | stack_two_blocks | 30 | 43 | 47 | **77** |
-| | stack_three_blocks | 13 | 27 | 28 | **53** |
-| Push/Pull | push_box_to_target | 23 | 63 | 67 | **78** |
-| | pull_drawer_open | 37 | 53 | 58 | **86** |
-| Pouring | pour_basket_into_bowl | 20 | 86 | 94 | **99** |
-| | pour_pan_into_bowl | 7 | 33 | 87 | **92** |
-| | pour_cup_into_bowl | 1 | 24 | 36 | **43** |
-| Mug Hanging | hang_mug_on_rack | 0 | 10 | 17 | **47** |
-| | hang_mug_on_hook | 0 | 7 | 13 | **33** |
-| Long Horizon | pick_cup_pour_place_coffee_machine | 0 | 3 | 8 | **16** |
-| | pick_cup_pour_hang_on_rack | 0 | 1 | 3 | **21** |
-| | open_microwave_place_can | 0 | 0 | 2 | **13** |
-| **Average (all 17 tasks)** | | **16** | **35** | **44** | **61** |
+<table>
+<thead>
+<tr><th>Category</th><th>Task</th><th>BC</th><th>ACT</th><th>DP</th><th>Pi 0.5</th></tr>
+</thead>
+<tbody>
+<tr><td rowspan="2">Grasping</td><td>pick_banana</td><td>53</td><td>63</td><td>87</td><td><b>93</b></td></tr>
+<tr><td>pick_red_cup</td><td>17</td><td>77</td><td>63</td><td><b>80</b></td></tr>
+<tr><td rowspan="3">Placing</td><td>pick_banana_place_plate</td><td>37</td><td>60</td><td>84</td><td><b>93</b></td></tr>
+<tr><td>pick_cup_place_shelf</td><td>5</td><td>7</td><td>3</td><td><b>47</b></td></tr>
+<tr><td>pick_kettle_place_coffee_machine</td><td>27</td><td>43</td><td>49</td><td><b>65</b></td></tr>
+<tr><td rowspan="2">Stacking</td><td>stack_two_blocks</td><td>30</td><td>43</td><td>47</td><td><b>77</b></td></tr>
+<tr><td>stack_three_blocks</td><td>13</td><td>27</td><td>28</td><td><b>53</b></td></tr>
+<tr><td rowspan="2">Push/Pull</td><td>push_box_to_target</td><td>23</td><td>63</td><td>67</td><td><b>78</b></td></tr>
+<tr><td>pull_drawer_open</td><td>37</td><td>53</td><td>58</td><td><b>86</b></td></tr>
+<tr><td rowspan="3">Pouring</td><td>pour_basket_into_bowl</td><td>20</td><td>86</td><td>94</td><td><b>99</b></td></tr>
+<tr><td>pour_pan_into_bowl</td><td>7</td><td>33</td><td>87</td><td><b>92</b></td></tr>
+<tr><td>pour_cup_into_bowl</td><td>1</td><td>24</td><td>36</td><td><b>43</b></td></tr>
+<tr><td rowspan="2">Mug Hanging</td><td>hang_mug_on_rack</td><td>0</td><td>10</td><td>17</td><td><b>47</b></td></tr>
+<tr><td>hang_mug_on_hook</td><td>0</td><td>7</td><td>13</td><td><b>33</b></td></tr>
+<tr><td rowspan="3">Long Horizon</td><td>pick_cup_pour_place_coffee_machine</td><td>0</td><td>3</td><td>8</td><td><b>16</b></td></tr>
+<tr><td>pick_cup_pour_hang_on_rack</td><td>0</td><td>1</td><td>3</td><td><b>21</b></td></tr>
+<tr><td>open_microwave_place_can</td><td>0</td><td>0</td><td>2</td><td><b>13</b></td></tr>
+<tr><td colspan="2"><b>Average (all 17 tasks)</b></td><td><b>16</b></td><td><b>35</b></td><td><b>44</b></td><td><b>61</b></td></tr>
+</tbody>
+</table>
 
 **Key findings:**
 - **Grasping** tasks achieve the highest success rates (53–93%), confirming that basic pick-up manipulation is largely solved by current methods.
