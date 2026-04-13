@@ -1,0 +1,18 @@
+
+wave:
+  semantic_tag: Microwave
+  dimensions: [0.60, 0.4, 0.30]
+  face_center: [0.0, -0.25, 0.0]
+  place_offset: [0.0, -0.05, 0.0]
+  q_base: [0, -0.9238795, 0, -0.3826834]
+
+self:
+  semantic_tag: Self
+  dimensions: [0.15, 0.25, 0.60]
+  face_center: [-0.2, 0.0, 0.0]
+  place_offset: [0.0, 0.0, -0.15]
+  # up
+  # face_center: [-0.2, 0.0, 0.3]
+  # place_offset: [-0.05, 0.0, 0.3]
+
+  q_base: [0, -0.9238795, 0, -0.3826834]

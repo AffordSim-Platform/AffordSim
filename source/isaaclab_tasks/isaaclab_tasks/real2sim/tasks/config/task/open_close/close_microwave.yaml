@@ -1,0 +1,75 @@
+simulation:
+  decimation: 30
+  dt: 0.00833333
+  render_interval: 5
+  episode_length_s: 100
+scene:
+  num_envs: 1
+  env_spacing: 10
+task:
+  name: interactive task
+  description: close the microwave door
+runtime:
+  headless: false
+  episodes: 1
+  save_npy: false
+  save_camera_images: false
+  save_composite_images: false
+  save_mask_images: false
+  save_original_images: true
+  enable_motion_planning: true
+  sim_camera_resolution: [640, 480]
+  background_image_size: [640, 480]
+  use_background_replace: true
+  cam_side_background: ../../../../../../../../../../backgrounds/1123_background.png
+  cam_wrist_background: ../../../../../../../../../../backgrounds/wristbackground_realworld1.png
+  data_dir: /home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/data/r2s2r_data/close_microwave
+  task_name: FrankaFr3-OurGripper-Joint-VisPick-v0
+robot:
+  cfg_name: franka_fr3_our.yml
+  type: franka_fr3_default
+offsets:
+  grasp: [0, 0, 0]
+  place: [0, 0, 0]
+articulations:
+  microwave1:
+    usd_path: /home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/microwave1.usd
+    semantic_tags:
+      -   - class
+          - microwave1
+    scale: [0.7, 0.6, 0.7]
+    disable_gravity: false
+    enabled_self_collisions: true
+    init_pos: [0.8, -0.2, 0.16]
+    init_rot: [0.7071, 0, 0, -0.7071]
+    joint_pos:
+      microjoint: -1.57
+    actuators:
+      joint:
+        joint_names_expr: ["microjoint"]
+        effort_limit: 1000
+        velocity_limit: 1000
+        stiffness: 0
+        damping: 0
+primitives:
+  - type: close
+    params:
+      target: microwave1
+      pre_close_facing_offset: 0.25
+      pre_close_open_normal_offset: 0.40
+      close_facing_offset: 0.2
+      close_open_normal_backoff: 0.15
+      close_interpolation_steps: 30
+      success_eval: true
+enable_random_lights: false
+image_noise_std: 0
+image_speckle_noise_std: 0
+enable_objects_randomization: false
+enable_objects_randomization_curriculum: false
+texture_randomization:
+  enabled: true
+  texture_dir: /home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/random_pic
+  targets:
+    table:
+      prim_path: "/World/envs/env_{i}/table/Xform_01/Xform/leg/node_/Cube"
+      texture_dir: /home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/random_pic

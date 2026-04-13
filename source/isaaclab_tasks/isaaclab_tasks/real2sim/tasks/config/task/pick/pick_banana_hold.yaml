@@ -1,0 +1,80 @@
+simulation:
+  decimation: 30
+  dt: 0.00833333
+  render_interval: 5
+  episode_length_s: 100
+scene:
+  num_envs: 1
+  env_spacing: 20
+task:
+  name: interactive task
+  description: grasp the banana and put it in the bowl
+runtime:
+  headless: false
+  episodes: 1
+  save_npy: true
+  save_camera_images: true
+  save_composite_images: false
+  save_mask_images: false
+  save_original_images: true
+  enable_motion_planning: true
+  sim_camera_resolution: [640, 480]
+  background_image_size: [640, 480]
+  use_background_replace: true
+  cam_side_background: backgrounds/1123_background.png
+  cam_wrist_background: backgrounds/wristbackground_realworld1.png
+  data_dir: data/r2s2r_data/pick_banana_hold
+  task_name: FrankaFr3-OurGripper-Joint-VisPick-v0
+robot:
+  cfg_name: franka_fr3_our.yml
+  type: franka_fr3_default
+offsets:
+  grasp: [0, 0, 0.0]
+  place: [0, 0, 0.0]
+objects:
+  yellow_banana:
+    usd_path: models/all_object/yellow_banana.usd
+    semantic_tags:
+      - [class, yellow_banana]
+    init_pos: [0.6106, 0.113, 0.098]
+    init_rot: [0.3994, 0.0, 0.0, 0.9168]
+    height: 0.036
+  # blue_coffeecan:
+  #   usd_path: models/all_object/blue_coffeecan.usd
+  #   semantic_tags:
+  #     - [class, blue_coffeecan]
+  #   init_pos: [0.758, -0.671, 0.1]
+  #   init_rot: [0.3994, 0.0, 0.0, 0.9168]
+  #   height: 0.14
+  # brown_chocolatebox:
+  #   usd_path: models/all_object/brown_chocolatebox.usd
+  #   semantic_tags:
+  #     - [class, brown_chocolatebox]
+  #   init_pos: [0.729, -0.2, 0.173]
+  #   init_rot: [-0.7238, 0, 0, 0.69]
+  #   height: 0.045
+primitives:
+  - type: pick
+    mode: anygrasp
+    params:
+      target: yellow_banana
+      pre_pick_offset: [0.0, 0.0, 0.10]
+      pick_interpolation_steps: 15
+      lift_interpolation_steps: 15
+  - type: hold
+    params:
+      success_eval: true
+      lift_height: 0.05
+      hold_steps: 10
+enable_random_lights: false
+image_noise_std: 0
+image_speckle_noise_std: 0
+enable_objects_randomization: false
+enable_objects_randomization_curriculum: false
+texture_randomization:
+  enabled: true
+  texture_dir: models/random_pic
+  targets:
+    table:
+      prim_path: /World/envs/env_{i}/table/Xform_01/Xform/leg/node_/Cube
+      texture_dir: models/random_pic

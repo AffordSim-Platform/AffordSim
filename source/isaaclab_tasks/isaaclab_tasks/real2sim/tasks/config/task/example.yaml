@@ -1,0 +1,512 @@
+# ============================================================================
+# Task YAML Complete Parameter Reference
+# ============================================================================
+# This file lists all configurable parameters in the data collection pipeline,
+# including default values and descriptions.
+#
+# Conventions:
+#   __REQUIRED__  = Must be provided by the user; no default value
+#   All other fields show their default values and can be omitted
+#   (omitted fields automatically use the default value)
+#
+# Usage:
+#   python scripts/run_data_collect.py --config task/example.yaml
+#   python scripts/run_data_collect_improve.py --task_name example
+# ============================================================================
+
+
+# ============================================================================
+# 1. simulation — Physics simulation parameters
+# ============================================================================
+# Controls the underlying Isaac Lab physics engine: simulation step size,
+# rendering frequency, and maximum episode duration.
+# Generally no modification needed; keep the defaults.
+
+simulation:
+  decimation: 30          # Number of physics steps per control step. Higher = smoother but slower. Default 30
+  dt: 0.00833333          # Physics engine time step (seconds), i.e. 1/120. Default 0.00833333
+  render_interval: 5      # Render one frame every N physics steps. Default 5
+  episode_length_s: 100   # Maximum duration of a single episode (seconds). Auto-terminates on timeout. Default 100
+
+
+# ============================================================================
+# 2. scene — Parallel simulation environment configuration
+# ============================================================================
+# num_envs controls how many independent simulation environments run
+# simultaneously (for parallel data collection).
+# env_spacing controls the physical spacing between environments to prevent collisions.
+
+scene:
+  num_envs: 1             # Number of parallel environments. 1=single, 3/5=parallel collection. Default 1
+  env_spacing: 10         # Spacing between environments (meters). Increase to 20 for many envs. Default 10
+
+
+# ============================================================================
+# 3. task — Task metadata
+# ============================================================================
+# Descriptive fields only; they do not affect execution logic but are
+# recorded in the collected data metadata.
+# name is for categorization (e.g. interactive task / composite task / task_gen),
+# description is a natural language task description.
+
+task:
+  name: __REQUIRED__               # Task category name, e.g. "interactive task", "composite task"
+  description: __REQUIRED__        # Natural language task description, e.g. "grasp the banana and put it in the bowl"
+
+
+# ============================================================================
+# 4. runtime — Data collection runtime parameters
+# ============================================================================
+# Controls all runtime behavior during data collection: what data to save,
+# camera resolution, background replacement, output paths, etc.
+# This is the most heavily configured section.
+
+runtime:
+  # --- Data saving toggles ---
+  save_npy: false                  # Save numpy format state data (joint angles, poses, etc.). Default false
+  save_camera_images: false        # Save processed camera RGB images. Default false
+  save_composite_images: false     # Save composite images with annotation overlays. Default false
+  save_mask_images: false          # Save semantic segmentation mask images. Default false
+  save_original_images: true       # Save original unprocessed camera images. Default true
+
+  # --- Collection control ---
+  episodes: 1                      # Number of episodes to collect. Each episode is one complete task execution. Default 1
+  headless: false                  # Run in headless mode (no visualization window). Recommended true on servers. Default false
+  enable_motion_planning: true     # Enable CuRobo motion planning. Disabling limits to IK only. Default true
+
+  # --- Camera and images ---
+  sim_camera_resolution: [640, 480]       # Simulation camera resolution [width, height] (pixels). Default [640, 480]
+  background_image_size: [640, 480]       # Output image size [width, height] (pixels). Default [640, 480]
+  use_background_replace: true            # Replace simulation background with real background images for realism. Default true
+  cam_side_background: __REQUIRED__       # Side camera background image path. e.g. "../../backgrounds/1123_background.png"
+  cam_wrist_background: __REQUIRED__      # Wrist camera background image path. e.g. "../../backgrounds/wristbackground_realworld1.png"
+
+  # --- Paths ---
+  data_dir: __REQUIRED__           # Output directory for collected data (absolute path). e.g. "/home/user/data/pick_banana"
+  task_name: FrankaFr3-OurGripper-Joint-VisPick-v0  # Isaac Lab registered environment name.
+                                   # Options: "FrankaFr3-OurGripper-Joint-VisPick-v0" (Franka)
+                                   #          "UR5e-Robotiq85-IKRel-EE-VisPick-v0" (UR5e)
+                                   #          "Kinova-Robotiq85-IKRel-EE-VisPick-v0" (Kinova)
+
+
+# ============================================================================
+# 5. robot — Robot configuration
+# ============================================================================
+# Specifies which robot to use and its configuration file.
+# The config file defines kinematics parameters, joint limits, etc.
+
+robot:
+  cfg_name: franka_fr3_our.yml     # Robot configuration file name.
+                                   # Options: "franka_fr3_our.yml" (Franka FR3)
+                                   #          "ur5e_robotiq_2f_85.yml" (UR5e)
+                                   #          "kinova_robotiq85.yml" (Kinova)
+  type: franka_fr3_default         # Robot type identifier.
+                                   # Options: "franka_fr3_default", "ur5e", "kinova_robotiq85"
+
+
+# ============================================================================
+# 6. offsets — End-effector offsets
+# ============================================================================
+# Fixed offsets (meters) applied to grasp and place points for fine-tuning
+# end-effector positioning.
+# Usually keep [0, 0, 0]; only adjust for special grippers.
+
+offsets:
+  grasp: [0, 0, 0.0]      # Grasp point offset [x, y, z] (meters), added to the computed grasp position. Default [0, 0, 0]
+  place: [0, 0, 0.0]      # Place point offset [x, y, z] (meters), added to the computed place position. Default [0, 0, 0]
+
+
+# ============================================================================
+# 7. objects — Rigid body object definitions
+# ============================================================================
+# Defines all non-articulated (rigid body) objects in the scene.
+# The key name serves as the unique identifier for each object.
+# Primitives reference these key names via the target field.
+
+objects:
+  # --- Example object 1 (object to be grasped) ---
+  example_object:
+    usd_path: __REQUIRED__         # Absolute path to the object's USD model file
+    semantic_tags:                  # Semantic tags for segmentation masks and object identification
+      - - class
+        - example_object           # Should match the key name
+    init_pos: __REQUIRED__         # Initial position [x, y, z] (meters). x=forward, y=left, z=up
+    init_rot: __REQUIRED__         # Initial rotation [w, x, y, z] quaternion
+    height: 0.05                   # Object height (meters), used for place height calculation. Optional but recommended
+    scale: [1.0, 1.0, 1.0]        # Scale factors [sx, sy, sz]. Optional, default is no scaling
+
+    # --- Optional: position randomization range ---
+    # Used with enable_objects_randomization: true
+    position_range:                # Random range for object position at the start of each episode
+      x: [-0.05, 0.05]            # x-axis random offset range (meters), relative to init_pos
+      y: [-0.05, 0.05]            # y-axis random offset range (meters)
+      z: [0.0, 0.0]               # z-axis typically not randomized
+
+    # --- Optional: orientation randomization range ---
+    orientation_range:             # Random range for object orientation at the start of each episode
+      yaw: [-0.5, 0.5]            # Yaw angle random range (radians)
+
+  # --- Example object 2 (container/target object) ---
+  example_container:
+    usd_path: __REQUIRED__
+    semantic_tags:
+      - - class
+        - example_container
+    init_pos: __REQUIRED__
+    init_rot: __REQUIRED__
+    height: 0.08
+
+
+# ============================================================================
+# 8. articulations — Articulated object definitions (optional)
+# ============================================================================
+# Defines objects with joints (e.g. microwave doors, drawer cabinets).
+# Only needed when the task involves open / close / pull operations on articulated objects.
+# If the task only involves rigid bodies (pick/place/pour etc.), this section can be omitted.
+
+articulations:
+  example_articulation:
+    usd_path: __REQUIRED__                    # Articulated object USD model path
+    semantic_tags:
+      - - class
+        - example_articulation
+    scale: [1.0, 1.0, 1.0]                   # Scale factors. Default [1, 1, 1]
+    disable_gravity: false                    # Disable gravity. Set true for objects fixed in air (e.g. wall-mounted microwave). Default false
+    enabled_self_collisions: true             # Enable self-collision detection. Default true
+    init_pos: __REQUIRED__                    # Initial position [x, y, z] (meters)
+    init_rot: __REQUIRED__                    # Initial rotation [w, x, y, z] quaternion
+    joint_pos:                                # Initial joint angles/positions
+      joint_name_1: 0.0                       # Joint name: initial value (radians or meters, depending on joint type)
+                                              # e.g. microjoint: 0.0 (closed), microjoint: -1.57 (open)
+    actuators:                                # Actuator configuration (joint drive parameters)
+      joint:
+        joint_names_expr: ["joint_name_1"]    # Joint name list, supports regex
+        effort_limit: 1000                    # Torque/force limit. Default 1000
+        velocity_limit: 1000                  # Velocity limit. Default 1000
+        stiffness: 0                          # Stiffness (PD controller P gain). Set 0 for passive joints. Default 0
+        damping: 0                            # Damping (PD controller D gain). Set 0 for passive joints. Default 0
+
+    # Articulated objects also support position_range and orientation_range (same format as objects)
+
+
+# ============================================================================
+# 9. primitives — Action primitive sequence
+# ============================================================================
+# Defines the task's action sequence. Executed in list order.
+# Each primitive has type, mode (optional for some), and params.
+#
+# Supported primitive types: pick, place, pour, push, pull, open, close, hang, hold, return_home
+#
+# Below shows all modes and their complete parameters organized by primitive type.
+# In practice, keep only the primitives needed for your task and remove the rest.
+# ============================================================================
+
+primitives:
+
+  # ==========================================================================
+  # PICK — Grasp an object
+  # ==========================================================================
+  # 4 modes: affordance / affordance_multidir / gt / hang
+
+  # --- pick mode 1: affordance (grasp pose predicted by affordance network) ---
+  # Most commonly used mode. Automatically computes optimal grasp point and
+  # orientation from point cloud affordance data.
+  - type: pick
+    mode: affordance               # Use single-direction affordance grasping
+    params:
+      target: __REQUIRED__         # Object to grasp (must match a key name in objects)
+      pre_pick_offset: [0.0, 0.0, 0.10]  # Pre-grasp position offset [x, y, z] (meters).
+                                   # The arm first moves to this offset above the grasp point, then descends.
+                                   # Can also be a scalar like 0.1, equivalent to [0, 0, 0.1]. Default 0.1
+      pick_interpolation_steps: 15 # IK interpolation steps from pre-grasp to grasp point. More steps = smoother. Default 5
+      lift_interpolation_steps: 15 # IK interpolation steps for post-grasp lift. Default 5
+      lift_offset: 0.1             # Lift height after grasping (meters). Default 0.1
+      grasp_npz_path: /path/to/grasp_result.npz  # Optional, manually specify affordance file path.
+                                   # If omitted, auto-searches in pc_dataset_generate/pc/{object_name}_pick/
+
+  # --- pick mode 2: affordance_multidir (select optimal direction from multiple) ---
+  # For handle-type objects (e.g. pots), selects the best from multiple
+  # pre-computed grasp directions.
+  - type: pick
+    mode: affordance_multidir
+    params:
+      target: __REQUIRED__
+      pre_pick_offset: [0.0, 0.0, 0.10]  # Same as above. Default 0.1
+      pick_interpolation_steps: 10        # Same as above. Default 5
+      lift_interpolation_steps: 5         # Same as above. Default 5
+      lift_offset: 0.15                   # Same as above. Default 0.1
+
+  # --- pick mode 3: gt (use manually specified grasp quaternion) ---
+  # For objects with known exact grasp poses (e.g. regular-shaped blocks).
+  - type: pick
+    mode: gt
+    params:
+      target: __REQUIRED__
+      grasp_quat: [0.0, 1.0, 0.0, 0.0]  # Grasp orientation quaternion [w, x, y, z]. __REQUIRED__ (required in gt mode)
+      pre_pick_offset: 0.1               # Same as above. Default 0.1
+      pick_interpolation_steps: 10       # Same as above. Default 5
+      lift_interpolation_steps: 10       # Same as above. Default 5
+      lift_offset: 0.1                   # Same as above. Default 0.1
+
+  # --- pick mode 4: hang (special grasp for subsequent hanging action) ---
+  # Grasp optimized for hanging tasks, selects a pose suitable for mounting.
+  - type: pick
+    mode: hang
+    params:
+      target: __REQUIRED__
+      pre_pick_offset: [0.0, 0.0, 0.08]  # Same as above. Default 0.1
+      pick_interpolation_steps: 10        # Same as above. Default 5
+      lift_interpolation_steps: 10        # Same as above. Default 5
+
+
+  # ==========================================================================
+  # PLACE — Place an object
+  # ==========================================================================
+  # 4 modes: on / in / pose / affordance
+  # Must be used after pick (the robot must be holding an object).
+
+  # --- place mode 1: on (place on top of a target object) ---
+  # Most commonly used. Automatically computes the target object's top position
+  # and places the object on it.
+  - type: place
+    mode: "on"                      # Note: "on" is a YAML reserved word; must be quoted
+    params:
+      target: __REQUIRED__          # Target container/object name (must match a key in objects)
+      on_height_margin: 0.01        # Place height margin (meters). Positive=above target top, negative=below. Default 0.01
+                                    # e.g. use -0.07 for shelves (sink into shelf), 0.01 for bowls
+      ik_interpolation_steps: 30    # IK interpolation steps for the place motion. Default 30
+      post_release_lift_offset: [0.0, 0.0, 0.08]  # Lift offset after releasing gripper [x, y, z] (meters). Default [0, 0, 0.08]
+      post_release_lift_steps: 10   # Steps for post-release lift. Default 10
+      success_eval: true            # Whether to evaluate success after placing (check if object is on target). Default false
+
+  # --- place mode 2: in (place inside a target container) ---
+  # For semi-enclosed containers (bowls, plates, microwave interior, shelf compartments).
+  # Automatically detects container type and uses a two-step approach to avoid collisions.
+  - type: place
+    mode: "in"
+    params:
+      target: __REQUIRED__
+      ik_interpolation_steps: 30   # Same as above. Default 30
+      success_eval: true           # Same as above. Default false
+
+  # --- place mode 3: pose (place at a specified absolute pose) ---
+  # Directly specifies target position and orientation, independent of any object.
+  # Useful for returning an object to its original position after pouring, etc.
+  - type: place
+    mode: pose
+    params:
+      position: [0.5, -0.4, 0.1]  # Target position [x, y, z] (meters). __REQUIRED__ (required in pose mode)
+      orientation: [0.0, 0.9239, 0.0, 0.3827]  # Target orientation [w, x, y, z] quaternion. Optional; keeps current if omitted
+      success_eval: false          # Same as above. Default false
+
+  # --- place mode 4: affordance (affordance-aligned placement) ---
+  # Uses object and container affordance centroids for aligned placement.
+  # Suitable for scenarios requiring precise alignment (e.g. cup on coffee machine tray).
+  - type: place
+    mode: affordance
+    params:
+      target: __REQUIRED__
+      pre_place_distance: 0.15     # Pre-place distance (meters), approaching from above. Default 0.15
+      ik_interpolation_steps: 30   # Same as above. Default 30
+      post_release_lift_offset: [0.0, 0.0, 0.08]  # Same as above. Default [0, 0, 0.08]
+      post_release_lift_steps: 10  # Same as above. Default 10
+      success_eval: true           # Same as above. Default false
+
+
+  # ==========================================================================
+  # POUR — Pour/tilt
+  # ==========================================================================
+  # Tilts the held object to pour into a target container. Must be used after pick.
+  # No sub-modes; automatically computes optimal pour direction and pose from affordance data.
+
+  - type: pour
+    params:
+      target: __REQUIRED__         # Target container name for pouring
+      tilt_angle_deg: 90.0         # Tilt angle (degrees). 90=horizontal, 100=past horizontal, 60=gentle tilt. Default 90
+      move_hover_height: 0.15      # Hover height above the container (meters). Default 0.15
+      tilt_lift_height: 0.08       # Extra lift during tilting (meters), prevents hitting container edges. Default 0.08
+      tilt_horizontal_offset: 0.05 # Horizontal offset during tilting (meters), controls pour point distance from container center. Default 0.05
+      # return_lift_height: 0.05   # Optional. Extra lift height before returning upright (meters). Omit for no lift
+      success_eval: false          # Whether to evaluate pour success (check tilt angle and pour direction). Default false
+
+
+  # ==========================================================================
+  # PUSH — Push an object
+  # ==========================================================================
+  # Uses the end-effector to push an object to a target position. No prior pick needed.
+  # Supported mode: object_aligned (push direction aligned based on object affordance)
+
+  - type: push
+    mode: object_aligned           # Optional; mode can also be omitted
+    params:
+      target: __REQUIRED__         # Object to push
+      push_target: __REQUIRED__    # Push target position [x, y, z] (meters). Final position for the object
+      pre_height: 0.15             # Hover height when approaching the object (meters). Default 0.15
+      # pre_offset: [0, 0, 0.15]  # Alternatively use 3D offset instead of pre_height (choose one)
+      pre_push_backoff: 0.08       # Backoff distance from push start point (meters), leaves room for acceleration. Default 0.08
+      push_contact_retreat: 0.02   # Slight retreat after contacting object (meters), prevents jamming. Default 0.02
+      lift_z_delta: 0.15           # Lift height after push completion (meters). Optional; omit for no lift
+      down_interpolation_steps: 5  # Steps for descending from hover to contact. Default 5
+      push_interpolation_steps: 30 # Steps for the push motion. Default 30
+      lift_interpolation_steps: 10 # Steps for post-push lift. Default 10
+      success_eval: false          # Whether to evaluate push success (check if object reached target). Default false
+
+
+  # ==========================================================================
+  # PULL — Pull (articulated object)
+  # ==========================================================================
+  # Grasps the handle of an articulated object and pulls it outward (e.g. open a drawer).
+  # Target must be defined in articulations and have facing_axis_local registered in containers.yaml.
+
+  - type: pull
+    params:
+      target: __REQUIRED__         # Articulated object to pull (must match a key in articulations)
+      pre_grasp_offset: 0.08       # Backoff distance along pull direction before grasping (meters). Default 0.08
+      pick_interpolation_steps: 10 # Steps for approaching and grasping the handle. Default 10
+      pull_distance: 0.20          # Pull distance (meters). Default 0.20
+      pull_interpolation_steps: 30 # Steps for the pull motion. Default 30
+      release_after_pull: true     # Release gripper after pulling. Default true. false=maintain grip (for continued manipulation)
+      success_eval: false          # Whether to evaluate pull success (check joint displacement). Default false
+
+
+  # ==========================================================================
+  # OPEN — Open (articulated object door)
+  # ==========================================================================
+  # Opens microwave doors, cabinet doors, etc. Execution flow:
+  # Grasp handle → quick pull → release → lift → align with gap → push along tangent → release and retreat.
+  # Target must be defined in articulations and have facing_axis_local registered in containers.yaml.
+
+  - type: open
+    params:
+      target: __REQUIRED__              # Articulated object to open
+      pre_pick_offset: 0.10             # Offset distance before grasping handle (meters), along facing direction. Default 0.10
+      pick_interpolation_steps: 10      # Steps for approaching the handle. Default 10
+      fast_pull_distance: 0.30          # Initial fast pull distance (meters), opens the door a crack. Default 0.30
+      fast_pull_interpolation_steps: 5  # Fast pull steps. Default 5
+      lift_before_pre_insert: 0.30      # Lift height after fast pull (meters), prepares for subsequent insertion. Default 0.30
+      lift_interpolation_steps: 10      # Lift steps. Default 10
+      pre_insert_outward_offset: 0.03   # Offset along container normal direction (meters), avoids collision. Default 0.03
+      align_above_interpolation_steps: 10  # Steps for aligning above the gap. Default 10
+      door_tangent_move_distance: 0.20  # Distance to push along door tangent (meters), i.e. how far the door opens. Default 0.20
+      tangent_move_interpolation_steps: 10  # Tangent push steps. Default 10
+      success_eval: false               # Whether to evaluate open success (check joint angle). Default false
+
+
+  # ==========================================================================
+  # CLOSE — Close (articulated object door)
+  # ==========================================================================
+  # Closes an already-open microwave door, cabinet door, etc.
+  # The end-effector opens its palm and pushes the door shut.
+  # Target must be defined in articulations and have facing_axis_local registered in containers.yaml.
+
+  - type: close
+    params:
+      target: __REQUIRED__              # Articulated object to close
+      pre_close_facing_offset: 0.25     # Pre-close position offset along facing direction (meters). Default 0.25
+      pre_close_open_normal_offset: 0.40 # Pre-close position offset along door-open direction (meters). Default 0.40
+      close_facing_offset: 0.15         # Final close position offset along facing direction (meters). Default 0.15
+      close_open_normal_backoff: 0.15   # Final close position backoff along door-open direction (meters). Default 0.15
+      close_height_offset: 0.0          # Z-axis height offset (meters). Default 0.0
+      close_interpolation_steps: 30     # Steps for the closing push motion. Default 30
+      success_eval: false               # Whether to evaluate close success (check joint angle). Default false
+      # close_success_max_angle_rad: 0.1  # Optional, override max angle threshold for success evaluation (radians)
+
+
+  # ==========================================================================
+  # HANG — Mount/hang
+  # ==========================================================================
+  # Hangs the held object onto a rack/stand. Must be used after pick (mode: hang).
+  # Supported mode: mount
+
+  - type: hang
+    mode: mount                    # Mount mode
+    params:
+      target: __REQUIRED__         # Rack/stand object name
+      pre_hang_distance: 0.10      # Distance before approaching the hang point (meters). Default 0.10
+      insert_interpolation_steps: 20  # Steps for inserting into the hang point. Default 20
+      extra_insert_distance: 0.05  # Extra insertion distance (meters), ensures secure mounting. Default 0.05
+      extra_insert_interpolation_steps: 10  # Extra insertion steps. Default 10
+      post_release_retreat_distance: 0.10  # Retreat distance after release (meters), avoids knocking off. Default 0.10
+      retreat_interpolation_steps: 10  # Retreat steps. Default 10
+      # mount_direction_angle_deg: 0  # Optional. Mount direction angle adjustment (degrees). Auto-selected if omitted
+      success_eval: false          # Whether to evaluate mount success (check object height and position). Default false
+
+
+  # ==========================================================================
+  # HOLD — Hold in place
+  # ==========================================================================
+  # Moves the held object to a specified position and holds for a duration.
+  # Used for display or waiting for stabilization. Must be used after pick.
+
+  - type: hold
+    params:
+      position: [0.5, 0.0, 0.3]   # Target position [x, y, z]. Optional; if omitted, uses lift position + lift_height
+      orientation: [0.0, 1.0, 0.0, 0.0]  # Target orientation [w, x, y, z]. Optional; keeps current if omitted
+      lift_height: 0.10            # Extra height above lift position (meters). Only effective when position is not specified. Default 0.10
+      hold_steps: 10               # Number of steps to hold the pose (frames). Default 10
+      success_eval: false          # Whether to evaluate hold success (check if object is still in hand). Default false
+
+
+  # ==========================================================================
+  # RETURN_HOME — Return to initial pose
+  # ==========================================================================
+  # Returns the robot arm to its initial pose at the start of the episode.
+  # Typically used as the last step of a task.
+
+  - type: return_home
+    params:
+      post_settle_steps: 20         # Settling wait steps after returning to initial pose. Default 20
+
+
+# ============================================================================
+# 10. Global domain randomization flags
+# ============================================================================
+# Controls visual and physics randomization of the simulation environment
+# to enhance data diversity.
+
+enable_random_lights: false                    # Randomize lighting (position, intensity, color). Default false
+image_noise_std: 0                             # Camera image Gaussian noise std dev. 0=no noise. Default 0
+image_speckle_noise_std: 0                     # Camera image speckle noise std dev. 0=no noise. Default 0
+enable_objects_randomization: false            # Randomize object poses at the start of each episode.
+                                               # Requires position_range / orientation_range configured in objects. Default false
+enable_objects_randomization_curriculum: false  # Enable curriculum learning for pose randomization (progressively increase range).
+                                               # Requires curriculum configured in objects. Default false
+
+
+# ============================================================================
+# 11. texture_randomization — Texture randomization (optional)
+# ============================================================================
+# Replaces simulation object/table textures with real-world texture images
+# to increase visual diversity.
+# If texture randomization is not needed, set enabled to false or omit this entire section.
+
+texture_randomization:
+  enabled: true                                # Enable texture randomization. Default false (if entire section is omitted)
+  texture_dir: __REQUIRED__                    # Texture image directory path. e.g. "/path/to/models/random_pic"
+  targets:                                     # List of targets for texture replacement
+    table:                                     # Target name (custom identifier)
+      prim_path: "/World/envs/env_{i}/table/Xform_01/Xform/leg/node_/Cube"  # USD scene path template for the target
+                                               # {i} will be replaced with the environment index
+      texture_dir: __REQUIRED__                # Texture directory for this target. Can be the same as the global texture_dir
+    # Additional targets can be added:
+    # example_object:
+    #   prim_path: "/World/envs/env_{i}/example_object"
+    #   texture_dir: /path/to/object_textures
+
+
+# ============================================================================
+# Quick Reference: Common Task Configuration Templates
+# ============================================================================
+#
+# [Pick and place]  pick (affordance) -> place (on) -> return_home
+# [Pick and put in] pick (affordance) -> place (in) -> return_home
+# [Pour]            pick (affordance/affordance_multidir) -> pour -> place (pose) -> return_home
+# [Hang]            pick (hang) -> hang (mount) -> return_home
+# [Stack]           pick (gt) -> place (on) -> pick (gt) -> place (on) -> return_home
+# [Push]            push -> return_home
+# [Pull drawer]     pull
+# [Open door]       open
+# [Close door]      close
+# [Composite task]  open -> return_home -> pick -> place (in) -> return_home (any combination)
+#
+# ============================================================================

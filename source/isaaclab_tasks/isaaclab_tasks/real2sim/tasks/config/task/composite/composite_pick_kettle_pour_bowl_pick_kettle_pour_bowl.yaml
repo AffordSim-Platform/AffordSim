@@ -1,0 +1,108 @@
+simulation:
+  decimation: 30
+  dt: 0.00833333
+  render_interval: 5
+  episode_length_s: 200
+scene:
+  num_envs: 1
+  env_spacing: 10
+task:
+  name: interactive task
+  description: grasp the white kettle and pour into the bowl, the 80mm cup, and the 75mm cup sequentially
+runtime:
+  headless: false
+  episodes: 1
+  save_npy: false
+  save_camera_images: false
+  save_composite_images: false
+  save_mask_images: false
+  save_original_images: true
+  enable_motion_planning: true
+  sim_camera_resolution: [640, 480]
+  background_image_size: [640, 480]
+  use_background_replace: true
+  cam_side_background: ../../../../../../../../../../backgrounds/1123_background.png
+  cam_wrist_background: ../../../../../../../../../../backgrounds/wristbackground_realworld1.png
+  data_dir: /home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/data/r2s2r_data/composite_pick_kettle_pour_bowl_pick_kettle_pour_bowl
+  task_name: FrankaFr3-OurGripper-Joint-VisPick-v0
+robot:
+  cfg_name: franka_fr3_our.yml
+  type: franka_fr3_default
+offsets:
+  grasp: [0, 0, 0.0]
+  place: [0, 0, 0.0]
+objects:
+  white_kettle6:
+    usd_path: /home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/white_kettle6.usd
+    semantic_tags:
+      -   - class
+          - white_kettle6
+    scale: [0.15, 0.15, 0.15]
+    init_pos: [0.722, 0.152, 0.18]
+    init_rot: [0, 0, 0, 1]
+    height: 0.242
+  yellow_bowl:
+    usd_path: /home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/yellow_bowl.usd
+    semantic_tags:
+      -   - class
+          - yellow_bowl
+    init_pos: [0.65, -0.10, 0.077]
+    init_rot: [-0.3826834, 0, 0, 0.9238795]
+    height: 0.054
+  white_kettle3:
+    usd_path: /home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/white_kettle3.usd
+    semantic_tags:
+      -   - class
+          - white_kettle3
+    scale: [0.15, 0.15, 0.15]
+    init_pos: [0.68, -0.4, 0.18]
+    init_rot: [0.3827, 0.0, 0.0, -0.9239]
+    height: 0.242
+primitives:
+  - type: pick
+    mode: affordance
+    params:
+      target: white_kettle6
+      pre_pick_offset: [0.0, 0.0, 0.10]
+      pick_interpolation_steps: 10
+      lift_interpolation_steps: 10
+      lift_offset: 0.15
+  - type: pour
+    params:
+      target: yellow_bowl
+      tilt_angle_deg: 60
+      move_hover_height: 0.25
+      tilt_lift_height: 0.3
+      tilt_horizontal_offset: 0.0
+  - type: place
+    mode: pose
+    params:
+      position: [0.626, 0.176, 0.1]
+      orientation: [-0.02622881, -0.92224633, 0.06492682, -0.38020811]
+  - type: pick
+    mode: affordance
+    params:
+      target: white_kettle3
+      pre_pick_offset: [0.0, 0.0, 0.10]
+      pick_interpolation_steps: 10
+      lift_interpolation_steps: 10
+      lift_offset: 0.15
+  - type: pour
+    params:
+      target: yellow_bowl
+      tilt_angle_deg: 40
+      move_hover_height: 0.2
+      tilt_lift_height: 0.3
+      tilt_horizontal_offset: 0.05
+enable_random_lights: false
+image_noise_std: 0
+image_speckle_noise_std: 0
+enable_objects_randomization: false
+enable_objects_randomization_curriculum: false
+texture_randomization:
+  enabled: true
+  texture_dir: /home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/random_pic
+  targets:
+    table:
+      prim_path: "/World/envs/env_{i}/table/Xform_01/Xform/leg/node_/Cube"
+      texture_dir: /home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/random_pic

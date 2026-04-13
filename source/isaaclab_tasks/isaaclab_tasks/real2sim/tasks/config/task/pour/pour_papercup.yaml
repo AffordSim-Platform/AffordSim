@@ -1,0 +1,89 @@
+simulation:
+  decimation: 30
+  dt: 0.00833333
+  render_interval: 5
+  episode_length_s: 100
+scene:
+  num_envs: 1
+  env_spacing: 10
+task:
+  name: interactive task
+  description: grasp the beige paper cup and pour into the bowl
+runtime:
+  headless: false
+  episodes: 1
+  save_npy: false
+  save_camera_images: false
+  save_composite_images: false
+  save_mask_images: false
+  save_original_images: true
+  enable_motion_planning: true
+  sim_camera_resolution: [640, 480]
+  background_image_size: [640, 480]
+  use_background_replace: true
+  cam_side_background: ../../../../../../../../../../backgrounds/1123_background.png
+  cam_wrist_background: ../../../../../../../../../../backgrounds/wristbackground_realworld1.png
+  data_dir: /home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/data/r2s2r_data/pour_papercup
+  task_name: FrankaFr3-OurGripper-Joint-VisPick-v0
+robot:
+  cfg_name: franka_fr3_our.yml
+  type: franka_fr3_default
+offsets:
+  grasp: [0, 0, 0.0]
+  place: [0, 0, 0.0]
+objects:
+  white_papercup1:
+    usd_path: /home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/white_papercup1.usd
+    semantic_tags:
+      -   - class
+          - white_papercup1
+    init_pos: [0.626, 0.176, 0.077]
+    init_rot: [0.9914, 0.0, 0.0, -0.1305]
+    height: 0.094
+  starbuckscup:
+    usd_path: /home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/starbuckscup.usd
+    semantic_tags:
+      -   - class
+          - starbuckscup
+    init_rot: [-0.9838, 0.0, 0.0, 0.1791]
+    init_pos: [0.519, -0.03, 0.068]
+    height: 0.054
+  coffeemachine1:
+    usd_path: /home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/coffeemachine1.usd
+    semantic_tags:
+      -   - class
+          - coffeemachine1
+    scale: [0.3, 0.3, 0.3]
+    disable_gravity: false
+    enabled_self_collisions: true
+    init_pos: [0.9, -0.3, 0.23]
+    init_rot: [0.9537, 0.0, 0.0, -0.3007]
+primitives:
+  - type: pick
+    mode: affordance
+    params:
+      target: white_papercup1
+      pre_pick_offset: [0.0, 0.0, 0.10]
+      pick_interpolation_steps: 10
+      lift_interpolation_steps: 10
+      lift_offset: 0.15
+  - type: pour
+    params:
+      target: starbuckscup
+      tilt_angle_deg: 100
+      move_hover_height: 0.12
+      tilt_lift_height: 0.1
+      tilt_horizontal_offset: -0.02
+      success_eval: true
+enable_random_lights: false
+image_noise_std: 0
+image_speckle_noise_std: 0
+enable_objects_randomization: false
+enable_objects_randomization_curriculum: false
+texture_randomization:
+  enabled: true
+  texture_dir: /home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/random_pic
+  targets:
+    table:
+      prim_path: "/World/envs/env_{i}/table/Xform_01/Xform/leg/node_/Cube"
+      texture_dir: /home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/random_pic
