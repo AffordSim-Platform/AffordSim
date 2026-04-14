@@ -21,9 +21,9 @@ runtime:
   sim_camera_resolution: [640, 480]
   background_image_size: [640, 480]
   use_background_replace: true
-  cam_side_background: ../../../../../../../../../../backgrounds/1123_background.png
-  cam_wrist_background: ../../../../../../../../../../backgrounds/wristbackground_realworld1.png
-  data_dir: /home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/data/r2s2r_data/stack_cube
+  cam_side_background: backgrounds/1123_background.png
+  cam_wrist_background: backgrounds/wristbackground_realworld1.png
+  data_dir: data/r2s2r_data/stack_cube
   task_name: FrankaFr3-OurGripper-Joint-VisPick-v0
 robot:
   cfg_name: franka_fr3_our.yml
@@ -33,7 +33,7 @@ offsets:
   place: [0, 0, 0.0]
 objects:
   red_cube:
-    usd_path: /home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/red_cube.usd
+    usd_path: models/all_object/red_cube.usd
     semantic_tags:
       -   - class
           - red_cube
@@ -41,7 +41,7 @@ objects:
     init_rot: [0.9397, 0.0, 0.0, -0.342]
     height: 0.06
   blue_cube:
-    usd_path: /home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/blue_cube.usd
+    usd_path: models/all_object/blue_cube.usd
     semantic_tags:
       -   - class
           - blue_cube
@@ -49,7 +49,7 @@ objects:
     init_rot: [1.0, 0.0, 0.0, 0.0]
     height: 0.06
   green_cube:
-    usd_path: /home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/green_cube.usd
+    usd_path: models/all_object/green_cube.usd
     semantic_tags:
       -   - class
           - green_cube
@@ -100,8 +100,8 @@ enable_objects_randomization: false
 enable_objects_randomization_curriculum: false
 texture_randomization:
   enabled: true
-  texture_dir: /home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/random_pic
+  texture_dir: models/random_pic
   targets:
     table:
       prim_path: "/World/envs/env_{i}/table/Xform_01/Xform/leg/node_/Cube"
-      texture_dir: /home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/random_pic
+      texture_dir: models/random_pic

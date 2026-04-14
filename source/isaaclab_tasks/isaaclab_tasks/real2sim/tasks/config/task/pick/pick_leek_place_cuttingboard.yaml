@@ -21,9 +21,9 @@ runtime:
   sim_camera_resolution: [640, 480]
   background_image_size: [640, 480]
   use_background_replace: true
-  cam_side_background: ../../../../../../../../../../backgrounds/1123_background.png
-  cam_wrist_background: ../../../../../../../../../../backgrounds/wristbackground_realworld1.png
-  data_dir: /home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/data/r2s2r_data/pick_leek_place_cuttingboard
+  cam_side_background: backgrounds/1123_background.png
+  cam_wrist_background: backgrounds/wristbackground_realworld1.png
+  data_dir: data/r2s2r_data/pick_leek_place_cuttingboard
   task_name: FrankaFr3-OurGripper-Joint-VisPick-v0
 robot:
   cfg_name: franka_fr3_our.yml
@@ -33,7 +33,7 @@ offsets:
   place: [0, 0, 0.0]
 objects:
   green_leek:
-    usd_path: /home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/green_leek.usd
+    usd_path: models/all_object/green_leek.usd
     semantic_tags:
       -   - class
           - green_leek
@@ -41,7 +41,7 @@ objects:
     init_rot: [0.3994, 0.0, 0.0, 0.9168]
     height: 0.04
   wood_cuttingboard:
-    usd_path: /home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/wood_cuttingboard.usd
+    usd_path: models/all_object/wood_cuttingboard.usd
     semantic_tags:
       -   - class
           - wood_cuttingboard
@@ -49,7 +49,7 @@ objects:
     init_rot: [1.0, 0.0, 0.0, 0.0]
     height: 0.08
   orange_carrot:
-    usd_path: /home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/orange_carrot.usd
+    usd_path: models/all_object/orange_carrot.usd
     semantic_tags:
       -   - class
           - orange_carrot
@@ -57,7 +57,7 @@ objects:
     init_rot: [0.5, 0.0, 0.0, 0.866]
     height: 0.04
   yellow_banana:
-    usd_path: /home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/yellow_banana.usd
+    usd_path: models/all_object/yellow_banana.usd
     semantic_tags:
       -   - class
           - yellow_banana
@@ -65,7 +65,7 @@ objects:
     init_rot: [1, 0, 0, 0]
     height: 0.036
   red_apple:
-    usd_path: /home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/red_apple.usd
+    usd_path: models/all_object/red_apple.usd
     semantic_tags:
       -   - class
           - red_apple
@@ -96,14 +96,14 @@ enable_objects_randomization: false
 enable_objects_randomization_curriculum: false
 texture_randomization:
   enabled: true
-  texture_dir: /home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/random_pic
+  texture_dir: models/random_pic
   targets:
     table:
       prim_path: /World/envs/env_{i}/table/Xform_01/Xform/leg/node_/Cube
-      texture_dir: /home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/random_pic
+      texture_dir: models/random_pic
     wood_cuttingboard:
       prim_path: /World/envs/env_{i}/wood_cuttingboard
-      texture_dir: /home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/random_pic
+      texture_dir: models/random_pic
     yellow_banana:
       prim_path: /World/envs/env_{i}/yellow_banana
-      texture_dir: /home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/random_pic
+      texture_dir: models/random_pic

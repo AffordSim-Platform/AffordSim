@@ -2,19 +2,21 @@
 import os
 
 # API Settings
-API_KEY = "sk-18f3f0aa86044683bd58ec537de79a6f"
-BASE_URL = "https://dashscope.aliyuncs.com/compatible-mode/v1"
+API_KEY = "your key"
+BASE_URL = ""
 
 # Paths
-ROOT_DIR = "/home/hk/xuhaofan"
-ASSET_ROOT = os.path.join(ROOT_DIR, "Real2Sim2Real-Pipeline-auto_task_aff/models/all_object")
-TEXTURE_DIR = os.path.join(ROOT_DIR, "Real2Sim2Real-Pipeline-auto_task_aff/models/random_pic")
+CUR_DIR = os.path.dirname(os.path.abspath(__file__))
+
+PROJECT_ROOT = os.path.abspath(os.path.join(CUR_DIR, "../../.."))  
+
+ASSET_ROOT = os.path.join(PROJECT_ROOT, "models/all_object")
+TEXTURE_DIR = os.path.join(PROJECT_ROOT, "models/random_pic")
 ALL_OBJECTS_JSON = os.path.join(ASSET_ROOT, "label.json")
 
-# Output Paths
 SAVE_YAML_PATH = os.path.join(
-    ROOT_DIR,
-    "Real2Sim2Real-Pipeline-auto_task_aff/source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/pick/config/sceneconfig/task/pick/pick_redcup_lower.yaml"
+    PROJECT_ROOT,
+    "source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/pick/config/sceneconfig/task/pick/pick_redcup_lower.yaml"
 )
 
 # Table Constraints
