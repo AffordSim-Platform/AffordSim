@@ -1,18 +1,51 @@
-
-wave:
-  semantic_tag: Microwave
+microwave1:
+  semantic_tag: microwave1
   dimensions: [0.60, 0.4, 0.30]
   face_center: [0.0, -0.25, 0.0]
   place_offset: [0.0, -0.05, 0.0]
   q_base: [0, -0.9238795, 0, -0.3826834]
+  facing_axis_local: "-y"
 
-self:
-  semantic_tag: Self
+brown_woodshelf:
+  semantic_tag: brown_woodshelf
   dimensions: [0.15, 0.25, 0.60]
-  face_center: [-0.2, 0.0, 0.0]
+  face_center: [-0.2, 0.0, -0.12]
+  # face_center: [-0.2, 0.0, -0.07]
   place_offset: [0.0, 0.0, -0.15]
-  # up
-  # face_center: [-0.2, 0.0, 0.3]
-  # place_offset: [-0.05, 0.0, 0.3]
-
+  # place_offset: [0.03, 0.0, -0.07]
   q_base: [0, -0.9238795, 0, -0.3826834]
+  facing_axis_local: "-x"
+
+cabinet1:
+  semantic_tag: cabinet1
+  facing_axis_local: "-x"
+cabinet2:
+  semantic_tag: cabinet2
+  facing_axis_local: "-x"
+cabinet3:
+  semantic_tag: cabinet3
+  facing_axis_local: "-x"
+cabinet4:
+  semantic_tag: cabinet4
+  facing_axis_local: "-x"
+cabinet5:
+  semantic_tag: cabinet5
+  facing_axis_local: "-x"
+cabinet6:
+  semantic_tag: cabinet6
+  facing_axis_local: "-x"
+cabinet7:
+  semantic_tag: cabinet7
+  facing_axis_local: "-x"
+
+coffeemachine1:
+  semantic_tag: coffeemachine1
+  facing_axis_local: "-x"
+
+coffeemachine2:
+  semantic_tag: coffeemachine2
+  facing_axis_local: "-x"
+
+coffeemachine3:
+  semantic_tag: coffeemachine3
+  facing_axis_local: "-x"

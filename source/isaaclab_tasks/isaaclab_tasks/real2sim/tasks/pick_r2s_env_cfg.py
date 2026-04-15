@@ -491,6 +491,7 @@ def create_rigid_object_cfg(obj_config: ObjectConfig) -> RigidObjectCfg:
         spawn=sim_utils.UsdFileCfg(
             usd_path=obj_config.usd_path,
             semantic_tags=obj_config.semantic_tags,
+            scale=obj_config.scale,
             # visual_material=sim_utils.PreviewSurfaceCfg(
             #     diffuse_color=obj_config.diffuse_color
             # ),
