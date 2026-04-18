@@ -11,6 +11,7 @@ from .constants import (
     PLACE_SUCCESS_Z_MARGIN,
     POSITION_RANGE_TOLERANCE,
     POUR_SUCCESS_TILT_THRESHOLD,
+    PULL_SUCCESS_MIN_DISPLACEMENT,
     PUSH_SUCCESS_TILT_THRESHOLD,
     PUSH_SUCCESS_XY_THRESHOLD,
 )
@@ -22,6 +23,7 @@ from .evaluators import (
     _evaluate_pick_success_with_metrics,
     _evaluate_place_success_with_metrics,
     _evaluate_pour_success_with_metrics,
+    _evaluate_pull_success_with_metrics,
     _evaluate_push_success_with_metrics,
 )
 from .scene_helpers import (
@@ -187,6 +189,41 @@ def evaluate_open_success_batch(
             target_label=target_label,
             joint_name=joint_name,
             min_angle_rad=min_angle_rad,
+            env_idx=env_idx,
+            range_tolerance=range_tolerance,
+        )
+        for env_idx in range(_get_scene_num_envs(scene))
+    ]
+
+
+def evaluate_pull_success(
+    scene,
+    target_label: str,
+    min_displacement: float = PULL_SUCCESS_MIN_DISPLACEMENT,
+    env_idx: int = 0,
+    range_tolerance: float = POSITION_RANGE_TOLERANCE,
+) -> bool:
+    success, _ = _evaluate_pull_success_with_metrics(
+        scene=scene,
+        target_label=target_label,
+        min_displacement=min_displacement,
+        env_idx=env_idx,
+        range_tolerance=range_tolerance,
+    )
+    return success
+
+
+def evaluate_pull_success_batch(
+    scene,
+    target_label: str,
+    min_displacement: float = PULL_SUCCESS_MIN_DISPLACEMENT,
+    range_tolerance: float = POSITION_RANGE_TOLERANCE,
+) -> list[bool]:
+    return [
+        evaluate_pull_success(
+            scene=scene,
+            target_label=target_label,
+            min_displacement=min_displacement,
             env_idx=env_idx,
             range_tolerance=range_tolerance,
         )

@@ -14,10 +14,13 @@ from .constants import (
     POUR_PROCESS_TILT_MONOTONIC_SLACK,
     POUR_PROCESS_XY_TOLERANCE,
     POUR_SUCCESS_TILT_THRESHOLD,
+    PULL_SUCCESS_JOINT_NAME,
+    PULL_SUCCESS_MIN_DISPLACEMENT,
     PUSH_SUCCESS_TILT_THRESHOLD,
     PUSH_SUCCESS_XY_THRESHOLD,
 )
 from .scene_helpers import (
+    _get_articulation_all_joint_pos,
     _get_articulation_joint_pos,
     _get_object_pose_env_from_scene,
     _get_object_pose_world_from_scene,
@@ -72,6 +75,68 @@ def _evaluate_place_success_with_metrics(
         "pick_higher_than_place": 1.0 if z_ok else 0.0,
         "place_target_in_range": 1.0 if place_in_range else 0.0,
         "place_target_offset_compensated": 1.0 if offset_compensated else 0.0,
+    }
+
+
+def _evaluate_place_on_success_with_metrics(
+    scene,
+    pick_target: str,
+    place_target: str,
+    place_target_height: float = 0.1,
+    on_height_margin: float = 0.01,
+    env_idx: int = 0,
+    dist_threshold: float = 0.08,
+) -> tuple[bool, dict[str, float]]:
+    """Evaluate 'on' mode placement using 3D distance to expected position.
+
+    Expected position = place_target origin + [0, 0, height/2 + on_height_margin].
+    """
+    pick_pos_w, _ = _get_object_pose_world_from_scene(scene, pick_target, env_idx)
+    place_pos_w, _ = _get_object_pose_world_from_scene(scene, place_target, env_idx)
+    if pick_pos_w is None or place_pos_w is None:
+        return False, {
+            "pick_place_on_dist_3d": float("inf"),
+            "pick_pos_world": None,
+            "expected_place_pos": None,
+        }
+    expected_z = float(place_pos_w[2]) + place_target_height / 2.0 + on_height_margin
+    expected_pos = np.array([float(place_pos_w[0]), float(place_pos_w[1]), expected_z], dtype=np.float64)
+    pick_pos = np.asarray(pick_pos_w, dtype=np.float64)
+    dist_3d = float(np.linalg.norm(pick_pos - expected_pos))
+    return dist_3d <= dist_threshold, {
+        "pick_place_on_dist_3d": dist_3d,
+        "pick_pos_world": pick_pos.tolist(),
+        "expected_place_pos": expected_pos.tolist(),
+    }
+
+
+def _evaluate_place_affordance_xy_success_with_metrics(
+    scene,
+    pick_target: str,
+    place_target: str,
+    pick_aff_local: np.ndarray,
+    target_aff_local: np.ndarray,
+    env_idx: int = 0,
+    xy_threshold: float = 0.10,
+) -> tuple[bool, dict[str, float]]:
+    """Evaluate affordance-mode placement by XY distance between affordance centroids."""
+    pick_pos_w, pick_quat_w = _get_object_pose_world_from_scene(scene, pick_target, env_idx)
+    place_pos_w, place_quat_w = _get_object_pose_world_from_scene(scene, place_target, env_idx)
+    if pick_pos_w is None or pick_quat_w is None or place_pos_w is None or place_quat_w is None:
+        return False, {
+            "pick_place_affordance_xy_dist": float("inf"),
+            "pick_aff_world": None,
+            "target_aff_world": None,
+        }
+    rot_pick = _quat_wxyz_to_matrix(np.asarray(pick_quat_w, dtype=np.float64))
+    rot_place = _quat_wxyz_to_matrix(np.asarray(place_quat_w, dtype=np.float64))
+    pick_aff_world = rot_pick @ np.asarray(pick_aff_local, dtype=np.float64) + np.asarray(pick_pos_w, dtype=np.float64)
+    target_aff_world = rot_place @ np.asarray(target_aff_local, dtype=np.float64) + np.asarray(place_pos_w, dtype=np.float64)
+    xy_dist = float(np.linalg.norm(pick_aff_world[:2] - target_aff_world[:2]))
+    return xy_dist <= float(xy_threshold), {
+        "pick_place_affordance_xy_dist": xy_dist,
+        "pick_aff_world": pick_aff_world.tolist(),
+        "target_aff_world": target_aff_world.tolist(),
     }
 
 
@@ -267,6 +332,57 @@ def _evaluate_open_success_with_metrics(
     }
 
 
+def _evaluate_pull_success_with_metrics(
+    scene,
+    target_label: str,
+    min_displacement: float = PULL_SUCCESS_MIN_DISPLACEMENT,
+    env_idx: int = 0,
+    range_tolerance: float = POSITION_RANGE_TOLERANCE,
+    peak_displacement: float | None = None,
+) -> tuple[bool, dict[str, float]]:
+    """pull 成功判定:
+    - 读取 `target_label` articulation 上固定关节 `PULL_SUCCESS_JOINT_NAME` 的位移 (prismatic, 单位米)
+    - 若给定 ``peak_displacement`` (rollout 过程中观察到的 |joint_pos| 峰值), 用峰值判定;
+      这样拉出后又被推回的情况下仍能正确识别 pull 成功. 否则回退到当前 scene 的 joint_pos.
+    - 位移绝对值 >= `min_displacement` 视为拉动到位
+    - articulation 本体仍在 position_range 内 (与 open/close 对称)
+    """
+    joint_pos = _get_articulation_joint_pos(
+        scene, target_label, PULL_SUCCESS_JOINT_NAME, env_idx
+    )
+    all_joints = _get_articulation_all_joint_pos(scene, target_label, env_idx) or {}
+    art_pos_env, _ = _get_object_pose_env_from_scene(scene, target_label, env_idx)
+
+    if joint_pos is None and peak_displacement is None:
+        return False, {
+            "joint_displacement_m": float("nan"),
+            "joint_peak_displacement_m": float("nan"),
+            "articulation_in_range": 0.0,
+            "all_joints": all_joints,
+        }
+
+    current_disp = abs(float(joint_pos)) if joint_pos is not None else float("nan")
+    if peak_displacement is not None:
+        eval_disp = float(peak_displacement)
+    else:
+        eval_disp = current_disp
+
+    in_range = _is_position_in_range(
+        art_pos_env,
+        _get_position_range(scene, target_label),
+        tolerance=range_tolerance,
+        axes=("x", "y"),
+    )
+    displacement_ok = eval_disp >= float(min_displacement)
+    success = displacement_ok and in_range
+    return success, {
+        "joint_displacement_m": float(joint_pos) if joint_pos is not None else float("nan"),
+        "joint_peak_displacement_m": eval_disp,
+        "articulation_in_range": 1.0 if in_range else 0.0,
+        "all_joints": all_joints,
+    }
+
+
 def _evaluate_close_success_with_metrics(
     scene,
     target_label: str,
@@ -352,10 +468,9 @@ def _evaluate_pick_success_with_metrics(
 ) -> tuple[bool, dict[str, float]]:
     """Pick success.
 
-    If ``peak_z_world`` is provided (peak world z observed during rollout), uses
-    the peak value for evaluation: this allows correct pick-success identification
-    even when the object is lifted then set down (during the place phase).
-    Otherwise falls back to reading the current z from the scene (legacy behavior).
+    若给定 ``peak_z_world`` (rollout 过程中观察到的物体世界 z 峰值), 则用峰值
+    判定: 这样在物体被抬起后又被放下 (place 阶段) 的情况下仍能正确识别 pick
+    成功. 否则回退到读取当前 scene 中的 z (老行为).
     """
     if peak_z_world is None:
         pick_pos_world, _ = _get_object_pose_world_from_scene(scene, pick_target, env_idx)

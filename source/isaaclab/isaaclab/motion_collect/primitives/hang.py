@@ -471,7 +471,6 @@ def primitive_execute_hang(collector, params: Dict[str, Any], context: Dict[str,
     extra_insert_distance = float(params.get("extra_insert_distance", 0.05))
 
     print(f"  🚀 [Primitive] Executing HANG to '{hang_pose.get('target_label')}'")
-    collector._update_all_env_obstacles()
 
     pre_plans, pre_plan_successes = collector.motion_planner.plan_to_pose_batch(
         collector.robot.data.joint_pos[: collector.num_envs].cpu().numpy(),
@@ -479,6 +478,7 @@ def primitive_execute_hang(collector, params: Dict[str, Any], context: Dict[str,
         collector.robot.joint_names,
         pre_positions,
         orientations,
+        target_prim_path=collector.target_prim_path,
     )
     pre_success_mask = [prev and available and cur for prev, available, cur in zip(prev_success_mask, target_available_mask, pre_plan_successes)]
 

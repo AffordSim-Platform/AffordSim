@@ -1,10 +1,10 @@
 """
-Diffusion Policy network components.
+Diffusion Policy 网络组件.
 
-Contains:
-1. ConditionalResidualBlock1D: Conditional residual block (FiLM conditioning)
-2. ConditionalUnet1D: 1D U-Net denoising network
-3. DiffusionPolicy: Complete Diffusion Policy model (ResNet18 encoder + U-Net)
+包含:
+1. ConditionalResidualBlock1D: 条件残差块 (FiLM conditioning)
+2. ConditionalUnet1D: 1D U-Net 去噪网络
+3. DiffusionPolicy: 完整的 Diffusion Policy 模型 (ResNet18 encoder + U-Net)
 """
 
 import math
@@ -15,11 +15,11 @@ import torchvision.models as models
 
 
 # ============================================================================
-# 1D U-Net Components
+# 1D U-Net 组件
 # ============================================================================
 
 class SinusoidalPosEmb(nn.Module):
-    """Sinusoidal positional encoding for encoding diffusion timestep."""
+    """正弦位置编码, 用于编码 diffusion timestep."""
 
     def __init__(self, dim):
         super().__init__()
@@ -35,12 +35,12 @@ class SinusoidalPosEmb(nn.Module):
 
 
 class ConditionalResidualBlock1D(nn.Module):
-    """Conditional 1D residual block.
+    """条件 1D 残差块.
 
-    Uses FiLM (Feature-wise Linear Modulation) to inject conditioning information.
-    Input: (B, C_in, T)
-    Condition: (B, C_cond)
-    Output: (B, C_out, T)
+    使用 FiLM (Feature-wise Linear Modulation) 将条件信息注入.
+    输入: (B, C_in, T)
+    条件: (B, C_cond)
+    输出: (B, C_out, T)
     """
 
     def __init__(self, in_channels, out_channels, cond_dim, kernel_size=3):
@@ -50,13 +50,13 @@ class ConditionalResidualBlock1D(nn.Module):
         self.norm1 = nn.GroupNorm(min(8, out_channels), out_channels)
         self.norm2 = nn.GroupNorm(min(8, out_channels), out_channels)
 
-        # FiLM: map condition to scale and bias
+        # FiLM: 将条件映射到 scale 和 bias
         self.cond_mlp = nn.Sequential(
             nn.Mish(),
             nn.Linear(cond_dim, out_channels * 2),
         )
 
-        # Residual connection (if channel count changes)
+        # 残差连接 (如果通道数变化)
         self.residual_conv = (
             nn.Conv1d(in_channels, out_channels, 1)
             if in_channels != out_channels
@@ -66,10 +66,10 @@ class ConditionalResidualBlock1D(nn.Module):
     def forward(self, x, cond):
         """
         Args:
-            x: (B, C_in, T) input features
-            cond: (B, C_cond) condition vector
+            x: (B, C_in, T) 输入特征
+            cond: (B, C_cond) 条件向量
         Returns:
-            (B, C_out, T) output features
+            (B, C_out, T) 输出特征
         """
         residual = self.residual_conv(x)
 
@@ -89,15 +89,15 @@ class ConditionalResidualBlock1D(nn.Module):
 
 
 class ConditionalUnet1D(nn.Module):
-    """Conditional 1D U-Net denoising network.
+    """条件 1D U-Net 去噪网络.
 
-    Input:
-      - noisy_action: (B, T_a, D_act) noisy action sequence
+    输入:
+      - noisy_action: (B, T_a, D_act) 带噪声的动作序列
       - timestep: (B,) diffusion timestep
-      - global_cond: (B, D_cond) global condition (observation features)
+      - global_cond: (B, D_cond) 全局条件 (观测特征)
 
-    Output:
-      - noise_pred: (B, T_a, D_act) predicted noise
+    输出:
+      - noise_pred: (B, T_a, D_act) 预测的噪声
     """
 
     def __init__(
@@ -118,10 +118,10 @@ class ConditionalUnet1D(nn.Module):
             nn.Linear(diffusion_step_embed_dim * 4, diffusion_step_embed_dim),
         )
 
-        # Condition dimension = timestep embed + global condition
+        # 条件维度 = timestep embed + global condition
         cond_dim = diffusion_step_embed_dim + global_cond_dim
 
-        # Encoder (downsampling)
+        # Encoder (下采样)
         in_out = [(action_dim, down_dims[0])]
         for i in range(len(down_dims) - 1):
             in_out.append((down_dims[i], down_dims[i + 1]))
@@ -141,22 +141,22 @@ class ConditionalUnet1D(nn.Module):
         self.mid_block1 = ConditionalResidualBlock1D(down_dims[-1], down_dims[-1], cond_dim, kernel_size)
         self.mid_block2 = ConditionalResidualBlock1D(down_dims[-1], down_dims[-1], cond_dim, kernel_size)
 
-        # Decoder (upsampling)
-        # skip connections order (after pop): 1024, 512, 256
-        # decoder each layer: up(prev_ch) -> concat(skip_ch) -> res -> next_ch
+        # Decoder (上采样)
+        # skip connections 顺序 (pop 后): 1024, 512, 256
+        # decoder 每层: up(prev_ch) -> concat(skip_ch) -> res -> next_ch
         self.up_blocks = nn.ModuleList()
         self.up_samples = nn.ModuleList()
-        # Build decoder channels: [(1024, 512), (512, 256), (256, 256)]
+        # 构建 decoder 通道: [(1024, 512), (512, 256), (256, 256)]
         decoder_channels = []
         for i in reversed(range(len(in_out))):
-            skip_ch = in_out[i][1]  # skip connection channel count
+            skip_ch = in_out[i][1]  # skip connection 的通道数
             if i > 0:
-                out_ch = in_out[i][0]  # output reduced to previous layer's input channels
+                out_ch = in_out[i][0]  # 输出降到上一层的输入通道
             else:
-                out_ch = in_out[i][1]  # last layer keeps down_dims[0]
+                out_ch = in_out[i][1]  # 最后一层保持 down_dims[0]
             decoder_channels.append((skip_ch, out_ch))
 
-        prev_ch = down_dims[-1]  # bottleneck output channels
+        prev_ch = down_dims[-1]  # bottleneck 输出通道
         for skip_ch, out_ch in decoder_channels:
             self.up_samples.append(nn.ConvTranspose1d(prev_ch, prev_ch, 4, stride=2, padding=1))
             self.up_blocks.append(
@@ -167,7 +167,7 @@ class ConditionalUnet1D(nn.Module):
             )
             prev_ch = out_ch
 
-        # Final output layer
+        # 最终输出层
         self.final_conv = nn.Sequential(
             nn.Conv1d(down_dims[0], down_dims[0], kernel_size, padding=kernel_size // 2),
             nn.Mish(),
@@ -177,9 +177,9 @@ class ConditionalUnet1D(nn.Module):
     def forward(self, noisy_action, timestep, global_cond):
         """
         Args:
-            noisy_action: (B, T_a, D_act) noisy action sequence
-            timestep: (B,) or (B, 1) diffusion timestep
-            global_cond: (B, D_cond) global condition vector
+            noisy_action: (B, T_a, D_act) 带噪声的动作序列
+            timestep: (B,) 或 (B, 1) diffusion timestep
+            global_cond: (B, D_cond) 全局条件向量
 
         Returns:
             noise_pred: (B, T_a, D_act)
@@ -191,7 +191,7 @@ class ConditionalUnet1D(nn.Module):
         timestep = timestep.view(-1)
         t_emb = self.timestep_emb(timestep)  # (B, embed_dim)
 
-        # Concatenate conditions
+        # 拼接条件
         cond = torch.cat([t_emb, global_cond], dim=-1)  # (B, cond_dim)
 
         # Encoder
@@ -210,7 +210,7 @@ class ConditionalUnet1D(nn.Module):
         for up_sample, up_block in zip(self.up_samples, self.up_blocks):
             x = up_sample(x)
             skip = skip_connections.pop()
-            # Handle size mismatch (due to rounding in downsampling/upsampling)
+            # 处理尺寸不匹配 (由于下采样/上采样的取整)
             if x.shape[-1] != skip.shape[-1]:
                 x = x[..., :skip.shape[-1]]
             x = torch.cat([x, skip], dim=1)
@@ -224,21 +224,21 @@ class ConditionalUnet1D(nn.Module):
 
 
 # ============================================================================
-# Vision Encoder
+# 视觉编码器
 # ============================================================================
 
 class ResNet18Encoder(nn.Module):
-    """ResNet18 vision encoder.
+    """ResNet18 视觉编码器.
 
-    Input: (B, 3, H, W) RGB image
-    Output: (B, feature_dim) feature vector
+    输入: (B, 3, H, W) RGB 图像
+    输出: (B, feature_dim) 特征向量
     """
 
     def __init__(self, feature_dim: int = 256, pretrained: bool = True):
         super().__init__()
         resnet = models.resnet18(weights=models.ResNet18_Weights.DEFAULT if pretrained else None)
-        # Remove the final fc and avgpool
-        self.backbone = nn.Sequential(*list(resnet.children())[:-2])  # Output (B, 512, H/32, W/32)
+        # 去掉最后的 fc 和 avgpool
+        self.backbone = nn.Sequential(*list(resnet.children())[:-2])  # 输出 (B, 512, H/32, W/32)
         # Spatial softmax pooling
         self.pool = nn.AdaptiveAvgPool2d((1, 1))
         self.fc = nn.Linear(512, feature_dim)
@@ -246,9 +246,9 @@ class ResNet18Encoder(nn.Module):
     def forward(self, x):
         """
         Args:
-            x: (B, 3, H, W) image, range [0, 1]
+            x: (B, 3, H, W) 图像, 范围 [0, 1]
         Returns:
-            (B, feature_dim) feature vector
+            (B, feature_dim) 特征向量
         """
         feat = self.backbone(x)    # (B, 512, h, w)
         feat = self.pool(feat)     # (B, 512, 1, 1)
@@ -258,19 +258,19 @@ class ResNet18Encoder(nn.Module):
 
 
 # ============================================================================
-# Diffusion Policy Model
+# Diffusion Policy 模型
 # ============================================================================
 
 class DiffusionPolicy(nn.Module):
-    """Diffusion Policy complete model.
+    """Diffusion Policy 完整模型.
 
-    Observation encoding:
-      - Dual-view RGB images -> 2 x ResNet18 -> concat
-      - Low-dimensional observations (qpos + qvel) -> MLP
-      - Multi-frame observations flattened then concatenated
+    观测编码:
+      - 双视角 RGB 图像 → 2 × ResNet18 → concat
+      - 低维观测 (qpos + qvel) → MLP
+      - 多帧观测 flatten 后 concat
 
-    Denoising network:
-      - Conditional 1D U-Net, conditioned on observation features, predicts noise of action sequence
+    去噪网络:
+      - 条件 1D U-Net, 以观测特征为条件, 预测动作序列的噪声
     """
 
     def __init__(
@@ -290,23 +290,23 @@ class DiffusionPolicy(nn.Module):
         self.obs_horizon = obs_horizon
         self.pred_horizon = pred_horizon
 
-        # Vision encoder (shared weights for dual views)
+        # 视觉编码器 (双视角共享权重)
         self.image_encoder = ResNet18Encoder(
             feature_dim=img_feature_dim,
             pretrained=pretrained_resnet,
         )
 
-        # Low-dimensional observation encoder
+        # 低维观测编码器
         self.lowdim_encoder = nn.Sequential(
             nn.Linear(lowdim_dim, 128),
             nn.Mish(),
             nn.Linear(128, lowdim_feature_dim),
         )
 
-        # Global condition dimension: (2 views * img_feat + lowdim_feat) * obs_horizon
+        # 全局条件维度: (2 views * img_feat + lowdim_feat) * obs_horizon
         global_cond_dim = (img_feature_dim * 2 + lowdim_feature_dim) * obs_horizon
 
-        # Denoising U-Net
+        # 去噪 U-Net
         self.noise_pred_net = ConditionalUnet1D(
             action_dim=action_dim,
             global_cond_dim=global_cond_dim,
@@ -315,34 +315,34 @@ class DiffusionPolicy(nn.Module):
         )
 
     def encode_obs(self, obs_images, obs_lowdim):
-        """Encode observations into a global condition vector.
+        """编码观测为全局条件向量.
 
         Args:
-            obs_images: (B, T_o, 2, 3, H, W) dual-view RGB
-            obs_lowdim: (B, T_o, D_low) low-dimensional observations
+            obs_images: (B, T_o, 2, 3, H, W) 双视角 RGB
+            obs_lowdim: (B, T_o, D_low) 低维观测
 
         Returns:
-            global_cond: (B, D_cond) global condition vector
+            global_cond: (B, D_cond) 全局条件向量
         """
         B, T_o = obs_images.shape[:2]
 
-        # Encode images for each frame
+        # 编码每一帧的图像
         all_img_features = []
         for t in range(T_o):
-            # Encode each view separately
+            # 分别编码两个视角
             front = obs_images[:, t, 0]  # (B, 3, H, W)
             wrist = obs_images[:, t, 1]  # (B, 3, H, W)
             feat_front = self.image_encoder(front)  # (B, img_feat_dim)
             feat_wrist = self.image_encoder(wrist)  # (B, img_feat_dim)
             all_img_features.append(torch.cat([feat_front, feat_wrist], dim=-1))
 
-        # Encode low-dimensional observations
+        # 编码低维观测
         all_lowdim_features = []
         for t in range(T_o):
             feat_low = self.lowdim_encoder(obs_lowdim[:, t])  # (B, lowdim_feat_dim)
             all_lowdim_features.append(feat_low)
 
-        # Concatenate features from all frames
+        # 拼接所有帧的特征
         # [(B, 2*img_feat + lowdim_feat)] * T_o -> (B, T_o * (2*img_feat + lowdim_feat))
         frame_features = []
         for t in range(T_o):
@@ -354,16 +354,16 @@ class DiffusionPolicy(nn.Module):
         return global_cond
 
     def forward(self, noisy_action, timestep, obs_images, obs_lowdim):
-        """Forward pass: predict noise.
+        """前向传播: 预测噪声.
 
         Args:
-            noisy_action: (B, T_a, D_act) noisy actions
+            noisy_action: (B, T_a, D_act) 带噪声的动作
             timestep: (B,) diffusion timestep
-            obs_images: (B, T_o, 2, 3, H, W) observation images
-            obs_lowdim: (B, T_o, D_low) low-dimensional observations
+            obs_images: (B, T_o, 2, 3, H, W) 观测图像
+            obs_lowdim: (B, T_o, D_low) 低维观测
 
         Returns:
-            noise_pred: (B, T_a, D_act) predicted noise
+            noise_pred: (B, T_a, D_act) 预测的噪声
         """
         global_cond = self.encode_obs(obs_images, obs_lowdim)
         return self.noise_pred_net(noisy_action, timestep, global_cond)

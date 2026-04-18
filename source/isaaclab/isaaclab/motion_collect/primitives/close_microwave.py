@@ -141,13 +141,13 @@ def primitive_execute_close(collector, params: Dict[str, Any], context: Dict[str
     )
 
     print(f"  🚪 [Primitive] Planning microwave pre-close pose for '{target_label}'")
-    collector._update_all_env_obstacles()
     pre_close_plans, pre_close_plan_successes = collector.motion_planner.plan_to_pose_batch(
         collector.robot.data.joint_pos[: collector.num_envs].cpu().numpy(),
         collector.robot.data.joint_vel[: collector.num_envs].cpu().numpy(),
         collector.robot.joint_names,
         np.array(pre_close_positions, dtype=np.float64),
         np.array(close_quaternions, dtype=np.float64),
+        target_prim_path=collector.target_prim_path,
     )
     pre_close_successes = [
         prev and available and plan_ok

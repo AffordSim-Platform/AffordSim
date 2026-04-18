@@ -49,25 +49,25 @@ def view_episode_images(
     if len(images.shape) == 5 and images.shape[1] == 1:
         images = images[:, 0, :, :, :]
 
-    # Select frames to display
+    # 选择要显示的帧
     total_frames = len(images)
     num_frames = min(num_frames, total_frames)
     
-    # Uniformly sample frames
+    # 均匀采样帧
     frame_indices = np.linspace(0, total_frames - 1, num_frames, dtype=int)
     
-    # Compute grid size
+    # 计算网格大小
     n_cols = min(3, num_frames)
     n_rows = (num_frames + n_cols - 1) // n_cols
     
-    # Create image grid
+    # 创建图像网格
     fig, axes = plt.subplots(n_rows, n_cols, figsize=(5 * n_cols, 5 * n_rows))
     
     if num_frames == 1:
         axes = np.array([axes])
     axes = axes.flatten()
     
-    # Display images
+    # 显示图像
     for idx, frame_idx in enumerate(frame_indices):
         ax = axes[idx]
         img = images[frame_idx]
@@ -75,7 +75,7 @@ def view_episode_images(
         if len(img.shape) == 4 and img.shape[0] == 1:
             img = img[0]
         
-        # If image is float and in [0, 1] range, convert to uint8
+        # 如果图像是 float 且范围在 [0, 1]，转换为 uint8
         if img.dtype == np.float32 or img.dtype == np.float64:
             if img.max() <= 1.0:
                 img = (img * 255).astype(np.uint8)
@@ -339,8 +339,8 @@ if __name__ == "__main__":
                 output_dir=output_dir,
                 base_name='episode',
                 fps=10,
-                gif_resize_factor=0.5,  # GIF scaled down to 50%
-                gif_max_frames=100       # GIF limited to 100 frames
+                gif_resize_factor=0.5,  # GIF 缩小到 50%
+                gif_max_frames=100       # GIF 最多 100 帧
             )
     else:
         print(f"Episode not found: {episode_path}")

@@ -1,17 +1,15 @@
 """
-Diffusion Policy evaluation subprocess script (invoked during training).
+Diffusion Policy 训练期评估子进程脚本.
 
-Design goals:
-- Launched synchronously by train.py via subprocess.run after each checkpoint save.
-- Starts Isaac Lab simulation, loads checkpoint, runs N rollouts.
-- Does not rely on the env's built-in success termination; instead uses the
-  ``type`` field (pick / place / pour) in the ``primitives`` list from the task
-  yaml as evaluation stages, judging success independently for each stage at
-  the end of every episode.
-- Writes results as JSON to ``--output_json`` for train.py to read back into
-  TensorBoard.
+设计目标:
+- 由 train.py 在每次保存 ckpt 后通过 subprocess.run 同步拉起.
+- 启动 Isaac Lab 仿真, 加载 ckpt, 跑 N 次 rollout.
+- 不依赖 env 自带的 success termination, 而是按 task yaml 中
+  ``primitives`` 列表里的 type 字段(pick / place / pour) 作为评估阶段,
+  每个 episode 结束时对每个阶段独立判定一次成功.
+- 结果以 JSON 写到 ``--output_json`` 路径, 供 train.py 读回写 tensorboard.
 
-Usage (typically called automatically by train.py):
+用法 (一般由 train.py 自动调用):
     python scripts/imitation_learning/diffusion_policy/eval_rollout.py \
         --checkpoint /path/to/model_epoch_100.pth \
         --stat /path/to/dataset_stat.json \
@@ -35,28 +33,28 @@ parser.add_argument("--task", type=str, default="Pick_Place_banana-v0")
 parser.add_argument("--checkpoint", type=str, required=True)
 parser.add_argument("--stat", type=str, default=None)
 parser.add_argument("--task_config", type=str, required=True,
-                    help="task yaml; the 'type' field in primitives defines evaluation stages")
+                    help="task yaml; primitives 字段中的 type 作为评估阶段")
 parser.add_argument("--horizon", type=int, default=300)
 parser.add_argument("--num_rollouts", type=int, default=5)
 parser.add_argument("--seed", type=int, default=0)
 parser.add_argument("--output_json", type=str, required=True)
 parser.add_argument("--env_cfg_class", type=str, default=None,
-                    help="Full module path, e.g. "
+                    help="完整模块路径, 例如 "
                          "isaaclab_tasks.real2sim.tasks.pick.config.sceneconfig.franka_fr3."
                          "ourgripper.ik_rel_vis_env_cfg:FrankaFr3OurGripperIKRelVisPickEnvCfg. "
-                         "If not specified, falls back to the default pick env cfg from play.py.")
+                         "若不指定则沿用 play.py 默认的 pick env cfg.")
 parser.add_argument("--pick_lift_threshold", type=float, default=0.05)
 
 AppLauncher.add_app_launcher_args(parser)
 args_cli = parser.parse_args()
 
-# Force headless mode; subprocess evaluation does not need a GUI window
+# 强制 headless, 子进程评估不需要弹窗
 args_cli.headless = True
 
 app_launcher = AppLauncher(args_cli)
 simulation_app = app_launcher.app
 
-# --- Imports below require Isaac Sim to be running ---
+# --- 以下在 Isaac Sim 启动后才能 import ---
 import cv2
 import gymnasium as gym
 import importlib
@@ -66,24 +64,26 @@ import torch
 import torch.nn.functional as F
 import yaml
 
-import isaaclab_tasks.real2sim.tasks.pick  # noqa: F401  ensure task is registered
+import isaaclab_tasks.real2sim.tasks  # noqa: F401  保证 task 被注册
 from isaaclab_tasks.real2sim.utils.EpisodeBuffer import replace_background_with_segmentation
 
-# Note: do not import play.py, because its top-level argparse would consume
-#       this script's sys.argv. Instead, reusable helpers are implemented
-#       directly in this file (they are short).
+# 注意: 不 import play.py, 因为 play.py 顶层有自己的 argparse 会吃掉本脚本的 sys.argv.
+#       改为在本文件里直接实现需要复用的工具函数 (都很短).
 script_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, script_dir)
 from network import DiffusionPolicy
-from scripts.imitation_learning.diffusion_policy.train_dp import DDPMScheduler
+from train import DDPMScheduler
 
 from isaaclab.motion_collect.success.evaluators import (
     _evaluate_pick_success_with_metrics,
     _evaluate_place_pose_success_with_metrics,
     _evaluate_place_success_with_metrics,
     _evaluate_pour_success_with_metrics,
+    _evaluate_hang_success_with_metrics,
+    _evaluate_pull_success_with_metrics,
 )
 from isaaclab.motion_collect.success.scene_helpers import (
+    _get_articulation_joint_pos,
     _get_object_pose_world_from_scene,
     attach_scene_success_meta,
 )
@@ -94,7 +94,7 @@ from isaaclab.motion_collect.tools.pose_utils import _quat_wxyz_to_matrix
 
 
 # ============================================================================
-# Utility functions inlined from play.py (to avoid triggering its argparse)
+# 从 play.py 内联过来的工具函数 (避免 import play.py 触发其 argparse)
 # ============================================================================
 
 def load_norm_params(stat_path):
@@ -178,20 +178,20 @@ def ddpm_sample(model, scheduler, obs_images, obs_lowdim, device):
 
 
 # ============================================================================
-# task yaml -> evaluation stages
+# task yaml -> 评估阶段
 # ============================================================================
 
 def load_eval_stages(task_config_path: str) -> list[dict]:
-    """Read the primitives field from the task yaml and extract evaluation stage descriptions.
+    """读取 task yaml 的 primitives 字段, 抽取评估阶段描述.
 
-    Returns a list, each item of the form:
+    返回 list, 每项形如:
         {
             "type": "pick",
             "target": "redcup",
-            "place_target": None,        # only used for place/pour
-            "place_mode": None,          # for place: "pose"/"on"/"in"/"semi_enclosed"
-            "place_position": None,      # for place mode=pose: [x,y,z] (env-frame)
-            "place_orientation": None,   # for place mode=pose: [w,x,y,z]
+            "place_target": None,        # 仅 place/pour 用
+            "place_mode": None,          # place 用: "pose"/"on"/"in"/"semi_enclosed"
+            "place_position": None,      # place mode=pose 用: [x,y,z] (env-frame)
+            "place_orientation": None,   # place mode=pose 用: [w,x,y,z]
         }
     """
     with open(task_config_path) as f:
@@ -202,7 +202,7 @@ def load_eval_stages(task_config_path: str) -> list[dict]:
         if not isinstance(entry, dict):
             continue
         ptype = str(entry.get("type", "")).lower()
-        if ptype not in ("pick", "place", "pour"):
+        if ptype not in ("pick", "place", "pour", "hang", "pull"):
             continue
         params = entry.get("params") or {}
         stage = {
@@ -213,6 +213,9 @@ def load_eval_stages(task_config_path: str) -> list[dict]:
             "place_position": params.get("position") if ptype == "place" else None,
             "place_orientation": params.get("orientation") if ptype == "place" else None,
             "pour_target": params.get("target") if ptype == "pour" else None,
+            "hang_container": params.get("target") if ptype == "hang" else None,
+            "hang_container_mount_npz": params.get("container_mount_affordance_npz_path") if ptype == "hang" else None,
+            "pull_target": params.get("target") if ptype == "pull" else None,
         }
         stages.append(stage)
     return stages
@@ -226,7 +229,7 @@ def resolve_pick_target(stages: list[dict]) -> str | None:
 
 
 # ============================================================================
-# Stage evaluation
+# 阶段判定
 # ============================================================================
 
 def evaluate_stages_at_episode_end(
@@ -238,8 +241,9 @@ def evaluate_stages_at_episode_end(
     min_pour_tilt_z: float | None = None,
     pour_crossed_ok: bool = False,
     pour_xy_at_cross: float | None = None,
+    pull_peak_displacement: float | None = None,
 ) -> dict[str, dict]:
-    """Independently evaluate success for each stage (single env, env_idx=0)."""
+    """对每个阶段独立判定成功(单 env 评估, env_idx=0)."""
     pick_target = resolve_pick_target(stages)
     results: dict[str, dict] = {}
 
@@ -302,21 +306,70 @@ def evaluate_stages_at_episode_end(
             )
             results[key] = {"success": bool(ok), "metrics": metrics}
 
+        elif ptype == "hang":
+            hang_container = stage.get("hang_container")
+            if not hang_container or not pick_target:
+                results[key] = {"success": False, "reason": "no_hang_container_or_pick_target"}
+                continue
+            mount_npz = stage.get("hang_container_mount_npz")
+            try:
+                if not mount_npz:
+                    import importlib
+                    _afford_mod = importlib.import_module("isaaclab.motion_collect.tools.affordance_resolver")
+                    mount_npz = _afford_mod.resolve_affordance_path(hang_container, "hang")
+                if not mount_npz:
+                    results[key] = {"success": False, "reason": "no_container_mount_affordance"}
+                    continue
+                npz_data = np.load(mount_npz, allow_pickle=True)
+                if "centroids" in npz_data:
+                    centroids = np.asarray(npz_data["centroids"], dtype=np.float64)
+                    container_mount_local = np.array(centroids[0], dtype=np.float64)
+                elif "grasp_center" in npz_data:
+                    container_mount_local = np.asarray(npz_data["grasp_center"], dtype=np.float64)
+                else:
+                    results[key] = {"success": False, "reason": "invalid_mount_npz_keys"}
+                    continue
+            except Exception as e:
+                results[key] = {"success": False, "reason": f"mount_load_failed:{e}"}
+                continue
+
+            ok, metrics = _evaluate_hang_success_with_metrics(
+                scene=scene,
+                held_object_label=pick_target,
+                container_label=hang_container,
+                container_mount_local=container_mount_local,
+                env_idx=0,
+            )
+            results[key] = {"success": bool(ok), "metrics": metrics}
+
+        elif ptype == "pull":
+            pull_target = stage.get("pull_target")
+            if not pull_target:
+                results[key] = {"success": False, "reason": "no_pull_target"}
+                continue
+            ok, metrics = _evaluate_pull_success_with_metrics(
+                scene=scene,
+                target_label=pull_target,
+                env_idx=0,
+                peak_displacement=pull_peak_displacement,
+            )
+            results[key] = {"success": bool(ok), "metrics": metrics}
+
     return results
 
 
 # ============================================================================
-# Custom rollout (based on play.py, but without success_term early stopping)
+# 自定义 rollout (基于 play.py 的实现, 但去掉 success_term 早停)
 # ============================================================================
 
 def rollout_until_horizon(model, scheduler, env, horizon, action_horizon, device,
                           norm_params, bg_images, obs_horizon, initial_obs_dict=None,
-                          pick_target=None, pour_target=None, collect_front_images=False):
-    """Run until horizon or env termination, without relying on env success_term.
+                          pick_target=None, pour_target=None, pull_target=None,
+                          collect_front_images=False):
+    """跑满 horizon 或直到 env terminate, 不依赖 env success_term.
 
-    The caller should call env.reset() externally first (to record baselines),
-    then pass the returned obs_dict as initial_obs_dict; this function will not
-    reset again, avoiding re-randomization of object initial positions.
+    调用方应该在外部先 env.reset() (以便记录 baseline), 然后把返回的 obs_dict
+    作为 initial_obs_dict 传进来; 这里就不会再 reset, 避免物体初始位置被重新随机化.
     """
     model.eval()
     if initial_obs_dict is None:
@@ -331,15 +384,24 @@ def rollout_until_horizon(model, scheduler, env, horizon, action_horizon, device
     env_cam_h, env_cam_w = 480, 640
     train_img_size = 256
 
-    front_frames = []  # Collect front images for GIF generation
+    front_frames = []  # 收集 front 图像用于生成 GIF
     pick_peak_z = None
     min_pour_tilt_z = None
     pour_crossed_ok = False
     pour_xy_at_cross = None
     pour_tilt_at_cross = None
+    pull_peak_displacement = None
 
     def _update_peak():
         nonlocal pick_peak_z, min_pour_tilt_z, pour_crossed_ok, pour_xy_at_cross, pour_tilt_at_cross
+        nonlocal pull_peak_displacement
+        if pull_target:
+            from isaaclab.motion_collect.success.constants import PULL_SUCCESS_JOINT_NAME
+            jp = _get_articulation_joint_pos(env.scene, pull_target, PULL_SUCCESS_JOINT_NAME, 0)
+            if jp is not None:
+                disp = abs(float(jp))
+                if pull_peak_displacement is None or disp > pull_peak_displacement:
+                    pull_peak_displacement = disp
         if not pick_target:
             return
         pos_w, quat_w = _get_object_pose_world_from_scene(env.scene, pick_target, 0)
@@ -348,7 +410,7 @@ def rollout_until_horizon(model, scheduler, env, horizon, action_horizon, device
         z = float(pos_w[2])
         if pick_peak_z is None or z > pick_peak_z:
             pick_peak_z = z
-        # Track pour: check XY distance when tilt angle first exceeds threshold
+        # 追踪 pour：当倾斜角度首次超过阈值时，检查 XY 距离
         if quat_w is not None:
             from isaaclab.motion_collect.success.constants import POUR_SUCCESS_TILT_THRESHOLD, POUR_SUCCESS_XY_THRESHOLD
             rot = _quat_wxyz_to_matrix(np.array(quat_w, dtype=float))
@@ -469,7 +531,7 @@ def rollout_until_horizon(model, scheduler, env, horizon, action_horizon, device
         if terminated or truncated:
             break
 
-    return obs_dict, pick_peak_z, min_pour_tilt_z, pour_crossed_ok, pour_xy_at_cross, front_frames
+    return obs_dict, pick_peak_z, min_pour_tilt_z, pour_crossed_ok, pour_xy_at_cross, pull_peak_displacement, front_frames
 
 
 # ============================================================================
@@ -478,21 +540,21 @@ def rollout_until_horizon(model, scheduler, env, horizon, action_horizon, device
 
 def frames_to_gif(frames: list[np.ndarray], save_path: str,
                   target_frames: int = 30, target_size: int = 256) -> str | None:
-    """Subsample and resize collected frames, then save as GIF.
+    """将采集的帧列表抽帧、缩放后保存为 GIF.
 
     Args:
         frames: list of (H, W, 3) uint8 numpy arrays
-        save_path: output file path
-        target_frames: target frame count (uniformly sampled from original frames)
-        target_size: square resize dimension
+        save_path: 保存路径
+        target_frames: 目标帧数 (从原始帧中均匀采样)
+        target_size: 缩放到的正方形尺寸
     Returns:
-        save path, or None on failure
+        保存路径, 或 None 表示失败
     """
     if not frames:
         return None
     from PIL import Image
 
-    # Uniformly subsample frames
+    # 均匀抽帧
     n = len(frames)
     if n > target_frames:
         indices = np.linspace(0, n - 1, target_frames, dtype=int)
@@ -500,14 +562,14 @@ def frames_to_gif(frames: list[np.ndarray], save_path: str,
         indices = np.arange(n)
     sampled = [frames[i] for i in indices]
 
-    # Resize and convert to PIL
+    # 缩放并转 PIL
     pil_frames = []
     for f in sampled:
         img = Image.fromarray(f)
         img = img.resize((target_size, target_size), Image.BILINEAR)
         pil_frames.append(img)
 
-    # Save GIF, allocating duration to target ~5s total
+    # 保存 GIF, duration 按总时长 ~5s 分配
     duration_per_frame = max(5000 // len(pil_frames), 50)
     pil_frames[0].save(
         save_path, save_all=True, append_images=pil_frames[1:],
@@ -517,9 +579,9 @@ def frames_to_gif(frames: list[np.ndarray], save_path: str,
 
 
 def _import_env_cfg_class(spec: str):
-    """spec should be in the form 'pkg.mod:ClassName'."""
+    """spec 形如 'pkg.mod:ClassName'."""
     if ":" not in spec:
-        raise ValueError(f"--env_cfg_class must be in 'pkg.mod:ClassName' form, got: {spec}")
+        raise ValueError(f"--env_cfg_class 必须是 'pkg.mod:ClassName' 形式, 收到: {spec}")
     mod_path, cls_name = spec.split(":", 1)
     mod = importlib.import_module(mod_path)
     return getattr(mod, cls_name)
@@ -533,7 +595,7 @@ def main():
     print(f"[EVAL] cwd={os.getcwd()}")
     print(f"[EVAL] output_json(abs)={args_cli.output_json}")
 
-    # --- Load checkpoint + model ---
+    # --- 加载 ckpt + 模型 ---
     ckpt = torch.load(args_cli.checkpoint, map_location=device)
     model_args = ckpt.get("args", {})
     model = DiffusionPolicy(
@@ -552,7 +614,7 @@ def main():
     action_horizon = model_args.get("action_horizon", 3)
     obs_horizon = model_args.get("obs_horizon", 2)
 
-    # --- Environment ---
+    # --- env ---
     if args_cli.env_cfg_class:
         env_cfg_cls = _import_env_cfg_class(args_cli.env_cfg_class)
     else:
@@ -578,18 +640,19 @@ def main():
 
     env = gym.make(args_cli.task, cfg=env_cfg).unwrapped
 
-    # Attach task yaml metadata to scene; place success evaluation needs position_range
+    # 把 task yaml 元信息挂到 scene 上, place success 评估需要 position_range
     with open(args_cli.task_config) as f:
         task_yaml = yaml.safe_load(f) or {}
     attach_scene_success_meta(env.scene, task_yaml)
 
-    # Evaluation stages
+    # 评估阶段
     stages = load_eval_stages(args_cli.task_config)
     pick_target = resolve_pick_target(stages)
     pour_target = next((s.get("pour_target") for s in stages if s["type"] == "pour"), None)
-    print(f"[EVAL] stages={[s['type'] for s in stages]}, pick_target={pick_target}, pour_target={pour_target}")
+    pull_target = next((s.get("pull_target") for s in stages if s["type"] == "pull"), None)
+    print(f"[EVAL] stages={[s['type'] for s in stages]}, pick_target={pick_target}, pour_target={pour_target}, pull_target={pull_target}")
 
-    # Seed
+    # 种子
     torch.manual_seed(args_cli.seed)
     np.random.seed(args_cli.seed)
     random.seed(args_cli.seed)
@@ -597,22 +660,21 @@ def main():
     norm_params = load_norm_params(args_cli.stat) if args_cli.stat else None
     bg_images = load_background_images(args_cli.task_config)
 
-    # --- N rollouts ---
+    # --- N 次 rollout ---
     per_rollout_results = []
     gif_dir = os.path.join(os.path.dirname(os.path.abspath(args_cli.output_json)), "gifs")
     os.makedirs(gif_dir, exist_ok=True)
     gif_paths = []
     for trial in range(args_cli.num_rollouts):
         print(f"[EVAL] trial {trial + 1}/{args_cli.num_rollouts}")
-        # This reset both records the pick baseline and serves as the starting obs
-        # for the rollout, avoiding a second reset that would re-randomize object
-        # positions and cause baseline mismatch with the actual rollout state.
+        # 这一次 reset 既用于记录 pick baseline, 也作为 rollout 的起始 obs,
+        # 避免被再次 reset 重新随机化物体位置导致 baseline 对不上 rollout 实际状态.
         initial_obs_dict, _ = env.reset()
         for _ in range(10):
             env.step(torch.zeros(1, env.action_space.shape[1], device=device))
         pick_initial_z = capture_object_initial_z(env.scene, pick_target, env_idx=0) if pick_target else None
 
-        _, pick_peak_z, min_pour_tilt_z, pour_crossed_ok, pour_xy_at_cross, front_frames = rollout_until_horizon(
+        _, pick_peak_z, min_pour_tilt_z, pour_crossed_ok, pour_xy_at_cross, pull_peak_displacement, front_frames = rollout_until_horizon(
             model=model,
             scheduler=scheduler,
             env=env,
@@ -625,10 +687,11 @@ def main():
             initial_obs_dict=initial_obs_dict,
             pick_target=pick_target,
             pour_target=pour_target,
+            pull_target=pull_target,
             collect_front_images=True,
         )
 
-        # Save GIF (subsample to 30 frames, resize to 256x256)
+        # 保存 GIF (抽帧到 30 帧, 缩放到 256x256)
         gif_path = os.path.join(gif_dir, f"trial_{trial}.gif")
         saved = frames_to_gif(front_frames, gif_path, target_frames=30, target_size=256)
         if saved:
@@ -644,6 +707,7 @@ def main():
             min_pour_tilt_z=min_pour_tilt_z,
             pour_crossed_ok=pour_crossed_ok,
             pour_xy_at_cross=pour_xy_at_cross,
+            pull_peak_displacement=pull_peak_displacement,
         )
         per_rollout_results.append(stage_results)
         stage_summary = ", ".join(
@@ -656,7 +720,7 @@ def main():
                 metrics_str = ", ".join(f"{mk}={mv:.4f}" if isinstance(mv, float) else f"{mk}={mv}" for mk, mv in metrics.items())
                 print(f"  [{k}] success={v.get('success')}, {metrics_str}")
 
-    # --- Aggregate: per-stage success rate ---
+    # --- 聚合: 每个阶段的成功率 ---
     stage_keys: list[str] = []
     for r in per_rollout_results:
         for k in r.keys():
@@ -668,7 +732,7 @@ def main():
         succ = sum(1 for r in per_rollout_results if r.get(key, {}).get("success"))
         stage_success_rate[key] = succ / max(len(per_rollout_results), 1)
 
-    # Overall task success rate: all stages must succeed
+    # 全任务成功率: 所有阶段都成功才算
     overall_success = 0
     for r in per_rollout_results:
         if stage_keys and all(r.get(k, {}).get("success") for k in stage_keys):

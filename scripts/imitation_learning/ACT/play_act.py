@@ -1,13 +1,13 @@
 """
-ACT policy inference script -- play a trained ACT model in an Isaac Lab environment.
+ACT 策略推理脚本 — 在 Isaac Lab 环境中 play 训练好的 ACT 模型.
 
-Inference pipeline:
-1. Encode current observations (front, wrist, qpos+qvel)
-2. z = 0 (use prior mean during inference)
-3. Transformer Decoder generates action chunk (C steps)
-4. Execute the first action_horizon steps, then re-plan
+推理流程:
+1. 编码当前观测 (front, wrist, qpos+qvel)
+2. z = 0 (推理时使用先验均值)
+3. Transformer Decoder 生成 action chunk (C 步)
+4. 执行前 action_horizon 步, 然后重新规划
 
-Usage:
+用法:
     python scripts/imitation_learning/ACT/play_act.py \
         --task Pick_Place_banana-v0 \
         --checkpoint logs/act_xxx/checkpoints/best_eval.pt \
@@ -30,16 +30,16 @@ parser.add_argument("--horizon", type=int, default=500, help="Max steps per epis
 parser.add_argument("--num_rollouts", type=int, default=10, help="Number of rollout trials.")
 parser.add_argument("--seed", type=int, default=42, help="Random seed.")
 parser.add_argument("--task_config", type=str, default=None, help="Path to YAML task config file.")
-parser.add_argument("--dataset_stat", type=str, default=None,
-                    help="Path to dataset_stat JSON with _minmax_params for denormalization.")
+parser.add_argument("--stat", type=str, default=None,
+                    help="Path to stat JSON with _minmax_params for denormalization.")
 parser.add_argument("--action_horizon", type=int, default=None,
-                    help="Number of steps actually executed in chunk mode (default=chunk_size, i.e. execute all).")
+                    help="chunk 模式下实际执行的步数 (默认=chunk_size, 即全部执行).")
 parser.add_argument("--action_chunk_size", type=int, default=None,
-                    help="action chunk size; if not specified, inferred from checkpoint")
+                    help="action chunk size; 若不指定则从 checkpoint 推断")
 parser.add_argument("--save_img_interval", type=int, default=0,
-                    help="Save debug images every N steps (0=disabled)")
+                    help="每隔多少步保存一次调试图像 (0=不保存)")
 parser.add_argument("--pick_lift_threshold", type=float, default=0.02,
-                    help="Minimum lift height required for pick success (meters)")
+                    help="Pick 成功所需的最小抬升高度 (米)")
 
 AppLauncher.add_app_launcher_args(parser)
 args_cli = parser.parse_args()
@@ -68,17 +68,21 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from network_act import ACTPolicy
 from train_act import minmax_normalize, minmax_denormalize
 
-import isaaclab_tasks.real2sim.tasks.pick  # noqa: F401
-import isaaclab_tasks.real2sim.tasks.task_gen  # noqa: F401
+import isaaclab_tasks.real2sim.tasks  # noqa: F401
+
 from isaaclab_tasks.utils import parse_env_cfg
 
 from isaaclab.motion_collect.success.evaluators import (
     _evaluate_pick_success_with_metrics,
     _evaluate_place_pose_success_with_metrics,
-    _evaluate_place_success_with_metrics,
+    _evaluate_place_on_success_with_metrics,
+    _evaluate_place_affordance_xy_success_with_metrics,
     _evaluate_pour_success_with_metrics,
+    _evaluate_hang_success_with_metrics,
+    _evaluate_pull_success_with_metrics,
 )
 from isaaclab.motion_collect.success.scene_helpers import (
+    _get_articulation_joint_pos,
     _get_object_pose_world_from_scene,
     attach_scene_success_meta,
 )
@@ -86,14 +90,17 @@ from isaaclab.motion_collect.success.success import (
     capture_object_initial_z,
 )
 from isaaclab.motion_collect.tools.pose_utils import _quat_wxyz_to_matrix
+from isaaclab.motion_collect.tools.affordance_resolver import resolve_affordance_path
+from isaaclab.motion_collect.primitives.utils import load_affordance_centroid
+
 
 
 # ============================================================================
 # Helpers
 # ============================================================================
 
-def load_checkpoint(ckpt_path, device, dataset_stat=None, action_chunk_size=None):
-    """Load ACT checkpoint, return policy and norm_params."""
+def load_checkpoint(ckpt_path, device, stat=None, action_chunk_size=None):
+    """加载 ACT checkpoint, 返回 policy 和 norm_params."""
     ckpt = torch.load(ckpt_path, map_location=device, weights_only=False)
 
     norm_params = ckpt.get("norm_params", None)
@@ -122,9 +129,9 @@ def load_checkpoint(ckpt_path, device, dataset_stat=None, action_chunk_size=None
     policy.load_state_dict(ckpt["policy"])
     policy.eval()
 
-    # Override norm_params with dataset_stat
-    if dataset_stat:
-        with open(dataset_stat) as f:
+    # 用 stat 覆盖 norm_params
+    if stat:
+        with open(stat) as f:
             ds_stat = json.load(f)
         real_minmax = ds_stat.get("_minmax_params", {})
         if real_minmax:
@@ -139,7 +146,7 @@ def load_checkpoint(ckpt_path, device, dataset_stat=None, action_chunk_size=None
                 norm_params["qpos"] = real_minmax["qpos"]
             if "qvel" in real_minmax:
                 norm_params["qvel"] = real_minmax["qvel"]
-            print(f"[INFO] Overriding norm_params with _minmax_params from {dataset_stat}")
+            print(f"[INFO] Overriding norm_params with _minmax_params from {stat}")
 
     print(f"[INFO] Loaded ACT policy: state_dim={state_dim}, action_dim={action_dim}, "
           f"action_chunk_size={action_chunk_size}, hidden_dim={hidden_dim}, latent_dim={latent_dim}")
@@ -147,7 +154,7 @@ def load_checkpoint(ckpt_path, device, dataset_stat=None, action_chunk_size=None
 
 
 def load_background_images(task_config_path):
-    """Load background images from YAML config."""
+    """从 YAML 配置中加载背景图片."""
     with open(task_config_path) as f:
         cfg = yaml.safe_load(f)
     runtime = cfg.get("runtime", {})
@@ -168,16 +175,16 @@ def load_background_images(task_config_path):
             img = cv2.imread(full_path)
             if img is not None:
                 bg_images[key] = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-                print(f"[INFO] Loaded background image {key}: {full_path} -> {img.shape}")
+                print(f"[INFO] 加载背景图片 {key}: {full_path} -> {img.shape}")
     return bg_images
 
 
 def preprocess_image(image_tensor, seg_tensor=None, bg_image=None,
                      env_cam_h=480, env_cam_w=640, train_img_size=256):
-    """Process environment RGB observation -> model input.
+    """处理环境 RGB 观测 -> 模型输入.
 
-    Input: (C, H, W) float tensor [0, 1]
-    Output: (train_img_size, train_img_size, 3) float tensor [0, 1]
+    输入: (C, H, W) float tensor [0, 1]
+    输出: (train_img_size, train_img_size, 3) float tensor [0, 1]
     """
     image = image_tensor.clone().float()
     image = image.reshape(3, env_cam_h, env_cam_w)
@@ -206,29 +213,61 @@ def preprocess_image(image_tensor, seg_tensor=None, bg_image=None,
 
 
 # ============================================================================
-# Task yaml -> evaluation stages
+# Task yaml -> 评估阶段
 # ============================================================================
+
+def _get_object_scale_from_cfg(cfg: dict, object_name: str) -> np.ndarray:
+    """Return object scale from YAML config, default [1,1,1]."""
+    objects = cfg.get("objects") or {}
+    obj_cfg = objects.get(object_name) or {}
+    scale = obj_cfg.get("scale")
+    if scale is not None:
+        return np.asarray(scale, dtype=np.float64)
+    return np.ones(3, dtype=np.float64)
+
+
+def _get_object_height_from_cfg(cfg: dict, object_name: str) -> float:
+    """Return object height from YAML config, default 0.1."""
+    objects = cfg.get("objects") or {}
+    obj_cfg = objects.get(object_name) or {}
+    return float(obj_cfg.get("height", 0.1))
+
 
 def load_eval_stages(task_config_path: str) -> list[dict]:
     with open(task_config_path) as f:
         cfg = yaml.safe_load(f) or {}
     primitives = cfg.get("primitives") or []
+    pick_target_name = None
+    for entry in primitives:
+        if isinstance(entry, dict) and str(entry.get("type", "")).lower() == "pick":
+            pick_target_name = (entry.get("params") or {}).get("target")
+            break
     stages = []
     for entry in primitives:
         if not isinstance(entry, dict):
             continue
         ptype = str(entry.get("type", "")).lower()
-        if ptype not in ("pick", "place", "pour"):
+        if ptype not in ("pick", "place", "pour", "hang", "pull"):
             continue
         params = entry.get("params") or {}
+        target_name = params.get("target")
         stage = {
             "type": ptype,
-            "target": params.get("target"),
-            "place_target": params.get("target") if ptype == "place" else None,
+            "target": target_name,
+            "place_target": target_name if ptype == "place" else None,
             "place_mode": str(entry.get("mode", "")).lower() if ptype == "place" else None,
             "place_position": params.get("position") if ptype == "place" else None,
             "place_orientation": params.get("orientation") if ptype == "place" else None,
-            "pour_target": params.get("target") if ptype == "pour" else None,
+            "pick_affordance_npz_path": params.get("pick_affordance_npz_path") if ptype == "place" else None,
+            "target_affordance_npz_path": params.get("target_affordance_npz_path") if ptype == "place" else None,
+            "pick_object_scale": _get_object_scale_from_cfg(cfg, pick_target_name) if ptype == "place" and pick_target_name else None,
+            "place_object_scale": _get_object_scale_from_cfg(cfg, target_name) if ptype == "place" and target_name else None,
+            "place_target_height": _get_object_height_from_cfg(cfg, target_name) if ptype == "place" and target_name else None,
+            "place_on_height_margin": float(params.get("on_height_margin", 0.01)) if ptype == "place" else None,
+            "pour_target": target_name if ptype == "pour" else None,
+            "hang_container": target_name if ptype == "hang" else None,
+            "hang_container_mount_npz": params.get("container_mount_affordance_npz_path") if ptype == "hang" else None,
+            "pull_target": target_name if ptype == "pull" else None,
         }
         stages.append(stage)
     return stages
@@ -245,6 +284,7 @@ def evaluate_stages_at_episode_end(
     scene, stages, pick_initial_z, pick_lift_threshold,
     pick_peak_z=None, min_pour_tilt_z=None,
     pour_crossed_ok=False, pour_xy_at_cross=None,
+    pull_peak_displacement=None,
 ):
     pick_target = resolve_pick_target(stages)
     results = {}
@@ -267,6 +307,7 @@ def evaluate_stages_at_episode_end(
 
         elif ptype == "place":
             place_mode = stage.get("place_mode") or "on"
+            place_target = stage.get("place_target")
             if place_mode == "pose":
                 target_pos = stage.get("place_position")
                 target_quat = stage.get("place_orientation")
@@ -279,14 +320,41 @@ def evaluate_stages_at_episode_end(
                     target_quat_wxyz=np.array(target_quat, dtype=float) if target_quat is not None else None,
                     env_idx=0,
                 )
-            else:
-                place_target = stage.get("place_target")
+            elif place_mode == "affordance":
                 if not place_target or not pick_target:
                     results[key] = {"success": False, "reason": "no_place_or_pick_target"}
                     continue
-                ok, metrics = _evaluate_place_success_with_metrics(
-                    scene=scene, pick_target=pick_target,
-                    place_target=place_target, env_idx=0,
+                pick_aff_path = stage.get("pick_affordance_npz_path") or resolve_affordance_path(pick_target, "place")
+                target_aff_path = stage.get("target_affordance_npz_path") or resolve_affordance_path(place_target, "place")
+                if not pick_aff_path or not target_aff_path:
+                    results[key] = {"success": False, "reason": "missing_place_affordance_npz",
+                                    "pick_aff": pick_aff_path, "target_aff": target_aff_path}
+                    continue
+                try:
+                    pick_aff_local = load_affordance_centroid(pick_aff_path)
+                    target_aff_local = load_affordance_centroid(target_aff_path)
+                except Exception as e:
+                    results[key] = {"success": False, "reason": f"affordance_load_failed:{e}"}
+                    continue
+                pick_scale = stage.get("pick_object_scale")
+                place_scale = stage.get("place_object_scale")
+                if pick_scale is not None:
+                    pick_aff_local = pick_aff_local * np.asarray(pick_scale, dtype=np.float64)
+                if place_scale is not None:
+                    target_aff_local = target_aff_local * np.asarray(place_scale, dtype=np.float64)
+                ok, metrics = _evaluate_place_affordance_xy_success_with_metrics(
+                    scene=scene, pick_target=pick_target, place_target=place_target,
+                    pick_aff_local=pick_aff_local, target_aff_local=target_aff_local, env_idx=0,
+                )
+            else:
+                if not place_target or not pick_target:
+                    results[key] = {"success": False, "reason": "no_place_or_pick_target"}
+                    continue
+                ok, metrics = _evaluate_place_on_success_with_metrics(
+                    scene=scene, pick_target=pick_target, place_target=place_target,
+                    place_target_height=stage.get("place_target_height") or 0.1,
+                    on_height_margin=stage.get("place_on_height_margin") or 0.01,
+                    env_idx=0,
                 )
             results[key] = {"success": bool(ok), "metrics": metrics}
 
@@ -298,6 +366,55 @@ def evaluate_stages_at_episode_end(
             ok, metrics = _evaluate_pour_success_with_metrics(
                 scene=scene, pick_target=pick_target,
                 pour_target=pour_target, env_idx=0,
+            )
+            results[key] = {"success": bool(ok), "metrics": metrics}
+
+        elif ptype == "hang":
+            hang_container = stage.get("hang_container")
+            if not hang_container or not pick_target:
+                results[key] = {"success": False, "reason": "no_hang_container_or_pick_target"}
+                continue
+            mount_npz = stage.get("hang_container_mount_npz")
+            try:
+                if not mount_npz:
+                    import importlib
+                    _afford_mod = importlib.import_module("isaaclab.motion_collect.tools.affordance_resolver")
+                    mount_npz = _afford_mod.resolve_affordance_path(hang_container, "hang")
+                if not mount_npz:
+                    results[key] = {"success": False, "reason": "no_container_mount_affordance"}
+                    continue
+                npz_data = np.load(mount_npz, allow_pickle=True)
+                if "centroids" in npz_data:
+                    centroids = np.asarray(npz_data["centroids"], dtype=np.float64)
+                    container_mount_local = np.array(centroids[0], dtype=np.float64)
+                elif "grasp_center" in npz_data:
+                    container_mount_local = np.asarray(npz_data["grasp_center"], dtype=np.float64)
+                else:
+                    results[key] = {"success": False, "reason": "invalid_mount_npz_keys"}
+                    continue
+            except Exception as e:
+                results[key] = {"success": False, "reason": f"mount_load_failed:{e}"}
+                continue
+
+            ok, metrics = _evaluate_hang_success_with_metrics(
+                scene=scene,
+                held_object_label=pick_target,
+                container_label=hang_container,
+                container_mount_local=container_mount_local,
+                env_idx=0,
+            )
+            results[key] = {"success": bool(ok), "metrics": metrics}
+
+        elif ptype == "pull":
+            pull_target = stage.get("pull_target")
+            if not pull_target:
+                results[key] = {"success": False, "reason": "no_pull_target"}
+                continue
+            ok, metrics = _evaluate_pull_success_with_metrics(
+                scene=scene,
+                target_label=pull_target,
+                env_idx=0,
+                peak_displacement=pull_peak_displacement,
             )
             results[key] = {"success": bool(ok), "metrics": metrics}
 
@@ -340,17 +457,17 @@ def frames_to_gif(frames, save_path, target_frames=30, target_size=256):
 
 def postprocess_action(action_np, norm_params):
     """
-    Convert model output action to environment action.
+    将模型输出的 action 转换为环境 action.
 
-    action_np: (7,) -- [ee_delta(6) * 100, gripper_continuous]
-    Returns: (7,) -- [ee_delta(6), gripper(-1 or +1)]
+    action_np: (7,) — [ee_delta(6) * 100, gripper_continuous]
+    返回: (7,) — [ee_delta(6), gripper(-1 or +1)]
     """
     result = action_np.copy()
 
-    # EE: was scaled up by 100x during training, scale back
+    # EE: 训练时放大了 100 倍, 缩回来
     result[:6] = result[:6] / 100.0
 
-    # EE: denormalize
+    # EE: 反归一化
     if norm_params is not None and "action_ee" in norm_params:
         result[:6] = minmax_denormalize(
             result[:6],
@@ -372,8 +489,9 @@ def postprocess_action(action_np, norm_params):
 def rollout(policy, env, success_term, horizon, device, norm_params,
             bg_images=None, trial_id=0,
             save_img_interval=0, pick_target=None, pour_target=None,
+            pull_target=None,
             action_chunk_size=1, action_horizon=None):
-    """Execute a single rollout."""
+    """执行一次 rollout."""
 
     _tc = getattr(args_cli, "task_config", None)
     task_label = os.path.splitext(os.path.basename(_tc))[0] if _tc else "unknown"
@@ -391,11 +509,20 @@ def rollout(policy, env, success_term, horizon, device, norm_params,
     pour_crossed_ok = False
     pour_xy_at_cross = None
     pour_tilt_at_cross = None
+    pull_peak_displacement = None
     front_frames = []
     action_chunk_buffer = []
 
     def _update_peak():
         nonlocal pick_peak_z, min_pour_tilt_z, pour_crossed_ok, pour_xy_at_cross, pour_tilt_at_cross
+        nonlocal pull_peak_displacement
+        if pull_target:
+            from isaaclab.motion_collect.success.constants import PULL_SUCCESS_JOINT_NAME
+            jp = _get_articulation_joint_pos(env.scene, pull_target, PULL_SUCCESS_JOINT_NAME, 0)
+            if jp is not None:
+                disp = abs(float(jp))
+                if pull_peak_displacement is None or disp > pull_peak_displacement:
+                    pull_peak_displacement = disp
         if not pick_target:
             return
         pos_w, quat_w = _get_object_pose_world_from_scene(env.scene, pick_target, 0)
@@ -474,7 +601,7 @@ def rollout(policy, env, success_term, horizon, device, norm_params,
                 cv2.imwrite(os.path.join(debug_img_dir, f"step_{step:04d}_wrist.png"),
                             cv2.cvtColor(w_np, cv2.COLOR_RGB2BGR))
 
-            # Inference: get_action returns (1, C, 7)
+            # Inference: get_action 返回 (1, C, 7)
             action = policy.get_action(front_img, wrist_img, state_tensor)
             action_raw = action.cpu().numpy().squeeze(0)  # (C, 7)
 
@@ -498,7 +625,7 @@ def rollout(policy, env, success_term, horizon, device, norm_params,
         obs_dict, _, terminated, truncated, _ = env.step(action_tensor)
         _update_peak()
 
-        # Collect front frames
+        # 收集 front 帧
         if "front" in obs_dict["policy"]:
             _fr = obs_dict["policy"]["front"].squeeze().float().reshape(3, 480, 640)
             _seg = obs_dict["policy"].get(seg_keys["front"], None)
@@ -509,12 +636,12 @@ def rollout(policy, env, success_term, horizon, device, norm_params,
             front_frames.append((_processed.cpu().numpy() * 255).clip(0, 255).astype(np.uint8))
 
         if success_term is not None and bool(success_term.func(env, **success_term.params)[0]):
-            print(f"[INFO] Success! step={step}")
-            return True, pick_peak_z, min_pour_tilt_z, pour_crossed_ok, pour_xy_at_cross, front_frames
+            print(f"[INFO] 成功! step={step}")
+            return True, pick_peak_z, min_pour_tilt_z, pour_crossed_ok, pour_xy_at_cross, pull_peak_displacement, front_frames
         elif terminated or truncated:
-            return False, pick_peak_z, min_pour_tilt_z, pour_crossed_ok, pour_xy_at_cross, front_frames
+            return False, pick_peak_z, min_pour_tilt_z, pour_crossed_ok, pour_xy_at_cross, pull_peak_displacement, front_frames
 
-    return False, pick_peak_z, min_pour_tilt_z, pour_crossed_ok, pour_xy_at_cross, front_frames
+    return False, pick_peak_z, min_pour_tilt_z, pour_crossed_ok, pour_xy_at_cross, pull_peak_displacement, front_frames
 
 
 # ============================================================================
@@ -531,14 +658,14 @@ def main():
     # Load policy
     policy, norm_params, action_chunk_size = load_checkpoint(
         args_cli.checkpoint, device,
-        dataset_stat=args_cli.dataset_stat,
+        stat=args_cli.stat,
         action_chunk_size=args_cli.action_chunk_size,
     )
 
     # Create environment
     if args_cli.task_config is not None:
-        from isaaclab_tasks.real2sim.tasks.pick.pick_r2s_env_cfg import create_pick_env_cfg_from_yaml
-        from isaaclab_tasks.real2sim.tasks.pick.config.sceneconfig.franka_fr3.ourgripper.ik_rel_vis_env_cfg import (
+        from isaaclab_tasks.real2sim.tasks.pick_r2s_env_cfg import create_pick_env_cfg_from_yaml
+        from isaaclab_tasks.real2sim.tasks.config.franka_fr3.ourgripper.ik_rel_vis_env_cfg import (
             FrankaFr3OurGripperIKRelVisPickEnvCfg,
         )
         env_cfg = create_pick_env_cfg_from_yaml(
@@ -570,15 +697,17 @@ def main():
             task_yaml = yaml.safe_load(f) or {}
         attach_scene_success_meta(env.scene, task_yaml)
 
-    # Evaluation stages
+    # 评估阶段
     stages = []
     pick_target = None
     pour_target = None
+    pull_target = None
     if args_cli.task_config is not None:
         stages = load_eval_stages(args_cli.task_config)
         pick_target = resolve_pick_target(stages)
         pour_target = next((s.get("pour_target") for s in stages if s["type"] == "pour"), None)
-    print(f"[INFO] stages={[s['type'] for s in stages]}, pick_target={pick_target}, pour_target={pour_target}")
+        pull_target = next((s.get("pull_target") for s in stages if s["type"] == "pull"), None)
+    print(f"[INFO] stages={[s['type'] for s in stages]}, pick_target={pick_target}, pour_target={pour_target}, pull_target={pull_target}")
 
     bg_images = {}
     if args_cli.task_config is not None:
@@ -603,13 +732,14 @@ def main():
             env.step(torch.zeros(1, env.action_space.shape[1], device=device))
         pick_initial_z = capture_object_initial_z(env.scene, pick_target, env_idx=0) if pick_target else None
 
-        success, pick_peak_z, min_pour_tilt_z, pour_crossed_ok, pour_xy_at_cross, front_frames = rollout(
+        success, pick_peak_z, min_pour_tilt_z, pour_crossed_ok, pour_xy_at_cross, pull_peak_displacement, front_frames = rollout(
             policy, env, success_term, args_cli.horizon, device,
             norm_params=norm_params, bg_images=bg_images,
             trial_id=trial,
             save_img_interval=args_cli.save_img_interval,
             pick_target=pick_target,
             pour_target=pour_target,
+            pull_target=pull_target,
             action_chunk_size=action_chunk_size,
             action_horizon=action_horizon,
         )
@@ -629,6 +759,7 @@ def main():
                 min_pour_tilt_z=min_pour_tilt_z,
                 pour_crossed_ok=pour_crossed_ok,
                 pour_xy_at_cross=pour_xy_at_cross,
+                pull_peak_displacement=pull_peak_displacement,
             )
             all_stage_results.append(stage_results)
             stage_summary = ", ".join(
@@ -645,8 +776,8 @@ def main():
         else:
             print(f"[INFO] Trial {trial}: {'SUCCESS' if success else 'FAIL'}")
 
-    # Summary
-    print(f"\n[INFO] === Results Summary ===")
+    # 汇总
+    print(f"\n[INFO] === 结果汇总 ===")
     print(f"Success term: {results.count(True)}/{len(results)} = {results.count(True) / len(results):.2%}")
 
     if all_stage_results:

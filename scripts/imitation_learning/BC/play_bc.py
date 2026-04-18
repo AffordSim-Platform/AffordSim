@@ -1,7 +1,7 @@
 """
-BC policy inference script -- play a trained BC Gaussian model in an Isaac Lab environment.
+BC 策略推理脚本 — 在 Isaac Lab 环境中 play 训练好的 BC Gaussian 模型.
 
-Usage:
+用法:
   python scripts/imitation_learning/BC/play_bc.py \
     --task Pick_Place_banana-v0 \
     --checkpoint runs/bc_xxx/checkpoints/best_eval.pt \
@@ -27,15 +27,15 @@ parser.add_argument("--task_config", type=str, default=None, help="Path to YAML 
 parser.add_argument("--dataset_stat", type=str, default=None,
                     help="Path to dataset_stat JSON with _minmax_params for denormalization.")
 parser.add_argument("--save_inputs", type=str, default=None,
-                    help="Save model inputs during play to an HDF5 file. e.g.: /tmp/play_inputs.hdf5")
+                    help="保存 play 时模型输入到 HDF5 文件. 例如: /tmp/play_inputs.hdf5")
 parser.add_argument("--action_horizon", type=int, default=None,
-                    help="Number of steps to actually execute in chunk mode (default=chunk_size, i.e. execute all).")
+                    help="chunk 模式下实际执行的步数 (默认=chunk_size, 即全部执行).")
 parser.add_argument("--action_chunk_size", type=int, default=None,
-                    help="action chunk size; if not specified, inferred from checkpoint")
+                    help="action chunk size; 若不指定则从 checkpoint 推断")
 parser.add_argument("--save_img_interval", type=int, default=0,
-                    help="Save debug images every N steps (0=disabled)")
+                    help="每隔多少步保存一次调试图像 (0=不保存)")
 parser.add_argument("--pick_lift_threshold", type=float, default=0.02,
-                    help="Minimum lift height (meters) required for pick success")
+                    help="Pick 成功所需的最小抬升高度 (米)")
 
 AppLauncher.add_app_launcher_args(parser)
 args_cli = parser.parse_args()
@@ -88,7 +88,7 @@ from isaaclab.motion_collect.tools.pose_utils import _quat_wxyz_to_matrix
 # ============================================================================
 
 def load_checkpoint(ckpt_path, device, dataset_stat=None, action_chunk_size=None):
-    """Load a BC Gaussian checkpoint and return the policy and norm_params."""
+    """加载 BC Gaussian checkpoint, 返回 policy 和 norm_params."""
     ckpt = torch.load(ckpt_path, map_location=device, weights_only=False)
 
     norm_params = ckpt.get("norm_params", None)
@@ -113,7 +113,7 @@ def load_checkpoint(ckpt_path, device, dataset_stat=None, action_chunk_size=None
     policy.load_state_dict(ckpt["policy"])
     policy.eval()
 
-    # Override norm_params with dataset_stat
+    # 用 dataset_stat 覆盖 norm_params
     if dataset_stat:
         with open(dataset_stat) as f:
             ds_stat = json.load(f)
@@ -138,7 +138,7 @@ def load_checkpoint(ckpt_path, device, dataset_stat=None, action_chunk_size=None
 
 
 def load_background_images(task_config_path):
-    """Load background images from the YAML config."""
+    """从 YAML 配置中加载背景图片."""
     with open(task_config_path) as f:
         cfg = yaml.safe_load(f)
     runtime = cfg.get("runtime", {})
@@ -159,16 +159,16 @@ def load_background_images(task_config_path):
             img = cv2.imread(full_path)
             if img is not None:
                 bg_images[key] = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-                print(f"[INFO] Loaded background image {key}: {full_path} -> {img.shape}")
+                print(f"[INFO] 加载背景图片 {key}: {full_path} -> {img.shape}")
     return bg_images
 
 
 def preprocess_image(image_tensor, seg_tensor=None, bg_image=None,
                      env_cam_h=480, env_cam_w=640, train_img_size=256):
-    """Process environment RGB observation into model input.
+    """处理环境 RGB 观测 → 模型输入.
 
-    Input: (C, H, W) float tensor [0, 1]
-    Output: (train_img_size, train_img_size, 3) float tensor [0, 1]
+    输入: (C, H, W) float tensor [0, 1]
+    输出: (train_img_size, train_img_size, 3) float tensor [0, 1]
     """
     image = image_tensor.clone().float()
     image = image.reshape(3, env_cam_h, env_cam_w)
@@ -197,7 +197,7 @@ def preprocess_image(image_tensor, seg_tensor=None, bg_image=None,
 
 
 # ============================================================================
-# Task yaml -> Evaluation stages
+# Task yaml → 评估阶段
 # ============================================================================
 
 def load_eval_stages(task_config_path: str) -> list[dict]:
@@ -331,17 +331,17 @@ def frames_to_gif(frames, save_path, target_frames=30, target_size=256):
 
 def postprocess_action(action_np, norm_params):
     """
-    Convert model output action to environment action.
+    将模型输出的 action 转换为环境 action.
 
-    action_np: (7,) -- [ee_delta(6) * 100, gripper_continuous]
-    Returns: (7,) -- [ee_delta(6), gripper(-1 or +1)]
+    action_np: (7,) — [ee_delta(6) * 100, gripper_continuous]
+    返回: (7,) — [ee_delta(6), gripper(-1 or +1)]
     """
     result = action_np.copy()
 
-    # EE: scaled up by 100x during training, scale back down
+    # EE: 训练时放大了 100 倍, 缩回来
     result[:6] = result[:6] / 100.0
 
-    # EE: denormalize
+    # EE: 反归一化
     if norm_params is not None and "action_ee" in norm_params:
         result[:6] = minmax_denormalize(
             result[:6],
@@ -365,7 +365,7 @@ def rollout(policy, env, success_term, horizon, device, norm_params,
             bg_images=None, save_inputs_path=None, trial_id=0,
             save_img_interval=0, pick_target=None, pour_target=None,
             action_chunk_size=1, action_horizon=None, initial_obs_dict=None):
-    """Execute a single rollout."""
+    """执行一次 rollout."""
 
     _tc = getattr(args_cli, "task_config", None)
     task_label = os.path.splitext(os.path.basename(_tc))[0] if _tc else "unknown"
@@ -376,7 +376,7 @@ def rollout(policy, env, success_term, horizon, device, norm_params,
     if save_img_interval > 0:
         os.makedirs(debug_img_dir, exist_ok=True)
 
-    # Use externally provided obs_dict to avoid redundant reset
+    # 使用外部传入的 obs_dict, 避免重复 reset
     if initial_obs_dict is not None:
         obs_dict = initial_obs_dict
     else:
@@ -477,7 +477,7 @@ def rollout(policy, env, success_term, horizon, device, norm_params,
                 _save_wrists.append((wrist_img.squeeze(0).cpu().numpy() * 255).astype(np.uint8))
                 _save_states.append(state.copy())
 
-            # Inference: get_action returns (1, C, 7) mean
+            # Inference: get_action 返回 (1, C, 7) 均值
             action = policy.get_action(front_img, wrist_img, state_tensor)
             action_raw = action.cpu().numpy().squeeze(0)  # (C, 7)
 
@@ -501,7 +501,7 @@ def rollout(policy, env, success_term, horizon, device, norm_params,
         obs_dict, _, terminated, truncated, _ = env.step(action_tensor)
         _update_peak()
 
-        # Collect front camera frames
+        # 收集 front 帧
         if "front" in obs_dict["policy"]:
             _fr = obs_dict["policy"]["front"].squeeze().float().reshape(3, 480, 640)
             _seg = obs_dict["policy"].get(seg_keys["front"], None)
@@ -512,7 +512,7 @@ def rollout(policy, env, success_term, horizon, device, norm_params,
             front_frames.append((_processed.cpu().numpy() * 255).clip(0, 255).astype(np.uint8))
 
         if success_term is not None and bool(success_term.func(env, **success_term.params)[0]):
-            print(f"[INFO] Success! step={step}")
+            print(f"[INFO] 成功! step={step}")
             _dump_play_inputs(save_inputs_path, _save_fronts, _save_wrists, _save_states)
             return True, pick_peak_z, min_pour_tilt_z, pour_crossed_ok, pour_xy_at_cross, front_frames
         elif terminated or truncated:
@@ -593,7 +593,7 @@ def main():
             task_yaml = yaml.safe_load(f) or {}
         attach_scene_success_meta(env.scene, task_yaml)
 
-    # Evaluation stages
+    # 评估阶段
     stages = []
     pick_target = None
     pour_target = None
@@ -671,8 +671,8 @@ def main():
         else:
             print(f"[INFO] Trial {trial}: {'SUCCESS' if success else 'FAIL'}")
 
-    # Summary
-    print(f"\n[INFO] === Results Summary ===")
+    # 汇总
+    print(f"\n[INFO] === 结果汇总 ===")
     print(f"Success term: {results.count(True)}/{len(results)} = {results.count(True) / len(results):.2%}")
 
     if all_stage_results:

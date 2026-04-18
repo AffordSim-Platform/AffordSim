@@ -1,15 +1,15 @@
 """
-ACT (Action Chunking with Transformers) network components.
+ACT (Action Chunking with Transformers) 网络组件.
 
-Based on the paper: "Learning Fine-Grained Bimanual Manipulation with Low-Cost Hardware"
+基于论文: "Learning Fine-Grained Bimanual Manipulation with Low-Cost Hardware"
 (Tony Z. Zhao et al., RSS 2023)
 
-Architecture:
-1. ResNet18Encoder: Dual-camera ResNet18 + SpatialSoftmax visual encoder
+架构:
+1. ResNet18Encoder: 双摄像头 ResNet18 + SpatialSoftmax 视觉编码器
 2. ACTPolicy: CVAE (Conditional Variational Autoencoder) + Transformer
-   - Training: CVAE encoder encodes (obs, action) -> latent z
-   - Inference: z ~ N(0, I)
-   - Transformer decoder: conditioned on obs + z, predicts action chunk
+   - 训练时: CVAE encoder 编码 (obs, action) -> latent z
+   - 推理时: z ~ N(0, I)
+   - Transformer decoder: 以 obs + z 为条件, 预测 action chunk
 """
 
 import math
@@ -21,11 +21,11 @@ import torchvision.models as models
 
 
 # ============================================================================
-# Visual Encoder (reusing BC's SpatialSoftmax + ResNet18)
+# 视觉编码器 (复用 BC 的 SpatialSoftmax + ResNet18)
 # ============================================================================
 
 class SpatialSoftmax(nn.Module):
-    """Spatial Softmax: converts (B, C, H, W) feature maps to (B, C*2) spatial coordinates."""
+    """Spatial Softmax: 将 (B, C, H, W) 特征图转为 (B, C*2) 空间坐标."""
 
     def __init__(self, height, width, num_channels):
         super().__init__()
@@ -47,8 +47,8 @@ class ResNet18Encoder(nn.Module):
     """
     ResNet18 encoder with Spatial Softmax.
 
-    Input: (B, H, W, C) float [0, 1]
-    Output: (B, out_dim)
+    输入: (B, H, W, C) float [0, 1]
+    输出: (B, out_dim)
     """
 
     def __init__(self, in_channels=3, out_dim=256, finetune_from="all"):
@@ -73,7 +73,7 @@ class ResNet18Encoder(nn.Module):
         self.register_buffer("img_mean", torch.tensor([0.485, 0.456, 0.406]).view(1, 3, 1, 1))
         self.register_buffer("img_std", torch.tensor([0.229, 0.224, 0.225]).view(1, 3, 1, 1))
 
-        # Freeze earlier layers
+        # 冻结前面的层
         for param in self.parameters():
             param.requires_grad = False
 
@@ -116,7 +116,7 @@ class ResNet18Encoder(nn.Module):
 # ============================================================================
 
 class SinusoidalPositionEncoding(nn.Module):
-    """Sinusoidal positional encoding."""
+    """正弦位置编码."""
 
     def __init__(self, d_model, max_len=500):
         super().__init__()
@@ -138,18 +138,18 @@ class SinusoidalPositionEncoding(nn.Module):
 
 class ACTPolicy(nn.Module):
     """
-    ACT (Action Chunking with Transformers) policy network.
+    ACT (Action Chunking with Transformers) 策略网络.
 
-    Architecture:
-      1. Visual encoder: Dual-camera ResNet18 + SpatialSoftmax
-      2. CVAE Encoder (during training):
-         - Input: [CLS] + action_tokens (via linear projection)
-         - Cross-attention to obs_tokens (visual features + robot state)
+    架构:
+      1. 视觉编码器: 双摄像头 ResNet18 + SpatialSoftmax
+      2. CVAE Encoder (训练时):
+         - 输入: [CLS] + action_tokens (通过线性投影)
+         - Cross-attention to obs_tokens (视觉特征 + 机器人状态)
          - CLS token -> mu, log_var -> z ~ N(mu, var)
       3. Transformer Decoder:
-         - Input: action queries (learnable) + z (added to each query via linear projection)
+         - 输入: action queries (learnable) + z (通过线性投影加到每个 query)
          - Cross-attention to obs_tokens
-         - Output: action chunk (C, action_dim)
+         - 输出: action chunk (C, action_dim)
 
     Loss:
       - L1 reconstruction loss (action prediction)
@@ -175,18 +175,18 @@ class ACTPolicy(nn.Module):
         self.hidden_dim = hidden_dim
         self.latent_dim = latent_dim
 
-        # --- Visual encoder ---
+        # --- 视觉编码器 ---
         self.front_encoder = ResNet18Encoder(in_channels=3, out_dim=visual_feat_dim)
         self.wrist_encoder = ResNet18Encoder(in_channels=3, out_dim=visual_feat_dim)
 
-        # --- Observation projection ---
-        # Project visual features to hidden_dim (one token per camera)
+        # --- 观测投影 ---
+        # 视觉特征投影到 hidden_dim (每个相机一个 token)
         self.img_proj = nn.Linear(visual_feat_dim, hidden_dim)
-        # Robot state projection (1 token)
+        # 机器人状态投影 (1 个 token)
         self.state_proj = nn.Linear(state_dim, hidden_dim)
 
-        # --- CVAE Encoder (used during training) ---
-        # Project action sequence to hidden_dim
+        # --- CVAE Encoder (训练时使用) ---
+        # 将 action 序列投影到 hidden_dim
         self.action_proj = nn.Linear(action_dim, hidden_dim)
         # CLS token
         self.cls_token = nn.Parameter(torch.zeros(1, 1, hidden_dim))
@@ -210,7 +210,7 @@ class ACTPolicy(nn.Module):
         self.latent_log_var = nn.Linear(hidden_dim, latent_dim)
 
         # --- Transformer Decoder ---
-        # Latent z -> hidden_dim (added to action queries)
+        # Latent z -> hidden_dim (加到 action queries 上)
         self.latent_proj = nn.Linear(latent_dim, hidden_dim)
 
         # Learnable action queries
@@ -231,10 +231,10 @@ class ACTPolicy(nn.Module):
         )
         self.transformer_decoder = nn.TransformerDecoder(decoder_layer, num_layers=n_decoder_layers)
 
-        # Output layer: hidden_dim -> action_dim
+        # 输出层: hidden_dim -> action_dim
         self.action_head = nn.Linear(hidden_dim, action_dim)
 
-        # Initialize weights
+        # 初始化
         self._init_weights()
 
     def _init_weights(self):
@@ -247,7 +247,7 @@ class ACTPolicy(nn.Module):
                     nn.init.zeros_(m.bias)
 
     def _encode_obs(self, front, wrist, state):
-        """Encode observations into a token sequence.
+        """编码观测为 token 序列.
 
         Args:
             front: (B, H, W, C) float [0, 1]
@@ -268,7 +268,7 @@ class ACTPolicy(nn.Module):
         return obs_tokens
 
     def _encode_cvae(self, obs_tokens, actions):
-        """CVAE Encoder: encode (obs, action) into latent z.
+        """CVAE Encoder: 将 (obs, action) 编码为 latent z.
 
         Args:
             obs_tokens: (B, N_obs, hidden_dim)
@@ -280,7 +280,7 @@ class ACTPolicy(nn.Module):
         """
         B = actions.shape[0]
 
-        # Project actions to hidden_dim
+        # 将 action 投影到 hidden_dim
         action_tokens = self.action_proj(actions)  # (B, C, hidden_dim)
 
         # [CLS, action_1, ..., action_C]
@@ -288,9 +288,9 @@ class ACTPolicy(nn.Module):
         encoder_input = torch.cat([cls, action_tokens], dim=1)  # (B, 1+C, hidden_dim)
         encoder_input = self.encoder_pos(encoder_input)
 
-        # Self-attention (CLS aggregates action information)
-        # Here we use a standard encoder, but cross-attention to obs could also be added
-        # Original ACT paper: encoder input is [CLS, action_tokens], no cross-attention
+        # Self-attention (CLS 聚合 action 信息)
+        # 这里使用标准 encoder, 但也可以加 cross-attention to obs
+        # ACT 原论文: encoder 输入是 [CLS, action_tokens], 不做 cross-attention
         encoder_output = self.cvae_encoder(encoder_input)
 
         # CLS token -> latent distribution
@@ -301,24 +301,24 @@ class ACTPolicy(nn.Module):
         return mu, log_var
 
     def _reparameterize(self, mu, log_var):
-        """Reparameterization trick."""
+        """重参数化技巧."""
         std = torch.exp(0.5 * log_var)
         eps = torch.randn_like(std)
         return mu + eps * std
 
     def _decode(self, obs_tokens, z):
-        """Transformer Decoder: generate action chunk conditioned on obs + z.
+        """Transformer Decoder: 以 obs + z 为条件生成 action chunk.
 
         Args:
-            obs_tokens: (B, N_obs, hidden_dim) observation tokens
+            obs_tokens: (B, N_obs, hidden_dim) 观测 tokens
             z: (B, latent_dim) latent code
 
         Returns:
-            actions: (B, C, action_dim) predicted action chunk
+            actions: (B, C, action_dim) 预测的 action chunk
         """
         B = obs_tokens.shape[0]
 
-        # Latent z -> hidden_dim, added to each action query
+        # Latent z -> hidden_dim, 加到每个 action query 上
         z_proj = self.latent_proj(z).unsqueeze(1)  # (B, 1, hidden_dim)
 
         # Action queries + z
@@ -328,16 +328,16 @@ class ACTPolicy(nn.Module):
         # Cross-attention: queries attend to obs_tokens
         decoded = self.transformer_decoder(queries, obs_tokens)  # (B, C, hidden_dim)
 
-        # Output action
+        # 输出 action
         actions = self.action_head(decoded)  # (B, C, action_dim)
         return actions
 
     def forward(self, front, wrist, state, actions=None):
-        """Forward pass.
+        """前向传播.
 
-        Training:
+        训练时:
             front, wrist, state, actions -> (pred_actions, mu, log_var)
-        Inference:
+        推理时:
             front, wrist, state, actions=None -> pred_actions (z ~ N(0, I))
 
         Args:
@@ -347,27 +347,27 @@ class ACTPolicy(nn.Module):
             actions: (B, C, action_dim) or None
 
         Returns:
-            Training: (pred_actions, mu, log_var)
-            Inference: pred_actions
+            训练: (pred_actions, mu, log_var)
+            推理: pred_actions
         """
-        # Encode observations
+        # 编码观测
         obs_tokens = self._encode_obs(front, wrist, state)
 
         if actions is not None:
-            # Training mode: CVAE encode -> reparameterize -> decode
+            # 训练模式: CVAE encode -> reparameterize -> decode
             mu, log_var = self._encode_cvae(obs_tokens, actions)
             z = self._reparameterize(mu, log_var)
             pred_actions = self._decode(obs_tokens, z)
             return pred_actions, mu, log_var
         else:
-            # Inference mode: z ~ N(0, I)
+            # 推理模式: z ~ N(0, I)
             B = front.shape[0]
             z = torch.zeros(B, self.latent_dim, device=front.device)
             pred_actions = self._decode(obs_tokens, z)
             return pred_actions
 
     def get_action(self, front, wrist, state):
-        """Called during inference, returns action chunk.
+        """推理时调用, 返回 action chunk.
 
         Args:
             front: (1, H, W, C)

@@ -83,13 +83,13 @@ def primitive_hold(collector, mode: Optional[str], params: Dict[str, Any], conte
         context["env_alive_mask"] = [False] * collector.num_envs
         return False
 
-    collector._update_all_env_obstacles()
     move_plans, move_plan_successes = collector.motion_planner.plan_to_pose_batch(
         collector.robot.data.joint_pos[: collector.num_envs].cpu().numpy(),
         collector.robot.data.joint_vel[: collector.num_envs].cpu().numpy(),
         collector.robot.joint_names,
         target_positions,
         target_quaternions,
+        target_prim_path=collector.target_prim_path,
     )
     move_successes = [prev and cur for prev, cur in zip(prev_success_mask, move_plan_successes)]
 

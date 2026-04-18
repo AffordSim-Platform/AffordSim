@@ -157,3 +157,22 @@ def _get_articulation_joint_pos(
     if joint_pos.size > 0:
         return float(joint_pos[0])
     return None
+
+
+def _get_articulation_all_joint_pos(
+    scene, label: str, env_idx: int
+) -> dict[str, float] | None:
+    """返回 {joint_name: joint_pos} 的全部关节位置字典."""
+    object_key = _find_object_in_scene(scene, label)
+    if object_key is None:
+        return None
+    articulations = getattr(scene, "articulations", None)
+    if not articulations or object_key not in articulations:
+        return None
+    art = articulations[object_key]
+    try:
+        joint_pos = art.data.joint_pos[env_idx].detach().cpu().numpy()
+        joint_names = list(art.joint_names)
+    except Exception:
+        return None
+    return {name: float(joint_pos[idx]) for idx, name in enumerate(joint_names)}

@@ -1,70 +1,78 @@
 # =============================================================================
-# Success evaluation threshold constants for each primitive
-# These constants are only used when success_eval is enabled in the YAML config
+# 各原语成功判定阈值常量
+# 仅 yaml 中开启 success_eval 时, 这些常量才会被使用
 # =============================================================================
 
-# --- place primitive ---
-# Place success distance threshold (meters):
-# - Non-affordance mode: max XY distance between object final position and target place position
-# - Affordance mode: max distance between placed object's place affordance and target place affordance
+# --- place 原语 ---
+# place 成功判定距离阈值 (米):
+# - 非 affordance 模式: 物体最终位置与目标 place 位置之间的最大 XY 距离
+# - affordance 模式: 被放置物体 place affordance 与目标 place affordance 的最大距离
 PLACE_SUCCESS_XY_THRESHOLD = 0.03
-# Requires pick z >= place z + Z_MARGIN to prevent penetration
+# place 时要求 pick 时的 z >= place 时的 z + Z_MARGIN, 防止穿透
 PLACE_SUCCESS_Z_MARGIN = 0.0
 
-# --- common (place / pour / push / pull / hang) ---
-# Boundary tolerance (meters) when checking if object falls within position_range.x / position_range.y from YAML
+# --- 通用 (place / pour / push / pull / hang) ---
+# 物体落入 yaml 中 position_range.x / position_range.y 范围时允许的边界容差 (米)
 POSITION_RANGE_TOLERANCE = 0.01
 
-# --- pour primitive ---
-# Threshold for container local z-axis component in world z direction; at or below this value counts as successful pour
-# 0.0 -> container axis must be horizontal or lower; negative -> requires more thorough pouring
+# --- pour 原语 ---
+# 容器局部 z 轴在世界 z 方向上的分量阈值, 小于等于该值视为成功倾倒
+# 0.0 → 容器轴需水平或更低; 取负值 → 要求倒得更彻底
 POUR_SUCCESS_TILT_THRESHOLD = 0.0
+# 倾倒时被倒物体与目标容器的最大 XY 距离 (米)
+POUR_SUCCESS_XY_THRESHOLD = 0.1
 
-# ---- pour process evaluation (per-step sampling during tilt interpolation) ----
-# Max overshoot distance (meters) of pour tip world XY from container pour center
-# Actual tolerance radius = tilt_horizontal_offset + POUR_PROCESS_XY_TOLERANCE
+# ---- pour 过程判定 (tilt 插值期间的逐步采样检查) ----
+# 被倾倒物体的 pour tip 在世界 XY 与容器 pour center 的最大越界距离 (米)
+# 实际容忍半径 = tilt_horizontal_offset + POUR_PROCESS_XY_TOLERANCE
 POUR_PROCESS_XY_TOLERANCE = 0.1
-# Allowed reverse rise per step for z_axis_world_z (tolerates physics jitter / IK drift)
-# z_axis_world_z meaning: component of cup local +z in world z direction
-# 1.0 -> fully upright; 0.0 -> horizontal; <0 -> inverted; ideal process decreases monotonically
-# Note: total tilt angle is ensured by endpoint check POUR_SUCCESS_TILT_THRESHOLD; this only enforces process continuity
+# 单步 z_axis_world_z 允许的反向上升量 (容忍物理抖动 / IK 漂移)
+# z_axis_world_z 物理含义: 杯子局部 +z 在世界 z 方向的分量
+# 1.0 → 完全竖直; 0.0 → 水平; <0 → 倒扣; 理想过程是逐步减小
+# 注: 总倾倒角度由终点检查 POUR_SUCCESS_TILT_THRESHOLD 保证, 此处只负责过程连续性
 POUR_PROCESS_TILT_MONOTONIC_SLACK = 0.01
 
-# --- push primitive ---
-# Max allowed XY distance (meters) between object final position and target push position
+# --- push 原语 ---
+# 物体最终位置与目标 push 位置之间允许的最大 XY 距离 (米)
 PUSH_SUCCESS_XY_THRESHOLD = 0.05
-# Min component of object local z-axis in world z direction; below this value the object is considered toppled
-# 1.0 -> fully upright; 0.8 -> allows ~37 degree tilt; 0.0 -> allows lying flat
+# 物体本地 z 轴在世界 z 方向上的最小分量; 小于该值视为翻倒
+# 1.0 → 完全直立; 0.8 ≈ 允许 ~37° 以内倾斜; 0.0 → 允许倒伏
 PUSH_SUCCESS_TILT_THRESHOLD = 0.8
 
-# --- pull primitive ---
-# Min displacement (meters) of the corresponding prismatic joint on the articulation during pull
+# --- pull 原语 ---
+# pull 拉动时, articulation 上对应 prismatic 关节最小位移 (米)
 PULL_SUCCESS_MIN_DISPLACEMENT = 0.08
-# Joint name used for pull evaluation (prismatic joint of cabinet1 drawer)
-PULL_SUCCESS_JOINT_NAME = "joint_0"
+# pull 评估时使用的关节名 (cabinet1 抽屉的 prismatic 关节)
+PULL_SUCCESS_JOINT_NAME = "joint_2"
 
-# --- open primitive ---
-# Min opening angle (radians) of revolute joint on articulation for open, default ~57 degrees
+# --- open 原语 ---
+# open 时 articulation 上 revolute 关节最小开启角度 (弧度), 默认 ≈57°
 OPEN_SUCCESS_MIN_ANGLE_RAD = 1.0
-# Joint name used for open evaluation (revolute joint of microwave door)
+# open 评估时使用的关节名 (microwave 门的 revolute 关节)
 OPEN_SUCCESS_JOINT_NAME = "microjoint"
 
-# --- close primitive ---
-# Max residual angle (radians) of revolute joint on articulation for close, default ~14 degrees
+# --- close 原语 ---
+# close 时 articulation 上 revolute 关节允许的最大闭合残差角度 (弧度), 默认 ≈14°
 CLOSE_SUCCESS_MAX_ANGLE_RAD = 0.25
-# Joint name used for close evaluation (revolute joint of microwave door)
+# close 评估时使用的关节名 (microwave 门的 revolute 关节)
 CLOSE_SUCCESS_JOINT_NAME = "microjoint"
 
-# --- hang primitive ---
-# Max XY distance (meters) between object final position and midpoint of mount point to rack center line
+# --- hang 原语 ---
+# 物体最终位置与（挂载点和物挂架中心点连线的中点）之间允许的最大 XY 距离 (米)
 HANG_SUCCESS_XY_THRESHOLD = 0.05
-# Min Z height (meters) in env local frame required for the object, prevents falling to ground
+# 物体在 env 局部坐标下要求达到的最低 Z 高度 (米), 防止物体掉到地面
 HANG_SUCCESS_MIN_Z = 0.08
 
-# --- hold primitive ---
-# Min Z height (meters) in env local frame required for the object, used to determine if lifted
+# --- hold 原语 ---
+# 物体在 env 局部坐标下要求达到的最低 Z 高度 (米), 用于判定是否抬起
 HOLD_SUCCESS_MIN_Z = 0.10
 
-# --- pick primitive ---
-# Min lift above initial z (meters) required for a successful grasp
+# --- pick 原语 ---
+# 物体相对初始 z 至少抬升多少才算抓取成功 (米)
 PICK_SUCCESS_LIFT_THRESHOLD = 0.02
+
+# --- IK solution quality ---
+# Max allowed joint-space jump (radians) between current joint position and IK solution per step.
+# Normal fine-interpolation steps produce ~0.1-0.2 rad change; anything above this threshold
+# indicates CuRobo returned a solution far from the current configuration.
+IK_MAX_JOINT_JUMP = 0.5

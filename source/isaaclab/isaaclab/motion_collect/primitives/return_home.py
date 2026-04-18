@@ -15,13 +15,13 @@ def primitive_return_home(collector, mode: Optional[str], params: Dict[str, Any]
     current_gripper_state = str(context.get("current_gripper_state", "open")).lower()
     gripper_cmd = -1.0 if current_gripper_state == "closed" else 1.0
 
-    collector._update_all_env_obstacles()
     home_plans, home_successes = collector.motion_planner.plan_to_pose_batch(
         collector.robot.data.joint_pos[: collector.num_envs].cpu().numpy(),
         collector.robot.data.joint_vel[: collector.num_envs].cpu().numpy(),
         collector.robot.joint_names,
         np.array(initial_ee_pos, dtype=float),
         np.array(initial_ee_quat, dtype=float),
+        target_prim_path=collector.target_prim_path,
     )
     home_successes = [prev and cur for prev, cur in zip(prev_success_mask, home_successes)]
     collector.execute_trajectory_batch(

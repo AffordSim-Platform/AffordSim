@@ -1,9 +1,9 @@
 """
-ACT training-time evaluation subprocess script.
+ACT 训练期评估子进程脚本.
 
-Launched synchronously by train_act.py via subprocess.run after each save_checkpoint.
-Starts Isaac Lab, loads an ACT checkpoint, and runs N rollouts.
-Results are written as JSON to --output_json for train_act.py to read back and log to TensorBoard.
+由 train_act.py 在每次 save_checkpoint 后用 subprocess.run 同步拉起.
+启动 Isaac Lab, 加载 ACT ckpt, 跑 N 次 rollout.
+结果以 JSON 写到 --output_json, 供 train_act.py 读回写 tensorboard.
 """
 
 import argparse
@@ -18,20 +18,20 @@ parser = argparse.ArgumentParser(description="ACT Eval Rollout (subprocess)")
 parser.add_argument("--task", type=str, required=True)
 parser.add_argument("--checkpoint", type=str, required=True)
 parser.add_argument("--task_config", type=str, required=True,
-                    help="task yaml; the 'type' field in primitives is used as the evaluation stage")
+                    help="task yaml; primitives 字段中的 type 作为评估阶段")
 parser.add_argument("--dataset_stat", type=str, default=None,
-                    help="dataset_stat.json (optional, used to override norm_params)")
+                    help="dataset_stat.json (可选, 用于覆盖 norm_params)")
 parser.add_argument("--horizon", type=int, default=300)
 parser.add_argument("--num_rollouts", type=int, default=5)
 parser.add_argument("--seed", type=int, default=0)
 parser.add_argument("--output_json", type=str, required=True)
 parser.add_argument("--env_cfg_class", type=str, default=None,
-                    help="Full module path, e.g. 'pkg.mod:ClassName'.")
+                    help="完整模块路径, 例如 'pkg.mod:ClassName'.")
 parser.add_argument("--pick_lift_threshold", type=float, default=0.05)
 parser.add_argument("--action_horizon", type=int, default=None,
-                    help="Number of steps actually executed in chunk mode; if not specified, all steps are executed")
+                    help="chunk 模式下实际执行步数; 不指定则全部执行")
 parser.add_argument("--action_chunk_size", type=int, default=None,
-                    help="action chunk size; if not specified, inferred from checkpoint")
+                    help="action chunk size; 若不指定则从 checkpoint 推断")
 
 AppLauncher.add_app_launcher_args(parser)
 args_cli = parser.parse_args()
@@ -42,7 +42,7 @@ args_cli.enable_cameras = True
 app_launcher = AppLauncher(args_cli)
 simulation_app = app_launcher.app
 
-# --- Imports only available after simulation starts ---
+# --- 仿真启动后才能 import ---
 import copy
 import cv2
 import gymnasium as gym
@@ -53,7 +53,7 @@ import torch
 import torch.nn.functional as F
 import yaml
 
-import isaaclab_tasks.real2sim.tasks.pick  # noqa: F401
+import isaaclab_tasks.real2sim.tasks  # noqa: F401
 from isaaclab_tasks.real2sim.utils.EpisodeBuffer import replace_background_with_segmentation
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -66,8 +66,11 @@ from isaaclab.motion_collect.success.evaluators import (
     _evaluate_place_pose_success_with_metrics,
     _evaluate_place_success_with_metrics,
     _evaluate_pour_success_with_metrics,
+    _evaluate_hang_success_with_metrics,
+    _evaluate_pull_success_with_metrics,
 )
 from isaaclab.motion_collect.success.scene_helpers import (
+    _get_articulation_joint_pos,
     _get_object_pose_world_from_scene,
     attach_scene_success_meta,
 )
@@ -150,9 +153,9 @@ def load_background_images(task_config_path):
             img = cv2.imread(full_path)
             if img is not None:
                 bg_images[key] = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-                print(f"[EVAL_ACT] Loaded background image {key}: {full_path}")
+                print(f"[EVAL_ACT] 加载背景图片 {key}: {full_path}")
             else:
-                print(f"[EVAL_ACT] Warning: unable to read background image {key}: {full_path}")
+                print(f"[EVAL_ACT] 警告: 无法读取背景图片 {key}: {full_path}")
     return bg_images
 
 
@@ -180,7 +183,7 @@ def preprocess_image(image_tensor, seg_tensor=None, bg_image=None,
 
 
 def postprocess_action(action_np, norm_params):
-    """Model output -> environment action."""
+    """模型输出 -> 环境 action."""
     result = action_np.copy()
     result[:6] = result[:6] / 100.0
     if norm_params is not None and "action_ee" in norm_params:
@@ -195,7 +198,7 @@ def postprocess_action(action_np, norm_params):
 
 
 # ============================================================================
-# Task yaml -> evaluation stages
+# Task yaml -> 评估阶段
 # ============================================================================
 
 def load_eval_stages(task_config_path):
@@ -207,7 +210,7 @@ def load_eval_stages(task_config_path):
         if not isinstance(entry, dict):
             continue
         ptype = str(entry.get("type", "")).lower()
-        if ptype not in ("pick", "place", "pour"):
+        if ptype not in ("pick", "place", "pour", "hang", "pull"):
             continue
         params = entry.get("params") or {}
         stages.append({
@@ -218,6 +221,9 @@ def load_eval_stages(task_config_path):
             "place_position": params.get("position") if ptype == "place" else None,
             "place_orientation": params.get("orientation") if ptype == "place" else None,
             "pour_target": params.get("target") if ptype == "pour" else None,
+            "hang_container": params.get("target") if ptype == "hang" else None,
+            "hang_container_mount_npz": params.get("container_mount_affordance_npz_path") if ptype == "hang" else None,
+            "pull_target": params.get("target") if ptype == "pull" else None,
         })
     return stages
 
@@ -231,7 +237,8 @@ def resolve_pick_target(stages):
 
 def evaluate_stages_at_episode_end(scene, stages, pick_initial_z, pick_lift_threshold,
                                     pick_peak_z=None, min_pour_tilt_z=None,
-                                    pour_crossed_ok=False, pour_xy_at_cross=None):
+                                    pour_crossed_ok=False, pour_xy_at_cross=None,
+                                    pull_peak_displacement=None):
     pick_target = resolve_pick_target(stages)
     results = {}
     for idx, stage in enumerate(stages):
@@ -284,6 +291,55 @@ def evaluate_stages_at_episode_end(scene, stages, pick_initial_z, pick_lift_thre
                 pour_target=pour_target, env_idx=0,
             )
             results[key] = {"success": bool(ok), "metrics": metrics}
+
+        elif ptype == "hang":
+            hang_container = stage.get("hang_container")
+            if not hang_container or not pick_target:
+                results[key] = {"success": False, "reason": "no_hang_container_or_pick_target"}
+                continue
+            mount_npz = stage.get("hang_container_mount_npz")
+            try:
+                if not mount_npz:
+                    import importlib
+                    _afford_mod = importlib.import_module("isaaclab.motion_collect.tools.affordance_resolver")
+                    mount_npz = _afford_mod.resolve_affordance_path(hang_container, "hang")
+                if not mount_npz:
+                    results[key] = {"success": False, "reason": "no_container_mount_affordance"}
+                    continue
+                npz_data = np.load(mount_npz, allow_pickle=True)
+                if "centroids" in npz_data:
+                    centroids = np.asarray(npz_data["centroids"], dtype=np.float64)
+                    container_mount_local = np.array(centroids[0], dtype=np.float64)
+                elif "grasp_center" in npz_data:
+                    container_mount_local = np.asarray(npz_data["grasp_center"], dtype=np.float64)
+                else:
+                    results[key] = {"success": False, "reason": "invalid_mount_npz_keys"}
+                    continue
+            except Exception as e:
+                results[key] = {"success": False, "reason": f"mount_load_failed:{e}"}
+                continue
+
+            ok, metrics = _evaluate_hang_success_with_metrics(
+                scene=scene,
+                held_object_label=pick_target,
+                container_label=hang_container,
+                container_mount_local=container_mount_local,
+                env_idx=0,
+            )
+            results[key] = {"success": bool(ok), "metrics": metrics}
+
+        elif ptype == "pull":
+            pull_target = stage.get("pull_target")
+            if not pull_target:
+                results[key] = {"success": False, "reason": "no_pull_target"}
+                continue
+            ok, metrics = _evaluate_pull_success_with_metrics(
+                scene=scene,
+                target_label=pull_target,
+                env_idx=0,
+                peak_displacement=pull_peak_displacement,
+            )
+            results[key] = {"success": bool(ok), "metrics": metrics}
     return results
 
 
@@ -320,7 +376,7 @@ def frames_to_gif(frames, save_path, target_frames=30, target_size=256):
 
 def rollout_until_horizon(policy, env, horizon, device, norm_params, bg_images,
                           action_chunk_size, action_horizon, initial_obs_dict,
-                          pick_target=None, pour_target=None,
+                          pick_target=None, pour_target=None, pull_target=None,
                           collect_front_images=False):
     obs_dict = initial_obs_dict
     action_chunk_buffer = []
@@ -331,9 +387,18 @@ def rollout_until_horizon(policy, env, horizon, device, norm_params, bg_images,
     pour_crossed_ok = False
     pour_xy_at_cross = None
     pour_tilt_at_cross = None
+    pull_peak_displacement = None
 
     def _update_peak():
         nonlocal pick_peak_z, min_pour_tilt_z, pour_crossed_ok, pour_xy_at_cross, pour_tilt_at_cross
+        nonlocal pull_peak_displacement
+        if pull_target:
+            from isaaclab.motion_collect.success.constants import PULL_SUCCESS_JOINT_NAME
+            jp = _get_articulation_joint_pos(env.scene, pull_target, PULL_SUCCESS_JOINT_NAME, 0)
+            if jp is not None:
+                disp = abs(float(jp))
+                if pull_peak_displacement is None or disp > pull_peak_displacement:
+                    pull_peak_displacement = disp
         if not pick_target:
             return
         pos_w, quat_w = _get_object_pose_world_from_scene(env.scene, pick_target, 0)
@@ -394,7 +459,7 @@ def rollout_until_horizon(policy, env, horizon, device, norm_params, bg_images,
                 bg_image=bg_images.get("wrist") if bg_images else None,
             ).unsqueeze(0).to(device)
 
-            # ACT: get_action returns (1, C, 7)
+            # ACT: get_action 返回 (1, C, 7)
             action = policy.get_action(front_img, wrist_img, state_tensor)
             action_raw = action.cpu().numpy().squeeze(0)  # (C, 7)
 
@@ -419,7 +484,7 @@ def rollout_until_horizon(policy, env, horizon, device, norm_params, bg_images,
         if terminated or truncated:
             break
 
-    return obs_dict, pick_peak_z, min_pour_tilt_z, pour_crossed_ok, pour_xy_at_cross, front_frames
+    return obs_dict, pick_peak_z, min_pour_tilt_z, pour_crossed_ok, pour_xy_at_cross, pull_peak_displacement, front_frames
 
 
 # ============================================================================
@@ -428,7 +493,7 @@ def rollout_until_horizon(policy, env, horizon, device, norm_params, bg_images,
 
 def _import_env_cfg_class(spec):
     if ":" not in spec:
-        raise ValueError(f"--env_cfg_class must be in 'pkg.mod:ClassName' format, got: {spec}")
+        raise ValueError(f"--env_cfg_class 必须是 'pkg.mod:ClassName' 形式, 收到: {spec}")
     mod_path, cls_name = spec.split(":", 1)
     return getattr(importlib.import_module(mod_path), cls_name)
 
@@ -476,7 +541,8 @@ def main():
     stages = load_eval_stages(args_cli.task_config)
     pick_target = resolve_pick_target(stages)
     pour_target = next((s.get("pour_target") for s in stages if s["type"] == "pour"), None)
-    print(f"[EVAL_ACT] stages={[s['type'] for s in stages]}, pick_target={pick_target}, pour_target={pour_target}")
+    pull_target = next((s.get("pull_target") for s in stages if s["type"] == "pull"), None)
+    print(f"[EVAL_ACT] stages={[s['type'] for s in stages]}, pick_target={pick_target}, pour_target={pour_target}, pull_target={pull_target}")
 
     torch.manual_seed(args_cli.seed)
     np.random.seed(args_cli.seed)
@@ -495,7 +561,7 @@ def main():
             env.step(torch.zeros(1, env.action_space.shape[1], device=device))
         pick_initial_z = capture_object_initial_z(env.scene, pick_target, env_idx=0) if pick_target else None
 
-        _, pick_peak_z, min_pour_tilt_z, pour_crossed_ok, pour_xy_at_cross, front_frames = rollout_until_horizon(
+        _, pick_peak_z, min_pour_tilt_z, pour_crossed_ok, pour_xy_at_cross, pull_peak_displacement, front_frames = rollout_until_horizon(
             policy=policy, env=env, horizon=args_cli.horizon, device=device,
             norm_params=norm_params, bg_images=bg_images,
             action_chunk_size=action_chunk_size,
@@ -503,6 +569,7 @@ def main():
             initial_obs_dict=initial_obs_dict,
             pick_target=pick_target,
             pour_target=pour_target,
+            pull_target=pull_target,
             collect_front_images=True,
         )
 
@@ -520,6 +587,7 @@ def main():
             min_pour_tilt_z=min_pour_tilt_z,
             pour_crossed_ok=pour_crossed_ok,
             pour_xy_at_cross=pour_xy_at_cross,
+            pull_peak_displacement=pull_peak_displacement,
         )
         per_rollout_results.append(stage_results)
         stage_summary = ", ".join(
@@ -532,7 +600,7 @@ def main():
                 metrics_str = ", ".join(f"{mk}={mv:.4f}" if isinstance(mv, float) else f"{mk}={mv}" for mk, mv in metrics.items())
                 print(f"  [{k}] success={v.get('success')}, {metrics_str}")
 
-    # Aggregate
+    # 聚合
     stage_keys = []
     for r in per_rollout_results:
         for k in r.keys():

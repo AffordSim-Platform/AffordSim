@@ -244,7 +244,6 @@ def primitive_execute_pour(collector, params: Dict[str, Any], context: Dict[str,
     return_lift_height = float(return_lift_height_raw) if has_return_lift else 0.0
 
     print(f"  🚀 [Primitive] Executing POUR to '{pour_pose.get('target_label')}'")
-    collector._update_all_env_obstacles()
 
     move_targets = np.array(pour_pose["positions"], dtype=np.float64).copy()
     move_targets[:, 2] += move_hover_height
@@ -256,6 +255,7 @@ def primitive_execute_pour(collector, params: Dict[str, Any], context: Dict[str,
         collector.robot.joint_names,
         move_targets,
         move_quats,
+        target_prim_path=collector.target_prim_path,
     )
     move_successes = [prev and available and cur for prev, available, cur in zip(prev_success_mask, target_available_mask, move_successes)]
     collector.execute_trajectory_batch(

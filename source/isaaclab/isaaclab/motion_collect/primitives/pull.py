@@ -114,13 +114,13 @@ def primitive_execute_pull(collector, params: Dict[str, Any], context: Dict[str,
 
     # --- Phase 1: CuRobo plan to pre-grasp ---
     print(f"  🪝 [Primitive] Planning pull pre-grasp for '{target_label}'")
-    collector._update_all_env_obstacles()
     pre_pick_plans, pre_pick_plan_successes = collector.motion_planner.plan_to_pose_batch(
         collector.robot.data.joint_pos[: collector.num_envs].cpu().numpy(),
         collector.robot.data.joint_vel[: collector.num_envs].cpu().numpy(),
         collector.robot.joint_names,
         np.array(all_pre_grasp_pos, dtype=np.float64),
         all_pick_quat,
+        target_prim_path=collector.target_prim_path,
     )
     pre_pick_successes = [
         prev and available and cur

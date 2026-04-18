@@ -1,9 +1,9 @@
 """
-BC training-time evaluation subprocess script.
+BC 训练期评估子进程脚本.
 
-Launched synchronously by train_bc.py via subprocess.run after each save_checkpoint.
-Starts Isaac Lab, loads a BC Gaussian checkpoint, and runs N rollouts.
-Results are written as JSON to --output_json for train_bc.py to read back and log to TensorBoard.
+由 train_bc.py 在每次 save_checkpoint 后用 subprocess.run 同步拉起.
+启动 Isaac Lab, 加载 BC Gaussian ckpt, 跑 N 次 rollout.
+结果以 JSON 写到 --output_json, 供 train_bc.py 读回写 tensorboard.
 """
 
 import argparse
@@ -18,20 +18,20 @@ parser = argparse.ArgumentParser(description="BC Eval Rollout (subprocess)")
 parser.add_argument("--task", type=str, required=True)
 parser.add_argument("--checkpoint", type=str, required=True)
 parser.add_argument("--task_config", type=str, required=True,
-                    help="task yaml; the 'type' field in primitives defines evaluation stages")
+                    help="task yaml; primitives 字段中的 type 作为评估阶段")
 parser.add_argument("--dataset_stat", type=str, default=None,
-                    help="dataset_stat.json (optional, used to override norm_params)")
+                    help="dataset_stat.json (可选, 用于覆盖 norm_params)")
 parser.add_argument("--horizon", type=int, default=300)
 parser.add_argument("--num_rollouts", type=int, default=5)
 parser.add_argument("--seed", type=int, default=0)
 parser.add_argument("--output_json", type=str, required=True)
 parser.add_argument("--env_cfg_class", type=str, default=None,
-                    help="Full module path, e.g. 'pkg.mod:ClassName'.")
+                    help="完整模块路径, 例如 'pkg.mod:ClassName'.")
 parser.add_argument("--pick_lift_threshold", type=float, default=0.05)
 parser.add_argument("--action_horizon", type=int, default=None,
-                    help="Number of steps to actually execute in chunk mode; if not specified, execute all")
+                    help="chunk 模式下实际执行步数; 不指定则全部执行")
 parser.add_argument("--action_chunk_size", type=int, default=None,
-                    help="action chunk size; if not specified, inferred from checkpoint")
+                    help="action chunk size; 若不指定则从 checkpoint 推断")
 
 AppLauncher.add_app_launcher_args(parser)
 args_cli = parser.parse_args()
@@ -42,7 +42,7 @@ args_cli.enable_cameras = True
 app_launcher = AppLauncher(args_cli)
 simulation_app = app_launcher.app
 
-# --- Imports that require simulation to be started first ---
+# --- 仿真启动后才能 import ---
 import copy
 import cv2
 import gymnasium as gym
@@ -137,7 +137,7 @@ def load_background_images(task_config_path):
             if os.path.isabs(bg_path):
                 full_path = bg_path
             else:
-                # Prefer searching from CWD (project root directory)
+                # 优先从 CWD (项目根目录) 查找
                 cwd_path = os.path.abspath(bg_path)
                 if os.path.exists(cwd_path):
                     full_path = cwd_path
@@ -146,9 +146,9 @@ def load_background_images(task_config_path):
             img = cv2.imread(full_path)
             if img is not None:
                 bg_images[key] = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-                print(f"[EVAL_BC] Loaded background image {key}: {full_path}")
+                print(f"[EVAL_BC] 加载背景图片 {key}: {full_path}")
             else:
-                print(f"[EVAL_BC] Warning: cannot read background image {key}: {full_path}")
+                print(f"[EVAL_BC] 警告: 无法读取背景图片 {key}: {full_path}")
     return bg_images
 
 
@@ -176,7 +176,7 @@ def preprocess_image(image_tensor, seg_tensor=None, bg_image=None,
 
 
 def postprocess_action(action_np, norm_params):
-    """Convert model output to environment action."""
+    """模型输出 → 环境 action."""
     result = action_np.copy()
     result[:6] = result[:6] / 100.0
     if norm_params is not None and "action_ee" in norm_params:
@@ -192,7 +192,7 @@ def postprocess_action(action_np, norm_params):
 
 
 # ============================================================================
-# Task yaml -> Evaluation stages
+# Task yaml → 评估阶段
 # ============================================================================
 
 def load_eval_stages(task_config_path):
@@ -391,7 +391,7 @@ def rollout_until_horizon(policy, env, horizon, device, norm_params, bg_images,
                 bg_image=bg_images.get("wrist") if bg_images else None,
             ).unsqueeze(0).to(device)
 
-            # get_action returns (1, C, 7) mean
+            # get_action 返回 (1, C, 7) 均值
             action = policy.get_action(front_img, wrist_img, state_tensor)
             action_raw = action.cpu().numpy().squeeze(0)  # (C, 7)
 
@@ -425,7 +425,7 @@ def rollout_until_horizon(policy, env, horizon, device, norm_params, bg_images,
 
 def _import_env_cfg_class(spec):
     if ":" not in spec:
-        raise ValueError(f"--env_cfg_class must be in 'pkg.mod:ClassName' format, got: {spec}")
+        raise ValueError(f"--env_cfg_class 必须是 'pkg.mod:ClassName' 形式, 收到: {spec}")
     mod_path, cls_name = spec.split(":", 1)
     return getattr(importlib.import_module(mod_path), cls_name)
 
@@ -444,12 +444,12 @@ def main():
     if args_cli.env_cfg_class:
         env_cfg_cls = _import_env_cfg_class(args_cli.env_cfg_class)
     else:
-        from isaaclab_tasks.real2sim.tasks.config.franka_fr3.ourgripper.ik_rel_vis_env_cfg import (
+        from isaaclab_tasks.real2sim.tasks.pick.config.sceneconfig.franka_fr3.ourgripper.ik_rel_vis_env_cfg import (
             FrankaFr3OurGripperIKRelVisPickEnvCfg,
         )
         env_cfg_cls = FrankaFr3OurGripperIKRelVisPickEnvCfg
 
-    from isaaclab_tasks.real2sim.tasks.pick_r2s_env_cfg import create_pick_env_cfg_from_yaml
+    from isaaclab_tasks.real2sim.tasks.pick.pick_r2s_env_cfg import create_pick_env_cfg_from_yaml
     env_cfg = create_pick_env_cfg_from_yaml(
         yaml_path=args_cli.task_config,
         env_cfg_class=env_cfg_cls,
@@ -529,7 +529,7 @@ def main():
                 metrics_str = ", ".join(f"{mk}={mv:.4f}" if isinstance(mv, float) else f"{mk}={mv}" for mk, mv in metrics.items())
                 print(f"  [{k}] success={v.get('success')}, {metrics_str}")
 
-    # Aggregate results
+    # 聚合
     stage_keys = []
     for r in per_rollout_results:
         for k in r.keys():

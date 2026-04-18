@@ -36,9 +36,6 @@ def find_object_in_scene(label: str, scene: Any) -> Optional[str]:
     for assets in asset_groups:
         if label in assets:
             return label
-        for key in assets.keys():
-            if label in key or key in label:
-                return key
 
     return None
 

@@ -656,7 +656,6 @@ def primitive_execute_place(collector, params: Dict[str, Any], context: Dict[str
             f"  🚀 [Primitive] Executing two-step PLACE ({','.join(two_step_mode_names)}) "
             f"for {sum(two_step_active_mask)}/{collector.num_envs} envs"
         )
-        collector._update_all_env_obstacles()
         two_step_indices = [env_idx for env_idx, active in enumerate(two_step_active_mask) if active]
         subset_pre_place_plans, subset_pre_place_successes = collector.motion_planner.plan_to_pose_batch(
             collector.robot.data.joint_pos[two_step_indices].cpu().numpy(),
@@ -664,6 +663,8 @@ def primitive_execute_place(collector, params: Dict[str, Any], context: Dict[str
             collector.robot.joint_names,
             pre_place_positions[two_step_indices],
             pre_place_quaternions[two_step_indices],
+            env_indices=two_step_indices,
+            target_prim_path=collector.target_prim_path,
         )
         pre_place_plans, pre_place_successes = _scatter_subset_plans(
             collector.num_envs,
@@ -695,7 +696,6 @@ def primitive_execute_place(collector, params: Dict[str, Any], context: Dict[str
 
     if any(normal_active_mask):
         print(f"  🚀 [Primitive] Executing normal PLACE for {sum(normal_active_mask)}/{collector.num_envs} envs")
-        collector._update_all_env_obstacles()
         normal_indices = [env_idx for env_idx, active in enumerate(normal_active_mask) if active]
         subset_place_plans, subset_place_successes = collector.motion_planner.plan_to_pose_batch(
             collector.robot.data.joint_pos[normal_indices].cpu().numpy(),
@@ -703,6 +703,8 @@ def primitive_execute_place(collector, params: Dict[str, Any], context: Dict[str
             collector.robot.joint_names,
             place_positions[normal_indices],
             place_quaternions[normal_indices],
+            env_indices=normal_indices,
+            target_prim_path=collector.target_prim_path,
         )
         place_plans, place_successes = _scatter_subset_plans(
             collector.num_envs,

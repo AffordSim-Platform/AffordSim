@@ -356,13 +356,13 @@ def primitive_execute_push(collector, params: Dict[str, Any], context: Dict[str,
     target_available_mask = list(push_pose.get("target_available_mask", [True] * collector.num_envs))
 
     print(f"  👉 [Primitive] Executing push on '{push_pose.get('target_label')}'")
-    collector._update_all_env_obstacles()
     pre_plans, pre_plan_successes = collector.motion_planner.plan_to_pose_batch(
         collector.robot.data.joint_pos[: collector.num_envs].cpu().numpy(),
         collector.robot.data.joint_vel[: collector.num_envs].cpu().numpy(),
         collector.robot.joint_names,
         np.array(push_pose["pre_positions"]),
         np.array(push_pose["pre_quats"]),
+        target_prim_path=collector.target_prim_path,
     )
     pre_successes = [prev and available and cur for prev, available, cur in zip(prev_success_mask, target_available_mask, pre_plan_successes)]
     collector.execute_trajectory_batch(

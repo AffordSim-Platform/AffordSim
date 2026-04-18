@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# Exit automatically on errors
+# 设置遇到错误时自动退出
 set -e
 
-echo "Starting BC training script..."
+echo "开始运行 BC 训练脚本..."
 
-# Run training command
+# 运行训练命令
 # pick_banana_and_place_on_plate_final
 CUDA_VISIBLE_DEVICES=1 python scripts/imitation_learning/BC/train_bc.py \
     --dataset dataset/r2s2r_data/task_gen/pick_place/pick_banana_and_place_on_plate_final/merged_trajectories_robo.hdf5 \
@@ -58,4 +58,4 @@ CUDA_VISIBLE_DEVICES=1 python scripts/imitation_learning/BC/train_bc.py \
 #     --batch_size 48 \
 #     --action_chunk_size 8 --action_horizon 4 --no_remove_idle
 
-echo "Training run completed!"
+echo "训练运行结束！"

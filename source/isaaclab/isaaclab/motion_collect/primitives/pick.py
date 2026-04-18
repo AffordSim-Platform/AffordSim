@@ -75,7 +75,6 @@ def primitive_execute_pick(collector, params: Dict[str, Any], context: Dict[str,
         container_picks = [None] * collector.num_envs
 
     print(f"  🚀 [Primitive] Planning Pre-PICK ({execution_mode})...")
-    collector._update_all_env_obstacles()
 
     pre_pick_plans, pre_pick_plan_successes = collector.motion_planner.plan_to_pose_batch(
         collector.robot.data.joint_pos[: collector.num_envs].cpu().numpy(),
@@ -83,6 +82,7 @@ def primitive_execute_pick(collector, params: Dict[str, Any], context: Dict[str,
         collector.robot.joint_names,
         np.array(pre_pick_positions),
         np.array(context["all_pick_quat"]),
+        target_prim_path=collector.target_prim_path,
     )
     pre_pick_successes = [prev and available and cur for prev, available, cur in zip(prev_success_mask, target_available_mask, pre_pick_plan_successes)]
 

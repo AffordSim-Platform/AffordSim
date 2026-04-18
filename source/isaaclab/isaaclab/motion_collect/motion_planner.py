@@ -15,6 +15,8 @@ from tqdm import tqdm
 from typing import Optional, Tuple, List, Dict, Any
 from scipy.spatial.transform import Rotation as R, Slerp
 
+from isaaclab.motion_collect.success.constants import IK_MAX_JOINT_JUMP
+
 
 class MotionPlanner:
     """CuRobo motion planner wrapper with multi-environment support"""
@@ -42,6 +44,8 @@ class MotionPlanner:
         self.device = device
         self.num_envs = num_envs
         self.use_table_obstacle = use_table_obstacle
+        self._last_target_prim_path: Optional[str] = None
+        self._env_context_configured = False
         
         if curobo_path is None:
             curobo_path = Path(__file__).parent.parent / "curobo-0.7.7" / "src"
@@ -148,6 +152,7 @@ class MotionPlanner:
         self._world_stage = world_stage
         self._robot_prim_path = robot_prim_path
         self._scene = scene
+        self._env_context_configured = True
 
     # =========================================================================
     # Obstacle Management
@@ -178,6 +183,7 @@ class MotionPlanner:
         """Update motion planner obstacles for a specific environment."""
         from . import scene_query as sq
 
+        self._last_target_prim_path = target_prim_path
         ignored_objects = self.get_ignored_objects_for_env(env_idx, target_prim_path)
         robot_prim_path_env = self._robot_prim_path.replace("env_0", f"env_{env_idx}")
         object_poses = sq.get_object_poses_for_env(env_idx, self._scene)
@@ -193,21 +199,27 @@ class MotionPlanner:
         )
 
     def update_all_env_obstacles(self, target_prim_path: Optional[str] = None):
-        """Update obstacles for all environments. Call before plan_to_pose_batch."""
-        for env_idx in range(self.num_envs):
-            self.update_obstacles_for_env(env_idx, target_prim_path)
+        """Compatibility shim: remember target object for legacy callers.
+
+        This method intentionally does not update all env obstacle worlds
+        anymore. CuRobo MotionGen stores only one active world, and
+        plan_to_pose_batch refreshes the correct per-env world immediately
+        before each plan.
+
+        New batch-planning code should pass target_prim_path directly to
+        plan_to_pose_batch(). New single-env planning code should call
+        update_obstacles_for_env(env_idx, target_prim_path) before plan_to_pose().
+        """
+        self._last_target_prim_path = target_prim_path
 
     def init_motion_planning(self, target_prim_path: Optional[str] = None):
-        """Initialize CuRobo motion planning obstacles for all environments."""
-        for env_idx in range(self.num_envs):
-            ignored_objects = self.get_ignored_objects_for_env(env_idx, target_prim_path)
-            if env_idx == 0:
-                self.update_obstacles(
-                    self._world_stage,
-                    self._robot_prim_path,
-                    ignored_objects,
-                )
-                print(f"✓ Motion planning obstacles configured for env_{env_idx}")
+        """Compatibility hook for motion planning initialization.
+
+        Obstacle worlds are no longer initialized here. Batch planning refreshes
+        the correct per-env world immediately before each plan, and single-env
+        planning should call update_obstacles_for_env() before plan_to_pose().
+        """
+        self._last_target_prim_path = target_prim_path
         print("✓ Motion planning initialized")
 
     def update_obstacles(self, world_stage, robot_prim_path: str, ignored_objects: List[str]):
@@ -236,6 +248,17 @@ class MotionPlanner:
                     obstacles.cuboid.append(self._table_cuboid)
             self.motion_gen.update_world(obstacles)
             print(f"  ✓ Obstacles updated: {len(obstacles.objects)} objects")
+
+    @staticmethod
+    def _obstacle_name_matches_label(obstacle_name: str, label: str) -> bool:
+        """Return True only when the obstacle name contains label as a full path segment."""
+        if not obstacle_name or not label:
+            return False
+        if obstacle_name == label:
+            return True
+
+        normalized_name = str(obstacle_name).replace("\\", "/")
+        return label in [part for part in normalized_name.split("/") if part]
     
     def my_update_obstacles(
         self,
@@ -298,9 +321,8 @@ class MotionPlanner:
                 matched_pos = None
                 matched_key = None
                 
-                # Try exact match first, then substring match
                 for key, pos in object_poses.items():
-                    if key in obj_name or obj_name in key:
+                    if self._obstacle_name_matches_label(obj_name, key):
                         matched_pos = pos
                         matched_key = key
                         break
@@ -376,9 +398,8 @@ class MotionPlanner:
         joint_names: List[str],
         target_pos: np.ndarray,
         target_quat: np.ndarray,
-        enable_graph: bool = True,
-        max_attempts: int = 4,
-        deterministic: bool = True,
+        enable_graph: bool = False,
+        max_attempts: int = 10,
     ) -> Tuple[Optional[object], bool]:
         """
         Plan motion to target end-effector pose
@@ -391,7 +412,6 @@ class MotionPlanner:
             target_quat: Target quaternion [w, x, y, z]
             enable_graph: Enable graph-based planning
             max_attempts: Maximum planning attempts
-            deterministic: Use deterministic planning
         
         Returns:
             Tuple of (planned trajectory, success flag)
@@ -424,10 +444,12 @@ class MotionPlanner:
 
         print(f"  → Planning to pose: pos={target_pos}, quat={target_quat}")
         
+        graph_attempt = 3 if enable_graph else 0
+        
         plan_config = self.MotionGenPlanConfig(
-            enable_graph=False,
-            enable_graph_attempt=0,
-            max_attempts=10,
+            enable_graph=enable_graph,
+            enable_graph_attempt=graph_attempt,
+            max_attempts=max_attempts,
             enable_finetune_trajopt=True,
             time_dilation_factor=1.0,
             finetune_attempts=5,
@@ -468,8 +490,10 @@ class MotionPlanner:
         joint_names: List[str],
         target_pos_batch: np.ndarray,
         target_quat_batch: np.ndarray,
-        enable_graph: bool = True,
-        max_attempts: int = 4,
+        enable_graph: bool = False,
+        max_attempts: int = 10,
+        env_indices: Optional[List[int]] = None,
+        target_prim_path: Optional[str] = None,
     ) -> Tuple[List[Optional[object]], List[bool]]:
         """
         Plan motion to target end-effector poses for multiple environments (batch)
@@ -482,11 +506,28 @@ class MotionPlanner:
             target_quat_batch: Target quaternions for all envs [batch_size, 4] (w,x,y,z)
             enable_graph: Enable graph-based planning
             max_attempts: Maximum planning attempts
+            env_indices: Original environment index for each row. Defaults to row index
+                only when the batch covers all environments.
+            target_prim_path: Target object prim path to ignore while planning.
         
         Returns:
             Tuple of (list of planned trajectories, list of success flags)
         """
         batch_size = current_joint_pos_batch.shape[0]
+        if env_indices is None:
+            if self._env_context_configured and batch_size != self.num_envs:
+                raise ValueError(
+                    "plan_to_pose_batch() received a subset batch without env_indices. "
+                    f"batch_size={batch_size}, num_envs={self.num_envs}. "
+                    "Pass env_indices so each row updates the correct obstacle world."
+                )
+            env_indices = list(range(batch_size))
+        else:
+            env_indices = [int(env_idx) for env_idx in env_indices]
+            if len(env_indices) != batch_size:
+                raise ValueError(
+                    f"env_indices length {len(env_indices)} does not match batch_size {batch_size}"
+                )
         
         if np.any(np.isnan(current_joint_pos_batch)):
             print("  ⚠️  Invalid joint positions (NaN) in batch")
@@ -497,8 +538,16 @@ class MotionPlanner:
         cmd_plans = []
         successes = []
         success_count = 0
+        if target_prim_path is None:
+            target_prim_path = self._last_target_prim_path
+        else:
+            self._last_target_prim_path = target_prim_path
         
         for i in range(batch_size):
+            env_idx = env_indices[i]
+            if self._env_context_configured and 0 <= env_idx < self.num_envs:
+                self.update_obstacles_for_env(env_idx, target_prim_path)
+
             plan, success = self.plan_to_pose(
                 current_joint_pos=current_joint_pos_batch[i],
                 current_joint_vel=current_joint_vel_batch[i],
@@ -546,6 +595,364 @@ class MotionPlanner:
         self._ik_tensor_args = tensor_args
         print("✓ CuRobo IK solver initialized (no world collision, self-collision enabled)")
 
+    @staticmethod
+    def _apply_robot_quat_correction(
+        quaternions: np.ndarray,
+        robot_cfg_name: str,
+    ) -> np.ndarray:
+        """Apply Z+90° quaternion correction for UR5e/Kinova (batch vectorized).
+
+        Args:
+            quaternions: (batch, 4) wxyz
+            robot_cfg_name: Robot config name string
+
+        Returns:
+            Corrected quaternions (batch, 4) wxyz
+        """
+        if "ur5e" not in robot_cfg_name and "kinova" not in robot_cfg_name:
+            return quaternions.copy()
+        # wxyz -> xyzw for scipy
+        q_scipy = quaternions[:, [1, 2, 3, 0]].astype(np.float64)
+        r_target = R.from_quat(q_scipy)
+        r_z90 = R.from_euler('z', 90, degrees=True)
+        q_corrected = (r_target * r_z90).as_quat()  # (batch, 4) xyzw
+        # xyzw -> wxyz
+        return q_corrected[:, [3, 0, 1, 2]]
+
+    @staticmethod
+    def _as_batched_ik_candidates(
+        values: torch.Tensor,
+        batch_size: int,
+        name: str,
+    ) -> torch.Tensor:
+        """Normalize IK result tensors to ``[batch, candidates, dof]``.
+
+        CuRobo result tensors can be returned either as one solution per env or
+        as multiple seed/candidate solutions.  Keeping the candidate dimension
+        lets us choose the joint-space-continuous branch explicitly.
+        """
+        tensor = values.detach()
+        while tensor.dim() > 3 and tensor.shape[-2] == 1:
+            tensor = tensor.squeeze(-2)
+
+        if tensor.dim() == 1:
+            return tensor.reshape(1, 1, -1)
+
+        if tensor.dim() == 2:
+            if tensor.shape[0] == batch_size:
+                return tensor.unsqueeze(1)
+            if batch_size == 1:
+                return tensor.unsqueeze(0)
+            raise ValueError(
+                f"Unexpected {name} IK result shape {tuple(tensor.shape)} "
+                f"for batch_size={batch_size}"
+            )
+
+        if tensor.dim() == 3:
+            if tensor.shape[0] == batch_size:
+                return tensor
+            if tensor.shape[1] == batch_size:
+                return tensor.transpose(0, 1)
+            raise ValueError(
+                f"Unexpected {name} IK result shape {tuple(tensor.shape)} "
+                f"for batch_size={batch_size}"
+            )
+
+        raise ValueError(f"Unexpected {name} IK result rank {tensor.dim()}")
+
+    @staticmethod
+    def _success_to_candidate_mask(
+        success_tensor: torch.Tensor,
+        batch_size: int,
+        num_candidates: int,
+    ) -> np.ndarray:
+        """Normalize CuRobo success flags to ``[batch, candidates]``."""
+        success = success_tensor.detach().cpu().numpy().astype(bool)
+        success = np.squeeze(success)
+
+        if success.ndim == 0:
+            return np.full((batch_size, num_candidates), bool(success))
+
+        if success.ndim == 1:
+            if success.shape[0] == batch_size:
+                return np.repeat(success[:, None], num_candidates, axis=1)
+            if batch_size == 1 and success.shape[0] == num_candidates:
+                return success[None, :]
+            if success.shape[0] == batch_size * num_candidates:
+                return success.reshape(batch_size, num_candidates)
+            raise ValueError(
+                f"Unexpected IK success shape {tuple(success.shape)} "
+                f"for batch_size={batch_size}, num_candidates={num_candidates}"
+            )
+
+        if success.ndim == 2:
+            if success.shape == (batch_size, num_candidates):
+                return success
+            if success.shape == (batch_size, 1):
+                return np.repeat(success, num_candidates, axis=1)
+            if success.shape == (1, num_candidates) and batch_size == 1:
+                return success
+            if success.shape == (num_candidates, batch_size):
+                return success.T
+
+        raise ValueError(
+            f"Unexpected IK success shape {tuple(success.shape)} "
+            f"for batch_size={batch_size}, num_candidates={num_candidates}"
+        )
+
+    def _get_ik_joint_bounds(self, n_ik: int) -> Tuple[Optional[np.ndarray], Optional[np.ndarray]]:
+        """Return IK joint position bounds in IK joint order when available."""
+        try:
+            lows = self.ik_solver.solver.safety_rollout.action_bound_lows
+            highs = self.ik_solver.solver.safety_rollout.action_bound_highs
+            if hasattr(lows, "detach"):
+                lows = lows.detach().cpu().numpy()
+            if hasattr(highs, "detach"):
+                highs = highs.detach().cpu().numpy()
+            lows = np.asarray(lows, dtype=np.float64).reshape(-1)[:n_ik]
+            highs = np.asarray(highs, dtype=np.float64).reshape(-1)[:n_ik]
+            if lows.shape[0] != n_ik or highs.shape[0] != n_ik:
+                return None, None
+            return lows, highs
+        except Exception:
+            return None, None
+
+    def _build_local_ik_seed_config(
+        self,
+        seed_joint_pos: np.ndarray,
+        num_seeds: int,
+    ) -> np.ndarray:
+        """Build a local seed cloud around the previous IK solution.
+
+        CuRobo fills missing seeds with broad samples.  For servo-style IK this
+        can pull the returned solution to another branch, so provide all seeds
+        explicitly near the previous joint configuration.
+        """
+        seed = np.asarray(seed_joint_pos, dtype=np.float64)
+        if seed.ndim != 2:
+            raise ValueError(f"seed_joint_pos must be [batch, dof], got {seed.shape}")
+
+        batch_size, n_ik = seed.shape
+        num_seeds = max(1, int(num_seeds))
+        seeds = np.repeat(seed[:, None, :], num_seeds, axis=1)
+
+        if num_seeds == 1:
+            return seeds
+
+        offsets: List[np.ndarray] = []
+
+        # Single-joint local probes preserve the current nullspace branch when
+        # a nearby solution exists.
+        single_joint_radius = 0.04
+        for joint_idx in range(n_ik):
+            plus = np.zeros(n_ik, dtype=np.float64)
+            minus = np.zeros(n_ik, dtype=np.float64)
+            plus[joint_idx] = single_joint_radius
+            minus[joint_idx] = -single_joint_radius
+            offsets.extend([plus, minus])
+
+        # A few coupled probes help when the continuous branch needs coordinated
+        # joint motion rather than a single-axis perturbation.
+        combo_radius = 0.07
+        k = 0
+        while len(offsets) < num_seeds - 1:
+            joint_ids = np.arange(1, n_ik + 1, dtype=np.float64)
+            direction = np.sin((k + 1) * joint_ids * 1.61803398875)
+            max_abs = np.max(np.abs(direction))
+            if max_abs > 1e-8:
+                direction = direction / max_abs
+            offsets.append(combo_radius * direction)
+            k += 1
+
+        for seed_idx, offset in enumerate(offsets[: num_seeds - 1], start=1):
+            seeds[:, seed_idx, :] = seed + offset[None, :]
+
+        lows, highs = self._get_ik_joint_bounds(n_ik)
+        if lows is not None and highs is not None:
+            seeds = np.clip(seeds, lows[None, None, :], highs[None, None, :])
+
+        return seeds
+
+    def _solve_ik_batch_parallel(
+        self,
+        target_positions: np.ndarray,
+        target_quaternions: np.ndarray,
+        seed_joint_pos: np.ndarray,
+        arm_joint_names: List[str],
+        n_arm: int,
+    ) -> Tuple[np.ndarray, np.ndarray, List[bool]]:
+        """Solve IK for all envs in one GPU batch call.
+
+        Args:
+            target_positions: (batch, 3)
+            target_quaternions: (batch, 4) wxyz — before robot-specific correction
+            seed_joint_pos: (batch, n_ik_joints) in IK joint order
+            arm_joint_names: Arm joint names in robot order
+            n_arm: Number of arm joints
+
+        Returns:
+            joint_positions_arm: (batch, n_arm) in arm_joint_names order
+            joint_positions_ik: (batch, n_ik) in IK joint order (for seed chaining)
+            successes: List[bool]
+        """
+        batch_size = target_positions.shape[0]
+        n_ik = seed_joint_pos.shape[1]
+
+        corrected_quats = self._apply_robot_quat_correction(
+            target_quaternions, self.robot_cfg_name
+        )
+
+        with torch.enable_grad():
+            goal_pose = self._ik_pose_cls(
+                position=self._ik_tensor_args.to_device(target_positions),
+                quaternion=self._ik_tensor_args.to_device(corrected_quats),
+            )
+
+            num_ik_seeds = int(getattr(self.ik_solver, "num_seeds", 1))
+            seed_tensor = self._ik_tensor_args.to_device(seed_joint_pos)  # (batch, dof)
+            seed_config = self._ik_tensor_args.to_device(
+                self._build_local_ik_seed_config(seed_joint_pos, num_ik_seeds)
+            )  # (batch, num_seeds, dof)
+            retract_config = seed_tensor              # (batch, dof)
+
+            result = self.ik_solver.solve_batch(
+                goal_pose,
+                retract_config=retract_config,
+                seed_config=seed_config,
+                return_seeds=num_ik_seeds,
+            )
+
+        # IK-ordered candidate positions for seed chaining.
+        ik_candidates_t = self._as_batched_ik_candidates(
+            result.js_solution.position, batch_size, "IK-ordered"
+        )
+        ik_candidates = ik_candidates_t.detach().cpu().numpy()[:, :, :n_ik]
+
+        # Arm-ordered candidate positions for trajectory output.
+        ordered_js = result.js_solution.get_ordered_joint_state(arm_joint_names)
+        arm_candidates_t = self._as_batched_ik_candidates(
+            ordered_js.position, batch_size, "arm-ordered"
+        )
+        arm_candidates = arm_candidates_t.detach().cpu().numpy()[:, :, :n_arm]
+
+        num_candidates = min(ik_candidates.shape[1], arm_candidates.shape[1])
+        ik_candidates = ik_candidates[:, :num_candidates, :]
+        arm_candidates = arm_candidates[:, :num_candidates, :]
+
+        success_mask = self._success_to_candidate_mask(
+            result.success, batch_size, num_candidates
+        )
+        success_mask = success_mask[:, :num_candidates]
+        successes = [bool(v) for v in np.any(success_mask, axis=1).tolist()]
+
+        # Explicitly choose the IK branch closest to the previous seed in joint space.
+        seed_np = np.asarray(seed_joint_pos, dtype=np.float64)[:, None, :n_ik]
+        candidate_dist = np.linalg.norm(ik_candidates.astype(np.float64) - seed_np, axis=-1)
+        masked_dist = np.where(success_mask, candidate_dist, np.inf)
+        chosen_candidate = np.argmin(masked_dist, axis=1)
+
+        # If no candidate succeeded for an env, keep the nearest candidate only
+        # as a fallback output; the caller will mark that env as failed.
+        failed_envs = ~np.any(success_mask, axis=1)
+        if np.any(failed_envs):
+            chosen_candidate[failed_envs] = np.argmin(candidate_dist[failed_envs], axis=1)
+
+        env_indices = np.arange(batch_size)
+        joint_positions_ik = ik_candidates[env_indices, chosen_candidate, :]
+        joint_positions_arm = arm_candidates[env_indices, chosen_candidate, :]
+
+        return joint_positions_arm, joint_positions_ik, successes
+
+    def solve_ik_trajectory(
+        self,
+        waypoint_positions: np.ndarray,
+        waypoint_quaternions: np.ndarray,
+        initial_joint_pos: np.ndarray,
+        robot: Any,
+    ) -> Tuple[np.ndarray, np.ndarray, List[bool]]:
+        """Pre-solve IK for entire trajectory using chain-seeded GPU batch solving.
+
+        Args:
+            waypoint_positions: (num_envs, num_steps, 3)
+            waypoint_quaternions: (num_envs, num_steps, 4) wxyz
+            initial_joint_pos: (num_envs, num_joints) full robot joint positions
+            robot: Isaac Lab robot articulation
+
+        Returns:
+            joint_trajectory: (num_envs, num_steps, n_arm) in arm_joint_names order
+            step_successes: (num_envs, num_steps) bool
+            env_successes: List[bool] — True if all steps succeeded for that env
+        """
+        if not hasattr(self, 'ik_solver') or self.ik_solver is None:
+            raise RuntimeError("IK solver must be initialized before solve_ik_trajectory")
+
+        num_envs, num_steps = waypoint_positions.shape[:2]
+
+        # Joint name mappings
+        curobo_joints = set(
+            self.robot_cfg['kinematics']['cspace']['joint_names']
+        )
+        arm_joint_names = [j for j in robot.joint_names if j in curobo_joints]
+        n_arm = len(arm_joint_names)
+        ik_joint_names = list(self.ik_solver.joint_names)
+
+        # Index mappings (precomputed once)
+        ik_ordered_idx = [robot.joint_names.index(j) for j in ik_joint_names]
+        arm_idx_in_robot = [robot.joint_names.index(j) for j in arm_joint_names]
+
+        # Initial seeds and arm positions
+        seed_ik = initial_joint_pos[:, ik_ordered_idx].copy()  # (num_envs, n_ik)
+        initial_arm = initial_joint_pos[:, arm_idx_in_robot]   # (num_envs, n_arm)
+
+        joint_trajectory = np.zeros((num_envs, num_steps, n_arm))
+        step_successes = np.zeros((num_envs, num_steps), dtype=bool)
+        env_successes = [True] * num_envs
+
+        for step in range(num_steps):
+            pos_step = waypoint_positions[:, step, :]    # (num_envs, 3)
+            quat_step = waypoint_quaternions[:, step, :] # (num_envs, 4)
+
+            ik_arm, ik_ik, successes = self._solve_ik_batch_parallel(
+                pos_step, quat_step, seed_ik, arm_joint_names, n_arm,
+            )
+
+            failed_envs = []
+            for env_idx in range(num_envs):
+                if not env_successes[env_idx]:
+                    # Already frozen — repeat last good position
+                    prev = joint_trajectory[env_idx, step - 1, :] if step > 0 else initial_arm[env_idx]
+                    joint_trajectory[env_idx, step, :] = prev
+                    continue
+
+                if not successes[env_idx]:
+                    env_successes[env_idx] = False
+                    failed_envs.append(env_idx)
+                    prev = joint_trajectory[env_idx, step - 1, :] if step > 0 else initial_arm[env_idx]
+                    joint_trajectory[env_idx, step, :] = prev
+                    continue
+
+                # Joint jump check
+                prev_arm = joint_trajectory[env_idx, step - 1, :] if step > 0 else initial_arm[env_idx]
+                ik_delta = np.abs(ik_arm[env_idx] - prev_arm).max()
+                if ik_delta > IK_MAX_JOINT_JUMP:
+                    env_successes[env_idx] = False
+                    failed_envs.append(env_idx)
+                    joint_trajectory[env_idx, step, :] = prev_arm
+                    continue
+
+                # Success — record and update seed
+                step_successes[env_idx, step] = True
+                joint_trajectory[env_idx, step, :] = ik_arm[env_idx]
+                seed_ik[env_idx] = ik_ik[env_idx]
+
+            if failed_envs:
+                print(
+                    f"  ⚠️ IK trajectory pre-solve failed at step {step}/{num_steps} "
+                    f"for envs={failed_envs}"
+                )
+
+        return joint_trajectory, step_successes, env_successes
+
     def solve_ik_batch(
         self,
         target_positions: np.ndarray,
@@ -556,20 +963,19 @@ class MotionPlanner:
     ) -> Tuple[np.ndarray, List[bool]]:
         """
         Solve target joint angles using pure IK solver (no collision check).
+        Compatibility wrapper around _solve_ik_batch_parallel.
 
         Args:
             target_positions: [num_envs, 3]
             target_quaternions: [num_envs, 4] wxyz
             current_joint_pos: [num_envs, num_joints]
-            current_joint_vel: [num_envs, num_joints]
+            current_joint_vel: [num_envs, num_joints] (unused, kept for API compat)
             robot: Isaac Lab robot articulation
         """
         if not hasattr(self, 'ik_solver') or self.ik_solver is None:
             raise RuntimeError("IK solver must be initialized before solve_ik_batch")
 
         num_envs = target_positions.shape[0]
-        joint_positions = []
-        successes = []
 
         curobo_joints = set(
             self.robot_cfg['kinematics']['cspace']['joint_names']
@@ -578,42 +984,20 @@ class MotionPlanner:
         n_arm = len(arm_joint_names)
         ik_joint_names = list(self.ik_solver.joint_names)
 
-        with torch.enable_grad():
-            for i in range(num_envs):
-                target_quat = np.asarray(target_quaternions[i], dtype=np.float64)
+        # Map current_joint_pos (robot order) → IK order for seeding
+        ik_ordered_idx = [robot.joint_names.index(j) for j in ik_joint_names]
+        seed_ik = current_joint_pos[:, ik_ordered_idx]
 
-                # Keep pure IK aligned with the CuRobo planning path for UR5e/Kinova Robotiq TCP.
-                if "ur5e" in self.robot_cfg_name or "kinova" in self.robot_cfg_name:
-                    r_target = R.from_quat([target_quat[1], target_quat[2], target_quat[3], target_quat[0]])
-                    r_z90 = R.from_euler("z", 90, degrees=True)
-                    q_corrected = (r_target * r_z90).as_quat()
-                    target_quat = np.array([q_corrected[3], q_corrected[0], q_corrected[1], q_corrected[2]])
+        joint_positions_arm, _, successes = self._solve_ik_batch_parallel(
+            target_positions, target_quaternions, seed_ik, arm_joint_names, n_arm,
+        )
 
-                goal_pose = self._ik_pose_cls(
-                    position=self._ik_tensor_args.to_device(target_positions[i]),
-                    quaternion=self._ik_tensor_args.to_device(target_quat),
-                )
-                seed = self._ik_tensor_args.to_device(current_joint_pos[i])
-                ik_ordered_idx = [robot.joint_names.index(j) for j in ik_joint_names]
-                seed_ik = seed[ik_ordered_idx].unsqueeze(0).unsqueeze(0)
+        # For failed envs, fall back to current arm joint positions
+        for i in range(num_envs):
+            if not successes[i]:
+                joint_positions_arm[i] = current_joint_pos[i, :n_arm]
 
-                result = self.ik_solver.solve_single(
-                    goal_pose,
-                    retract_config=seed_ik.squeeze(0),
-                    seed_config=seed_ik,
-                )
-
-                success = result.success.item()
-                successes.append(success)
-
-                if success:
-                    ordered_js = result.js_solution.get_ordered_joint_state(arm_joint_names)
-                    sol = ordered_js.position.squeeze().cpu().numpy()
-                    joint_positions.append(sol[:n_arm])
-                else:
-                    joint_positions.append(current_joint_pos[i, :n_arm])
-
-        return np.array(joint_positions), successes
+        return joint_positions_arm, successes
 
     # =========================================================================
     # Trajectory Execution
@@ -644,6 +1028,41 @@ class MotionPlanner:
         interp_rot = slerp(t)
         q_scipy = interp_rot.as_quat()
         return np.array([q_scipy[3], q_scipy[0], q_scipy[1], q_scipy[2]])
+
+    @staticmethod
+    def _build_interpolated_waypoints(
+        start_pos: np.ndarray,
+        start_quat: np.ndarray,
+        end_pos: np.ndarray,
+        end_quat: np.ndarray,
+        num_steps: int,
+    ) -> Tuple[np.ndarray, np.ndarray]:
+        """Build linearly interpolated position + slerp quaternion waypoints.
+
+        Args:
+            start_pos: (num_envs, 3)
+            start_quat: (num_envs, 4) wxyz
+            end_pos: (num_envs, 3)
+            end_quat: (num_envs, 4) wxyz
+            num_steps: Number of interpolation steps
+
+        Returns:
+            positions: (num_envs, num_steps, 3)
+            quaternions: (num_envs, num_steps, 4) wxyz
+        """
+        num_envs = start_pos.shape[0]
+        positions = np.zeros((num_envs, num_steps, 3))
+        quaternions = np.zeros((num_envs, num_steps, 4))
+
+        for step in range(num_steps):
+            alpha = (step + 1) / num_steps
+            positions[:, step, :] = (1 - alpha) * start_pos + alpha * end_pos
+            for env_idx in range(num_envs):
+                quaternions[env_idx, step, :] = MotionPlanner._slerp(
+                    start_quat[env_idx], end_quat[env_idx], alpha
+                )
+
+        return positions, quaternions
 
     def get_current_ee_pose(
         self,
@@ -814,7 +1233,11 @@ class MotionPlanner:
         active_mask: Optional[List[bool]] = None,
         step_debug_fn: Any = None,
     ) -> Tuple[bool, List[bool]]:
-        """Execute fine motion using pure IK solving + joint control (no collision check)"""
+        """Execute fine motion using pre-solved IK trajectory + joint control.
+
+        Phase A: pre-solve the entire IK trajectory (one batch call per step).
+        Phase B: execute the pre-solved joint commands step by step.
+        """
         target_positions = np.atleast_2d(np.array(target_positions))
         target_quaternions = np.atleast_2d(np.array(target_quaternions))
 
@@ -830,7 +1253,6 @@ class MotionPlanner:
         current_ee_quat = np.atleast_2d(current_ee_quat)
 
         current_joint_pos = robot.data.joint_pos[:num_envs].cpu().numpy()
-        current_joint_vel = robot.data.joint_vel[:num_envs].cpu().numpy()
         action_dim = env.env.action_manager.total_action_dim
 
         if active_mask is None:
@@ -840,51 +1262,38 @@ class MotionPlanner:
             if len(env_successes) != num_envs:
                 env_successes = [True] * num_envs
 
+        # === Phase A: Pre-solve entire IK trajectory ===
+        waypoints_pos, waypoints_quat = self._build_interpolated_waypoints(
+            current_ee_pos, current_ee_quat,
+            target_positions, target_quaternions,
+            interpolation_steps,
+        )
+
+        joint_traj, _step_successes, traj_env_successes = self.solve_ik_trajectory(
+            waypoints_pos, waypoints_quat, current_joint_pos, robot,
+        )
+
+        # Merge trajectory successes with active_mask
+        for env_idx in range(num_envs):
+            if not traj_env_successes[env_idx]:
+                env_successes[env_idx] = False
+
+        # === Phase B: Execute pre-solved trajectory ===
+        n_arm = joint_traj.shape[2]
+        n_arm_action = min(n_arm, action_dim - 1)
+
         for step in tqdm(range(interpolation_steps), desc=desc):
             if not any(env_successes):
                 print(f"  ⚠️ No active envs remaining at IK step {step}/{interpolation_steps}, stopping early")
                 break
-            alpha = (step + 1) / interpolation_steps
-
-            interp_pos = (1 - alpha) * current_ee_pos + alpha * target_positions
-
-            interp_quat = np.zeros((num_envs, 4))
-            for env_idx in range(num_envs):
-                interp_quat[env_idx] = self._slerp(
-                    current_ee_quat[env_idx],
-                    target_quaternions[env_idx],
-                    alpha
-                )
-
-            current_joint_pos = robot.data.joint_pos[:num_envs].cpu().numpy()
-            current_joint_vel = robot.data.joint_vel[:num_envs].cpu().numpy()
-
-            ik_joint_pos, ik_successes = self.solve_ik_batch(
-                interp_pos, interp_quat,
-                current_joint_pos=current_joint_pos,
-                current_joint_vel=current_joint_vel,
-                robot=robot,
-            )
-
-            failed_envs = []
-            for env_idx in range(num_envs):
-                if not env_successes[env_idx]:
-                    continue
-                if not ik_successes[env_idx]:
-                    env_successes[env_idx] = False
-                    failed_envs.append(env_idx)
-            if failed_envs:
-                print(
-                    f"  ⚠️ IK planning failed at step {step}/{interpolation_steps} "
-                    f"for envs={failed_envs}, these envs will stop further actions."
-                )
 
             action = robot.data.joint_pos[:num_envs, :action_dim].cpu().clone()
 
             for env_idx in range(num_envs):
-                if env_successes[env_idx] and ik_successes[env_idx]:
-                    num_arm_joints = min(7, action_dim - 1)
-                    action[env_idx, :num_arm_joints] = torch.tensor(ik_joint_pos[env_idx, :num_arm_joints])
+                if env_successes[env_idx]:
+                    action[env_idx, :n_arm_action] = torch.tensor(
+                        joint_traj[env_idx, step, :n_arm_action], dtype=action.dtype
+                    )
                     action[env_idx, -1] = gripper_states[env_idx]
 
             obs, _, term, trunc, _ = env.step(action)

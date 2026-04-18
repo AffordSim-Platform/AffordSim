@@ -1,13 +1,13 @@
 """
-Diffusion Policy training script.
+Diffusion Policy 训练脚本.
 
-DDPM (Denoising Diffusion Probabilistic Models) training procedure:
-1. Sample (obs, action_chunk) from dataset
-2. Add random noise to action_chunk (forward diffusion)
-3. Model predicts noise (conditioned on obs + timestep)
-4. Optimize noise prediction with MSE loss
+DDPM (Denoising Diffusion Probabilistic Models) 训练流程:
+1. 从数据集采样 (obs, action_chunk)
+2. 对 action_chunk 加随机噪声 (forward diffusion)
+3. 模型预测噪声 (conditioned on obs + timestep)
+4. 用 MSE loss 优化噪声预测
 
-Usage:
+用法:
     python scripts/imitation_learning/diffusion_policy/train.py \
         --dataset /home/lmy/code/Real2Sim2Real-Pipeline-auto_task/dataset/r2s2r_data/task_gen/pick_place/pick_banana_and_place_on_plate/hdf5/merged_trajectories_robomimic.hdf5 \
         --stat /home/lmy/code/Real2Sim2Real-Pipeline-auto_task/dataset/r2s2r_data/task_gen/pick_place/pick_banana_and_place_on_plate/hdf5/dataset_stat.json \
@@ -42,7 +42,7 @@ from network import DiffusionPolicy
 # ============================================================================
 
 class DDPMScheduler:
-    """DDPM noise scheduler."""
+    """DDPM 噪声调度器."""
 
     def __init__(self, num_diffusion_steps: int = 100, beta_start: float = 0.0001, beta_end: float = 0.02):
         self.num_steps = num_diffusion_steps
@@ -58,7 +58,7 @@ class DDPMScheduler:
         self.sqrt_alphas_cumprod = torch.sqrt(alphas_cumprod)
         self.sqrt_one_minus_alphas_cumprod = torch.sqrt(1.0 - alphas_cumprod)
 
-        # For sampling
+        # 用于采样
         self.sqrt_recip_alphas = torch.sqrt(1.0 / alphas)
         alphas_cumprod_prev = torch.cat([torch.tensor([1.0]), alphas_cumprod[:-1]])
         self.posterior_variance = betas * (1.0 - alphas_cumprod_prev) / (1.0 - alphas_cumprod)
@@ -67,24 +67,24 @@ class DDPMScheduler:
         """Forward diffusion: q(x_t | x_0) = sqrt(alpha_bar_t) * x_0 + sqrt(1 - alpha_bar_t) * noise.
 
         Args:
-            x0: (B, T_a, D) original action sequence
-            noise: (B, T_a, D) Gaussian noise
+            x0: (B, T_a, D) 原始动作序列
+            noise: (B, T_a, D) 高斯噪声
             timestep: (B,) diffusion timestep
 
         Returns:
-            x_t: (B, T_a, D) noisy action sequence
+            x_t: (B, T_a, D) 加噪后的动作序列
         """
         sqrt_alpha = self.sqrt_alphas_cumprod[timestep.cpu()].view(-1, 1, 1).to(x0.device)
         sqrt_one_minus_alpha = self.sqrt_one_minus_alphas_cumprod[timestep.cpu()].view(-1, 1, 1).to(x0.device)
         return sqrt_alpha * x0 + sqrt_one_minus_alpha * noise
 
     def step(self, noise_pred, timestep, x_t):
-        """Reverse diffusion: sample x_{t-1} from x_t.
+        """Reverse diffusion: 从 x_t 采样 x_{t-1}.
 
         Args:
-            noise_pred: (B, T_a, D) model-predicted noise
-            timestep: int, current timestep
-            x_t: (B, T_a, D) current noisy sample
+            noise_pred: (B, T_a, D) 模型预测的噪声
+            timestep: int, 当前 timestep
+            x_t: (B, T_a, D) 当前噪声样本
 
         Returns:
             x_{t-1}: (B, T_a, D)
@@ -93,7 +93,7 @@ class DDPMScheduler:
         alpha_cumprod = self.alphas_cumprod[timestep]
         beta = self.betas[timestep]
 
-        # Predicted mean
+        # 预测均值
         pred_mean = (1 / math.sqrt(alpha)) * (
             x_t - (beta / math.sqrt(1 - alpha_cumprod)) * noise_pred
         )
@@ -107,13 +107,13 @@ class DDPMScheduler:
 
 
 # ============================================================================
-# Training
+# 训练
 # ============================================================================
 
 def run_eval_subprocess(args, ckpt_path: str, log_dir: str, epoch: int) -> dict | None:
-    """Synchronously launch eval_rollout.py subprocess after each ckpt save, parse json result.
+    """每次保存 ckpt 后同步拉起 eval_rollout.py 子进程, 解析 json 结果.
 
-    Returns dict (containing stage_success_rate / overall_success_rate), or None on failure.
+    返回 dict (内含 stage_success_rate / overall_success_rate), 或 None 表示失败.
     """
     if not args.eval_task_config:
         return None
@@ -157,9 +157,9 @@ def run_eval_subprocess(args, ckpt_path: str, log_dir: str, epoch: int) -> dict 
 
 def train(args):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    print(f"[INFO] Using device: {device}")
+    print(f"[INFO] 使用设备: {device}")
 
-    # --- Dataset ---
+    # --- 数据集 ---
     train_dataset = DiffusionPolicyDataset(
         hdf5_path=args.dataset,
         pred_horizon=args.pred_horizon,
@@ -189,9 +189,9 @@ def train(args):
         pin_memory=True,
     )
 
-    print(f"[INFO] Training samples: {len(train_dataset)}, Validation samples: {len(valid_dataset)}")
+    print(f"[INFO] 训练样本: {len(train_dataset)}, 验证样本: {len(valid_dataset)}")
 
-    # --- Model ---
+    # --- 模型 ---
     model = DiffusionPolicy(
         action_dim=args.action_dim,
         obs_horizon=args.obs_horizon,
@@ -204,14 +204,14 @@ def train(args):
     ).to(device)
 
     num_params = sum(p.numel() for p in model.parameters())
-    print(f"[INFO] Model parameters: {num_params / 1e6:.2f}M")
+    print(f"[INFO] 模型参数量: {num_params / 1e6:.2f}M")
 
-    # --- DDPM Scheduler ---
+    # --- DDPM 调度器 ---
     scheduler = DDPMScheduler(
         num_diffusion_steps=args.num_diffusion_steps,
     )
 
-    # --- Optimizer ---
+    # --- 优化器 ---
     optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
 
     # Cosine annealing scheduler
@@ -219,7 +219,7 @@ def train(args):
         optimizer, T_max=args.epochs,
     )
 
-    # --- Logging ---
+    # --- 日志 ---
     timestamp = time.strftime("%Y%m%d%H%M%S")
     task_tag = re.sub(r"[^A-Za-z0-9._-]+", "_", args.eval_task) if args.eval_task else "no_task"
     log_dir = os.path.join(args.output_dir, f"diffusion_policy_{task_tag}_{timestamp}")
@@ -227,24 +227,24 @@ def train(args):
     os.makedirs(os.path.join(log_dir, "models"), exist_ok=True)
     writer = SummaryWriter(log_dir)
 
-    # Save configuration
+    # 保存配置
     with open(os.path.join(log_dir, "config.json"), "w") as f:
         json.dump(vars(args), f, indent=2)
-    print(f"[INFO] Log directory: {log_dir}")
+    print(f"[INFO] 日志目录: {log_dir}")
 
-    # --- Load checkpoint ---
+    # --- 加载 checkpoint ---
     start_epoch = 1
     if args.resume is not None:
-        print(f"[INFO] Loading checkpoint: {args.resume}")
+        print(f"[INFO] 加载 checkpoint: {args.resume}")
         ckpt = torch.load(args.resume, map_location=device)
         model.load_state_dict(ckpt["model"])
         if "optimizer" in ckpt:
             optimizer.load_state_dict(ckpt["optimizer"])
         if "epoch" in ckpt:
             start_epoch = ckpt["epoch"] + 1
-        print(f"[INFO] Resuming training from epoch {start_epoch}")
+        print(f"[INFO] 从 epoch {start_epoch} 继续训练")
 
-    # --- Training loop ---
+    # --- 训练循环 ---
     best_valid_loss = float("inf")
     global_step = 0
 
@@ -260,16 +260,16 @@ def train(args):
 
             B = actions.shape[0]
 
-            # Sample random timestep
+            # 采样随机 timestep
             timesteps = torch.randint(0, args.num_diffusion_steps, (B,), device=device).long()
 
-            # Sample noise
+            # 采样噪声
             noise = torch.randn_like(actions)
 
-            # Forward diffusion: add noise to actions
+            # Forward diffusion: 给动作加噪
             noisy_actions = scheduler.add_noise(actions, noise, timesteps)
 
-            # Predict noise
+            # 预测噪声
             noise_pred = model(noisy_actions, timesteps, obs_images, obs_lowdim)
 
             # MSE loss
@@ -277,7 +277,7 @@ def train(args):
 
             optimizer.zero_grad()
             loss.backward()
-            # Gradient clipping
+            # 梯度裁剪
             nn.utils.clip_grad_norm_(model.parameters(), args.max_grad_norm)
             optimizer.step()
 
@@ -293,7 +293,7 @@ def train(args):
 
         avg_train_loss = epoch_loss / max(num_batches, 1)
 
-        # --- Validation ---
+        # --- 验证 ---
         model.eval()
         valid_loss = 0.0
         valid_batches = 0
@@ -315,14 +315,14 @@ def train(args):
 
         avg_valid_loss = valid_loss / max(valid_batches, 1)
 
-        # Logging
+        # 日志
         writer.add_scalar("Epoch/train_loss", avg_train_loss, epoch)
         writer.add_scalar("Epoch/valid_loss", avg_valid_loss, epoch)
         writer.add_scalar("Epoch/lr", optimizer.param_groups[0]["lr"], epoch)
 
         print(f"Epoch {epoch:4d} | Train Loss: {avg_train_loss:.6f} | Valid Loss: {avg_valid_loss:.6f} | LR: {optimizer.param_groups[0]['lr']:.2e}")
 
-        # --- Save checkpoint ---
+        # --- 保存 checkpoint ---
         if epoch % args.save_every == 0:
             ckpt_path = os.path.join(log_dir, "models", f"model_epoch_{epoch}.pth")
             torch.save({
@@ -331,9 +331,9 @@ def train(args):
                 "epoch": epoch,
                 "args": vars(args),
             }, ckpt_path)
-            print(f"  -> Saved checkpoint: {ckpt_path}")
+            print(f"  -> 保存 checkpoint: {ckpt_path}")
 
-            # --- In-training evaluation (subprocess.run synchronous blocking) ---
+            # --- 训练期评估 (subprocess.run 同步阻塞) ---
             if args.eval_task_config:
                 eval_result = run_eval_subprocess(args, ckpt_path, log_dir, epoch)
                 if eval_result is not None:
@@ -349,7 +349,7 @@ def train(args):
                         )
                     )
 
-                    # Write eval GIF to TensorBoard (one video per trial)
+                    # 将 eval GIF 写入 TensorBoard (每个 trial 一个视频)
                     for gi, gif_path in enumerate(eval_result.get("gif_paths") or []):
                         if not os.path.exists(gif_path):
                             continue
@@ -359,7 +359,7 @@ def train(args):
                             for frame_idx in range(gif.n_frames):
                                 gif.seek(frame_idx)
                                 frames.append(np.array(gif.convert("RGB")))
-                            # TensorBoard add_video expects (N, T, C, H, W), uint8
+                            # TensorBoard add_video 期望 (N, T, C, H, W), uint8
                             vid = np.stack(frames)  # (T, H, W, 3)
                             vid = vid.transpose(0, 3, 1, 2)  # (T, 3, H, W)
                             vid_tensor = torch.from_numpy(vid).unsqueeze(0)  # (1, T, 3, H, W)
@@ -376,57 +376,57 @@ def train(args):
                 "epoch": epoch,
                 "args": vars(args),
             }, ckpt_path)
-            print(f"  -> Best model (valid loss: {best_valid_loss:.6f})")
+            print(f"  -> 最佳模型 (valid loss: {best_valid_loss:.6f})")
 
     writer.close()
     train_dataset.close()
     valid_dataset.close()
-    print("[INFO] Training complete!")
+    print("[INFO] 训练完成!")
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Diffusion Policy Training")
 
-    # Data
-    parser.add_argument("--dataset", type=str, required=True, help="HDF5 dataset path")
-    parser.add_argument("--stat", type=str, default=None, help="dataset_stat.json path")
-    parser.add_argument("--output_dir", type=str, default="logs/diffusion_policy", help="Output directory")
+    # 数据
+    parser.add_argument("--dataset", type=str, required=True, help="HDF5 数据集路径")
+    parser.add_argument("--stat", type=str, default=None, help="dataset_stat.json 路径")
+    parser.add_argument("--output_dir", type=str, default="logs/diffusion_policy", help="输出目录")
 
-    # Training
-    parser.add_argument("--epochs", type=int, default=300, help="Training epochs")
+    # 训练
+    parser.add_argument("--epochs", type=int, default=300, help="训练轮次")
     parser.add_argument("--batch_size", type=int, default=64, help="Batch size")
-    parser.add_argument("--lr", type=float, default=1e-4, help="Learning rate")
-    parser.add_argument("--weight_decay", type=float, default=1e-6, help="Weight decay")
-    parser.add_argument("--max_grad_norm", type=float, default=1.0, help="Gradient clipping")
+    parser.add_argument("--lr", type=float, default=1e-4, help="学习率")
+    parser.add_argument("--weight_decay", type=float, default=1e-6, help="权重衰减")
+    parser.add_argument("--max_grad_norm", type=float, default=1.0, help="梯度裁剪")
     parser.add_argument("--num_workers", type=int, default=4, help="DataLoader workers")
-    parser.add_argument("--resume", type=str, default=None, help="Checkpoint path")
-    parser.add_argument("--save_every", type=int, default=1, help="Save every N epochs")
+    parser.add_argument("--resume", type=str, default=None, help="Checkpoint 路径")
+    parser.add_argument("--save_every", type=int, default=1, help="每 N 个 epoch 保存一次")
 
     # Diffusion
     parser.add_argument("--num_diffusion_steps", type=int, default=100, help="Diffusion steps")
-    parser.add_argument("--pred_horizon", type=int, default=16, help="Predicted action sequence length T_a")
-    parser.add_argument("--obs_horizon", type=int, default=2, help="Observation history length T_o")
-    parser.add_argument("--action_horizon", type=int, default=8, help="Number of action steps actually executed T_exec")
+    parser.add_argument("--pred_horizon", type=int, default=16, help="预测动作序列长度 T_a")
+    parser.add_argument("--obs_horizon", type=int, default=2, help="观测历史长度 T_o")
+    parser.add_argument("--action_horizon", type=int, default=8, help="实际执行的动作步数 T_exec")
 
-    # Model
-    parser.add_argument("--action_dim", type=int, default=7, help="Action dimension")
-    parser.add_argument("--lowdim_dim", type=int, default=14, help="Low-dimensional observation dimension (qpos+qvel)")
-    parser.add_argument("--img_feature_dim", type=int, default=256, help="Image feature dimension")
-    parser.add_argument("--lowdim_feature_dim", type=int, default=64, help="Low-dimensional feature dimension")
-    parser.add_argument("--down_dims", type=int, nargs="+", default=[256, 512, 1024], help="U-Net channels")
-    parser.add_argument("--pretrained", action="store_true", default=True, help="Use pretrained ResNet18")
+    # 模型
+    parser.add_argument("--action_dim", type=int, default=7, help="动作维度")
+    parser.add_argument("--lowdim_dim", type=int, default=14, help="低维观测维度 (qpos+qvel)")
+    parser.add_argument("--img_feature_dim", type=int, default=256, help="图像特征维度")
+    parser.add_argument("--lowdim_feature_dim", type=int, default=64, help="低维特征维度")
+    parser.add_argument("--down_dims", type=int, nargs="+", default=[256, 512, 1024], help="U-Net 通道")
+    parser.add_argument("--pretrained", action="store_true", default=True, help="使用预训练 ResNet18")
 
-    # In-training evaluation (synchronously launches eval_rollout.py subprocess after each ckpt save)
+    # 训练期评估 (每次 save ckpt 后同步拉起 eval_rollout.py 子进程)
     parser.add_argument("--eval_task_config", type=str, default=None,
-                        help="Task yaml path; enables in-training evaluation when set")
+                        help="task yaml 路径; 设置后才会启用训练期评估")
     parser.add_argument("--eval_task", type=str, default="Pick_Place_banana-v0",
-                        help="Gym environment id for evaluation subprocess")
+                        help="gym 环境 id, 用于评估子进程")
     parser.add_argument("--eval_num_rollouts", type=int, default=5)
     parser.add_argument("--eval_horizon", type=int, default=300)
     parser.add_argument("--eval_seed", type=int, default=0)
     parser.add_argument("--eval_pick_lift_threshold", type=float, default=0.05)
     parser.add_argument("--eval_env_cfg_class", type=str, default=None,
-                        help="Optional: 'pkg.mod:ClassName' form to override the env_cfg class in the eval subprocess")
+                        help="可选: 'pkg.mod:ClassName' 形式覆盖 eval 子进程的 env_cfg 类")
 
     args = parser.parse_args()
     train(args)

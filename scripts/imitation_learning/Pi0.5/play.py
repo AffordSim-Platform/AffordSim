@@ -57,19 +57,27 @@ import yaml
 from PIL import Image
 
 from isaaclab_tasks.utils import parse_env_cfg
-import isaaclab_tasks.real2sim.tasks.pick  # noqa: F401
+import isaaclab_tasks.real2sim.tasks  # noqa: F401
 from isaaclab_tasks.real2sim.utils.EpisodeBuffer import replace_background_with_segmentation
 
 from isaaclab.motion_collect.success.evaluators import (
     _evaluate_pick_success_with_metrics,
     _evaluate_place_pose_success_with_metrics,
-    _evaluate_place_success_with_metrics,
+    _evaluate_place_on_success_with_metrics,
+    _evaluate_place_affordance_xy_success_with_metrics,
     _evaluate_pour_success_with_metrics,
+    _evaluate_hang_success_with_metrics,
+    _evaluate_pull_success_with_metrics,
 )
 from isaaclab.motion_collect.success.scene_helpers import (
+    _get_articulation_joint_pos,
     _get_object_pose_world_from_scene,
     attach_scene_success_meta,
 )
+from isaaclab.motion_collect.tools.affordance_resolver import resolve_affordance_path
+from isaaclab.motion_collect.primitives.utils import load_affordance_centroid
+
+
 from isaaclab.motion_collect.success.success import (
     capture_object_initial_z,
 )
@@ -133,30 +141,77 @@ def process_image(image_tensor, seg_tensor=None, bg_image=None):
     return img_np
 
 
+def _apply_speckle_noise_u8(img_u8: np.ndarray, std: float) -> np.ndarray:
+    """Apply speckle (multiplicative) noise to a uint8 RGB image.
+
+    Matches ``EpisodeBuffer._add_speckle_noise``:
+        y = x + x * N(0, std),  x in [0, 1]
+    so the eval-time distribution matches train-time data collection.
+    """
+    if std <= 0 or img_u8 is None:
+        return img_u8
+    x = img_u8.astype(np.float32) / 255.0
+    noise = np.random.normal(0.0, std, x.shape).astype(np.float32)
+    y = np.clip(x + x * noise, 0.0, 1.0)
+    return (y * 255.0).astype(np.uint8)
+
+
 # ============================================================================
 # Task YAML -> eval stages
 # ============================================================================
+
+def _get_object_scale_from_cfg(cfg: dict, object_name: str) -> np.ndarray:
+    """Return object scale from YAML config, default [1,1,1]."""
+    objects = cfg.get("objects") or {}
+    obj_cfg = objects.get(object_name) or {}
+    scale = obj_cfg.get("scale")
+    if scale is not None:
+        return np.asarray(scale, dtype=np.float64)
+    return np.ones(3, dtype=np.float64)
+
+
+def _get_object_height_from_cfg(cfg: dict, object_name: str) -> float:
+    """Return object height from YAML config, default 0.1."""
+    objects = cfg.get("objects") or {}
+    obj_cfg = objects.get(object_name) or {}
+    return float(obj_cfg.get("height", 0.1))
+
 
 def load_eval_stages(task_config_path: str) -> list[dict]:
     with open(task_config_path) as f:
         cfg = yaml.safe_load(f) or {}
     primitives = cfg.get("primitives") or []
+    pick_target_name = None
+    for entry in primitives:
+        if isinstance(entry, dict) and str(entry.get("type", "")).lower() == "pick":
+            pick_target_name = (entry.get("params") or {}).get("target")
+            break
     stages = []
     for entry in primitives:
         if not isinstance(entry, dict):
             continue
         ptype = str(entry.get("type", "")).lower()
-        if ptype not in ("pick", "place", "pour"):
+        if ptype not in ("pick", "place", "pour", "hang", "pull"):
             continue
         params = entry.get("params") or {}
+        target_name = params.get("target")
         stage = {
             "type": ptype,
-            "target": params.get("target"),
-            "place_target": params.get("target") if ptype == "place" else None,
+            "target": target_name,
+            "place_target": target_name if ptype == "place" else None,
             "place_mode": str(entry.get("mode", "")).lower() if ptype == "place" else None,
             "place_position": params.get("position") if ptype == "place" else None,
             "place_orientation": params.get("orientation") if ptype == "place" else None,
-            "pour_target": params.get("target") if ptype == "pour" else None,
+            "pick_affordance_npz_path": params.get("pick_affordance_npz_path") if ptype == "place" else None,
+            "target_affordance_npz_path": params.get("target_affordance_npz_path") if ptype == "place" else None,
+            "pick_object_scale": _get_object_scale_from_cfg(cfg, pick_target_name) if ptype == "place" and pick_target_name else None,
+            "place_object_scale": _get_object_scale_from_cfg(cfg, target_name) if ptype == "place" and target_name else None,
+            "place_target_height": _get_object_height_from_cfg(cfg, target_name) if ptype == "place" and target_name else None,
+            "place_on_height_margin": float(params.get("on_height_margin", 0.01)) if ptype == "place" else None,
+            "pour_target": target_name if ptype == "pour" else None,
+            "hang_container": target_name if ptype == "hang" else None,
+            "hang_container_mount_npz": params.get("container_mount_affordance_npz_path") if ptype == "hang" else None,
+            "pull_target": target_name if ptype == "pull" else None,
         }
         stages.append(stage)
     return stages
@@ -179,6 +234,7 @@ def evaluate_stages_at_episode_end(
     pick_initial_z: float | None,
     pick_lift_threshold: float,
     pick_peak_z: float | None = None,
+    pull_peak_displacement: float | None = None,
 ) -> dict[str, dict]:
     pick_target = resolve_pick_target(stages)
     results: dict[str, dict] = {}
@@ -203,6 +259,7 @@ def evaluate_stages_at_episode_end(
 
         elif ptype == "place":
             place_mode = stage.get("place_mode") or "on"
+            place_target = stage.get("place_target")
             if place_mode == "pose":
                 target_pos = stage.get("place_position")
                 target_quat = stage.get("place_orientation")
@@ -216,15 +273,40 @@ def evaluate_stages_at_episode_end(
                     target_quat_wxyz=np.array(target_quat, dtype=float) if target_quat is not None else None,
                     env_idx=0,
                 )
-            else:
-                place_target = stage.get("place_target")
+            elif place_mode == "affordance":
                 if not place_target or not pick_target:
                     results[key] = {"success": False, "reason": "no_place_or_pick_target"}
                     continue
-                ok, metrics = _evaluate_place_success_with_metrics(
-                    scene=scene,
-                    pick_target=pick_target,
-                    place_target=place_target,
+                pick_aff_path = stage.get("pick_affordance_npz_path") or resolve_affordance_path(pick_target, "place")
+                target_aff_path = stage.get("target_affordance_npz_path") or resolve_affordance_path(place_target, "place")
+                if not pick_aff_path or not target_aff_path:
+                    results[key] = {"success": False, "reason": "missing_place_affordance_npz",
+                                    "pick_aff": pick_aff_path, "target_aff": target_aff_path}
+                    continue
+                try:
+                    pick_aff_local = load_affordance_centroid(pick_aff_path)
+                    target_aff_local = load_affordance_centroid(target_aff_path)
+                except Exception as e:
+                    results[key] = {"success": False, "reason": f"affordance_load_failed:{e}"}
+                    continue
+                pick_scale = stage.get("pick_object_scale")
+                place_scale = stage.get("place_object_scale")
+                if pick_scale is not None:
+                    pick_aff_local = pick_aff_local * np.asarray(pick_scale, dtype=np.float64)
+                if place_scale is not None:
+                    target_aff_local = target_aff_local * np.asarray(place_scale, dtype=np.float64)
+                ok, metrics = _evaluate_place_affordance_xy_success_with_metrics(
+                    scene=scene, pick_target=pick_target, place_target=place_target,
+                    pick_aff_local=pick_aff_local, target_aff_local=target_aff_local, env_idx=0,
+                )
+            else:
+                if not place_target or not pick_target:
+                    results[key] = {"success": False, "reason": "no_place_or_pick_target"}
+                    continue
+                ok, metrics = _evaluate_place_on_success_with_metrics(
+                    scene=scene, pick_target=pick_target, place_target=place_target,
+                    place_target_height=stage.get("place_target_height") or 0.1,
+                    on_height_margin=stage.get("place_on_height_margin") or 0.01,
                     env_idx=0,
                 )
             results[key] = {"success": bool(ok), "metrics": metrics}
@@ -239,6 +321,55 @@ def evaluate_stages_at_episode_end(
                 pick_target=pick_target,
                 pour_target=pour_target,
                 env_idx=0,
+            )
+            results[key] = {"success": bool(ok), "metrics": metrics}
+
+        elif ptype == "hang":
+            hang_container = stage.get("hang_container")
+            if not hang_container or not pick_target:
+                results[key] = {"success": False, "reason": "no_hang_container_or_pick_target"}
+                continue
+            mount_npz = stage.get("hang_container_mount_npz")
+            try:
+                if not mount_npz:
+                    import importlib
+                    _afford_mod = importlib.import_module("isaaclab.motion_collect.tools.affordance_resolver")
+                    mount_npz = _afford_mod.resolve_affordance_path(hang_container, "hang")
+                if not mount_npz:
+                    results[key] = {"success": False, "reason": "no_container_mount_affordance"}
+                    continue
+                npz_data = np.load(mount_npz, allow_pickle=True)
+                if "centroids" in npz_data:
+                    centroids = np.asarray(npz_data["centroids"], dtype=np.float64)
+                    container_mount_local = np.array(centroids[0], dtype=np.float64)
+                elif "grasp_center" in npz_data:
+                    container_mount_local = np.asarray(npz_data["grasp_center"], dtype=np.float64)
+                else:
+                    results[key] = {"success": False, "reason": "invalid_mount_npz_keys"}
+                    continue
+            except Exception as e:
+                results[key] = {"success": False, "reason": f"mount_load_failed:{e}"}
+                continue
+
+            ok, metrics = _evaluate_hang_success_with_metrics(
+                scene=scene,
+                held_object_label=pick_target,
+                container_label=hang_container,
+                container_mount_local=container_mount_local,
+                env_idx=0,
+            )
+            results[key] = {"success": bool(ok), "metrics": metrics}
+
+        elif ptype == "pull":
+            pull_target = stage.get("pull_target")
+            if not pull_target:
+                results[key] = {"success": False, "reason": "no_pull_target"}
+                continue
+            ok, metrics = _evaluate_pull_success_with_metrics(
+                scene=scene,
+                target_label=pull_target,
+                env_idx=0,
+                peak_displacement=pull_peak_displacement,
             )
             results[key] = {"success": bool(ok), "metrics": metrics}
 
@@ -281,9 +412,10 @@ def frames_to_gif(frames: list[np.ndarray], save_path: str,
 
 def rollout(policy, env, horizon, action_horizon, device, prompt,
             bg_images=None, trial_id=0, initial_obs_dict=None,
-            pick_target=None, collect_front_images=True):
+            pick_target=None, pull_target=None, collect_front_images=True,
+            image_speckle_noise_std: float = 0.0):
     """Run one episode with Pi0.5 remote policy."""
-    debug_dir = f"/home/lmy/code/Real2Sim2Real-Pipeline-auto_task/debug_images/pi05_trial_{trial_id}"
+    debug_dir = f"debug_images/pi05_trial_{trial_id}"
     os.makedirs(debug_dir, exist_ok=True)
 
     if initial_obs_dict is None:
@@ -296,9 +428,17 @@ def rollout(policy, env, horizon, action_horizon, device, prompt,
 
     front_frames = []
     pick_peak_z = None
+    pull_peak_displacement = None
 
     def _update_peak():
-        nonlocal pick_peak_z
+        nonlocal pick_peak_z, pull_peak_displacement
+        if pull_target:
+            from isaaclab.motion_collect.success.constants import PULL_SUCCESS_JOINT_NAME
+            jp = _get_articulation_joint_pos(env.scene, pull_target, PULL_SUCCESS_JOINT_NAME, 0)
+            if jp is not None:
+                disp = abs(float(jp))
+                if pull_peak_displacement is None or disp > pull_peak_displacement:
+                    pull_peak_displacement = disp
         if not pick_target:
             return
         pos_w, _ = _get_object_pose_world_from_scene(env.scene, pick_target, 0)
@@ -355,6 +495,12 @@ def rollout(policy, env, horizon, action_horizon, device, prompt,
         if wrist_img is None:
             wrist_img = np.zeros((256, 256, 3), dtype=np.uint8)
 
+        # Apply speckle noise only to policy inputs (GIF frames and debug PNGs
+        # were captured before this point, so they remain clean).
+        if image_speckle_noise_std > 0:
+            front_img = _apply_speckle_noise_u8(front_img, image_speckle_noise_std)
+            wrist_img = _apply_speckle_noise_u8(wrist_img, image_speckle_noise_std)
+
         # --- Build observation for Pi0.5 ---
         qpos = obs["qpos"].squeeze().cpu().numpy().astype(np.float32)
         qvel = obs["qvel"].squeeze().cpu().numpy().astype(np.float32) if "qvel" in obs else np.zeros_like(qpos)
@@ -400,7 +546,7 @@ def rollout(policy, env, horizon, action_horizon, device, prompt,
         if terminated or truncated:
             break
 
-    return obs_dict, pick_peak_z, front_frames
+    return obs_dict, pick_peak_z, pull_peak_displacement, front_frames
 
 
 # ============================================================================
@@ -427,8 +573,8 @@ def main():
     print(f"[EVAL] Connected! Server metadata: {policy.get_server_metadata()}")
 
     # --- Setup environment ---
-    from isaaclab_tasks.real2sim.tasks.pick.pick_r2s_env_cfg import create_pick_env_cfg_from_yaml
-    from isaaclab_tasks.real2sim.tasks.pick.config.sceneconfig.franka_fr3.ourgripper.ik_rel_vis_env_cfg import (
+    from isaaclab_tasks.real2sim.tasks.pick_r2s_env_cfg import create_pick_env_cfg_from_yaml
+    from isaaclab_tasks.real2sim.tasks.config.franka_fr3.ourgripper.ik_rel_vis_env_cfg import (
         FrankaFr3OurGripperIKRelVisPickEnvCfg,
     )
 
@@ -452,10 +598,17 @@ def main():
         task_yaml = yaml.safe_load(f) or {}
     attach_scene_success_meta(env.scene, task_yaml)
 
+    # Speckle noise applied to policy inputs at eval time, to match the
+    # train-time data distribution produced by EpisodeBuffer._add_speckle_noise.
+    image_speckle_noise_std = float(task_yaml.get("image_speckle_noise_std", 0.0) or 0.0)
+    print(f"[EVAL] image_speckle_noise_std = {image_speckle_noise_std} "
+          f"(applied only to front/wrist sent to the policy)")
+
     # --- Eval stages ---
     stages = load_eval_stages(args_cli.task_config)
     pick_target = resolve_pick_target(stages)
-    print(f"[EVAL] stages={[s['type'] for s in stages]}, pick_target={pick_target}")
+    pull_target = next((s.get("pull_target") for s in stages if s["type"] == "pull"), None)
+    print(f"[EVAL] stages={[s['type'] for s in stages]}, pick_target={pick_target}, pull_target={pull_target}")
 
     # Set seeds
     if args_cli.seed is not None:
@@ -468,7 +621,7 @@ def main():
 
     # --- Run rollouts ---
     per_rollout_results = []
-    gif_dir = os.path.join(os.path.dirname(args_cli.output_json), "pi05_gifs")
+    gif_dir = os.path.join(os.path.dirname(args_cli.output_json), f"pi05_gifs_{args_cli.task}")
     os.makedirs(gif_dir, exist_ok=True)
     gif_paths = []
 
@@ -480,7 +633,7 @@ def main():
             env.step(torch.zeros(1, env.action_space.shape[1], device=device))
         pick_initial_z = capture_object_initial_z(env.scene, pick_target, env_idx=0) if pick_target else None
 
-        _, pick_peak_z, front_frames = rollout(
+        _, pick_peak_z, pull_peak_displacement, front_frames = rollout(
             policy=policy,
             env=env,
             horizon=args_cli.horizon,
@@ -491,7 +644,9 @@ def main():
             trial_id=trial,
             initial_obs_dict=initial_obs_dict,
             pick_target=pick_target,
+            pull_target=pull_target,
             collect_front_images=True,
+            image_speckle_noise_std=image_speckle_noise_std,
         )
 
         # Save GIF
@@ -508,6 +663,7 @@ def main():
             pick_initial_z=pick_initial_z,
             pick_lift_threshold=args_cli.pick_lift_threshold,
             pick_peak_z=pick_peak_z,
+            pull_peak_displacement=pull_peak_displacement,
         )
         per_rollout_results.append(stage_results)
         print(f"[EVAL] trial {trial}: " + ", ".join(

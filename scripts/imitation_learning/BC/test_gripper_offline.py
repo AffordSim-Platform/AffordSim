@@ -1,8 +1,8 @@
 """
-Offline test: run a single demo from training data through the model and check gripper logit/prob output.
-Does not require an Isaac Lab environment.
+离线测试: 用训练数据的一条 demo 直接过模型, 检查 gripper logit/prob 输出.
+不需要 Isaac Lab 环境.
 
-Usage:
+用法:
   python scripts/imitation_learning/BC/test_gripper_offline.py \
     --checkpoint runs/bc_hdf5merged_trajectories_1.hdf5_1775004902/checkpoints/iter_19600.pt \
     --demo_path dataset/r2s2r_data/task_gen/pick_place/pick_banana_and_place_on_plate_new/hdf5merged_trajectories_1.hdf5 \
@@ -18,7 +18,7 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 
-# Add the directory containing train_bc.py to path so we can import BCPolicy
+# 把 train_bc.py 所在目录加到 path, 以便 import BCPolicy
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from train_bc import BCPolicy
 
@@ -34,7 +34,7 @@ def main():
 
     # ---- Load model ----
     ckpt = torch.load(args.checkpoint, map_location=device)
-    # Auto-detect encoder type
+    # 自动检测 encoder 类型
     has_resnet = any("front_encoder.conv1.weight" in k for k in ckpt["policy"].keys())
     encoder_type = "resnet18" if has_resnet else "plain"
     policy = BCPolicy(state_dim=14, ee_action_dim=6, visual_feat_dim=256, encoder_type=encoder_type).to(device)

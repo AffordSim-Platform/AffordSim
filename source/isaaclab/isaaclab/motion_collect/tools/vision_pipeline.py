@@ -204,14 +204,8 @@ class VisionPipeline:
         if not rigid_objects:
             return None
         
-        # Direct match (most common case)
         if target_label in rigid_objects:
             return target_label
-        
-        # Substring match as fallback
-        for key in rigid_objects.keys():
-            if target_label in key or key in target_label:
-                return key
         
         return None
     
