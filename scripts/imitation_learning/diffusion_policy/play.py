@@ -79,6 +79,9 @@ from isaaclab.motion_collect.success.evaluators import (
     _evaluate_pour_success_with_metrics,
     _evaluate_hang_success_with_metrics,
     _evaluate_pull_success_with_metrics,
+    _evaluate_open_success_with_metrics,
+    _evaluate_close_success_with_metrics,
+    _evaluate_push_success_with_metrics,
 )
 from isaaclab.motion_collect.success.scene_helpers import (
     _get_articulation_joint_pos,
@@ -226,7 +229,7 @@ def load_eval_stages(task_config_path: str) -> list[dict]:
         if not isinstance(entry, dict):
             continue
         ptype = str(entry.get("type", "")).lower()
-        if ptype not in ("pick", "place", "pour", "hang", "pull"):
+        if ptype not in ("pick", "place", "pour", "hang", "pull", "open", "close", "push"):
             continue
         params = entry.get("params") or {}
         target_name = params.get("target")
@@ -247,6 +250,12 @@ def load_eval_stages(task_config_path: str) -> list[dict]:
             "hang_container": target_name if ptype == "hang" else None,
             "hang_container_mount_npz": params.get("container_mount_affordance_npz_path") if ptype == "hang" else None,
             "pull_target": target_name if ptype == "pull" else None,
+            "open_target": target_name if ptype == "open" else None,
+            "open_joint_name": params.get("joint_name") if ptype == "open" else None,
+            "close_target": target_name if ptype == "close" else None,
+            "close_joint_name": params.get("joint_name") if ptype == "close" else None,
+            "push_target_label": target_name if ptype == "push" else None,
+            "push_target_position": params.get("push_target") if ptype == "push" else None,
         }
         stages.append(stage)
     return stages
@@ -266,8 +275,6 @@ def evaluate_stages_at_episode_end(
     pick_lift_threshold: float,
     pick_peak_z: float | None = None,
     min_pour_tilt_z: float | None = None,
-    pour_crossed_ok: bool = False,
-    pour_xy_at_cross: float | None = None,
     pull_peak_displacement: float | None = None,
 ) -> dict[str, dict]:
     """对每个阶段独立判定成功 (单 env, env_idx=0)."""
@@ -356,6 +363,7 @@ def evaluate_stages_at_episode_end(
                 pick_target=pick_target,
                 pour_target=pour_target,
                 env_idx=0,
+                min_z_component_observed=min_pour_tilt_z,
             )
             results[key] = {"success": bool(ok), "metrics": metrics}
 
@@ -405,6 +413,46 @@ def evaluate_stages_at_episode_end(
                 target_label=pull_target,
                 env_idx=0,
                 peak_displacement=pull_peak_displacement,
+            )
+            results[key] = {"success": bool(ok), "metrics": metrics}
+
+        elif ptype == "open":
+            open_target = stage.get("open_target")
+            if not open_target:
+                results[key] = {"success": False, "reason": "no_open_target"}
+                continue
+            ok, metrics = _evaluate_open_success_with_metrics(
+                scene=scene,
+                target_label=open_target,
+                joint_name=stage.get("open_joint_name"),
+                env_idx=0,
+            )
+            results[key] = {"success": bool(ok), "metrics": metrics}
+
+        elif ptype == "close":
+            close_target = stage.get("close_target")
+            if not close_target:
+                results[key] = {"success": False, "reason": "no_close_target"}
+                continue
+            ok, metrics = _evaluate_close_success_with_metrics(
+                scene=scene,
+                target_label=close_target,
+                joint_name=stage.get("close_joint_name"),
+                env_idx=0,
+            )
+            results[key] = {"success": bool(ok), "metrics": metrics}
+
+        elif ptype == "push":
+            push_label = stage.get("push_target_label")
+            push_pos = stage.get("push_target_position")
+            if not push_label or push_pos is None:
+                results[key] = {"success": False, "reason": "no_push_target_or_position"}
+                continue
+            ok, metrics = _evaluate_push_success_with_metrics(
+                scene=scene,
+                push_target_label=push_label,
+                push_target_position_env=np.array(push_pos, dtype=float),
+                env_idx=0,
             )
             results[key] = {"success": bool(ok), "metrics": metrics}
 
@@ -514,14 +562,11 @@ def rollout(model, scheduler, env, success_term, horizon, action_horizon, device
 
     pick_peak_z = None
     min_pour_tilt_z = None
-    pour_crossed_ok = False  # 倾斜角度首次超过阈值时 XY 距离是否满足
-    pour_xy_at_cross = None  # 首次超过阈值时的 XY 距离
-    pour_tilt_at_cross = None  # 首次超过阈值时的 tilt_z
     pull_peak_displacement = None  # pull 关节 |位移| 峰值
     front_frames = []
 
     def _update_peak():
-        nonlocal pick_peak_z, min_pour_tilt_z, pour_crossed_ok, pour_xy_at_cross, pour_tilt_at_cross
+        nonlocal pick_peak_z, min_pour_tilt_z
         nonlocal pull_peak_displacement
         if pull_target:
             from isaaclab.motion_collect.success.constants import PULL_SUCCESS_JOINT_NAME
@@ -538,22 +583,16 @@ def rollout(model, scheduler, env, success_term, horizon, action_horizon, device
         z = float(pos_w[2])
         if pick_peak_z is None or z > pick_peak_z:
             pick_peak_z = z
-        # 追踪 pour：当倾斜角度首次超过阈值时，检查 XY 距离
-        if quat_w is not None:
-            from isaaclab.motion_collect.success.constants import POUR_SUCCESS_TILT_THRESHOLD, POUR_SUCCESS_XY_THRESHOLD
-            rot = _quat_wxyz_to_matrix(np.array(quat_w, dtype=float))
-            tilt_z = float(rot[2, 2])
-            if min_pour_tilt_z is None or tilt_z < min_pour_tilt_z:
-                min_pour_tilt_z = tilt_z
-            # 首次超过倾斜阈值时记录
-            if not pour_crossed_ok and pour_tilt_at_cross is None and tilt_z <= POUR_SUCCESS_TILT_THRESHOLD:
-                if pour_target:
-                    pour_pos_w, _ = _get_object_pose_world_from_scene(env.scene, pour_target, 0)
-                    if pour_pos_w is not None:
-                        xy_dist = float(np.linalg.norm(pos_w[:2] - pour_pos_w[:2]))
-                        pour_xy_at_cross = xy_dist
-                        pour_tilt_at_cross = tilt_z
-                        pour_crossed_ok = xy_dist <= POUR_SUCCESS_XY_THRESHOLD
+        # Track min z_component (max tilt) when pick object is within 10cm XY of pour target
+        if pour_target and quat_w is not None:
+            pour_pos_w, _ = _get_object_pose_world_from_scene(env.scene, pour_target, 0)
+            if pour_pos_w is not None:
+                xy_dist = float(np.linalg.norm(pos_w[:2] - pour_pos_w[:2]))
+                if xy_dist <= 0.10:
+                    rot = _quat_wxyz_to_matrix(np.array(quat_w, dtype=float))
+                    tilt_z = float(rot[2, 2])
+                    if min_pour_tilt_z is None or tilt_z < min_pour_tilt_z:
+                        min_pour_tilt_z = tilt_z
 
     # 观测缓冲区 (保存最近 obs_horizon 帧)
     obs_img_buffer = []   # list of (2, 3, H, W) tensors
@@ -640,7 +679,7 @@ def rollout(model, scheduler, env, success_term, horizon, action_horizon, device
         for j in range(min(action_horizon, horizon - step)):
             action = action_chunk[j]  # (D_act,)
 
-            # 反归一化 ee_delta (前6维)
+            # 反归一化 (前 N-1 维)
             if norm_params is not None and "action" in norm_params:
                 action[:-1] = minmax_denormalize(
                     action[:-1],
@@ -650,6 +689,13 @@ def rollout(model, scheduler, env, success_term, horizon, action_horizon, device
 
             # Gripper 二值化 (阈值 0)
             action[-1] = 1.0 if action[-1] > 0.0 else -1.0
+
+            # Joint delta: 读当前 qpos + delta -> 绝对目标，通过绝对位置控制执行
+            action_type = norm_params.get("action_type", "ee_delta") if norm_params else "ee_delta"
+            if action_type == "joint_delta":
+                cur_qpos = env.env.scene["robot"].data.joint_pos[0, :7].cpu().numpy()
+                abs_target = cur_qpos + action[:-1]
+                action = np.concatenate([abs_target, action[-1:]])
 
             action_tensor = torch.from_numpy(action).float().to(device).view(1, -1)
 
@@ -673,10 +719,10 @@ def rollout(model, scheduler, env, success_term, horizon, action_horizon, device
             # 检查成功
             if success_term is not None and bool(success_term.func(env, **success_term.params)[0]):
                 print(f"[INFO] 成功! step={step}")
-                return True, pick_peak_z, min_pour_tilt_z, pour_crossed_ok, pour_xy_at_cross, pull_peak_displacement, front_frames
+                return True, pick_peak_z, min_pour_tilt_z, pull_peak_displacement, front_frames
 
             if terminated or truncated:
-                return False, pick_peak_z, min_pour_tilt_z, pour_crossed_ok, pour_xy_at_cross, pull_peak_displacement, front_frames
+                return False, pick_peak_z, min_pour_tilt_z, pull_peak_displacement, front_frames
 
             # 如果不是最后一步, 需要更新观测 (用于下一个 chunk 的缓冲区)
             if j < action_horizon - 1:
@@ -715,7 +761,7 @@ def rollout(model, scheduler, env, success_term, horizon, action_horizon, device
                         cv2.imwrite(os.path.join(debug_img_dir, f"step_{step:04d}_{cam_name}.png"),
                                     cv2.cvtColor(img_save, cv2.COLOR_RGB2BGR))
 
-    return False, pick_peak_z, min_pour_tilt_z, pour_crossed_ok, pour_xy_at_cross, pull_peak_displacement, front_frames
+    return False, pick_peak_z, min_pour_tilt_z, pull_peak_displacement, front_frames
 
 
 # ============================================================================
@@ -798,6 +844,12 @@ def main():
         norm_params = load_norm_params(args_cli.stat)
         print(f"[INFO] 加载归一化参数: {args_cli.stat}")
 
+    # 从 checkpoint args 中获取 action_type，注入 norm_params
+    action_type = model_args.get("action_type", "ee_delta")
+    if norm_params is not None:
+        norm_params["action_type"] = action_type
+    print(f"[INFO] action_type: {action_type}")
+
     # 加载背景图片
     bg_images = load_background_images(args_cli.task_config)
 
@@ -819,7 +871,7 @@ def main():
             env.step(torch.zeros(1, env.action_space.shape[1], device=device))
         pick_initial_z = capture_object_initial_z(env.scene, pick_target, env_idx=0) if pick_target else None
 
-        success, pick_peak_z, min_pour_tilt_z, pour_crossed_ok, pour_xy_at_cross, pull_peak_displacement, front_frames = rollout(
+        success, pick_peak_z, min_pour_tilt_z, pull_peak_displacement, front_frames = rollout(
             model, scheduler, env, success_term,
             horizon=args_cli.horizon,
             action_horizon=action_horizon,
@@ -850,8 +902,6 @@ def main():
             pick_lift_threshold=args_cli.pick_lift_threshold,
             pick_peak_z=pick_peak_z,
             min_pour_tilt_z=min_pour_tilt_z,
-            pour_crossed_ok=pour_crossed_ok,
-            pour_xy_at_cross=pour_xy_at_cross,
             pull_peak_displacement=pull_peak_displacement,
         )
         all_stage_results.append(stage_results)

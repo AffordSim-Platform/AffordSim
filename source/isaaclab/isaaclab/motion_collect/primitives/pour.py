@@ -3,6 +3,7 @@ from typing import Any, Dict, Optional
 import numpy as np
 import torch
 
+from ..success.constants import POUR_SUCCESS_TILT_THRESHOLD
 from ..success.evaluators import (
     _evaluate_pour_process_with_metrics,
     _evaluate_pour_success_with_metrics,
@@ -219,6 +220,7 @@ def primitive_compute_pour_pose(collector, mode: Optional[str], params: Dict[str
         "tilt_angle_deg": tilt_angle,
         "tilt_lift_height": tilt_lift_height,
         "tilt_horizontal_offset": tilt_horizontal_offset,
+        "object_scale": object_scale.copy(),
         "meta": all_pour_meta,
     }
     print(f"  🫗 [Primitive] Computed pour poses for '{target_label}' -> '{container_label}'")
@@ -308,6 +310,7 @@ def primitive_execute_pour(collector, params: Dict[str, Any], context: Dict[str,
     # ---- Per-step tilt trajectory sampling (for pour process success check) ----
     held_pick_target = context.get("held_object") or context.get("pick_target_label")
     pour_meta_list = pour_pose.get("meta", [])
+    object_scale = np.asarray(pour_pose.get("object_scale", [1.0, 1.0, 1.0]), dtype=np.float64)
     per_step_trajectory: list[list[dict]] = [[] for _ in range(collector.num_envs)]
 
     def _sample_env_state(env_idx: int) -> None:
@@ -330,7 +333,7 @@ def primitive_execute_pour(collector, params: Dict[str, Any], context: Dict[str,
         if tip_local_raw is None:
             tip_local_raw = meta.get("selected_centroid_local", [0.0, 0.0, 0.0])
         tip_local = np.array(tip_local_raw, dtype=np.float64)
-        tip_world = np.array(pos_world, dtype=np.float64) + rot @ tip_local
+        tip_world = np.array(pos_world, dtype=np.float64) + rot @ (tip_local * object_scale)
         per_step_trajectory[env_idx].append(
             {
                 "z_axis_world_z": z_axis_world_z,
@@ -393,12 +396,14 @@ def primitive_execute_pour(collector, params: Dict[str, Any], context: Dict[str,
 
         axis_successes = []
         axis_metrics = []
+        tilt_threshold = float(POUR_SUCCESS_TILT_THRESHOLD)
         for env_idx in range(collector.num_envs):
             env_success, env_metrics = _evaluate_pour_success_with_metrics(
                 scene=collector.scene,
                 pick_target=pick_target,
                 pour_target=pour_target,
                 env_idx=env_idx,
+                tilt_threshold=tilt_threshold,
             )
             axis_successes.append(env_success)
             axis_metrics.append(env_metrics)
@@ -451,7 +456,7 @@ def primitive_execute_pour(collector, params: Dict[str, Any], context: Dict[str,
         for env_idx, metrics in enumerate(axis_metrics):
             z_comp = metrics["object_local_z_world_z"]
             tilt_ok = bool(tilt_successes[env_idx])
-            z_ok = np.isfinite(z_comp) and (z_comp <= 0.0)
+            z_ok = np.isfinite(z_comp) and (z_comp <= tilt_threshold)
             pour_target_ok = bool(metrics["pour_target_in_range"] > 0.5)
             proc_ok = bool(process_successes[env_idx])
             proc_metric = process_metrics[env_idx] if env_idx < len(process_metrics) else {}
@@ -487,7 +492,7 @@ def primitive_execute_pour(collector, params: Dict[str, Any], context: Dict[str,
                 f"    [TaskCheck][env {env_idx}] "
                 f"tilt_success={'OK' if tilt_ok else 'FAIL'}, "
                 f"object_local_z_world_z={z_text} "
-                f"(<= 0.0000: {'OK' if z_ok else 'FAIL'}), "
+                f"(<= {tilt_threshold:.4f}: {'OK' if z_ok else 'FAIL'}), "
                 f"pour_target_in_range={'OK' if pour_target_ok else 'FAIL'}, "
                 f"process={'OK' if proc_ok else 'FAIL'} "
                 f"(max_xy_excess={xy_excess_text}, max_tilt_reverse={tilt_rev_text}, "

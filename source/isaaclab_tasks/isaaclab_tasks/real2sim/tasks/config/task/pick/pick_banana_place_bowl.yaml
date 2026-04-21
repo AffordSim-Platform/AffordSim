@@ -37,17 +37,48 @@ objects:
     semantic_tags:
       -   - class
           - yellow_bigbowl
-    init_pos: [0.626, -0.376, 0.077]
-    init_rot: [-0.9838, 0.0, 0.0, 0.1791]
+    init_pos: [
+            0.6258831024169922,
+            -0.1691715270280838,
+            0.07383299618959427
+          ]
+    init_rot: [
+            -0.983406662940979,
+            0.014567255042493343,
+            0.025751756504178047,
+            0.1789863556623459
+          ]
     height: 0.054
+    position_range:
+      x: [0.45, 0.65]
+      y: [-0.25, -0.15]
+      z: [0.077, 0.077]
+    orientation_range:
+      yaw: [0, 0]
   yellow_banana:
     usd_path: models/all_object/yellow_banana.usd
     semantic_tags:
       -   - class
           - yellow_banana
-    init_pos: [0.6106, 0.113, 0.098]
-    init_rot: [0.3994, 0.0, 0.0, 0.9168]
+    init_pos: [
+            0.4783134460449219,
+            0.11295998096466064,
+            0.040932558476924896
+          ]
+    init_rot: [
+            0.353904664516449,
+            -0.010913796722888947,
+            -0.07608597725629807,
+            0.9321175813674927
+          ]
     height: 0.036
+    position_range:
+      x: [0.45, 0.55]
+      y: [0.11, 0.18]
+      z: [0.098, 0.098]
+    orientation_range:
+      # yaw: [-3.1416, 3.1416]
+      yaw: [-0.5, 0.5]
 primitives:
   - type: pick
     mode: affordance
@@ -70,7 +101,7 @@ image_speckle_noise_std: 0
 enable_objects_randomization: false
 enable_objects_randomization_curriculum: false
 texture_randomization:
-  enabled: true
+  enabled: false
   texture_dir: models/random_pic
   targets:
     table:

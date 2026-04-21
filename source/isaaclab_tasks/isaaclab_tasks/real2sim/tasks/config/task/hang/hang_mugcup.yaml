@@ -11,7 +11,7 @@ task:
   description: grasp the red mug cup and hang it on the wood rack
 runtime:
   headless: false
-  episodes: 1
+  episodes: 5
   save_npy: false
   save_camera_images: false
   save_composite_images: false
@@ -23,7 +23,7 @@ runtime:
   use_background_replace: true
   cam_side_background: backgrounds/1123_background.png
   cam_wrist_background: backgrounds/wristbackground_realworld1.png
-  data_dir: data/r2s2r_data/hang_mugcup
+  data_dir: data/r2s2r_data/pick_red_mugcup_hang_on_rack
   task_name: FrankaFr3-OurGripper-Joint-VisPick-v0
 robot:
   cfg_name: franka_fr3_our.yml
@@ -40,6 +40,12 @@ objects:
     init_pos: [0.60, -0.32, 0.09]
     init_rot: [0.9239, 0.0, 0.0, 0.3827]
     height: 0.081
+    position_range:
+      x: [0.55, 0.65]
+      y: [-0.35, -0.25]
+      z: [0.09, 0.09]
+    orientation_range:
+      yaw: [-0.1745, 0.1745]
   wood_rack:
     usd_path: models/all_object/wood_rack.usd
     semantic_tags:
@@ -48,22 +54,28 @@ objects:
     init_pos: [0.78, -0.22, 0.25]
     init_rot: [0.7071, 0.0, 0.0, 0.7071]
     height: 0.30
-  starbuckscup:
-    usd_path: models/all_object/starbuckscup.usd
-    semantic_tags:
-      -   - class
-          - starbuckscup
-    init_pos: [0.48, 0.12, 0.10]
-    init_rot: [1.0, 0.0, 0.0, 0.0]
-    height: 0.10
-  white_75mmcup:
-    usd_path: models/all_object/white_75mmcup.usd
-    semantic_tags:
-      -   - class
-          - white_75mmcup
-    init_pos: [0.68, -0.05, 0.08]
-    init_rot: [1.0, 0.0, 0.0, 0.0]
-    height: 0.08
+    position_range:
+      x: [0.75, 0.80]
+      y: [-0.25, -0.20]
+      z: [0.25, 0.25]
+    orientation_range:
+      yaw: [-0.1745, 0.1745]
+  # starbuckscup:
+  #   usd_path: models/all_object/starbuckscup.usd
+  #   semantic_tags:
+  #     -   - class
+  #         - starbuckscup
+  #   init_pos: [0.48, 0.12, 0.10]
+  #   init_rot: [1.0, 0.0, 0.0, 0.0]
+  #   height: 0.10
+  # white_75mmcup:
+  #   usd_path: models/all_object/white_75mmcup.usd
+  #   semantic_tags:
+  #     -   - class
+  #         - white_75mmcup
+  #   init_pos: [0.68, -0.05, 0.08]
+  #   init_rot: [1.0, 0.0, 0.0, 0.0]
+  #   height: 0.08
 primitives:
   - type: pick
     mode: hang
@@ -86,10 +98,10 @@ primitives:
 enable_random_lights: false
 image_noise_std: 0
 image_speckle_noise_std: 0
-enable_objects_randomization: false
+enable_objects_randomization: true
 enable_objects_randomization_curriculum: false
 texture_randomization:
-  enabled: true
+  enabled: false
   texture_dir: models/random_pic
   targets:
     table:

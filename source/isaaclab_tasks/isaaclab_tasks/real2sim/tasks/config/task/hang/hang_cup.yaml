@@ -1,5 +1,5 @@
 simulation:
-  decimation: 30
+  decimation: 35
   dt: 0.00833333
   render_interval: 5
   episode_length_s: 100
@@ -35,43 +35,31 @@ objects:
   white_cup:
     usd_path: models/all_object/white_cup.usd
     semantic_tags:
-      -   - class
-          - white_cup
+    - - class
+      - white_cup
     init_pos: [0.55, 0.18, 0.10]
     init_rot: [-0.7071, 0.0, 0.0, 0.7071]
     height: 0.15
+    position_range:
+      x: [0.50, 0.60]
+      y: [0.13, 0.23]
+      z: [0.10, 0.10]
+    orientation_range:
+      yaw: [-0.261799, 0.261799]
   wood_rack:
     usd_path: models/all_object/wood_rack.usd
     semantic_tags:
-      -   - class
-          - wood_rack
+    - - class
+      - wood_rack
     init_pos: [0.78, -0.22, 0.25]
     init_rot: [0.7071, 0.0, 0.0, 0.7071]
     height: 0.30
-  starbuckscup:
-    usd_path: models/all_object/starbuckscup.usd
-    semantic_tags:
-      -   - class
-          - starbuckscup
-    init_pos: [0.52, -0.05, 0.10]
-    init_rot: [1.0, 0.0, 0.0, 0.0]
-    height: 0.10
-  doraemoncup:
-    usd_path: models/all_object/doraemoncup.usd
-    semantic_tags:
-      -   - class
-          - doraemoncup
-    init_pos: [0.75, 0.05, 0.09]
-    init_rot: [0.9239, 0.0, 0.0, 0.3827]
-    height: 0.09
-  pink_cup:
-    usd_path: models/all_object/pink_cup.usd
-    semantic_tags:
-      -   - class
-          - pink_cup
-    init_pos: [0.45, -0.25, 0.08]
-    init_rot: [1.0, 0.0, 0.0, 0.0]
-    height: 0.08
+    position_range:
+      x: [0.73, 0.83]
+      y: [-0.27, -0.17]
+      z: [0.25, 0.25]
+    orientation_range:
+      yaw: [-0.261799, 0.261799]
 primitives:
   - type: pick
     mode: hang
@@ -94,10 +82,10 @@ primitives:
 enable_random_lights: false
 image_noise_std: 0
 image_speckle_noise_std: 0
-enable_objects_randomization: false
+enable_objects_randomization: true
 enable_objects_randomization_curriculum: false
 texture_randomization:
-  enabled: true
+  enabled: false
   texture_dir: models/random_pic
   targets:
     table:

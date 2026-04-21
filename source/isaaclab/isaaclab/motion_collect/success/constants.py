@@ -18,7 +18,7 @@ POSITION_RANGE_TOLERANCE = 0.01
 # --- pour 原语 ---
 # 容器局部 z 轴在世界 z 方向上的分量阈值, 小于等于该值视为成功倾倒
 # 0.0 → 容器轴需水平或更低; 取负值 → 要求倒得更彻底
-POUR_SUCCESS_TILT_THRESHOLD = 0.0
+POUR_SUCCESS_TILT_THRESHOLD = 0.707
 # 倾倒时被倒物体与目标容器的最大 XY 距离 (米)
 POUR_SUCCESS_XY_THRESHOLD = 0.1
 

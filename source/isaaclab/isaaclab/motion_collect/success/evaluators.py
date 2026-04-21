@@ -178,6 +178,7 @@ def _evaluate_pour_success_with_metrics(
     env_idx: int = 0,
     tilt_threshold: float = POUR_SUCCESS_TILT_THRESHOLD,
     range_tolerance: float = POSITION_RANGE_TOLERANCE,
+    min_z_component_observed: float | None = None,
 ) -> tuple[bool, dict[str, float]]:
     _, pick_quat = _get_object_pose_world_from_scene(scene, pick_target, env_idx)
     pour_pos_env, _ = _get_object_pose_env_from_scene(scene, pour_target, env_idx)
@@ -190,15 +191,21 @@ def _evaluate_pour_success_with_metrics(
 
     rot = _quat_wxyz_to_matrix(np.array(pick_quat, dtype=float))
     world_z_component = float(rot[2, 2])
+
+    # If a per-step minimum was tracked (max tilt near pour target),
+    # use it instead of the instantaneous (end-of-episode) value.
+    tilt_z_for_check = min_z_component_observed if min_z_component_observed is not None else world_z_component
+
     pour_in_range = _is_position_in_range(
         pour_pos_env,
         _get_position_range(scene, pour_target),
         tolerance=range_tolerance,
         axes=("x", "y"),
     )
-    success = pour_in_range and (world_z_component <= float(tilt_threshold))
+    success = pour_in_range and (tilt_z_for_check <= float(tilt_threshold))
     return success, {
-        "object_local_z_world_z": world_z_component,
+        "object_local_z_world_z": tilt_z_for_check,
+        "object_local_z_world_z_final": world_z_component,
         "pour_target_in_range": 1.0 if pour_in_range else 0.0,
     }
 

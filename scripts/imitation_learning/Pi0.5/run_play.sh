@@ -40,10 +40,46 @@
 #     --task_config source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/hang/hang_mugcup.yaml \
 #     --horizon 250 --num_rollouts 30 --enable_cameras --headless
 
-python scripts/imitation_learning/Pi0.5/play.py --task Pick_CupWithouthandle_Pour-v0 \
+# python scripts/imitation_learning/Pi0.5/play.py --task Pick_CupWithouthandle_Pour-v0 \
+#     --server_host 10.184.17.177 --server_port 8008 \
+#     --prompt "pick up the cup without a handle, place it over the yellow bowl and tilt it. " \
+#     --task_config source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/pour/pour_papercup.yaml \
+#     --horizon 250 --num_rollouts 30 --enable_cameras --headless
+
+# python scripts/imitation_learning/Pi0.5/play.py --task Pick_cupwithhandle_Pour-v0 \
+#     --server_host 10.184.17.177 --server_port 8008 \
+#     --prompt "pick up the red mug , place it over the yellow bowl and tilt it. " \
+#     --task_config source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/pour/pour_mugcup.yaml \
+#     --horizon 250 --num_rollouts 30 --enable_cameras --headless
+
+# python scripts/imitation_learning/Pi0.5/play.py --task Pick_Stack_Cube-v0 \
+#     --server_host 10.184.17.177 --server_port 8008 \
+#     --prompt "Grab the red block and place it on the blue block, then grab the green block and place it on the red block." \
+#     --task_config source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/stack/stack_cube.yaml \
+#     --horizon 250 --num_rollouts 30 --enable_cameras --headless
+
+# python scripts/imitation_learning/Pi0.5/play.py --task Pick_PinkCup_Place_WoodShelf-v0 \
+#     --server_host 10.184.17.177 --server_port 8008 \
+#     --prompt "pick up the pinkcup , place it on the double shelf. " \
+#     --task_config source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/pick/pick_cup_place_woodshelf.yaml \
+#     --horizon 250 --num_rollouts 30 --enable_cameras --headless
+
+# python scripts/imitation_learning/Pi0.5/play.py --task Pick_Lid_Place_Pot-v0 \
+#     --server_host 10.184.17.177 --server_port 8007 \
+#     --prompt "Grab the lid and put it on the pot. " \
+#     --task_config source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/pick/pick_lid_place_pot.yaml \
+#     --horizon 250 --num_rollouts 30 --enable_cameras --headless
+
+python scripts/imitation_learning/Pi0.5/play.py --task Pick_Open_Microwave-v0 \
     --server_host 10.184.17.177 --server_port 8008 \
-    --prompt "pick up the cup without a handle, place it over the yellow bowl and tilt it. " \
-    --task_config source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/pour/pour_papercup.yaml \
+    --prompt "open the microwave door. " \
+    --task_config source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/open_close/open_microwave.yaml \
     --horizon 250 --num_rollouts 30 --enable_cameras --headless
+
+# python scripts/imitation_learning/Pi0.5/play.py --task Pick_Push_Coffeecan-v0 \
+#     --server_host 10.184.17.177 --server_port 8008 \
+#     --prompt "open the microwave door. " \
+#     --task_config source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/open_close/open_microwave.yaml \
+#     --horizon 250 --num_rollouts 30 --enable_cameras --headless
 
     

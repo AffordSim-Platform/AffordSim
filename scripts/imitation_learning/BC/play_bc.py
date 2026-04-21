@@ -234,7 +234,8 @@ def resolve_pick_target(stages: list[dict]) -> str | None:
 
 def evaluate_stages_at_episode_end(
     scene, stages, pick_initial_z, pick_lift_threshold,
-    pick_peak_z=None, min_pour_tilt_z=None,
+    pick_peak_z=None, pour_min_tilt_z: float | None = None,
+    min_pour_tilt_z=None,
     pour_crossed_ok=False, pour_xy_at_cross=None,
 ):
     pick_target = resolve_pick_target(stages)
@@ -289,6 +290,7 @@ def evaluate_stages_at_episode_end(
             ok, metrics = _evaluate_pour_success_with_metrics(
                 scene=scene, pick_target=pick_target,
                 pour_target=pour_target, env_idx=0,
+                min_z_component_observed=pour_min_tilt_z,
             )
             results[key] = {"success": bool(ok), "metrics": metrics}
 
@@ -383,6 +385,7 @@ def rollout(policy, env, success_term, horizon, device, norm_params,
         obs_dict, _ = env.reset()
 
     pick_peak_z = None
+    pour_min_tilt_z = None
     min_pour_tilt_z = None
     pour_crossed_ok = False
     pour_xy_at_cross = None
@@ -393,7 +396,7 @@ def rollout(policy, env, success_term, horizon, device, norm_params,
     _save_fronts, _save_wrists, _save_states = [], [], []
 
     def _update_peak():
-        nonlocal pick_peak_z, min_pour_tilt_z, pour_crossed_ok, pour_xy_at_cross, pour_tilt_at_cross
+        nonlocal pick_peak_z, pour_min_tilt_z, min_pour_tilt_z, pour_crossed_ok, pour_xy_at_cross, pour_tilt_at_cross
         if not pick_target:
             return
         pos_w, quat_w = _get_object_pose_world_from_scene(env.scene, pick_target, 0)
@@ -402,6 +405,15 @@ def rollout(policy, env, success_term, horizon, device, norm_params,
         z = float(pos_w[2])
         if pick_peak_z is None or z > pick_peak_z:
             pick_peak_z = z
+        if pour_target and quat_w is not None:
+            pour_pos_w, _ = _get_object_pose_world_from_scene(env.scene, pour_target, 0)
+            if pour_pos_w is not None:
+                xy_dist = float(np.linalg.norm(pos_w[:2] - pour_pos_w[:2]))
+                if xy_dist <= 0.10:
+                    rot = _quat_wxyz_to_matrix(np.array(quat_w, dtype=float))
+                    tilt_z = float(rot[2, 2])
+                    if pour_min_tilt_z is None or tilt_z < pour_min_tilt_z:
+                        pour_min_tilt_z = tilt_z
         if quat_w is not None:
             from isaaclab.motion_collect.success.constants import POUR_SUCCESS_TILT_THRESHOLD, POUR_SUCCESS_XY_THRESHOLD
             rot = _quat_wxyz_to_matrix(np.array(quat_w, dtype=float))
@@ -514,13 +526,13 @@ def rollout(policy, env, success_term, horizon, device, norm_params,
         if success_term is not None and bool(success_term.func(env, **success_term.params)[0]):
             print(f"[INFO] 成功! step={step}")
             _dump_play_inputs(save_inputs_path, _save_fronts, _save_wrists, _save_states)
-            return True, pick_peak_z, min_pour_tilt_z, pour_crossed_ok, pour_xy_at_cross, front_frames
+            return True, pick_peak_z, pour_min_tilt_z, min_pour_tilt_z, pour_crossed_ok, pour_xy_at_cross, front_frames
         elif terminated or truncated:
             _dump_play_inputs(save_inputs_path, _save_fronts, _save_wrists, _save_states)
-            return False, pick_peak_z, min_pour_tilt_z, pour_crossed_ok, pour_xy_at_cross, front_frames
+            return False, pick_peak_z, pour_min_tilt_z, min_pour_tilt_z, pour_crossed_ok, pour_xy_at_cross, front_frames
 
     _dump_play_inputs(save_inputs_path, _save_fronts, _save_wrists, _save_states)
-    return False, pick_peak_z, min_pour_tilt_z, pour_crossed_ok, pour_xy_at_cross, front_frames
+    return False, pick_peak_z, pour_min_tilt_z, min_pour_tilt_z, pour_crossed_ok, pour_xy_at_cross, front_frames
 
 
 def _dump_play_inputs(save_path, fronts, wrists, states):
@@ -627,7 +639,7 @@ def main():
         pick_initial_z = capture_object_initial_z(env.scene, pick_target, env_idx=0) if pick_target else None
 
         save_path = args_cli.save_inputs if trial == 0 else None
-        success, pick_peak_z, min_pour_tilt_z, pour_crossed_ok, pour_xy_at_cross, front_frames = rollout(
+        success, pick_peak_z, pour_min_tilt_z, min_pour_tilt_z, pour_crossed_ok, pour_xy_at_cross, front_frames = rollout(
             policy, env, success_term, args_cli.horizon, device,
             norm_params=norm_params, bg_images=bg_images,
             save_inputs_path=save_path,
@@ -652,6 +664,7 @@ def main():
                 pick_initial_z=pick_initial_z,
                 pick_lift_threshold=args_cli.pick_lift_threshold,
                 pick_peak_z=pick_peak_z,
+                pour_min_tilt_z=pour_min_tilt_z,
                 min_pour_tilt_z=min_pour_tilt_z,
                 pour_crossed_ok=pour_crossed_ok,
                 pour_xy_at_cross=pour_xy_at_cross,

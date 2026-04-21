@@ -68,6 +68,9 @@ from isaaclab.motion_collect.success.evaluators import (
     _evaluate_pour_success_with_metrics,
     _evaluate_hang_success_with_metrics,
     _evaluate_pull_success_with_metrics,
+    _evaluate_open_success_with_metrics,
+    _evaluate_close_success_with_metrics,
+    _evaluate_push_success_with_metrics,
 )
 from isaaclab.motion_collect.success.scene_helpers import (
     _get_articulation_joint_pos,
@@ -210,20 +213,27 @@ def load_eval_stages(task_config_path):
         if not isinstance(entry, dict):
             continue
         ptype = str(entry.get("type", "")).lower()
-        if ptype not in ("pick", "place", "pour", "hang", "pull"):
+        if ptype not in ("pick", "place", "pour", "hang", "pull", "open", "close", "push"):
             continue
         params = entry.get("params") or {}
+        target_name = params.get("target")
         stages.append({
             "type": ptype,
-            "target": params.get("target"),
-            "place_target": params.get("target") if ptype == "place" else None,
+            "target": target_name,
+            "place_target": target_name if ptype == "place" else None,
             "place_mode": str(entry.get("mode", "")).lower() if ptype == "place" else None,
             "place_position": params.get("position") if ptype == "place" else None,
             "place_orientation": params.get("orientation") if ptype == "place" else None,
-            "pour_target": params.get("target") if ptype == "pour" else None,
-            "hang_container": params.get("target") if ptype == "hang" else None,
+            "pour_target": target_name if ptype == "pour" else None,
+            "hang_container": target_name if ptype == "hang" else None,
             "hang_container_mount_npz": params.get("container_mount_affordance_npz_path") if ptype == "hang" else None,
-            "pull_target": params.get("target") if ptype == "pull" else None,
+            "pull_target": target_name if ptype == "pull" else None,
+            "open_target": target_name if ptype == "open" else None,
+            "open_joint_name": params.get("joint_name") if ptype == "open" else None,
+            "close_target": target_name if ptype == "close" else None,
+            "close_joint_name": params.get("joint_name") if ptype == "close" else None,
+            "push_target_label": target_name if ptype == "push" else None,
+            "push_target_position": params.get("push_target") if ptype == "push" else None,
         })
     return stages
 
@@ -289,6 +299,7 @@ def evaluate_stages_at_episode_end(scene, stages, pick_initial_z, pick_lift_thre
             ok, metrics = _evaluate_pour_success_with_metrics(
                 scene=scene, pick_target=pick_target,
                 pour_target=pour_target, env_idx=0,
+                min_z_component_observed=min_pour_tilt_z,
             )
             results[key] = {"success": bool(ok), "metrics": metrics}
 
@@ -338,6 +349,46 @@ def evaluate_stages_at_episode_end(scene, stages, pick_initial_z, pick_lift_thre
                 target_label=pull_target,
                 env_idx=0,
                 peak_displacement=pull_peak_displacement,
+            )
+            results[key] = {"success": bool(ok), "metrics": metrics}
+
+        elif ptype == "open":
+            open_target = stage.get("open_target")
+            if not open_target:
+                results[key] = {"success": False, "reason": "no_open_target"}
+                continue
+            ok, metrics = _evaluate_open_success_with_metrics(
+                scene=scene,
+                target_label=open_target,
+                joint_name=stage.get("open_joint_name"),
+                env_idx=0,
+            )
+            results[key] = {"success": bool(ok), "metrics": metrics}
+
+        elif ptype == "close":
+            close_target = stage.get("close_target")
+            if not close_target:
+                results[key] = {"success": False, "reason": "no_close_target"}
+                continue
+            ok, metrics = _evaluate_close_success_with_metrics(
+                scene=scene,
+                target_label=close_target,
+                joint_name=stage.get("close_joint_name"),
+                env_idx=0,
+            )
+            results[key] = {"success": bool(ok), "metrics": metrics}
+
+        elif ptype == "push":
+            push_label = stage.get("push_target_label")
+            push_pos = stage.get("push_target_position")
+            if not push_label or push_pos is None:
+                results[key] = {"success": False, "reason": "no_push_target_or_position"}
+                continue
+            ok, metrics = _evaluate_push_success_with_metrics(
+                scene=scene,
+                push_target_label=push_label,
+                push_target_position_env=np.array(push_pos, dtype=float),
+                env_idx=0,
             )
             results[key] = {"success": bool(ok), "metrics": metrics}
     return results
@@ -407,20 +458,15 @@ def rollout_until_horizon(policy, env, horizon, device, norm_params, bg_images,
         z = float(pos_w[2])
         if pick_peak_z is None or z > pick_peak_z:
             pick_peak_z = z
-        if quat_w is not None:
-            from isaaclab.motion_collect.success.constants import POUR_SUCCESS_TILT_THRESHOLD, POUR_SUCCESS_XY_THRESHOLD
-            rot = _quat_wxyz_to_matrix(np.array(quat_w, dtype=float))
-            tilt_z = float(rot[2, 2])
-            if min_pour_tilt_z is None or tilt_z < min_pour_tilt_z:
-                min_pour_tilt_z = tilt_z
-            if not pour_crossed_ok and pour_tilt_at_cross is None and tilt_z <= POUR_SUCCESS_TILT_THRESHOLD:
-                if pour_target:
-                    pour_pos_w, _ = _get_object_pose_world_from_scene(env.scene, pour_target, 0)
-                    if pour_pos_w is not None:
-                        xy_dist = float(np.linalg.norm(pos_w[:2] - pour_pos_w[:2]))
-                        pour_xy_at_cross = xy_dist
-                        pour_tilt_at_cross = tilt_z
-                        pour_crossed_ok = xy_dist <= POUR_SUCCESS_XY_THRESHOLD
+        if pour_target and quat_w is not None:
+            pour_pos_w, _ = _get_object_pose_world_from_scene(env.scene, pour_target, 0)
+            if pour_pos_w is not None:
+                xy_dist = float(np.linalg.norm(pos_w[:2] - pour_pos_w[:2]))
+                if xy_dist <= 0.10:
+                    rot = _quat_wxyz_to_matrix(np.array(quat_w, dtype=float))
+                    tilt_z = float(rot[2, 2])
+                    if min_pour_tilt_z is None or tilt_z < min_pour_tilt_z:
+                        min_pour_tilt_z = tilt_z
 
     for step in range(horizon):
         if step == 0:

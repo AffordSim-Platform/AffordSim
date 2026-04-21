@@ -68,12 +68,16 @@ from isaaclab.motion_collect.success.evaluators import (
     _evaluate_pour_success_with_metrics,
     _evaluate_hang_success_with_metrics,
     _evaluate_pull_success_with_metrics,
+    _evaluate_open_success_with_metrics,
+    _evaluate_close_success_with_metrics,
+    _evaluate_push_success_with_metrics,
 )
 from isaaclab.motion_collect.success.scene_helpers import (
     _get_articulation_joint_pos,
     _get_object_pose_world_from_scene,
     attach_scene_success_meta,
 )
+from isaaclab.motion_collect.tools.pose_utils import _quat_wxyz_to_matrix
 from isaaclab.motion_collect.tools.affordance_resolver import resolve_affordance_path
 from isaaclab.motion_collect.primitives.utils import load_affordance_centroid
 
@@ -191,7 +195,7 @@ def load_eval_stages(task_config_path: str) -> list[dict]:
         if not isinstance(entry, dict):
             continue
         ptype = str(entry.get("type", "")).lower()
-        if ptype not in ("pick", "place", "pour", "hang", "pull"):
+        if ptype not in ("pick", "place", "pour", "hang", "pull", "open", "close", "push"):
             continue
         params = entry.get("params") or {}
         target_name = params.get("target")
@@ -212,6 +216,12 @@ def load_eval_stages(task_config_path: str) -> list[dict]:
             "hang_container": target_name if ptype == "hang" else None,
             "hang_container_mount_npz": params.get("container_mount_affordance_npz_path") if ptype == "hang" else None,
             "pull_target": target_name if ptype == "pull" else None,
+            "open_target": target_name if ptype == "open" else None,
+            "open_joint_name": params.get("joint_name") if ptype == "open" else None,
+            "close_target": target_name if ptype == "close" else None,
+            "close_joint_name": params.get("joint_name") if ptype == "close" else None,
+            "push_target_label": target_name if ptype == "push" else None,
+            "push_target_position": params.get("push_target") if ptype == "push" else None,
         }
         stages.append(stage)
     return stages
@@ -235,6 +245,7 @@ def evaluate_stages_at_episode_end(
     pick_lift_threshold: float,
     pick_peak_z: float | None = None,
     pull_peak_displacement: float | None = None,
+    pour_min_tilt_z: float | None = None,
 ) -> dict[str, dict]:
     pick_target = resolve_pick_target(stages)
     results: dict[str, dict] = {}
@@ -321,6 +332,7 @@ def evaluate_stages_at_episode_end(
                 pick_target=pick_target,
                 pour_target=pour_target,
                 env_idx=0,
+                min_z_component_observed=pour_min_tilt_z,
             )
             results[key] = {"success": bool(ok), "metrics": metrics}
 
@@ -373,6 +385,46 @@ def evaluate_stages_at_episode_end(
             )
             results[key] = {"success": bool(ok), "metrics": metrics}
 
+        elif ptype == "open":
+            open_target = stage.get("open_target")
+            if not open_target:
+                results[key] = {"success": False, "reason": "no_open_target"}
+                continue
+            ok, metrics = _evaluate_open_success_with_metrics(
+                scene=scene,
+                target_label=open_target,
+                joint_name=stage.get("open_joint_name"),
+                env_idx=0,
+            )
+            results[key] = {"success": bool(ok), "metrics": metrics}
+
+        elif ptype == "close":
+            close_target = stage.get("close_target")
+            if not close_target:
+                results[key] = {"success": False, "reason": "no_close_target"}
+                continue
+            ok, metrics = _evaluate_close_success_with_metrics(
+                scene=scene,
+                target_label=close_target,
+                joint_name=stage.get("close_joint_name"),
+                env_idx=0,
+            )
+            results[key] = {"success": bool(ok), "metrics": metrics}
+
+        elif ptype == "push":
+            push_label = stage.get("push_target_label")
+            push_pos = stage.get("push_target_position")
+            if not push_label or push_pos is None:
+                results[key] = {"success": False, "reason": "no_push_target_or_position"}
+                continue
+            ok, metrics = _evaluate_push_success_with_metrics(
+                scene=scene,
+                push_target_label=push_label,
+                push_target_position_env=np.array(push_pos, dtype=float),
+                env_idx=0,
+            )
+            results[key] = {"success": bool(ok), "metrics": metrics}
+
     return results
 
 
@@ -412,7 +464,8 @@ def frames_to_gif(frames: list[np.ndarray], save_path: str,
 
 def rollout(policy, env, horizon, action_horizon, device, prompt,
             bg_images=None, trial_id=0, initial_obs_dict=None,
-            pick_target=None, pull_target=None, collect_front_images=True,
+            pick_target=None, pull_target=None, pour_target=None,
+            collect_front_images=True,
             image_speckle_noise_std: float = 0.0):
     """Run one episode with Pi0.5 remote policy."""
     debug_dir = f"debug_images/pi05_trial_{trial_id}"
@@ -429,9 +482,12 @@ def rollout(policy, env, horizon, action_horizon, device, prompt,
     front_frames = []
     pick_peak_z = None
     pull_peak_displacement = None
+    pour_min_tilt_z = None  # min z_component (max tilt) when pick obj within 10cm of pour target
+
+    POUR_NEAR_RADIUS = 0.10  # 10cm
 
     def _update_peak():
-        nonlocal pick_peak_z, pull_peak_displacement
+        nonlocal pick_peak_z, pull_peak_displacement, pour_min_tilt_z
         if pull_target:
             from isaaclab.motion_collect.success.constants import PULL_SUCCESS_JOINT_NAME
             jp = _get_articulation_joint_pos(env.scene, pull_target, PULL_SUCCESS_JOINT_NAME, 0)
@@ -441,12 +497,22 @@ def rollout(policy, env, horizon, action_horizon, device, prompt,
                     pull_peak_displacement = disp
         if not pick_target:
             return
-        pos_w, _ = _get_object_pose_world_from_scene(env.scene, pick_target, 0)
+        pos_w, quat_w = _get_object_pose_world_from_scene(env.scene, pick_target, 0)
         if pos_w is None:
             return
         z = float(pos_w[2])
         if pick_peak_z is None or z > pick_peak_z:
             pick_peak_z = z
+        # Track min z_component (max tilt) when pick object is within 10cm XY of pour target
+        if pour_target and quat_w is not None:
+            pour_pos_w, _ = _get_object_pose_world_from_scene(env.scene, pour_target, 0)
+            if pour_pos_w is not None:
+                xy_dist = float(np.linalg.norm(pos_w[:2] - pour_pos_w[:2]))
+                if xy_dist <= POUR_NEAR_RADIUS:
+                    rot = _quat_wxyz_to_matrix(np.array(quat_w, dtype=float))
+                    tilt_z = float(rot[2, 2])
+                    if pour_min_tilt_z is None or tilt_z < pour_min_tilt_z:
+                        pour_min_tilt_z = tilt_z
 
     step = 0
     while step < horizon:
@@ -522,12 +588,12 @@ def rollout(policy, env, horizon, action_horizon, device, prompt,
         terminated = False
         truncated = False
         for idx in range(n_exec):
-            action_7d = actions_chunk[idx]
-            action_tensor = torch.from_numpy(action_7d).float().to(device).view(1, -1)
+            action = actions_chunk[idx]  # 7 or 8 dim, auto from server
+            action_tensor = torch.from_numpy(action).float().to(device).view(1, -1)
             obs_dict, _, terminated, truncated, _ = env.step(action_tensor)
             step += 1
             if step <= 5 or step % 50 == 0:
-                print(f"[EVAL] step={step}, action={np.array2string(action_7d, precision=4, suppress_small=True)}")
+                print(f"[EVAL] step={step}, action={np.array2string(action, precision=4, suppress_small=True)}")
             _update_peak()
 
             if collect_front_images and "front" in obs_dict["policy"]:
@@ -546,7 +612,7 @@ def rollout(policy, env, horizon, action_horizon, device, prompt,
         if terminated or truncated:
             break
 
-    return obs_dict, pick_peak_z, pull_peak_displacement, front_frames
+    return obs_dict, pick_peak_z, pull_peak_displacement, pour_min_tilt_z, front_frames
 
 
 # ============================================================================
@@ -608,7 +674,8 @@ def main():
     stages = load_eval_stages(args_cli.task_config)
     pick_target = resolve_pick_target(stages)
     pull_target = next((s.get("pull_target") for s in stages if s["type"] == "pull"), None)
-    print(f"[EVAL] stages={[s['type'] for s in stages]}, pick_target={pick_target}, pull_target={pull_target}")
+    pour_target = next((s.get("pour_target") for s in stages if s["type"] == "pour"), None)
+    print(f"[EVAL] stages={[s['type'] for s in stages]}, pick_target={pick_target}, pull_target={pull_target}, pour_target={pour_target}")
 
     # Set seeds
     if args_cli.seed is not None:
@@ -633,7 +700,7 @@ def main():
             env.step(torch.zeros(1, env.action_space.shape[1], device=device))
         pick_initial_z = capture_object_initial_z(env.scene, pick_target, env_idx=0) if pick_target else None
 
-        _, pick_peak_z, pull_peak_displacement, front_frames = rollout(
+        _, pick_peak_z, pull_peak_displacement, pour_min_tilt_z, front_frames = rollout(
             policy=policy,
             env=env,
             horizon=args_cli.horizon,
@@ -645,6 +712,7 @@ def main():
             initial_obs_dict=initial_obs_dict,
             pick_target=pick_target,
             pull_target=pull_target,
+            pour_target=pour_target,
             collect_front_images=True,
             image_speckle_noise_std=image_speckle_noise_std,
         )
@@ -664,6 +732,7 @@ def main():
             pick_lift_threshold=args_cli.pick_lift_threshold,
             pick_peak_z=pick_peak_z,
             pull_peak_displacement=pull_peak_displacement,
+            pour_min_tilt_z=pour_min_tilt_z,
         )
         per_rollout_results.append(stage_results)
         print(f"[EVAL] trial {trial}: " + ", ".join(

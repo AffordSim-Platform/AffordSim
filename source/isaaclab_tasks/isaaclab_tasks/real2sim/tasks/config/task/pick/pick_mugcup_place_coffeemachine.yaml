@@ -1,5 +1,5 @@
 simulation:
-  decimation: 30
+  decimation: 35
   dt: 0.00833333
   render_interval: 5
   episode_length_s: 100
@@ -11,7 +11,7 @@ task:
   description: grasp the red mugcup and place it into coffeemachine1 with affordance
 runtime:
   headless: false
-  episodes: 1
+  episodes: 5
   save_npy: false
   save_camera_images: false
   save_composite_images: false
@@ -37,8 +37,14 @@ objects:
     semantic_tags:
       -   - class
           - red_mugcup
-    init_pos: [0.52, 0.20, 0.09]
+    init_pos: [0.55, 0.2, 0.09]
     init_rot: [0.3173, 0.0, 0.0, 0.9483]
+    position_range:
+      x: [0.55, 0.6]
+      y: [0.15, 0.2]
+      z: [0.09, 0.09]
+    orientation_range:
+      yaw: [-0.1745, 0.1745]
   coffeemachine1:
     usd_path: models/all_object/coffeemachine1.usd
     semantic_tags:
@@ -49,22 +55,28 @@ objects:
     enabled_self_collisions: true
     init_pos: [0.9, -0.25, 0.23]
     init_rot: [0.999, 0.0, 0.0, -0.0436]
-  white_kettle1:
-    usd_path: models/all_object/white_kettle1.usd
-    semantic_tags:
-      -   - class
-          - white_kettle1
-    scale: [0.15, 0.15, 0.15]
-    disable_gravity: false
-    enabled_self_collisions: true
-    init_pos: [0.85, 0.1, 0.23]
-    init_rot: [0.9962, 0.0, 0.0, 0.0872]
+    position_range:
+      x: [0.85, 0.9]
+      y: [-0.27, -0.23]
+      z: [0.23, 0.23]
+    orientation_range:
+      yaw: [-0.1745, 0.1745]
+  # white_kettle1:
+  #   usd_path: models/all_object/white_kettle1.usd
+  #   semantic_tags:
+  #     -   - class
+  #         - white_kettle1
+  #   scale: [0.15, 0.15, 0.15]
+  #   disable_gravity: false
+  #   enabled_self_collisions: true
+  #   init_pos: [0.85, 0.1, 0.23]
+  #   init_rot: [0.9962, 0.0, 0.0, 0.0872]
 primitives:
   - type: pick
     mode: affordance
     params:
       target: red_mugcup
-      pre_pick_offset: [0.0, 0.0, 0.10]
+      pre_pick_offset: [0.0, 0.0, 0.08]
       pick_interpolation_steps: 10
   - type: place
     mode: affordance
@@ -78,10 +90,10 @@ primitives:
 enable_random_lights: false
 image_noise_std: 0
 image_speckle_noise_std: 0
-enable_objects_randomization: false
+enable_objects_randomization: true
 enable_objects_randomization_curriculum: false
 texture_randomization:
-  enabled: true
+  enabled: false
   texture_dir: models/random_pic
   targets:
     table:

@@ -8,11 +8,11 @@ scene:
   env_spacing: 10
 task:
   name: interactive task
-  description: grasp the blue cup and put it on the shelf
+  description: grasp the pink cup and put it on the shelf
 runtime:
   headless: false
   episodes: 1
-  save_npy: false
+  save_npy: true
   save_camera_images: false
   save_composite_images: false
   save_mask_images: false
@@ -23,7 +23,7 @@ runtime:
   use_background_replace: true
   cam_side_background: backgrounds/1123_background.png
   cam_wrist_background: backgrounds/wristbackground_realworld1.png
-  data_dir: data/r2s2r_data/pick_cup_place_woodshelf
+  data_dir: data/r2s2r_data/pick_pinkcup_place_woodshelf
   task_name: FrankaFr3-OurGripper-Joint-VisPick-v0
 robot:
   cfg_name: franka_fr3_our.yml
@@ -40,22 +40,26 @@ objects:
     init_pos: [0.8, -0.2, 0.35]
     init_rot: [0.92387953, 0.0, 0.0, -0.38268343]
     height: 0.42
+    position_range:
+      x: [0.7, 0.8]
+      y: [-0.2, -0.1]
+      z: [0.35, 0.35]
+    orientation_range:
+      yaw: [0, 0]
   pink_cup:
     usd_path: models/all_object/pink_cup.usd
     semantic_tags:
       -   - class
           - pink_cup
     init_pos: [0.65, 0.15, 0.08]
-    init_rot: [0.3827, 0.0, 0.0, 0.9239]
+    init_rot: [0.1736, 0.0, 0.0, 0.9848]
     height: 0.08
-  white_cup:
-    usd_path: models/all_object/white_cup.usd
-    semantic_tags:
-      -   - class
-          - white_cup
-    init_pos: [0.55, -0.08, 0.10]
-    init_rot: [-0.7071, 0.0, 0.0, 0.7071]
-    height: 0.15
+    position_range:
+      x: [0.5, 0.6]
+      y: [0.1, 0.2]
+      z: [0.18, 0.18]
+    orientation_range:
+      yaw: [0, 0]
 primitives:
   - type: pick
     mode: affordance
@@ -72,10 +76,10 @@ primitives:
 enable_random_lights: false
 image_noise_std: 0
 image_speckle_noise_std: 0
-enable_objects_randomization: false
+enable_objects_randomization: true
 enable_objects_randomization_curriculum: false
 texture_randomization:
-  enabled: true
+  enabled: false
   texture_dir: models/random_pic
   targets:
     table:

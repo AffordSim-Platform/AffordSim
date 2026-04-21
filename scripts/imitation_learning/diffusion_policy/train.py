@@ -409,7 +409,10 @@ if __name__ == "__main__":
     parser.add_argument("--action_horizon", type=int, default=8, help="实际执行的动作步数 T_exec")
 
     # 模型
-    parser.add_argument("--action_dim", type=int, default=7, help="动作维度")
+    parser.add_argument("--action_dim", type=int, default=7, help="动作维度 (ee_delta=7, joint_delta=8)")
+    parser.add_argument("--action_type", type=str, default="ee_delta",
+                        choices=["ee_delta", "joint_delta"],
+                        help="Action type: ee_delta or joint_delta")
     parser.add_argument("--lowdim_dim", type=int, default=14, help="低维观测维度 (qpos+qvel)")
     parser.add_argument("--img_feature_dim", type=int, default=256, help="图像特征维度")
     parser.add_argument("--lowdim_feature_dim", type=int, default=64, help="低维特征维度")

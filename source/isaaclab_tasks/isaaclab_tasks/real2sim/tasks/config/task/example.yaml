@@ -1,152 +1,143 @@
 # ============================================================================
-# Task YAML Complete Parameter Reference
+# 任务 YAML 完整参数示例
 # ============================================================================
-# This file lists all configurable parameters in the data collection pipeline,
-# including default values and descriptions.
+# 本文件列出了数据采集流程中所有可配置的参数，包括默认值和中文说明。
 #
-# Conventions:
-#   __REQUIRED__  = Must be provided by the user; no default value
-#   All other fields show their default values and can be omitted
-#   (omitted fields automatically use the default value)
+# 标记约定:
+#   __REQUIRED__  = 必须由用户填写，没有默认值
+#   其余字段均标注了默认值，可按需省略（省略时自动使用默认值）
 #
-# Usage:
+# 使用方式:
 #   python scripts/run_data_collect.py --config task/example.yaml
 #   python scripts/run_data_collect_improve.py --task_name example
 # ============================================================================
 
 
 # ============================================================================
-# 1. simulation — Physics simulation parameters
+# 1. simulation — 物理仿真参数
 # ============================================================================
-# Controls the underlying Isaac Lab physics engine: simulation step size,
-# rendering frequency, and maximum episode duration.
-# Generally no modification needed; keep the defaults.
+# 控制 Isaac Lab 底层物理引擎的仿真步长、渲染频率和最大时长。
+# 一般情况下不需要修改，保持默认即可。
 
 simulation:
-  decimation: 30          # Number of physics steps per control step. Higher = smoother but slower. Default 30
-  dt: 0.00833333          # Physics engine time step (seconds), i.e. 1/120. Default 0.00833333
-  render_interval: 5      # Render one frame every N physics steps. Default 5
-  episode_length_s: 100   # Maximum duration of a single episode (seconds). Auto-terminates on timeout. Default 100
+  decimation: 30          # 每个控制步对应的物理仿真步数。值越大动作越平滑但越慢。默认30
+  dt: 0.00833333          # 物理引擎时间步长（秒），即 1/120。默认 0.00833333
+  render_interval: 5      # 每隔多少物理步渲染一帧画面。默认5
+  episode_length_s: 100   # 单个 episode 的最大时长（秒）。超时自动终止。默认100
 
 
 # ============================================================================
-# 2. scene — Parallel simulation environment configuration
+# 2. scene — 并行仿真环境配置
 # ============================================================================
-# num_envs controls how many independent simulation environments run
-# simultaneously (for parallel data collection).
-# env_spacing controls the physical spacing between environments to prevent collisions.
+# num_envs 控制同时运行多少个独立的仿真环境（用于并行采集数据），
+# env_spacing 控制各环境之间的物理间距，防止碰撞。
 
 scene:
-  num_envs: 1             # Number of parallel environments. 1=single, 3/5=parallel collection. Default 1
-  env_spacing: 10         # Spacing between environments (meters). Increase to 20 for many envs. Default 10
+  num_envs: 1             # 并行环境数量。1=单环境，3/5=多环境并行采集。默认1
+  env_spacing: 10         # 各环境之间的间距（米）。环境多时建议加大到20。默认10
 
 
 # ============================================================================
-# 3. task — Task metadata
+# 3. task — 任务元信息
 # ============================================================================
-# Descriptive fields only; they do not affect execution logic but are
-# recorded in the collected data metadata.
-# name is for categorization (e.g. interactive task / composite task / task_gen),
-# description is a natural language task description.
+# 纯描述性字段，不影响执行逻辑，但会被记录到采集数据的元信息中。
+# name 用于分类（如 interactive task / composite task / task_gen），
+# description 是自然语言的任务描述。
 
 task:
-  name: __REQUIRED__               # Task category name, e.g. "interactive task", "composite task"
-  description: __REQUIRED__        # Natural language task description, e.g. "grasp the banana and put it in the bowl"
+  name: __REQUIRED__               # 任务类别名称，如 "interactive task", "composite task"
+  description: __REQUIRED__        # 自然语言任务描述，如 "grasp the banana and put it in the bowl"
 
 
 # ============================================================================
-# 4. runtime — Data collection runtime parameters
+# 4. runtime — 数据采集运行时参数
 # ============================================================================
-# Controls all runtime behavior during data collection: what data to save,
-# camera resolution, background replacement, output paths, etc.
-# This is the most heavily configured section.
+# 控制数据采集过程中的所有运行时行为：保存哪些数据、相机分辨率、
+# 背景替换、输出路径等。这是配置最多的 section。
 
 runtime:
-  # --- Data saving toggles ---
-  save_npy: false                  # Save numpy format state data (joint angles, poses, etc.). Default false
-  save_camera_images: false        # Save processed camera RGB images. Default false
-  save_composite_images: false     # Save composite images with annotation overlays. Default false
-  save_mask_images: false          # Save semantic segmentation mask images. Default false
-  save_original_images: true       # Save original unprocessed camera images. Default true
+  # --- 数据保存开关 ---
+  save_npy: false                  # 是否保存 numpy 格式的状态数据（关节角、位姿等）。默认 false
+  save_camera_images: false        # 是否保存处理后的相机 RGB 图像。默认 false
+  save_composite_images: false     # 是否保存叠加了标注信息的合成图像。默认 false
+  save_mask_images: false          # 是否保存语义分割 mask 图像。默认 false
+  save_original_images: true       # 是否保存原始未处理的相机图像。默认 true
 
-  # --- Collection control ---
-  episodes: 1                      # Number of episodes to collect. Each episode is one complete task execution. Default 1
-  headless: false                  # Run in headless mode (no visualization window). Recommended true on servers. Default false
-  enable_motion_planning: true     # Enable CuRobo motion planning. Disabling limits to IK only. Default true
+  # --- 采集控制 ---
+  episodes: 1                      # 要采集的 episode 数量。每个 episode 是一次完整的任务执行。默认1
+  headless: false                  # 是否无头模式运行（不显示可视化窗口）。服务器上采集建议开 true。默认 false
+  enable_motion_planning: true     # 是否启用 CuRobo 运动规划。关闭后只能用 IK。默认 true
 
-  # --- Camera and images ---
-  sim_camera_resolution: [640, 480]       # Simulation camera resolution [width, height] (pixels). Default [640, 480]
-  background_image_size: [640, 480]       # Output image size [width, height] (pixels). Default [640, 480]
-  use_background_replace: true            # Replace simulation background with real background images for realism. Default true
-  cam_side_background: __REQUIRED__       # Side camera background image path. e.g. "../../backgrounds/1123_background.png"
-  cam_wrist_background: __REQUIRED__      # Wrist camera background image path. e.g. "../../backgrounds/wristbackground_realworld1.png"
+  # --- 相机与图像 ---
+  sim_camera_resolution: [640, 480]       # 仿真相机分辨率 [宽, 高]（像素）。默认 [640, 480]
+  background_image_size: [640, 480]       # 输出图像尺寸 [宽, 高]（像素）。默认 [640, 480]
+  use_background_replace: true            # 是否用真实背景图替换仿真背景，使图像更真实。默认 true
+  cam_side_background: __REQUIRED__       # 侧方相机的背景图路径。如 "../../backgrounds/1123_background.png"
+  cam_wrist_background: __REQUIRED__      # 腕部相机的背景图路径。如 "../../backgrounds/wristbackground_realworld1.png"
 
-  # --- Paths ---
-  data_dir: __REQUIRED__           # Output directory for collected data (absolute path). e.g. "/home/user/data/pick_banana"
-  task_name: FrankaFr3-OurGripper-Joint-VisPick-v0  # Isaac Lab registered environment name.
-                                   # Options: "FrankaFr3-OurGripper-Joint-VisPick-v0" (Franka)
-                                   #          "UR5e-Robotiq85-IKRel-EE-VisPick-v0" (UR5e)
-                                   #          "Kinova-Robotiq85-IKRel-EE-VisPick-v0" (Kinova)
+  # --- 路径 ---
+  data_dir: __REQUIRED__           # 采集数据的保存目录（绝对路径）。如 "/home/user/data/pick_banana"
+  task_name: FrankaFr3-OurGripper-Joint-VisPick-v0  # Isaac Lab 注册的环境名。
+                                   # 可选值: "FrankaFr3-OurGripper-Joint-VisPick-v0" (Franka)
+                                   #         "UR5e-Robotiq85-IKRel-EE-VisPick-v0" (UR5e)
+                                   #         "Kinova-Robotiq85-IKRel-EE-VisPick-v0" (Kinova)
 
 
 # ============================================================================
-# 5. robot — Robot configuration
+# 5. robot — 机器人配置
 # ============================================================================
-# Specifies which robot to use and its configuration file.
-# The config file defines kinematics parameters, joint limits, etc.
+# 指定使用哪种机器人及其配置文件。配置文件定义了运动学参数、关节限位等。
 
 robot:
-  cfg_name: franka_fr3_our.yml     # Robot configuration file name.
-                                   # Options: "franka_fr3_our.yml" (Franka FR3)
-                                   #          "ur5e_robotiq_2f_85.yml" (UR5e)
-                                   #          "kinova_robotiq85.yml" (Kinova)
-  type: franka_fr3_default         # Robot type identifier.
-                                   # Options: "franka_fr3_default", "ur5e", "kinova_robotiq85"
+  cfg_name: franka_fr3_our.yml     # 机器人配置文件名。
+                                   # 可选: "franka_fr3_our.yml" (Franka FR3)
+                                   #       "ur5e_robotiq_2f_85.yml" (UR5e)
+                                   #       "kinova_robotiq85.yml" (Kinova)
+  type: franka_fr3_default         # 机器人类型标识。
+                                   # 可选: "franka_fr3_default", "ur5e", "kinova_robotiq85"
 
 
 # ============================================================================
-# 6. offsets — End-effector offsets
+# 6. offsets — 末端执行器偏移量
 # ============================================================================
-# Fixed offsets (meters) applied to grasp and place points for fine-tuning
-# end-effector positioning.
-# Usually keep [0, 0, 0]; only adjust for special grippers.
+# 在抓取点和放置点上附加的固定偏移（米），用于微调末端执行器位置。
+# 通常保持 [0, 0, 0]，特殊夹爪才需要调整。
 
 offsets:
-  grasp: [0, 0, 0.0]      # Grasp point offset [x, y, z] (meters), added to the computed grasp position. Default [0, 0, 0]
-  place: [0, 0, 0.0]      # Place point offset [x, y, z] (meters), added to the computed place position. Default [0, 0, 0]
+  grasp: [0, 0, 0.0]      # 抓取点偏移 [x, y, z]（米），叠加在计算出的抓取位置上。默认 [0, 0, 0]
+  place: [0, 0, 0.0]      # 放置点偏移 [x, y, z]（米），叠加在计算出的放置位置上。默认 [0, 0, 0]
 
 
 # ============================================================================
-# 7. objects — Rigid body object definitions
+# 7. objects — 刚体物体定义
 # ============================================================================
-# Defines all non-articulated (rigid body) objects in the scene.
-# The key name serves as the unique identifier for each object.
-# Primitives reference these key names via the target field.
+# 定义场景中所有非关节（刚体）物体。键名即物体的唯一标识符。
+# primitives 中通过 target 字段引用这里的键名。
 
 objects:
-  # --- Example object 1 (object to be grasped) ---
+  # --- 示例物体 1（被抓取的物体） ---
   example_object:
-    usd_path: __REQUIRED__         # Absolute path to the object's USD model file
-    semantic_tags:                  # Semantic tags for segmentation masks and object identification
+    usd_path: __REQUIRED__         # 物体 USD 模型文件的绝对路径
+    semantic_tags:                  # 语义标签，用于分割 mask 和物体识别
       - - class
-        - example_object           # Should match the key name
-    init_pos: __REQUIRED__         # Initial position [x, y, z] (meters). x=forward, y=left, z=up
-    init_rot: __REQUIRED__         # Initial rotation [w, x, y, z] quaternion
-    height: 0.05                   # Object height (meters), used for place height calculation. Optional but recommended
-    scale: [1.0, 1.0, 1.0]        # Scale factors [sx, sy, sz]. Optional, default is no scaling
+        - example_object           # 与键名保持一致
+    init_pos: __REQUIRED__         # 初始位置 [x, y, z]（米）。x 朝前，y 朝左，z 朝上
+    init_rot: __REQUIRED__         # 初始旋转 [w, x, y, z] 四元数
+    height: 0.05                   # 物体高度（米），用于放置高度计算。可选但建议填写
+    scale: [1.0, 1.0, 1.0]        # 缩放比例 [sx, sy, sz]。可选，默认不缩放
 
-    # --- Optional: position randomization range ---
-    # Used with enable_objects_randomization: true
-    position_range:                # Random range for object position at the start of each episode
-      x: [-0.05, 0.05]            # x-axis random offset range (meters), relative to init_pos
-      y: [-0.05, 0.05]            # y-axis random offset range (meters)
-      z: [0.0, 0.0]               # z-axis typically not randomized
+    # --- 可选：位置随机化范围 ---
+    # 配合 enable_objects_randomization: true 使用
+    position_range:                # 每个 episode 开始时物体位置的随机范围
+      x: [-0.05, 0.05]            # x轴随机偏移范围（米），相对于 init_pos
+      y: [-0.05, 0.05]            # y轴随机偏移范围（米）
+      z: [0.0, 0.0]               # z轴一般不随机化
 
-    # --- Optional: orientation randomization range ---
-    orientation_range:             # Random range for object orientation at the start of each episode
-      yaw: [-0.5, 0.5]            # Yaw angle random range (radians)
+    # --- 可选：朝向随机化范围 ---
+    orientation_range:             # 每个 episode 开始时物体朝向的随机范围
+      yaw: [-0.5, 0.5]            # 偏航角随机范围（弧度）
 
-  # --- Example object 2 (container/target object) ---
+  # --- 示例物体 2（容器/目标物体） ---
   example_container:
     usd_path: __REQUIRED__
     semantic_tags:
@@ -158,355 +149,348 @@ objects:
 
 
 # ============================================================================
-# 8. articulations — Articulated object definitions (optional)
+# 8. articulations — 关节物体定义（可选）
 # ============================================================================
-# Defines objects with joints (e.g. microwave doors, drawer cabinets).
-# Only needed when the task involves open / close / pull operations on articulated objects.
-# If the task only involves rigid bodies (pick/place/pour etc.), this section can be omitted.
+# 定义带有关节的物体（如微波炉门、抽屉柜）。
+# 仅在任务涉及 open / close / pull 等操作关节物体时才需要此 section。
+# 如果任务只涉及刚体物体（pick/place/pour等），可以省略此 section。
 
 articulations:
   example_articulation:
-    usd_path: __REQUIRED__                    # Articulated object USD model path
+    usd_path: __REQUIRED__                    # 关节物体 USD 模型路径
     semantic_tags:
       - - class
         - example_articulation
-    scale: [1.0, 1.0, 1.0]                   # Scale factors. Default [1, 1, 1]
-    disable_gravity: false                    # Disable gravity. Set true for objects fixed in air (e.g. wall-mounted microwave). Default false
-    enabled_self_collisions: true             # Enable self-collision detection. Default true
-    init_pos: __REQUIRED__                    # Initial position [x, y, z] (meters)
-    init_rot: __REQUIRED__                    # Initial rotation [w, x, y, z] quaternion
-    joint_pos:                                # Initial joint angles/positions
-      joint_name_1: 0.0                       # Joint name: initial value (radians or meters, depending on joint type)
-                                              # e.g. microjoint: 0.0 (closed), microjoint: -1.57 (open)
-    actuators:                                # Actuator configuration (joint drive parameters)
+    scale: [1.0, 1.0, 1.0]                   # 缩放比例。默认 [1, 1, 1]
+    disable_gravity: false                    # 是否关闭重力。固定在空中的物体（如墙上微波炉）设 true。默认 false
+    enabled_self_collisions: true             # 是否启用自碰撞检测。默认 true
+    init_pos: __REQUIRED__                    # 初始位置 [x, y, z]（米）
+    init_rot: __REQUIRED__                    # 初始旋转 [w, x, y, z] 四元数
+    joint_pos:                                # 各关节的初始角度/位置
+      joint_name_1: 0.0                       # 关节名: 初始值（弧度或米，取决于关节类型）
+                                              # 如 microjoint: 0.0 (关门), microjoint: -1.57 (开门)
+    actuators:                                # 执行器配置（关节驱动参数）
       joint:
-        joint_names_expr: ["joint_name_1"]    # Joint name list, supports regex
-        effort_limit: 1000                    # Torque/force limit. Default 1000
-        velocity_limit: 1000                  # Velocity limit. Default 1000
-        stiffness: 0                          # Stiffness (PD controller P gain). Set 0 for passive joints. Default 0
-        damping: 0                            # Damping (PD controller D gain). Set 0 for passive joints. Default 0
+        joint_names_expr: ["joint_name_1"]    # 关节名列表，支持正则表达式
+        effort_limit: 1000                    # 力矩/力限制。默认 1000
+        velocity_limit: 1000                  # 速度限制。默认 1000
+        stiffness: 0                          # 刚度（PD控制器的P）。被动关节设0。默认 0
+        damping: 0                            # 阻尼（PD控制器的D）。被动关节设0。默认 0
 
-    # Articulated objects also support position_range and orientation_range (same format as objects)
+    # 关节物体同样支持 position_range 和 orientation_range（格式与 objects 相同）
 
 
 # ============================================================================
-# 9. primitives — Action primitive sequence
+# 9. primitives — 动作原语序列
 # ============================================================================
-# Defines the task's action sequence. Executed in list order.
-# Each primitive has type, mode (optional for some), and params.
+# 定义任务的动作序列。按列表顺序依次执行。
+# 每个原语有 type（类型）、mode（模式，部分可选）、params（参数）。
 #
-# Supported primitive types: pick, place, pour, push, pull, open, close, hang, hold, return_home
+# 支持的原语类型: pick, place, pour, push, pull, open, close, hang, hold, return_home
 #
-# Below shows all modes and their complete parameters organized by primitive type.
-# In practice, keep only the primitives needed for your task and remove the rest.
+# 下面按原语类型分别展示所有模式及其完整参数。
+# 实际使用时只需保留任务所需的原语，删除不需要的部分。
 # ============================================================================
 
 primitives:
 
   # ==========================================================================
-  # PICK — Grasp an object
+  # PICK — 抓取物体
   # ==========================================================================
-  # 4 modes: affordance / affordance_multidir / gt / hang
+  # 4种模式: affordance / affordance_multidir / gt / hang
 
-  # --- pick mode 1: affordance (grasp pose predicted by affordance network) ---
-  # Most commonly used mode. Automatically computes optimal grasp point and
-  # orientation from point cloud affordance data.
+  # --- pick 模式 1: affordance（基于 affordance 网络预测抓取位姿） ---
+  # 最常用的模式。自动从点云 affordance 数据中计算最优抓取点和朝向。
   - type: pick
-    mode: affordance               # Use single-direction affordance grasping
+    mode: affordance               # 使用单方向 affordance 抓取
     params:
-      target: __REQUIRED__         # Object to grasp (must match a key name in objects)
-      pre_pick_offset: [0.0, 0.0, 0.10]  # Pre-grasp position offset [x, y, z] (meters).
-                                   # The arm first moves to this offset above the grasp point, then descends.
-                                   # Can also be a scalar like 0.1, equivalent to [0, 0, 0.1]. Default 0.1
-      pick_interpolation_steps: 15 # IK interpolation steps from pre-grasp to grasp point. More steps = smoother. Default 5
-      lift_interpolation_steps: 15 # IK interpolation steps for post-grasp lift. Default 5
-      lift_offset: 0.1             # Lift height after grasping (meters). Default 0.1
-      grasp_npz_path: /path/to/grasp_result.npz  # Optional, manually specify affordance file path.
-                                   # If omitted, auto-searches in pc_dataset_generate/pc/{object_name}_pick/
+      target: __REQUIRED__         # 要抓取的物体名（必须与 objects 中的键名一致）
+      pre_pick_offset: [0.0, 0.0, 0.10]  # 预抓取位置偏移 [x, y, z]（米）。
+                                   # 机械臂先运动到抓取点上方该偏移处，再下降抓取。
+                                   # 也可以写成标量如 0.1，等价于 [0, 0, 0.1]。默认 0.1
+      pick_interpolation_steps: 15 # 从预抓取位置下降到抓取点的 IK 插值步数。步数越多动作越平滑。默认 5
+      lift_interpolation_steps: 15 # 抓取后抬升的 IK 插值步数。默认 5
+      lift_offset: 0.1             # 抓取后抬升高度（米）。默认 0.1
+      grasp_npz_path: /path/to/grasp_result.npz  # 可选，手动指定 affordance 文件路径。
+                                   # 不填则自动从 pc_dataset_generate/pc/{物体名}_pick/ 下查找
 
-  # --- pick mode 2: affordance_multidir (select optimal direction from multiple) ---
-  # For handle-type objects (e.g. pots), selects the best from multiple
-  # pre-computed grasp directions.
+  # --- pick 模式 2: affordance_multidir（多方向 affordance 选择最优方向） ---
+  # 用于把手类物体（如锅），从多个预计算的抓取方向中选择最优的。
   - type: pick
     mode: affordance_multidir
     params:
       target: __REQUIRED__
-      pre_pick_offset: [0.0, 0.0, 0.10]  # Same as above. Default 0.1
-      pick_interpolation_steps: 10        # Same as above. Default 5
-      lift_interpolation_steps: 5         # Same as above. Default 5
-      lift_offset: 0.15                   # Same as above. Default 0.1
+      pre_pick_offset: [0.0, 0.0, 0.10]  # 同上。默认 0.1
+      pick_interpolation_steps: 10        # 同上。默认 5
+      lift_interpolation_steps: 5         # 同上。默认 5
+      lift_offset: 0.15                   # 同上。默认 0.1
 
-  # --- pick mode 3: gt (use manually specified grasp quaternion) ---
-  # For objects with known exact grasp poses (e.g. regular-shaped blocks).
+  # --- pick 模式 3: gt（使用手动指定的抓取四元数） ---
+  # 用于已知精确抓取姿态的物体（如规则形状的方块）。
   - type: pick
     mode: gt
     params:
       target: __REQUIRED__
-      grasp_quat: [0.0, 1.0, 0.0, 0.0]  # Grasp orientation quaternion [w, x, y, z]. __REQUIRED__ (required in gt mode)
-      pre_pick_offset: 0.1               # Same as above. Default 0.1
-      pick_interpolation_steps: 10       # Same as above. Default 5
-      lift_interpolation_steps: 10       # Same as above. Default 5
-      lift_offset: 0.1                   # Same as above. Default 0.1
+      grasp_quat: [0.0, 1.0, 0.0, 0.0]  # 抓取朝向四元数 [w, x, y, z]。__REQUIRED__ (gt模式下必填)
+      pre_pick_offset: 0.1               # 同上。默认 0.1
+      pick_interpolation_steps: 10       # 同上。默认 5
+      lift_interpolation_steps: 10       # 同上。默认 5
+      lift_offset: 0.1                   # 同上。默认 0.1
 
-  # --- pick mode 4: hang (special grasp for subsequent hanging action) ---
-  # Grasp optimized for hanging tasks, selects a pose suitable for mounting.
+  # --- pick 模式 4: hang（用于后续挂载动作的特殊抓取） ---
+  # 抓取方式专为挂载任务优化，会选择适合挂上去的抓取姿态。
   - type: pick
     mode: hang
     params:
       target: __REQUIRED__
-      pre_pick_offset: [0.0, 0.0, 0.08]  # Same as above. Default 0.1
-      pick_interpolation_steps: 10        # Same as above. Default 5
-      lift_interpolation_steps: 10        # Same as above. Default 5
+      pre_pick_offset: [0.0, 0.0, 0.08]  # 同上。默认 0.1
+      pick_interpolation_steps: 10        # 同上。默认 5
+      lift_interpolation_steps: 10        # 同上。默认 5
 
 
   # ==========================================================================
-  # PLACE — Place an object
+  # PLACE — 放置物体
   # ==========================================================================
-  # 4 modes: on / in / pose / affordance
-  # Must be used after pick (the robot must be holding an object).
+  # 4种模式: on / in / pose / affordance
+  # 必须在 pick 之后使用（手中需要握着物体）。
 
-  # --- place mode 1: on (place on top of a target object) ---
-  # Most commonly used. Automatically computes the target object's top position
-  # and places the object on it.
+  # --- place 模式 1: on（放置到目标物体上方） ---
+  # 最常用。自动计算目标物体顶部位置，将物体放上去。
   - type: place
-    mode: "on"                      # Note: "on" is a YAML reserved word; must be quoted
+    mode: "on"                      # 注意: YAML中 on 是保留字，必须加引号
     params:
-      target: __REQUIRED__          # Target container/object name (must match a key in objects)
-      on_height_margin: 0.01        # Place height margin (meters). Positive=above target top, negative=below. Default 0.01
-                                    # e.g. use -0.07 for shelves (sink into shelf), 0.01 for bowls
-      ik_interpolation_steps: 30    # IK interpolation steps for the place motion. Default 30
-      post_release_lift_offset: [0.0, 0.0, 0.08]  # Lift offset after releasing gripper [x, y, z] (meters). Default [0, 0, 0.08]
-      post_release_lift_steps: 10   # Steps for post-release lift. Default 10
-      success_eval: true            # Whether to evaluate success after placing (check if object is on target). Default false
+      target: __REQUIRED__          # 放置目标容器/物体名（必须与 objects 中的键名一致）
+      on_height_margin: 0.01        # 放置高度余量（米）。正值=高于目标顶部，负值=低于。默认 0.01
+                                    # 如放到架子上用 -0.07（深入架子），放到碗上用 0.01
+      ik_interpolation_steps: 30    # 放置运动的 IK 插值步数。默认 30
+      post_release_lift_offset: [0.0, 0.0, 0.08]  # 松开夹爪后的抬升偏移 [x, y, z]（米）。默认 [0, 0, 0.08]
+      post_release_lift_steps: 10   # 松开后抬升的步数。默认 10
+      success_eval: true            # 是否在放置后评估成功（检查物体是否在目标上）。默认 false
 
-  # --- place mode 2: in (place inside a target container) ---
-  # For semi-enclosed containers (bowls, plates, microwave interior, shelf compartments).
-  # Automatically detects container type and uses a two-step approach to avoid collisions.
+  # --- place 模式 2: in（放置到目标容器内部） ---
+  # 用于半封闭容器（如碗、盘子、微波炉内部、架子隔层）。
+  # 会自动检测容器类型，使用两步接近策略避免碰撞。
   - type: place
     mode: "in"
     params:
       target: __REQUIRED__
-      ik_interpolation_steps: 30   # Same as above. Default 30
-      success_eval: true           # Same as above. Default false
+      ik_interpolation_steps: 30   # 同上。默认 30
+      success_eval: true           # 同上。默认 false
 
-  # --- place mode 3: pose (place at a specified absolute pose) ---
-  # Directly specifies target position and orientation, independent of any object.
-  # Useful for returning an object to its original position after pouring, etc.
+  # --- place 模式 3: pose（放置到指定的绝对位姿） ---
+  # 直接指定目标位置和朝向，不依赖任何物体。
+  # 用于 pour 后把物体放回原位等场景。
   - type: place
     mode: pose
     params:
-      position: [0.5, -0.4, 0.1]  # Target position [x, y, z] (meters). __REQUIRED__ (required in pose mode)
-      orientation: [0.0, 0.9239, 0.0, 0.3827]  # Target orientation [w, x, y, z] quaternion. Optional; keeps current if omitted
-      success_eval: false          # Same as above. Default false
+      position: [0.5, -0.4, 0.1]  # 目标位置 [x, y, z]（米）。__REQUIRED__ (pose模式下必填)
+      orientation: [0.0, 0.9239, 0.0, 0.3827]  # 目标朝向 [w, x, y, z] 四元数。可选，不填则保持当前朝向
+      success_eval: false          # 同上。默认 false
 
-  # --- place mode 4: affordance (affordance-aligned placement) ---
-  # Uses object and container affordance centroids for aligned placement.
-  # Suitable for scenarios requiring precise alignment (e.g. cup on coffee machine tray).
+  # --- place 模式 4: affordance（基于 affordance 对齐放置） ---
+  # 利用物体和容器的 affordance 质心进行对齐放置。
+  # 适用于需要精确对齐的场景（如杯子放到咖啡机托盘上）。
   - type: place
     mode: affordance
     params:
       target: __REQUIRED__
-      pre_place_distance: 0.15     # Pre-place distance (meters), approaching from above. Default 0.15
-      ik_interpolation_steps: 30   # Same as above. Default 30
-      post_release_lift_offset: [0.0, 0.0, 0.08]  # Same as above. Default [0, 0, 0.08]
-      post_release_lift_steps: 10  # Same as above. Default 10
-      success_eval: true           # Same as above. Default false
+      pre_place_distance: 0.15     # 预放置距离（米），从上方接近。默认 0.15
+      ik_interpolation_steps: 30   # 同上。默认 30
+      post_release_lift_offset: [0.0, 0.0, 0.08]  # 同上。默认 [0, 0, 0.08]
+      post_release_lift_steps: 10  # 同上。默认 10
+      success_eval: true           # 同上。默认 false
 
 
   # ==========================================================================
-  # POUR — Pour/tilt
+  # POUR — 倾倒
   # ==========================================================================
-  # Tilts the held object to pour into a target container. Must be used after pick.
-  # No sub-modes; automatically computes optimal pour direction and pose from affordance data.
+  # 将手中的物体倾斜倒入目标容器。必须在 pick 之后使用。
+  # 无子模式，自动根据 affordance 数据计算最优倾倒方向和姿态。
 
   - type: pour
     params:
-      target: __REQUIRED__         # Target container name for pouring
-      tilt_angle_deg: 90.0         # Tilt angle (degrees). 90=horizontal, 100=past horizontal, 60=gentle tilt. Default 90
-      move_hover_height: 0.15      # Hover height above the container (meters). Default 0.15
-      tilt_lift_height: 0.08       # Extra lift during tilting (meters), prevents hitting container edges. Default 0.08
-      tilt_horizontal_offset: 0.05 # Horizontal offset during tilting (meters), controls pour point distance from container center. Default 0.05
-      # return_lift_height: 0.05   # Optional. Extra lift height before returning upright (meters). Omit for no lift
-      success_eval: false          # Whether to evaluate pour success (check tilt angle and pour direction). Default false
+      target: __REQUIRED__         # 倾倒目标容器名
+      tilt_angle_deg: 90.0         # 倾斜角度（度）。90=水平倒，100=过水平，60=轻倒。默认 90
+      move_hover_height: 0.15      # 移动到容器上方的悬停高度（米）。默认 0.15
+      tilt_lift_height: 0.08       # 倾倒时的额外抬升高度（米），防止碰到容器边缘。默认 0.08
+      tilt_horizontal_offset: 0.05 # 倾倒时的水平偏移（米），控制倒出点与容器中心的距离。默认 0.05
+      # return_lift_height: 0.05   # 可选。倾倒后回正前的额外抬升高度（米）。不填则不抬升
+      success_eval: false          # 是否评估倾倒成功（检查倾斜角度和倒出方向）。默认 false
 
 
   # ==========================================================================
-  # PUSH — Push an object
+  # PUSH — 推动物体
   # ==========================================================================
-  # Uses the end-effector to push an object to a target position. No prior pick needed.
-  # Supported mode: object_aligned (push direction aligned based on object affordance)
+  # 用末端执行器推动物体到目标位置。不需要先 pick。
+  # 支持模式: object_aligned（基于物体 affordance 对齐推动方向）
 
   - type: push
-    mode: object_aligned           # Optional; mode can also be omitted
+    mode: object_aligned           # 可选，也可不写 mode
     params:
-      target: __REQUIRED__         # Object to push
-      push_target: __REQUIRED__    # Push target position [x, y, z] (meters). Final position for the object
-      pre_height: 0.15             # Hover height when approaching the object (meters). Default 0.15
-      # pre_offset: [0, 0, 0.15]  # Alternatively use 3D offset instead of pre_height (choose one)
-      pre_push_backoff: 0.08       # Backoff distance from push start point (meters), leaves room for acceleration. Default 0.08
-      push_contact_retreat: 0.02   # Slight retreat after contacting object (meters), prevents jamming. Default 0.02
-      lift_z_delta: 0.15           # Lift height after push completion (meters). Optional; omit for no lift
-      down_interpolation_steps: 5  # Steps for descending from hover to contact. Default 5
-      push_interpolation_steps: 30 # Steps for the push motion. Default 30
-      lift_interpolation_steps: 10 # Steps for post-push lift. Default 10
-      success_eval: false          # Whether to evaluate push success (check if object reached target). Default false
+      target: __REQUIRED__         # 要推动的物体名
+      push_target: __REQUIRED__    # 推动目标位置 [x, y, z]（米）。物体最终要到达的位置
+      pre_height: 0.15             # 接近物体时的悬停高度（米）。默认 0.15
+      # pre_offset: [0, 0, 0.15]  # 或者用3D偏移代替 pre_height（二选一）
+      pre_push_backoff: 0.08       # 推动起点后退距离（米），留出加速空间。默认 0.08
+      push_contact_retreat: 0.02   # 接触物体后微退距离（米），防止卡住。默认 0.02
+      lift_z_delta: 0.15           # 推动完成后抬升高度（米）。可选，不填则不抬升
+      down_interpolation_steps: 5  # 从悬停下降到接触的步数。默认 5
+      push_interpolation_steps: 30 # 推动过程的步数。默认 30
+      lift_interpolation_steps: 10 # 推动后抬升的步数。默认 10
+      success_eval: false          # 是否评估推动成功（检查物体到达目标位置）。默认 false
 
 
   # ==========================================================================
-  # PULL — Pull (articulated object)
+  # PULL — 拉动（关节物体）
   # ==========================================================================
-  # Grasps the handle of an articulated object and pulls it outward (e.g. open a drawer).
-  # Target must be defined in articulations and have facing_axis_local registered in containers.yaml.
+  # 抓住关节物体的把手并沿拉出方向拉动（如拉开抽屉）。
+  # 目标必须在 articulations 中定义，且在 containers.yaml 中注册了 facing_axis_local。
 
   - type: pull
     params:
-      target: __REQUIRED__         # Articulated object to pull (must match a key in articulations)
-      pre_grasp_offset: 0.08       # Backoff distance along pull direction before grasping (meters). Default 0.08
-      pick_interpolation_steps: 10 # Steps for approaching and grasping the handle. Default 10
-      pull_distance: 0.20          # Pull distance (meters). Default 0.20
-      pull_interpolation_steps: 30 # Steps for the pull motion. Default 30
-      release_after_pull: true     # Release gripper after pulling. Default true. false=maintain grip (for continued manipulation)
-      success_eval: false          # Whether to evaluate pull success (check joint displacement). Default false
+      target: __REQUIRED__         # 要拉动的关节物体名（必须与 articulations 中的键名一致）
+      pre_grasp_offset: 0.08       # 抓取前沿拉出方向的后退距离（米），给末端接近空间。默认 0.08
+      pick_interpolation_steps: 10 # 接近并抓取把手的步数。默认 10
+      pull_distance: 0.20          # 拉出距离（米）。默认 0.20
+      pull_interpolation_steps: 30 # 拉动过程的步数。默认 30
+      release_after_pull: true     # 拉完后是否松开夹爪。默认 true。false=保持抓握（如需要继续操作）
+      success_eval: false          # 是否评估拉动成功（检查关节位移量）。默认 false
 
 
   # ==========================================================================
-  # OPEN — Open (articulated object door)
+  # OPEN — 打开（关节物体门）
   # ==========================================================================
-  # Opens microwave doors, cabinet doors, etc. Execution flow:
-  # Grasp handle → quick pull → release → lift → align with gap → push along tangent → release and retreat.
-  # Target must be defined in articulations and have facing_axis_local registered in containers.yaml.
+  # 打开微波炉、柜门等关节物体。执行流程：
+  # 抓把手 → 快拉 → 松手 → 抬升 → 对准缝隙 → 沿切线方向推开 → 松手后退。
+  # 目标必须在 articulations 中定义，且在 containers.yaml 中注册了 facing_axis_local。
 
   - type: open
     params:
-      target: __REQUIRED__              # Articulated object to open
-      pre_pick_offset: 0.10             # Offset distance before grasping handle (meters), along facing direction. Default 0.10
-      pick_interpolation_steps: 10      # Steps for approaching the handle. Default 10
-      fast_pull_distance: 0.30          # Initial fast pull distance (meters), opens the door a crack. Default 0.30
-      fast_pull_interpolation_steps: 5  # Fast pull steps. Default 5
-      lift_before_pre_insert: 0.30      # Lift height after fast pull (meters), prepares for subsequent insertion. Default 0.30
-      lift_interpolation_steps: 10      # Lift steps. Default 10
-      pre_insert_outward_offset: 0.03   # Offset along container normal direction (meters), avoids collision. Default 0.03
-      align_above_interpolation_steps: 10  # Steps for aligning above the gap. Default 10
-      door_tangent_move_distance: 0.20  # Distance to push along door tangent (meters), i.e. how far the door opens. Default 0.20
-      tangent_move_interpolation_steps: 10  # Tangent push steps. Default 10
-      success_eval: false               # Whether to evaluate open success (check joint angle). Default false
+      target: __REQUIRED__              # 要打开的关节物体名
+      pre_pick_offset: 0.10             # 抓把手前的偏移距离（米），沿面朝方向。默认 0.10
+      pick_interpolation_steps: 10      # 接近把手的步数。默认 10
+      fast_pull_distance: 0.30          # 初始快速拉动的距离（米），把门拉开一道缝。默认 0.30
+      fast_pull_interpolation_steps: 5  # 快拉步数。默认 5
+      lift_before_pre_insert: 0.30      # 快拉后抬升高度（米），为后续插入做准备。默认 0.30
+      lift_interpolation_steps: 10      # 抬升步数。默认 10
+      pre_insert_outward_offset: 0.03   # 沿容器法线方向的偏移（米），避免碰撞。默认 0.03
+      align_above_interpolation_steps: 10  # 对准缝隙上方的步数。默认 10
+      door_tangent_move_distance: 0.20  # 沿门切线方向推动的距离（米），即门被推开多远。默认 0.20
+      tangent_move_interpolation_steps: 10  # 切线推动步数。默认 10
+      success_eval: false               # 是否评估打开成功（检查关节角度）。默认 false
 
 
   # ==========================================================================
-  # CLOSE — Close (articulated object door)
+  # CLOSE — 关闭（关节物体门）
   # ==========================================================================
-  # Closes an already-open microwave door, cabinet door, etc.
-  # The end-effector opens its palm and pushes the door shut.
-  # Target must be defined in articulations and have facing_axis_local registered in containers.yaml.
+  # 关闭已打开的微波炉、柜门等。末端执行器张开手掌推门关上。
+  # 目标必须在 articulations 中定义，且在 containers.yaml 中注册了 facing_axis_local。
 
   - type: close
     params:
-      target: __REQUIRED__              # Articulated object to close
-      pre_close_facing_offset: 0.25     # Pre-close position offset along facing direction (meters). Default 0.25
-      pre_close_open_normal_offset: 0.40 # Pre-close position offset along door-open direction (meters). Default 0.40
-      close_facing_offset: 0.15         # Final close position offset along facing direction (meters). Default 0.15
-      close_open_normal_backoff: 0.15   # Final close position backoff along door-open direction (meters). Default 0.15
-      close_height_offset: 0.0          # Z-axis height offset (meters). Default 0.0
-      close_interpolation_steps: 30     # Steps for the closing push motion. Default 30
-      success_eval: false               # Whether to evaluate close success (check joint angle). Default false
-      # close_success_max_angle_rad: 0.1  # Optional, override max angle threshold for success evaluation (radians)
+      target: __REQUIRED__              # 要关闭的关节物体名
+      pre_close_facing_offset: 0.25     # 预关闭位置沿面朝方向的偏移（米）。默认 0.25
+      pre_close_open_normal_offset: 0.40 # 预关闭位置沿门打开方向的偏移（米）。默认 0.40
+      close_facing_offset: 0.15         # 最终关闭位置沿面朝方向的偏移（米）。默认 0.15
+      close_open_normal_backoff: 0.15   # 最终关闭位置沿门打开方向的回退（米）。默认 0.15
+      close_height_offset: 0.0          # z轴高度偏移（米）。默认 0.0
+      close_interpolation_steps: 30     # 关门推动的步数。默认 30
+      success_eval: false               # 是否评估关闭成功（检查关节角度）。默认 false
+      # close_success_max_angle_rad: 0.1  # 可选，覆盖成功判定的最大角度阈值（弧度）
 
 
   # ==========================================================================
-  # HANG — Mount/hang
+  # HANG — 挂载
   # ==========================================================================
-  # Hangs the held object onto a rack/stand. Must be used after pick (mode: hang).
-  # Supported mode: mount
+  # 将手中物体挂到挂架/支架上。必须在 pick (mode: hang) 之后使用。
+  # 支持模式: mount
 
   - type: hang
-    mode: mount                    # Mount mode
+    mode: mount                    # 挂载模式
     params:
-      target: __REQUIRED__         # Rack/stand object name
-      pre_hang_distance: 0.10      # Distance before approaching the hang point (meters). Default 0.10
-      insert_interpolation_steps: 20  # Steps for inserting into the hang point. Default 20
-      extra_insert_distance: 0.05  # Extra insertion distance (meters), ensures secure mounting. Default 0.05
-      extra_insert_interpolation_steps: 10  # Extra insertion steps. Default 10
-      post_release_retreat_distance: 0.10  # Retreat distance after release (meters), avoids knocking off. Default 0.10
-      retreat_interpolation_steps: 10  # Retreat steps. Default 10
-      # mount_direction_angle_deg: 0  # Optional. Mount direction angle adjustment (degrees). Auto-selected if omitted
-      success_eval: false          # Whether to evaluate mount success (check object height and position). Default false
+      target: __REQUIRED__         # 挂架/支架物体名
+      pre_hang_distance: 0.10      # 接近挂点前的距离（米）。默认 0.10
+      insert_interpolation_steps: 20  # 插入挂点的步数。默认 20
+      extra_insert_distance: 0.05  # 额外插入距离（米），确保挂牢。默认 0.05
+      extra_insert_interpolation_steps: 10  # 额外插入步数。默认 10
+      post_release_retreat_distance: 0.10  # 松手后后退距离（米），避免碰落。默认 0.10
+      retreat_interpolation_steps: 10  # 后退步数。默认 10
+      # mount_direction_angle_deg: 0  # 可选。挂载方向的角度调整（度）。不填则自动选择
+      success_eval: false          # 是否评估挂载成功（检查物体高度和位置）。默认 false
 
 
   # ==========================================================================
-  # HOLD — Hold in place
+  # HOLD — 持握保持
   # ==========================================================================
-  # Moves the held object to a specified position and holds for a duration.
-  # Used for display or waiting for stabilization. Must be used after pick.
+  # 将手中物体移动到指定位置并保持一段时间。用于展示或等待稳定。
+  # 必须在 pick 之后使用。
 
   - type: hold
     params:
-      position: [0.5, 0.0, 0.3]   # Target position [x, y, z]. Optional; if omitted, uses lift position + lift_height
-      orientation: [0.0, 1.0, 0.0, 0.0]  # Target orientation [w, x, y, z]. Optional; keeps current if omitted
-      lift_height: 0.10            # Extra height above lift position (meters). Only effective when position is not specified. Default 0.10
-      hold_steps: 10               # Number of steps to hold the pose (frames). Default 10
-      success_eval: false          # Whether to evaluate hold success (check if object is still in hand). Default false
+      position: [0.5, 0.0, 0.3]   # 目标位置 [x, y, z]。可选，不填则在抬升位置基础上加 lift_height
+      orientation: [0.0, 1.0, 0.0, 0.0]  # 目标朝向 [w, x, y, z]。可选，不填则保持当前朝向
+      lift_height: 0.10            # 在抬升位置基础上的额外高度（米）。仅当不指定 position 时生效。默认 0.10
+      hold_steps: 10               # 保持姿态的步数（帧数）。默认 10
+      success_eval: false          # 是否评估持握成功（检查物体是否仍在手中）。默认 false
 
 
   # ==========================================================================
-  # RETURN_HOME — Return to initial pose
+  # RETURN_HOME — 回到初始位姿
   # ==========================================================================
-  # Returns the robot arm to its initial pose at the start of the episode.
-  # Typically used as the last step of a task.
+  # 让机械臂回到 episode 开始时的初始位姿。通常作为任务最后一步。
 
   - type: return_home
     params:
-      post_settle_steps: 20         # Settling wait steps after returning to initial pose. Default 20
+      post_settle_steps: 20         # 回到初始位姿后的稳定等待步数。默认 20
 
 
 # ============================================================================
-# 10. Global domain randomization flags
+# 10. 全局域随机化标志
 # ============================================================================
-# Controls visual and physics randomization of the simulation environment
-# to enhance data diversity.
+# 控制仿真环境的视觉和物理随机化，用于增强数据多样性。
 
-enable_random_lights: false                    # Randomize lighting (position, intensity, color). Default false
-image_noise_std: 0                             # Camera image Gaussian noise std dev. 0=no noise. Default 0
-image_speckle_noise_std: 0                     # Camera image speckle noise std dev. 0=no noise. Default 0
-enable_objects_randomization: false            # Randomize object poses at the start of each episode.
-                                               # Requires position_range / orientation_range configured in objects. Default false
-enable_objects_randomization_curriculum: false  # Enable curriculum learning for pose randomization (progressively increase range).
-                                               # Requires curriculum configured in objects. Default false
+enable_random_lights: false                    # 是否随机化光照（位置、强度、颜色）。默认 false
+image_noise_std: 0                             # 相机图像高斯噪声标准差。0=无噪声。默认 0
+image_speckle_noise_std: 0                     # 相机图像椒盐噪声标准差。0=无噪声。默认 0
+enable_objects_randomization: false            # 是否在每个 episode 开始时随机化物体位姿。
+                                               # 需要在 objects 中配置 position_range / orientation_range。默认 false
+enable_objects_randomization_curriculum: false  # 是否启用位姿随机化的课程学习（渐进增大范围）。
+                                               # 需要在 objects 中配置 curriculum。默认 false
 
 
 # ============================================================================
-# 11. texture_randomization — Texture randomization (optional)
+# 11. texture_randomization — 纹理随机化（可选）
 # ============================================================================
-# Replaces simulation object/table textures with real-world texture images
-# to increase visual diversity.
-# If texture randomization is not needed, set enabled to false or omit this entire section.
+# 用真实世界纹理图片替换仿真中物体/桌面的纹理，增加视觉多样性。
+# 如果不需要纹理随机化，可以将 enabled 设为 false 或省略整个 section。
 
 texture_randomization:
-  enabled: true                                # Enable texture randomization. Default false (if entire section is omitted)
-  texture_dir: __REQUIRED__                    # Texture image directory path. e.g. "/path/to/models/random_pic"
-  targets:                                     # List of targets for texture replacement
-    table:                                     # Target name (custom identifier)
-      prim_path: "/World/envs/env_{i}/table/Xform_01/Xform/leg/node_/Cube"  # USD scene path template for the target
-                                               # {i} will be replaced with the environment index
-      texture_dir: __REQUIRED__                # Texture directory for this target. Can be the same as the global texture_dir
-    # Additional targets can be added:
+  enabled: true                                # 是否启用纹理随机化。默认 false（如果省略整个section）
+  texture_dir: __REQUIRED__                    # 纹理图片目录路径。如 "/path/to/models/random_pic"
+  targets:                                     # 需要替换纹理的目标列表
+    table:                                     # 目标名称（自定义标识）
+      prim_path: "/World/envs/env_{i}/table/Xform_01/Xform/leg/node_/Cube"  # USD场景中目标的路径模板
+                                               # {i} 会被替换为环境编号
+      texture_dir: __REQUIRED__                # 该目标使用的纹理目录。可与全局 texture_dir 相同
+    # 可以添加更多目标:
     # example_object:
     #   prim_path: "/World/envs/env_{i}/example_object"
     #   texture_dir: /path/to/object_textures
 
 
 # ============================================================================
-# Quick Reference: Common Task Configuration Templates
+# 快速参考：常见任务配置模板
 # ============================================================================
 #
-# [Pick and place]  pick (affordance) -> place (on) -> return_home
-# [Pick and put in] pick (affordance) -> place (in) -> return_home
-# [Pour]            pick (affordance/affordance_multidir) -> pour -> place (pose) -> return_home
-# [Hang]            pick (hang) -> hang (mount) -> return_home
-# [Stack]           pick (gt) -> place (on) -> pick (gt) -> place (on) -> return_home
-# [Push]            push -> return_home
-# [Pull drawer]     pull
-# [Open door]       open
-# [Close door]      close
-# [Composite task]  open -> return_home -> pick -> place (in) -> return_home (any combination)
+# 【抓取放置】 pick (affordance) → place (on) → return_home
+# 【抓取放入】 pick (affordance) → place (in) → return_home
+# 【倾倒】     pick (affordance/affordance_multidir) → pour → place (pose) → return_home
+# 【挂载】     pick (hang) → hang (mount) → return_home
+# 【堆叠】     pick (gt) → place (on) → pick (gt) → place (on) → return_home
+# 【推动】     push → return_home
+# 【拉抽屉】   pull
+# 【开门】     open
+# 【关门】     close
+# 【复合任务】 open → return_home → pick → place (in) → return_home （任意组合）
 #
 # ============================================================================

@@ -433,6 +433,12 @@ class EpisodeDataRecorder:
             raw_joint_actions = np.array(episode_buffer['actions'])  # Shape: [T, 8] - 7 joints + 1 gripper
             ee_delta_gripper_action = raw_joint_actions[:-1, -1:]
             ee_delta_action = np.concatenate([ee_delta_joint_action, ee_delta_gripper_action], axis=-1)  # Add gripper delta if needed
+
+            # Compute joint delta: commanded_target - current_qpos
+            # This ensures qpos[t] + delta[t] == joint_actions[t] (the original command)
+            arm_joint_pos = obs_dict_full['obs_policy_q_pos']  # Shape: [T, 7]
+            joint_delta = raw_joint_actions[:-1, :7] - arm_joint_pos[:-1]  # Shape: [T-1, 7]
+            joint_delta_action = np.concatenate([joint_delta, raw_joint_actions[:-1, -1:]], axis=-1)  # [T-1, 8] - 7 joint deltas + gripper
             # actions will be aligned with observations after data alignment below
             actions = ee_delta_action
             last_actions = np.concatenate([np.zeros((self.num_envs, ee_delta_action.shape[1])), ee_delta_action], axis=0)
@@ -461,6 +467,7 @@ class EpisodeDataRecorder:
                 episode_buffer['terminations'] = [t for t, keep in zip(episode_buffer['terminations'], active_mask) if keep]
                 episode_buffer['truncations'] = [t for t, keep in zip(episode_buffer['truncations'], active_mask) if keep]
                 raw_joint_actions = raw_joint_actions[active_mask]
+                joint_delta_action = joint_delta_action[active_mask]
                 last_actions = np.concatenate([np.zeros((self.num_envs, actions_arr.shape[1])), episode_buffer['actions']], axis=0)
                 print(f"  Env {env_idx} - Removed {num_idle} idle steps (EE delta == 0)")
             
@@ -478,6 +485,7 @@ class EpisodeDataRecorder:
             obs_dict = self._flatten_observations_for_env(episode_buffer)
             obs_dict['obs_policy_lastactions'] = last_actions[:-1]
             obs_dict['obs_policy_joint_actions'] = raw_joint_actions  # Shape: [T, 8] - 7 joints + 1 gripper
+            obs_dict['obs_policy_joint_delta_actions'] = joint_delta_action  # Shape: [T, 8] - 7 joint deltas + gripper
             
             # Save camera images to separate folders (these are composite images with background replaced)
             if self.save_camera_images:

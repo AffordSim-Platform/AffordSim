@@ -243,6 +243,10 @@ class ResNet18Encoder(nn.Module):
         self.pool = nn.AdaptiveAvgPool2d((1, 1))
         self.fc = nn.Linear(512, feature_dim)
 
+        # ImageNet normalization
+        self.register_buffer("img_mean", torch.tensor([0.485, 0.456, 0.406]).view(1, 3, 1, 1))
+        self.register_buffer("img_std", torch.tensor([0.229, 0.224, 0.225]).view(1, 3, 1, 1))
+
     def forward(self, x):
         """
         Args:
@@ -250,6 +254,7 @@ class ResNet18Encoder(nn.Module):
         Returns:
             (B, feature_dim) 特征向量
         """
+        x = (x - self.img_mean) / self.img_std
         feat = self.backbone(x)    # (B, 512, h, w)
         feat = self.pool(feat)     # (B, 512, 1, 1)
         feat = feat.flatten(1)     # (B, 512)

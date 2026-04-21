@@ -5,9 +5,9 @@ Diffusion Policy Dataset.
 和 observation history (使用过去 T_o 步观测).
 
 HDF5 格式:
-  data/demo_X/actions       (N, 7)    ee_delta[-1,1] + gripper[-1,+1]
-  data/demo_X/obs/qpos      (N, 7)    归一化到 [-1, 1]
-  data/demo_X/obs/qvel      (N, 7)    归一化到 [-1, 1]
+  data/demo_X/actions       (N, D_act)  ee_delta(7) 或 joint_delta(8)
+  data/demo_X/obs/qpos      (N, 7)      归一化到 [-1, 1]
+  data/demo_X/obs/qvel      (N, 7)      归一化到 [-1, 1]
   data/demo_X/obs/front     (N, 256, 256, 3) uint8
   data/demo_X/obs/wrist     (N, 256, 256, 3) uint8
 """
@@ -104,12 +104,12 @@ class DiffusionPolicyDataset(Dataset):
         # --- 加载动作 (未来 T_a 帧) ---
         act_start = start
         act_end = start + self.pred_horizon
-        actions = np.array(demo["actions"][act_start:act_end], dtype=np.float32)  # (T_a, 7)
+        actions = np.array(demo["actions"][act_start:act_end], dtype=np.float32)  # (T_a, D_act)
 
         return {
             "obs_images": torch.from_numpy(obs_images),    # (T_o, 2, 3, H, W)
             "obs_lowdim": torch.from_numpy(obs_lowdim),    # (T_o, 14)
-            "actions": torch.from_numpy(actions),           # (T_a, 7)
+            "actions": torch.from_numpy(actions),           # (T_a, D_act)
         }
 
     def close(self):
