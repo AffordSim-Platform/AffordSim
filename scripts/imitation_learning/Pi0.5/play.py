@@ -466,7 +466,9 @@ def rollout(policy, env, horizon, action_horizon, device, prompt,
             bg_images=None, trial_id=0, initial_obs_dict=None,
             pick_target=None, pull_target=None, pour_target=None,
             collect_front_images=True,
-            image_speckle_noise_std: float = 0.0):
+            image_speckle_noise_std: float = 0.0,
+            stages=None, pick_initial_z=None, pick_lift_threshold: float = 0.05,
+            early_stop_check_every: int = 10):
     """Run one episode with Pi0.5 remote policy."""
     debug_dir = f"debug_images/pi05_trial_{trial_id}"
     os.makedirs(debug_dir, exist_ok=True)
@@ -484,7 +486,9 @@ def rollout(policy, env, horizon, action_horizon, device, prompt,
     pull_peak_displacement = None
     pour_min_tilt_z = None  # min z_component (max tilt) when pick obj within 10cm of pour target
 
-    POUR_NEAR_RADIUS = 0.10  # 10cm
+    POUR_NEAR_RADIUS = 0.15  # 20cm. 之前 10cm 经常漏掉真正的倾倒动作:
+    # 壶嘴虽然在容器上方, 但壶身中心可能已经 12-15cm 外,
+    # 导致 pour_min_tilt_z 在真正倾倒时没被更新.
 
     def _update_peak():
         nonlocal pick_peak_z, pull_peak_displacement, pour_min_tilt_z
@@ -514,8 +518,23 @@ def rollout(policy, env, horizon, action_horizon, device, prompt,
                     if pour_min_tilt_z is None or tilt_z < pour_min_tilt_z:
                         pour_min_tilt_z = tilt_z
 
+    def _check_early_success():
+        """全部 stage 都已成功 -> True, 用于早停."""
+        if stages is None:
+            return False
+        res = evaluate_stages_at_episode_end(
+            scene=env.scene, stages=stages,
+            pick_initial_z=pick_initial_z,
+            pick_lift_threshold=pick_lift_threshold,
+            pick_peak_z=pick_peak_z,
+            pull_peak_displacement=pull_peak_displacement,
+            pour_min_tilt_z=pour_min_tilt_z,
+        )
+        return bool(res) and all(r.get("success") for r in res.values())
+
     step = 0
-    while step < horizon:
+    early_success = False
+    while step < horizon and not early_success:
         obs = obs_dict["policy"]
 
         # Skip first frame (renderer not ready)
@@ -581,7 +600,11 @@ def rollout(policy, env, horizon, action_horizon, device, prompt,
 
         # --- Query remote policy server ---
         result = policy.infer(pi05_obs)
-        actions_chunk = np.asarray(result["actions"])  # (action_horizon, 7)
+        actions_chunk = np.asarray(result["actions"])  # (action_horizon, A)
+
+        # print(f"[EVAL] policy returned actions_chunk shape={actions_chunk.shape}, "
+        #       f"env action_dim={env.action_space.shape[1]}")
+        # print(f"[EVAL] actions_chunk[0]={np.array2string(actions_chunk[0], precision=4, suppress_small=True)}")
 
         # --- Execute actions ---
         n_exec = min(action_horizon, actions_chunk.shape[0], horizon - step)
@@ -607,9 +630,15 @@ def rollout(policy, env, horizon, action_horizon, device, prompt,
             if terminated or truncated:
                 break
 
+            # 早停: 全部 stage 都成功就立刻退出, 下一个 trial 早点开始
+            if step % early_stop_check_every == 0 and _check_early_success():
+                print(f"[EVAL] early stop at step={step}: all stages passed")
+                early_success = True
+                break
+
             obs = obs_dict["policy"]
 
-        if terminated or truncated:
+        if terminated or truncated or early_success:
             break
 
     return obs_dict, pick_peak_z, pull_peak_displacement, pour_min_tilt_z, front_frames
@@ -639,14 +668,21 @@ def main():
     print(f"[EVAL] Connected! Server metadata: {policy.get_server_metadata()}")
 
     # --- Setup environment ---
+    import importlib
+
     from isaaclab_tasks.real2sim.tasks.pick_r2s_env_cfg import create_pick_env_cfg_from_yaml
-    from isaaclab_tasks.real2sim.tasks.config.franka_fr3.ourgripper.ik_rel_vis_env_cfg import (
-        FrankaFr3OurGripperIKRelVisPickEnvCfg,
-    )
+
+    # Resolve env cfg class from the gym registry's `env_cfg_entry_point` so the
+    # action space matches the task id (e.g. *_joint-v0 uses JointPosition while
+    # the default variants use IK-rel pose deltas).
+    _entry = gym.spec(args_cli.task).kwargs["env_cfg_entry_point"]
+    _mod_name, _cls_name = _entry.split(":")
+    env_cfg_class = getattr(importlib.import_module(_mod_name), _cls_name)
+    print(f"[EVAL] task={args_cli.task} -> env_cfg_class={_cls_name}")
 
     env_cfg = create_pick_env_cfg_from_yaml(
         yaml_path=args_cli.task_config,
-        env_cfg_class=FrankaFr3OurGripperIKRelVisPickEnvCfg,
+        env_cfg_class=env_cfg_class,
         num_envs=1,
         device=args_cli.device,
     )
@@ -715,6 +751,9 @@ def main():
             pour_target=pour_target,
             collect_front_images=True,
             image_speckle_noise_std=image_speckle_noise_std,
+            stages=stages,
+            pick_initial_z=pick_initial_z,
+            pick_lift_threshold=args_cli.pick_lift_threshold,
         )
 
         # Save GIF

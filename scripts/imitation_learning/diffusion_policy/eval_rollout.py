@@ -415,7 +415,9 @@ def evaluate_stages_at_episode_end(
 def rollout_until_horizon(model, scheduler, env, horizon, action_horizon, device,
                           norm_params, bg_images, obs_horizon, initial_obs_dict=None,
                           pick_target=None, pour_target=None, pull_target=None,
-                          collect_front_images=False):
+                          collect_front_images=False,
+                          stages=None, pick_initial_z=None, pick_lift_threshold: float = 0.05,
+                          early_stop_check_every: int = 10):
     """跑满 horizon 或直到 env terminate, 不依赖 env success_term.
 
     调用方应该在外部先 env.reset() (以便记录 baseline), 然后把返回的 obs_dict
@@ -465,14 +467,31 @@ def rollout_until_horizon(model, scheduler, env, horizon, action_horizon, device
             pour_pos_w, _ = _get_object_pose_world_from_scene(env.scene, pour_target, 0)
             if pour_pos_w is not None:
                 xy_dist = float(np.linalg.norm(pos_w[:2] - pour_pos_w[:2]))
-                if xy_dist <= 0.10:
+                if xy_dist <= 0.20:  # 放宽到 20cm: 壶嘴在容器上方时壶身中心经常 >10cm
                     rot = _quat_wxyz_to_matrix(np.array(quat_w, dtype=float))
                     tilt_z = float(rot[2, 2])
                     if min_pour_tilt_z is None or tilt_z < min_pour_tilt_z:
                         min_pour_tilt_z = tilt_z
 
+    def _check_early_success():
+        """全部 stage 成功 -> True, 用于早停."""
+        if stages is None:
+            return False
+        res = evaluate_stages_at_episode_end(
+            scene=env.scene, stages=stages,
+            pick_initial_z=pick_initial_z,
+            pick_lift_threshold=pick_lift_threshold,
+            pick_peak_z=pick_peak_z,
+            min_pour_tilt_z=min_pour_tilt_z,
+            pour_crossed_ok=pour_crossed_ok,
+            pour_xy_at_cross=pour_xy_at_cross,
+            pull_peak_displacement=pull_peak_displacement,
+        )
+        return bool(res) and all(r.get("success") for r in res.values())
+
     step = 0
-    while step < horizon:
+    early_success = False
+    while step < horizon and not early_success:
         obs = obs_dict["policy"]
 
         if step == 0:
@@ -526,12 +545,20 @@ def rollout_until_horizon(model, scheduler, env, horizon, action_horizon, device
         truncated = False
         for j in range(min(action_horizon, horizon - step)):
             action = action_chunk[j]
-            if norm_params is not None and "action" in norm_params:
+            # ManiSkill 参考风格: 模型输出已经在 [-1, 1] (scheduler clip_sample + upstream minmax),
+            # 只需把 arm 维度反 minmax, gripper 按 0 阈值二值化回 ±1.
+            if norm_params is not None and "_minmax_params" in norm_params:
+                mp = norm_params["_minmax_params"]["action"]
+                action[:-1] = minmax_denormalize(
+                    action[:-1], np.asarray(mp["min"][:-1]), np.asarray(mp["max"][:-1]),
+                )
+            elif norm_params is not None and "action" in norm_params:
                 action[:-1] = minmax_denormalize(
                     action[:-1],
                     norm_params["action"]["min"][:-1],
                     norm_params["action"]["max"][:-1],
                 )
+            # gripper: 原始二值约定 +1=close, -1=open
             action[-1] = 1.0 if action[-1] > 0.0 else -1.0
             action_tensor = torch.from_numpy(action).float().to(device).view(1, -1)
             obs_dict, _, terminated, truncated, _ = env.step(action_tensor)
@@ -546,6 +573,12 @@ def rollout_until_horizon(model, scheduler, env, horizon, action_horizon, device
                 _processed = process_image(_fr, _seg, _bg, train_img_size)
                 front_frames.append((_processed.cpu().numpy().transpose(1, 2, 0) * 255).clip(0, 255).astype(np.uint8))
             if terminated or truncated:
+                break
+
+            # 早停: 全部 stage 都成功就立刻结束这个 trial
+            if step % early_stop_check_every == 0 and _check_early_success():
+                print(f"[EVAL] early stop at step={step}: all stages passed")
+                early_success = True
                 break
 
             if j < action_horizon - 1:
@@ -573,7 +606,7 @@ def rollout_until_horizon(model, scheduler, env, horizon, action_horizon, device
                     obs_img_buffer.pop(0)
                     obs_low_buffer.pop(0)
 
-        if terminated or truncated:
+        if terminated or truncated or early_success:
             break
 
     return obs_dict, pick_peak_z, min_pour_tilt_z, pour_crossed_ok, pour_xy_at_cross, pull_peak_displacement, front_frames
@@ -660,13 +693,14 @@ def main():
     obs_horizon = model_args.get("obs_horizon", 2)
 
     # --- env ---
+    # 优先使用显式 --env_cfg_class; 否则从 gym 注册表里按 task id 解析出 env_cfg_entry_point,
+    # 这样 *_joint-v0 / IK-rel / 其他 variant 都能自动匹配正确的 action/obs 空间.
     if args_cli.env_cfg_class:
         env_cfg_cls = _import_env_cfg_class(args_cli.env_cfg_class)
     else:
-        from isaaclab_tasks.real2sim.tasks.config.franka_fr3.ourgripper.ik_rel_vis_env_cfg import (
-            FrankaFr3OurGripperIKRelVisPickEnvCfg,
-        )
-        env_cfg_cls = FrankaFr3OurGripperIKRelVisPickEnvCfg
+        entry = gym.spec(args_cli.task).kwargs["env_cfg_entry_point"]
+        env_cfg_cls = _import_env_cfg_class(entry)
+        print(f"[EVAL] task={args_cli.task} -> env_cfg_class={env_cfg_cls.__name__}")
 
     from isaaclab_tasks.real2sim.tasks.pick_r2s_env_cfg import create_pick_env_cfg_from_yaml
     env_cfg = create_pick_env_cfg_from_yaml(
@@ -734,6 +768,9 @@ def main():
             pour_target=pour_target,
             pull_target=pull_target,
             collect_front_images=True,
+            stages=stages,
+            pick_initial_z=pick_initial_z,
+            pick_lift_threshold=args_cli.pick_lift_threshold,
         )
 
         # 保存 GIF (抽帧到 30 帧, 缩放到 256x256)

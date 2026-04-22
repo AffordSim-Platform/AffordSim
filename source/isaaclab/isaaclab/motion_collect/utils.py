@@ -593,21 +593,39 @@ class CollectorUtilsMixin:
                 mesh_prim_template = target_cfg
                 target_texture_dir = texture_dir
 
-            texture_files = [f for f in os.listdir(target_texture_dir) if f.endswith(".png")]
-            if not texture_files:
-                print(f"[WARNING] No textures found: {target_texture_dir} (target: {target_name})")
-                assignments.append(
-                    {
-                        "target": target_name,
-                        "status": "no_texture_files",
-                        "texture_dir": target_texture_dir,
-                    }
-                )
-                continue
+            # 支持两种写法:
+            #   1) 目录 -> 每个 env 从目录里随机挑一张 png
+            #   2) 单文件 (png) -> 所有 env 都用这张, 完全 deterministic
+            if os.path.isfile(target_texture_dir) and target_texture_dir.lower().endswith(".png"):
+                fixed_texture_path = target_texture_dir
+                fixed_texture_file = os.path.basename(target_texture_dir)
+                texture_files = None   # signals "fixed mode"
+            else:
+                fixed_texture_path = None
+                fixed_texture_file = None
+                if not os.path.isdir(target_texture_dir):
+                    print(f"[WARNING] texture_dir 不存在或不是文件/目录: {target_texture_dir} (target: {target_name})")
+                    assignments.append(
+                        {"target": target_name, "status": "texture_path_invalid",
+                         "texture_dir": target_texture_dir}
+                    )
+                    continue
+                texture_files = [f for f in os.listdir(target_texture_dir) if f.endswith(".png")]
+                if not texture_files:
+                    print(f"[WARNING] No textures found: {target_texture_dir} (target: {target_name})")
+                    assignments.append(
+                        {"target": target_name, "status": "no_texture_files",
+                         "texture_dir": target_texture_dir}
+                    )
+                    continue
 
             for i in range(self.num_envs):
-                tex_file = random.choice(texture_files)
-                texture_path = os.path.join(target_texture_dir, tex_file)
+                if fixed_texture_path is not None:
+                    tex_file = fixed_texture_file
+                    texture_path = fixed_texture_path
+                else:
+                    tex_file = random.choice(texture_files)
+                    texture_path = os.path.join(target_texture_dir, tex_file)
 
                 mtl_path = f"/Looks/RandomMaterial_{target_name}_env_{i}"
                 shader_path = f"{mtl_path}/Shader"

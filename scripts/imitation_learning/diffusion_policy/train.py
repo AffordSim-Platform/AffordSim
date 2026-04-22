@@ -18,6 +18,7 @@ DDPM (Denoising Diffusion Probabilistic Models) 训练流程:
 """
 
 import argparse
+import copy
 import json
 import math
 import os
@@ -38,19 +39,48 @@ from network import DiffusionPolicy
 
 
 # ============================================================================
+# EMA (Exponential Moving Average)
+# ============================================================================
+
+class EMAModel:
+    """简易 EMA, 与 diffusers EMAModel 行为对齐."""
+
+    def __init__(self, parameters, power=0.75):
+        self.shadow = [p.clone().detach() for p in parameters]
+        self.power = power
+        self.num_updates = 0
+
+    @torch.no_grad()
+    def step(self, parameters):
+        self.num_updates += 1
+        decay = 1 - (1 + self.num_updates) ** -self.power
+        for s, p in zip(self.shadow, parameters):
+            s.lerp_(p.data, 1 - decay)
+
+    def copy_to(self, parameters):
+        for s, p in zip(self.shadow, parameters):
+            p.data.copy_(s)
+
+
+# ============================================================================
 # DDPM Noise Schedule
 # ============================================================================
 
 class DDPMScheduler:
-    """DDPM 噪声调度器."""
+    """DDPM 噪声调度器 (cosine beta schedule)."""
 
-    def __init__(self, num_diffusion_steps: int = 100, beta_start: float = 0.0001, beta_end: float = 0.02):
+    def __init__(self, num_diffusion_steps: int = 100):
         self.num_steps = num_diffusion_steps
 
-        # Linear beta schedule
-        betas = torch.linspace(beta_start, beta_end, num_diffusion_steps, dtype=torch.float32)
+        # Cosine beta schedule (squaredcos_cap_v2) — 与 diffusers 对齐
+        steps = torch.linspace(0, num_diffusion_steps, num_diffusion_steps + 1, dtype=torch.float64)
+        alphas_cumprod = torch.cos(((steps / num_diffusion_steps) + 0.008) / 1.008 * math.pi * 0.5) ** 2
+        alphas_cumprod = alphas_cumprod / alphas_cumprod[0]
+        betas = 1.0 - (alphas_cumprod[1:] / alphas_cumprod[:-1])
+        betas = torch.clamp(betas, max=0.999).float()
+        alphas_cumprod = alphas_cumprod[1:].float()
+
         alphas = 1.0 - betas
-        alphas_cumprod = torch.cumprod(alphas, dim=0)
 
         self.betas = betas
         self.alphas = alphas
@@ -101,9 +131,13 @@ class DDPMScheduler:
         if timestep > 0:
             noise = torch.randn_like(x_t)
             variance = self.posterior_variance[timestep]
-            return pred_mean + math.sqrt(variance) * noise
+            result = pred_mean + math.sqrt(variance) * noise
         else:
-            return pred_mean
+            result = pred_mean
+
+        # 与 ManiSkill 参考 DP 对齐 (`clip_sample=True`): 每步去噪后裁剪到 [-1, 1].
+        # 数据侧 upstream 已经把 arm 归一化到 [-1, 1], gripper 本身就是 ±1, 所以这个范围是对的.
+        return result.clamp(-1, 1)
 
 
 # ============================================================================
@@ -159,17 +193,19 @@ def train(args):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"[INFO] 使用设备: {device}")
 
-    # --- 数据集 ---
+    # --- 数据集 (ManiSkill 参考风格: upstream 已归一化, dataset 只负责切片+pad) ---
     train_dataset = DiffusionPolicyDataset(
         hdf5_path=args.dataset,
         pred_horizon=args.pred_horizon,
         obs_horizon=args.obs_horizon,
+        load_count=args.load_count,
         filter_key="train",
     )
     valid_dataset = DiffusionPolicyDataset(
         hdf5_path=args.dataset,
         pred_horizon=args.pred_horizon,
         obs_horizon=args.obs_horizon,
+        load_count=args.load_count,
         filter_key="valid",
     )
 
@@ -201,6 +237,7 @@ def train(args):
         lowdim_feature_dim=args.lowdim_feature_dim,
         down_dims=tuple(args.down_dims),
         pretrained_resnet=args.pretrained,
+        freeze_resnet_early=args.freeze_resnet_early,
     ).to(device)
 
     num_params = sum(p.numel() for p in model.parameters())
@@ -211,13 +248,25 @@ def train(args):
         num_diffusion_steps=args.num_diffusion_steps,
     )
 
-    # --- 优化器 ---
-    optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
+    # --- EMA ---
+    ema = EMAModel(model.parameters(), power=0.75)
+    ema_model = copy.deepcopy(model)
 
-    # Cosine annealing scheduler
-    lr_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
-        optimizer, T_max=args.epochs,
-    )
+    # --- 优化器 ---
+    optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr,
+                                  betas=(0.95, 0.999), weight_decay=args.weight_decay)
+
+    # Cosine annealing with linear warmup
+    total_steps = args.epochs * len(train_loader)
+    warmup_steps = 500
+
+    def lr_lambda(step):
+        if step < warmup_steps:
+            return step / max(warmup_steps, 1)
+        progress = (step - warmup_steps) / max(total_steps - warmup_steps, 1)
+        return 0.5 * (1 + math.cos(math.pi * progress))
+
+    lr_scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lr_lambda)
 
     # --- 日志 ---
     timestamp = time.strftime("%Y%m%d%H%M%S")
@@ -280,6 +329,8 @@ def train(args):
             # 梯度裁剪
             nn.utils.clip_grad_norm_(model.parameters(), args.max_grad_norm)
             optimizer.step()
+            lr_scheduler.step()  # step per batch (cosine + warmup)
+            ema.step(model.parameters())
 
             epoch_loss += loss.item()
             num_batches += 1
@@ -288,8 +339,6 @@ def train(args):
             if global_step % 100 == 0:
                 writer.add_scalar("Train/loss", loss.item(), global_step)
                 writer.add_scalar("Train/lr", optimizer.param_groups[0]["lr"], global_step)
-
-        lr_scheduler.step()
 
         avg_train_loss = epoch_loss / max(num_batches, 1)
 
@@ -322,16 +371,17 @@ def train(args):
 
         print(f"Epoch {epoch:4d} | Train Loss: {avg_train_loss:.6f} | Valid Loss: {avg_valid_loss:.6f} | LR: {optimizer.param_groups[0]['lr']:.2e}")
 
-        # --- 保存 checkpoint ---
+        # --- 保存 checkpoint (使用 EMA 权重) ---
         if epoch % args.save_every == 0:
+            ema.copy_to(ema_model.parameters())
             ckpt_path = os.path.join(log_dir, "models", f"model_epoch_{epoch}.pth")
             torch.save({
-                "model": model.state_dict(),
+                "model": ema_model.state_dict(),
                 "optimizer": optimizer.state_dict(),
                 "epoch": epoch,
                 "args": vars(args),
             }, ckpt_path)
-            print(f"  -> 保存 checkpoint: {ckpt_path}")
+            print(f"  -> 保存 checkpoint (EMA): {ckpt_path}")
 
             # --- 训练期评估 (subprocess.run 同步阻塞) ---
             if args.eval_task_config:
@@ -369,14 +419,15 @@ def train(args):
 
         if avg_valid_loss < best_valid_loss:
             best_valid_loss = avg_valid_loss
+            ema.copy_to(ema_model.parameters())
             ckpt_path = os.path.join(log_dir, "models", "model_best.pth")
             torch.save({
-                "model": model.state_dict(),
+                "model": ema_model.state_dict(),
                 "optimizer": optimizer.state_dict(),
                 "epoch": epoch,
                 "args": vars(args),
             }, ckpt_path)
-            print(f"  -> 最佳模型 (valid loss: {best_valid_loss:.6f})")
+            print(f"  -> 最佳模型 EMA (valid loss: {best_valid_loss:.6f})")
 
     writer.close()
     train_dataset.close()
@@ -412,12 +463,20 @@ if __name__ == "__main__":
     parser.add_argument("--action_dim", type=int, default=7, help="动作维度 (ee_delta=7, joint_delta=8)")
     parser.add_argument("--action_type", type=str, default="ee_delta",
                         choices=["ee_delta", "joint_delta"],
-                        help="Action type: ee_delta or joint_delta")
+                        help="Action type: ee_delta or joint_delta (仅用于记录/eval postprocess)")
+    parser.add_argument("--load_count", type=int, default=None,
+                        help="限制加载的 demo 数量 (调试用, 默认全部)")
     parser.add_argument("--lowdim_dim", type=int, default=14, help="低维观测维度 (qpos+qvel)")
     parser.add_argument("--img_feature_dim", type=int, default=256, help="图像特征维度")
     parser.add_argument("--lowdim_feature_dim", type=int, default=64, help="低维特征维度")
     parser.add_argument("--down_dims", type=int, nargs="+", default=[256, 512, 1024], help="U-Net 通道")
     parser.add_argument("--pretrained", action="store_true", default=True, help="使用预训练 ResNet18")
+    parser.add_argument(
+        "--freeze_resnet_early",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="冻结 ResNet18 的 conv1~layer2, 只训练 layer3+layer4 (默认开启; 用 --no-freeze_resnet_early 解冻)",
+    )
 
     # 训练期评估 (每次 save ckpt 后同步拉起 eval_rollout.py 子进程)
     parser.add_argument("--eval_task_config", type=str, default=None,

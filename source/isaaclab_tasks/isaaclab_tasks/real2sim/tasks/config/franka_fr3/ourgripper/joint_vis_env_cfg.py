@@ -35,8 +35,8 @@ class FrankaFr3OurGripperJointVisPickEnvCfg(EnvCfg):
             arm_ee_pose = ObsTerm(func=mdp.arm_ee_pose)
             # gripper_pos = ObsTerm(func=mdp.gripper_pos)
             # arm_ee_vel = ObsTerm(func=mdp.arm_ee_vel)
-            q_pos = ObsTerm(func=mdp.arm_joint_pos)  # 7
-            q_vel = ObsTerm(func=mdp.arm_joint_vel)  # 7
+            qpos = ObsTerm(func=mdp.arm_joint_pos)  # 7
+            qvel = ObsTerm(func=mdp.arm_joint_vel)  # 7
 
             semantic_segmentation_side = ObsTerm(
                 func=mdp.image,
@@ -55,7 +55,7 @@ class FrankaFr3OurGripperJointVisPickEnvCfg(EnvCfg):
                 },
             )
 
-            external_cam_side = ObsTerm(
+            front = ObsTerm(
                 func=mdp.image,
                 params={
                     "sensor_cfg": SceneEntityCfg("external_cam_side"),
@@ -63,11 +63,29 @@ class FrankaFr3OurGripperJointVisPickEnvCfg(EnvCfg):
                     "normalize": True,
                 },
             )
-            wrist_cam = ObsTerm(
+            wrist = ObsTerm(
                 func=mdp.image,
                 params={
                     "sensor_cfg": SceneEntityCfg("wrist_cam"),
                     "data_type": "rgb",
+                    "normalize": True,
+                },
+            )
+
+            # 深度图 (米, float32). normalize=True 时把 inf 替换成 0.
+            front_depth = ObsTerm(
+                func=mdp.image,
+                params={
+                    "sensor_cfg": SceneEntityCfg("external_cam_side"),
+                    "data_type": "distance_to_image_plane",
+                    "normalize": True,
+                },
+            )
+            wrist_depth = ObsTerm(
+                func=mdp.image,
+                params={
+                    "sensor_cfg": SceneEntityCfg("wrist_cam"),
+                    "data_type": "distance_to_image_plane",
                     "normalize": True,
                 },
             )
@@ -105,6 +123,19 @@ class FrankaFr3OurGripperJointVisPickEnvCfg(EnvCfg):
             prim_path="{ENV_REGEX_NS}/table",
             spawn=sim_utils.UsdFileCfg(
                 usd_path=str(PROJECT_ROOT / "models/table.usd"),
+                semantic_tags=[("class", "table")],
+            ),
+            init_state=RigidObjectCfg.InitialStateCfg(
+                pos=(0, 0, 0),
+                rot=(1.0, 0.0, 0.0, 0.0),
+            ),
+        )
+
+        self.scene.fr3_base = AssetBaseCfg(
+            prim_path="{ENV_REGEX_NS}/fr3_base",
+            spawn=sim_utils.UsdFileCfg(
+                usd_path=str(PROJECT_ROOT / "models/FR3_base.usd"),
+                semantic_tags=[("class", "table")],
             ),
             init_state=RigidObjectCfg.InitialStateCfg(
                 pos=(0, 0, 0),
@@ -151,7 +182,7 @@ class FrankaFr3OurGripperJointVisPickEnvCfg(EnvCfg):
                 prim_path="{ENV_REGEX_NS}/external_cam_side",
                 height=_cam_h,
                 width=_cam_w,
-                data_types=["rgb", "semantic_segmentation"],
+                data_types=["rgb", "semantic_segmentation", "distance_to_image_plane"],
                 spawn=sim_utils.PinholeCameraCfg.from_intrinsic_matrix(
                     intrinsic_matrix=realsense_435_side_cam["intrinsic_matrix"],
                     height=_cam_h,
@@ -168,7 +199,7 @@ class FrankaFr3OurGripperJointVisPickEnvCfg(EnvCfg):
                 # prim_path="{ENV_REGEX_NS}/fr3/fr3_hand/wrist_cam",
                 height=_cam_h,
                 width=_cam_w,
-                data_types=["rgb", "semantic_segmentation"],
+                data_types=["rgb", "semantic_segmentation", "distance_to_image_plane"],
                 spawn=sim_utils.PinholeCameraCfg.from_intrinsic_matrix(
                     intrinsic_matrix=realsense_435_wrist_cam["intrinsic_matrix"],
                     height=_cam_h,
@@ -234,3 +265,4 @@ class FrankaFr3OurGripperJointVisPickEnvCfg(EnvCfg):
         self.decimation = 20
         self.sim.dt = 1 / (60 * 2)
         self.sim.render_interval = 10
+

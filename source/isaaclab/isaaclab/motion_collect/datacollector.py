@@ -65,6 +65,7 @@ class DataCollector(
         save_composite_images: bool = False,
         save_mask_images: bool = False,
         save_original_images: bool = False,
+        save_depth_images: bool = False,
         data_dir: Optional[Path] = None,
         episodes: int = 10,
         video_dir: Optional[Path] = None,
@@ -116,6 +117,7 @@ class DataCollector(
         self.save_composite_images = save_composite_images
         self.save_mask_images = save_mask_images
         self.save_original_images = save_original_images
+        self.save_depth_images = save_depth_images
         
         # State placeholders
         self.env = None
@@ -487,6 +489,7 @@ class DataCollector(
             save_composite_images = self.save_composite_images
             save_mask_images = self.save_mask_images
             save_original_images = self.save_original_images
+            save_depth_images = self.save_depth_images
             cam_side_bg_path = None
             cam_wrist_bg_path = None
             sim_camera_resolution = (640, 480)
@@ -499,6 +502,7 @@ class DataCollector(
                 save_composite_images = bool(runtime_cfg.save_composite_images)
                 save_mask_images = bool(runtime_cfg.save_mask_images)
                 save_original_images = bool(runtime_cfg.save_original_images)
+                save_depth_images = bool(getattr(runtime_cfg, "save_depth_images", save_depth_images))
                 cam_side_bg_path = runtime_cfg.cam_side_background or None
                 cam_wrist_bg_path = runtime_cfg.cam_wrist_background or None
                 sim_camera_resolution = tuple(runtime_cfg.sim_camera_resolution)
@@ -511,6 +515,7 @@ class DataCollector(
                     save_composite_images,
                     save_mask_images,
                     save_original_images,
+                    save_depth_images,
                 ]
             )
 
@@ -522,6 +527,7 @@ class DataCollector(
                     save_composite_images=save_composite_images,
                     save_mask_images=save_mask_images,
                     save_original_images=save_original_images,
+                    save_depth_images=save_depth_images,
                     num_envs=self.num_envs,
                     replace_background=replace_background,
                     sim_camera_resolution=sim_camera_resolution,

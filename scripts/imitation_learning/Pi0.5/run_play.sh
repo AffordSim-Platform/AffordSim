@@ -70,16 +70,22 @@
 #     --task_config source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/pick/pick_lid_place_pot.yaml \
 #     --horizon 250 --num_rollouts 30 --enable_cameras --headless
 
-python scripts/imitation_learning/Pi0.5/play.py --task Pick_Open_Microwave-v0 \
-    --server_host 10.184.17.177 --server_port 8008 \
-    --prompt "open the microwave door. " \
-    --task_config source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/open_close/open_microwave.yaml \
-    --horizon 250 --num_rollouts 30 --enable_cameras --headless
-
-# python scripts/imitation_learning/Pi0.5/play.py --task Pick_Push_Coffeecan-v0 \
+# python scripts/imitation_learning/Pi0.5/play.py --task Pick_Open_Microwave-v0 \
 #     --server_host 10.184.17.177 --server_port 8008 \
 #     --prompt "open the microwave door. " \
 #     --task_config source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/open_close/open_microwave.yaml \
 #     --horizon 250 --num_rollouts 30 --enable_cameras --headless
+
+# python scripts/imitation_learning/Pi0.5/play.py --task pick_banana_place_bowl_joint-v0 \
+#     --server_host 10.184.17.177 --server_port 8008 \
+#     --prompt "Pick up the banana and put it in the yellow bowl." \
+#     --task_config source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/pick/pick_banana_place_bowl.yaml \
+#     --horizon 250 --num_rollouts 30 --enable_cameras --headless
+
+python scripts/imitation_learning/Pi0.5/play.py --task Pick_Pour_WhiteKettle4-v0 \
+    --server_host 10.184.17.177 --server_port 8008 \
+    --prompt "Grab the kettle and move it over the bowl and pour it. " \
+    --task_config source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/pour/pour_whitekettle4.yaml \
+    --horizon 250 --num_rollouts 30 --enable_cameras --headless
 
     
