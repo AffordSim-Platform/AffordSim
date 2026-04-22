@@ -296,36 +296,32 @@ Each task is trained on 300 demonstrations with object pose randomization applie
 
 <table>
 <thead>
-<tr><th>Category</th><th>Task</th><th>BC</th><th>ACT</th><th>DP</th><th>Pi 0.5</th></tr>
+<tr><th>Category</th><th>Task</th><th>BC</th><th>DP</th><th>ACT</th><th>Pi 0.5</th></tr>
 </thead>
 <tbody>
-<tr><td rowspan="2">Grasping</td><td>pick_banana</td><td>53</td><td>63</td><td>87</td><td><b>93</b></td></tr>
-<tr><td>pick_red_cup</td><td>17</td><td>77</td><td>63</td><td><b>80</b></td></tr>
-<tr><td rowspan="3">Placing</td><td>pick_banana_place_plate</td><td>37</td><td>60</td><td>84</td><td><b>93</b></td></tr>
-<tr><td>pick_cup_place_shelf</td><td>5</td><td>7</td><td>3</td><td><b>47</b></td></tr>
-<tr><td>pick_kettle_place_coffee_machine</td><td>27</td><td>43</td><td>49</td><td><b>65</b></td></tr>
-<tr><td rowspan="2">Stacking</td><td>stack_two_blocks</td><td>30</td><td>43</td><td>47</td><td><b>77</b></td></tr>
-<tr><td>stack_three_blocks</td><td>13</td><td>27</td><td>28</td><td><b>53</b></td></tr>
-<tr><td rowspan="2">Push/Pull</td><td>push_box_to_target</td><td>23</td><td>63</td><td>67</td><td><b>78</b></td></tr>
-<tr><td>pull_drawer_open</td><td>37</td><td>53</td><td>58</td><td><b>86</b></td></tr>
-<tr><td rowspan="3">Pouring</td><td>pour_basket_into_bowl</td><td>20</td><td>86</td><td>94</td><td><b>99</b></td></tr>
-<tr><td>pour_pan_into_bowl</td><td>7</td><td>33</td><td>87</td><td><b>92</b></td></tr>
-<tr><td>pour_cup_into_bowl</td><td>1</td><td>24</td><td>36</td><td><b>43</b></td></tr>
-<tr><td rowspan="2">Mug Hanging</td><td>hang_mug_on_rack</td><td>0</td><td>10</td><td>17</td><td><b>47</b></td></tr>
-<tr><td>hang_mug_on_hook</td><td>0</td><td>7</td><td>13</td><td><b>33</b></td></tr>
-<tr><td rowspan="3">Long Horizon</td><td>pick_cup_pour_place_coffee_machine</td><td>0</td><td>3</td><td>8</td><td><b>16</b></td></tr>
-<tr><td>pick_cup_pour_hang_on_rack</td><td>0</td><td>1</td><td>3</td><td><b>21</b></td></tr>
-<tr><td>open_microwave_place_can</td><td>0</td><td>0</td><td>2</td><td><b>13</b></td></tr>
-<tr><td colspan="2"><b>Average (all 17 tasks)</b></td><td><b>16</b></td><td><b>35</b></td><td><b>44</b></td><td><b>61</b></td></tr>
+<tr><td rowspan="4">Placing</td><td>pick_banana_place_plate</td><td>40</td><td>87</td><td>47</td><td><b>93</b></td></tr>
+<tr><td>pick_cup_place_shelf</td><td>7</td><td>13</td><td><b>47</b></td><td>46</td></tr>
+<tr><td>pick_mug_place_coffee_machine</td><td>30</td><td>53</td><td>47</td><td><b>63</b></td></tr>
+<tr><td>pick_lid_place_pot</td><td>13</td><td>37</td><td>17</td><td><b>50</b></td></tr>
+<tr><td rowspan="4">Pouring</td><td>pour_basket_into_bowl</td><td>23</td><td>53</td><td>50</td><td><b>67</b></td></tr>
+<tr><td>pour_pan_into_bowl</td><td>10</td><td>50</td><td>33</td><td><b>53</b></td></tr>
+<tr><td>pour_red_cup_into_bowl</td><td>3</td><td>13</td><td>7</td><td><b>20</b></td></tr>
+<tr><td>pour_cup_into_bowl</td><td>0</td><td>10</td><td>3</td><td><b>17</b></td></tr>
+<tr><td rowspan="2">Mug Hanging</td><td>hang_white_cup_on_rack</td><td>0</td><td><b>23</b></td><td>10</td><td>17</td></tr>
+<tr><td>hang_red_mug_on_rack</td><td>3</td><td>23</td><td><b>57</b></td><td>47</td></tr>
+<tr><td rowspan="2">Push/Pull</td><td>push_can_to_target</td><td>27</td><td>67</td><td>73</td><td><b>83</b></td></tr>
+<tr><td>pull_cabinet_open</td><td>40</td><td>70</td><td>67</td><td><b>73</b></td></tr>
+<tr><td>Articulated</td><td>open_microwave</td><td>30</td><td>40</td><td>40</td><td><b>47</b></td></tr>
+<tr><td>Long Horizon</td><td>pick_kettle_pour_place</td><td>0</td><td>-</td><td>43</td><td><b>53</b></td></tr>
+<tr><td colspan="2"><b>Average (all 14 tasks)</b></td><td><b>16</b></td><td><b>41</b></td><td><b>39</b></td><td><b>52</b></td></tr>
 </tbody>
 </table>
 
 **Key findings:**
-- **Grasping** tasks achieve the highest success rates (53–93%), confirming that basic pick-up manipulation is largely solved by current methods.
-- **Placing** and **Push/Pull** tasks show moderate-to-high success (3–93%), with failures primarily occurring during precision-placement or target-reaching rather than the initial grasp.
-- **Affordance-demanding** tasks show a sharp performance drop: pouring into a wide basket achieves 20–99% success, but pouring into a narrow cup drops to 1–43%. Mug hanging achieves at most 47% success even for the best baseline. These results highlight that affordance-demanding tasks—where success depends on functional-region interaction precision—remain significantly more challenging.
-- **Pi 0.5** achieves the highest average performance (61%), followed by DP (44%) and ACT (35%). BC lags significantly behind (16%), suggesting that foundation-model-based, diffusion-based, and action-chunking architectures better capture multimodal action distributions.
-- **Sub-task analysis** reveals that grasping succeeds at 63–100% across pouring tasks, while the downstream pouring action fails dramatically for small containers—localizing the bottleneck to fine-grained, affordance-dependent manipulation rather than the initial grasp.
+- **Placing** tasks show a wide performance range (7–93%): simple placements like banana-on-plate achieve high success, while precision tasks like cup-on-shelf remain challenging due to tight placement tolerances.
+- **Affordance-demanding** tasks show a sharp performance drop: pouring into a wide basket achieves 23–67% success, but pouring into a narrow cup drops to 0–17%. Mug hanging achieves at most 57% success even for the best baseline. These results highlight that tasks requiring precise functional-region interaction remain significantly more challenging.
+- **Pi 0.5** achieves the highest average performance (49%), followed by DP (42%) and ACT (39%). BC lags significantly behind (16%), suggesting that foundation-model-based, diffusion-based, and action-chunking architectures better capture multimodal action distributions.
+- **Sub-task analysis** reveals that grasping succeeds at 43–97% across pouring tasks, while the downstream pouring action fails dramatically for small containers—localizing the bottleneck to fine-grained, affordance-dependent manipulation rather than the initial grasp.
 
 ## Project Structure
 
