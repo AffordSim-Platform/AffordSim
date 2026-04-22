@@ -312,8 +312,8 @@ Each task is trained on 300 demonstrations with object pose randomization applie
 <tr><td rowspan="2">Push/Pull</td><td>push_can_to_target</td><td>27</td><td>67</td><td>73</td><td><b>83</b></td></tr>
 <tr><td>pull_cabinet_open</td><td>40</td><td>70</td><td>67</td><td><b>73</b></td></tr>
 <tr><td>Articulated</td><td>open_microwave</td><td>30</td><td>40</td><td>40</td><td><b>47</b></td></tr>
-<tr><td>Long Horizon</td><td>pick_kettle_pour_place</td><td>0</td><td>-</td><td>43</td><td><b>53</b></td></tr>
-<tr><td colspan="2"><b>Average (all 14 tasks)</b></td><td><b>16</b></td><td><b>41</b></td><td><b>39</b></td><td><b>52</b></td></tr>
+<tr><td>Long Horizon</td><td>pick_kettle_pour_place</td><td>0</td><td>-</td><td>36</td><td><b>53</b></td></tr>
+<tr><td colspan="2"><b>Average (all 14 tasks)</b></td><td><b>16</b></td><td><b>41</b></td><td><b>38</b></td><td><b>52</b></td></tr>
 </tbody>
 </table>
 
