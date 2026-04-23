@@ -44,6 +44,15 @@ parser.add_argument("--env_cfg_class", type=str, default=None,
                          "ourgripper.ik_rel_vis_env_cfg:FrankaFr3OurGripperIKRelVisPickEnvCfg. "
                          "若不指定则沿用 play.py 默认的 pick env cfg.")
 parser.add_argument("--pick_lift_threshold", type=float, default=0.05)
+parser.add_argument(
+    "--warmup_action", type=str, default="zero", choices=["zero", "hold"],
+    help=(
+        "Warmup action mode before rollout starts. "
+        "'zero' (default) sends all-zero action — correct for IK-rel / JointDelta 这种 delta 模式, "
+        "delta=0 表示不动; 对 JointPosition 绝对模式 zero 会把 robot 命令到全零关节位形, 会砸场景. "
+        "'hold' arm 用当前 qpos, gripper 用 -1(open), 给绝对 JointPosition 模式使用."
+    ),
+)
 
 AppLauncher.add_app_launcher_args(parser)
 args_cli = parser.parse_args()
@@ -412,12 +421,33 @@ def evaluate_stages_at_episode_end(
 # 自定义 rollout (基于 play.py 的实现, 但去掉 success_term 早停)
 # ============================================================================
 
+def _build_warmup_action(mode: str, env, obs_dict, device):
+    """构造 (1, D_act) warmup action.
+
+    - "zero": 全零, 适合 delta 模式 (IK-rel / JointDelta), delta=0 表示不动.
+    - "hold": arm ← 当前 qpos, gripper ← -1 (open). 适合 JointPosition 绝对模式,
+              否则 zeros() 会把 robot 命令到全零关节位形, 直接飞向零位把场景砸乱.
+    """
+    D = env.action_space.shape[1]
+    if mode == "zero":
+        return torch.zeros(1, D, device=device)
+    if mode == "hold":
+        qpos = obs_dict["policy"]["qpos"].squeeze().detach().to(device=device, dtype=torch.float32)
+        arm_dim = D - 1
+        hold_arm = qpos[:arm_dim]
+        gripper = torch.tensor([-1.0], device=device, dtype=torch.float32)
+        return torch.cat([hold_arm, gripper]).view(1, -1)
+    raise ValueError(f"unknown warmup_action mode: {mode}")
+
+
 def rollout_until_horizon(model, scheduler, env, horizon, action_horizon, device,
                           norm_params, bg_images, obs_horizon, initial_obs_dict=None,
                           pick_target=None, pour_target=None, pull_target=None,
                           collect_front_images=False,
                           stages=None, pick_initial_z=None, pick_lift_threshold: float = 0.05,
-                          early_stop_check_every: int = 10):
+                          early_stop_check_every: int = 10,
+                          warmup_action: str = "zero",
+                          action_type: str = "ee_delta"):
     """跑满 horizon 或直到 env terminate, 不依赖 env success_term.
 
     调用方应该在外部先 env.reset() (以便记录 baseline), 然后把返回的 obs_dict
@@ -495,7 +525,8 @@ def rollout_until_horizon(model, scheduler, env, horizon, action_horizon, device
         obs = obs_dict["policy"]
 
         if step == 0:
-            obs_dict, _, _, _, _ = env.step(torch.zeros(1, env.action_space.shape[1], device=device))
+            warmup = _build_warmup_action(warmup_action, env, obs_dict, device)
+            obs_dict, _, _, _, _ = env.step(warmup)
             step += 1
             if collect_front_images and "front" in obs_dict["policy"]:
                 _fr = obs_dict["policy"]["front"].squeeze().float().reshape(3, env_cam_h, env_cam_w)
@@ -545,8 +576,9 @@ def rollout_until_horizon(model, scheduler, env, horizon, action_horizon, device
         truncated = False
         for j in range(min(action_horizon, horizon - step)):
             action = action_chunk[j]
-            # ManiSkill 参考风格: 模型输出已经在 [-1, 1] (scheduler clip_sample + upstream minmax),
-            # 只需把 arm 维度反 minmax, gripper 按 0 阈值二值化回 ±1.
+            # ACT 风格 postprocess: 先 ÷100 抵消训练时 arm × 100, 再反 minmax 回原始尺度;
+            # gripper 是连续值 [0, 1] (1=open, 0=close), 按 0.5 阈值二值化回 sim 的 ±1 (+1=close, -1=open).
+            action[:-1] = action[:-1] / 100.0
             if norm_params is not None and "_minmax_params" in norm_params:
                 mp = norm_params["_minmax_params"]["action"]
                 action[:-1] = minmax_denormalize(
@@ -558,9 +590,16 @@ def rollout_until_horizon(model, scheduler, env, horizon, action_horizon, device
                     norm_params["action"]["min"][:-1],
                     norm_params["action"]["max"][:-1],
                 )
-            # gripper: 原始二值约定 +1=close, -1=open
-            action[-1] = 1.0 if action[-1] > 0.0 else -1.0
-            action_tensor = torch.from_numpy(action).float().to(device).view(1, -1)
+            action[-1] = -1.0 if action[-1] > 0.5 else 1.0
+            # joint_delta: model 输出的是关节角 delta, 但 env 用 JointPositionActionCfg 绝对模式,
+            # 必须用最新 qpos 累加: abs_target = current_qpos + delta. gripper 直通.
+            if action_type == "joint_delta":
+                cur_qpos = obs_dict["policy"]["qpos"].squeeze().detach().cpu().numpy().astype(action.dtype)
+                arm_abs = cur_qpos[:action.shape[0] - 1] + action[:-1]
+                action_out = np.concatenate([arm_abs, action[-1:]], axis=0)
+            else:
+                action_out = action
+            action_tensor = torch.from_numpy(action_out).float().to(device).view(1, -1)
             obs_dict, _, terminated, truncated, _ = env.step(action_tensor)
             step += 1
             _update_peak()
@@ -691,6 +730,8 @@ def main():
     scheduler = DDPMScheduler(num_diffusion_steps=model_args.get("num_diffusion_steps", 100))
     action_horizon = model_args.get("action_horizon", 3)
     obs_horizon = model_args.get("obs_horizon", 2)
+    action_type = model_args.get("action_type", "ee_delta")
+    print(f"[EVAL] action_type={action_type} (joint_delta 会按 abs_target=current_qpos+delta 下发)")
 
     # --- env ---
     # 优先使用显式 --env_cfg_class; 否则从 gym 注册表里按 task id 解析出 env_cfg_entry_point,
@@ -750,7 +791,8 @@ def main():
         # 避免被再次 reset 重新随机化物体位置导致 baseline 对不上 rollout 实际状态.
         initial_obs_dict, _ = env.reset()
         for _ in range(10):
-            env.step(torch.zeros(1, env.action_space.shape[1], device=device))
+            warmup = _build_warmup_action(args_cli.warmup_action, env, initial_obs_dict, device)
+            initial_obs_dict, _, _, _, _ = env.step(warmup)
         pick_initial_z = capture_object_initial_z(env.scene, pick_target, env_idx=0) if pick_target else None
 
         _, pick_peak_z, min_pour_tilt_z, pour_crossed_ok, pour_xy_at_cross, pull_peak_displacement, front_frames = rollout_until_horizon(
@@ -771,6 +813,8 @@ def main():
             stages=stages,
             pick_initial_z=pick_initial_z,
             pick_lift_threshold=args_cli.pick_lift_threshold,
+            warmup_action=args_cli.warmup_action,
+            action_type=action_type,
         )
 
         # 保存 GIF (抽帧到 30 帧, 缩放到 256x256)

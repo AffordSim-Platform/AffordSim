@@ -531,9 +531,24 @@ def ddpm_sample(model, scheduler, obs_images, obs_lowdim, device):
 # Rollout
 # ============================================================================
 
+def _build_warmup_action(mode: str, env, obs_dict, device):
+    """(1, D_act) warmup action. zero=delta 模式用; hold=arm 用当前 qpos, gripper=-1."""
+    D = env.action_space.shape[1]
+    if mode == "zero":
+        return torch.zeros(1, D, device=device)
+    if mode == "hold":
+        qpos = obs_dict["policy"]["qpos"].squeeze().detach().to(device=device, dtype=torch.float32)
+        arm_dim = D - 1
+        hold_arm = qpos[:arm_dim]
+        gripper = torch.tensor([-1.0], device=device, dtype=torch.float32)
+        return torch.cat([hold_arm, gripper]).view(1, -1)
+    raise ValueError(f"unknown warmup_action mode: {mode}")
+
+
 def rollout(model, scheduler, env, success_term, horizon, action_horizon, device,
             norm_params=None, bg_images=None, obs_horizon=2, trial_id=0, save_img_interval=1,
-            pick_target=None, pour_target=None, pull_target=None, initial_obs_dict=None):
+            pick_target=None, pour_target=None, pull_target=None, initial_obs_dict=None,
+            warmup_action: str = "zero", action_type: str = "ee_delta"):
     """执行一次 rollout.
 
     Diffusion Policy 的 receding horizon control:
@@ -610,7 +625,8 @@ def rollout(model, scheduler, env, success_term, horizon, action_horizon, device
 
         # 跳过第一帧 (渲染器未就绪)
         if step == 0:
-            obs_dict, _, _, _, _ = env.step(torch.zeros(1, env.action_space.shape[1], device=device))
+            warmup = _build_warmup_action(warmup_action, env, obs_dict, device)
+            obs_dict, _, _, _, _ = env.step(warmup)
             step += 1
             if "front" in obs_dict["policy"]:
                 _fr = obs_dict["policy"]["front"].squeeze().float().reshape(3, env_cam_h, env_cam_w)
@@ -679,7 +695,7 @@ def rollout(model, scheduler, env, success_term, horizon, action_horizon, device
         for j in range(min(action_horizon, horizon - step)):
             action = action_chunk[j]  # (D_act,)
 
-            # 反归一化 (前 N-1 维)
+            # 反归一化 ee_delta (前6维)
             if norm_params is not None and "action" in norm_params:
                 action[:-1] = minmax_denormalize(
                     action[:-1],
@@ -690,17 +706,18 @@ def rollout(model, scheduler, env, success_term, horizon, action_horizon, device
             # Gripper 二值化 (阈值 0)
             action[-1] = 1.0 if action[-1] > 0.0 else -1.0
 
-            # Joint delta: 读当前 qpos + delta -> 绝对目标，通过绝对位置控制执行
-            action_type = norm_params.get("action_type", "ee_delta") if norm_params else "ee_delta"
+            # joint_delta: abs_target = current_qpos + delta, env 是 JointPosition 绝对模式.
             if action_type == "joint_delta":
-                cur_qpos = env.env.scene["robot"].data.joint_pos[0, :7].cpu().numpy()
-                abs_target = cur_qpos + action[:-1]
-                action = np.concatenate([abs_target, action[-1:]])
+                cur_qpos = obs_dict["policy"]["qpos"].squeeze().detach().cpu().numpy().astype(action.dtype)
+                arm_abs = cur_qpos[:action.shape[0] - 1] + action[:-1]
+                action_out = np.concatenate([arm_abs, action[-1:]], axis=0)
+            else:
+                action_out = action
 
-            action_tensor = torch.from_numpy(action).float().to(device).view(1, -1)
+            action_tensor = torch.from_numpy(action_out).float().to(device).view(1, -1)
 
             if step <= 5 or step % 50 == 0:
-                print(f"[DEBUG] step {step} action: {np.round(action, 4)}")
+                print(f"[DEBUG] step {step} action({action_type}): {np.round(action_out, 4)}")
 
             obs_dict, _, terminated, truncated, _ = env.step(action_tensor)
             step += 1
@@ -797,6 +814,10 @@ def main():
 
     action_horizon = model_args.get("action_horizon", 3)
     obs_horizon = model_args.get("obs_horizon", 2)
+    action_type = model_args.get("action_type", "ee_delta")
+    # joint_delta 的 env 是 JointPosition 绝对模式, warmup 必须 hold 不能 zero.
+    warmup_action = "hold" if action_type == "joint_delta" else "zero"
+    print(f"[INFO] action_type={action_type}, warmup={warmup_action}")
 
     # --- 环境设置 ---
     from isaaclab_tasks.real2sim.tasks.pick_r2s_env_cfg import create_pick_env_cfg_from_yaml
@@ -844,12 +865,6 @@ def main():
         norm_params = load_norm_params(args_cli.stat)
         print(f"[INFO] 加载归一化参数: {args_cli.stat}")
 
-    # 从 checkpoint args 中获取 action_type，注入 norm_params
-    action_type = model_args.get("action_type", "ee_delta")
-    if norm_params is not None:
-        norm_params["action_type"] = action_type
-    print(f"[INFO] action_type: {action_type}")
-
     # 加载背景图片
     bg_images = load_background_images(args_cli.task_config)
 
@@ -868,7 +883,8 @@ def main():
         # reset 并记录 pick baseline
         initial_obs_dict, _ = env.reset()
         for _ in range(10):
-            env.step(torch.zeros(1, env.action_space.shape[1], device=device))
+            warmup = _build_warmup_action(warmup_action, env, initial_obs_dict, device)
+            initial_obs_dict, _, _, _, _ = env.step(warmup)
         pick_initial_z = capture_object_initial_z(env.scene, pick_target, env_idx=0) if pick_target else None
 
         success, pick_peak_z, min_pour_tilt_z, pull_peak_displacement, front_frames = rollout(
@@ -885,6 +901,8 @@ def main():
             pour_target=pour_target,
             pull_target=pull_target,
             initial_obs_dict=initial_obs_dict,
+            warmup_action=warmup_action,
+            action_type=action_type,
         )
         results.append(success)
 

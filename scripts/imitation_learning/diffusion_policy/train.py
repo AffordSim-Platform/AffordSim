@@ -135,9 +135,9 @@ class DDPMScheduler:
         else:
             result = pred_mean
 
-        # 与 ManiSkill 参考 DP 对齐 (`clip_sample=True`): 每步去噪后裁剪到 [-1, 1].
-        # 数据侧 upstream 已经把 arm 归一化到 [-1, 1], gripper 本身就是 ±1, 所以这个范围是对的.
-        return result.clamp(-1, 1)
+        # ACT 风格: 数据侧 arm × 100 后在 [-100, 100], gripper 在 [0, 1].
+        # 这里不能 clamp(-1, 1), 否则 arm 预测直接塌掉.
+        return result
 
 
 # ============================================================================
@@ -174,6 +174,8 @@ def run_eval_subprocess(args, ckpt_path: str, log_dir: str, epoch: int) -> dict 
         cmd += ["--stat", args.stat]
     if args.eval_env_cfg_class:
         cmd += ["--env_cfg_class", args.eval_env_cfg_class]
+    if args.eval_warmup_action:
+        cmd += ["--warmup_action", args.eval_warmup_action]
 
     print(f"[EVAL] launching subprocess: {' '.join(cmd)}")
     result = subprocess.run(cmd)
@@ -460,10 +462,21 @@ if __name__ == "__main__":
     parser.add_argument("--action_horizon", type=int, default=8, help="实际执行的动作步数 T_exec")
 
     # 模型
-    parser.add_argument("--action_dim", type=int, default=7, help="动作维度 (ee_delta=7, joint_delta=8)")
-    parser.add_argument("--action_type", type=str, default="ee_delta",
-                        choices=["ee_delta", "joint_delta"],
-                        help="Action type: ee_delta or joint_delta (仅用于记录/eval postprocess)")
+    parser.add_argument(
+        "--action_dim", type=int, default=None,
+        help="动作维度. 不传则按 --action_type 自动推断 (ee_delta→7, joint_delta→8).",
+    )
+    parser.add_argument(
+        "--action_type", type=str, default="ee_delta",
+        choices=["ee_delta", "joint_delta"],
+        help=(
+            "Action 语义. ee_delta=6D EE delta+gripper (env 用 IK-rel, 直接下发 delta); "
+            "joint_delta=7 joint delta+gripper (env 用 JointPosition 绝对, eval 时"
+            " abs_target = current_qpos + delta 累加后下发). "
+            "自动推断 --action_dim (ee_delta→7, joint_delta→8) 和 --eval_warmup_action "
+            "(ee_delta→zero, joint_delta→hold, 因为 joint env 是绝对控制)."
+        ),
+    )
     parser.add_argument("--load_count", type=int, default=None,
                         help="限制加载的 demo 数量 (调试用, 默认全部)")
     parser.add_argument("--lowdim_dim", type=int, default=14, help="低维观测维度 (qpos+qvel)")
@@ -489,6 +502,39 @@ if __name__ == "__main__":
     parser.add_argument("--eval_pick_lift_threshold", type=float, default=0.05)
     parser.add_argument("--eval_env_cfg_class", type=str, default=None,
                         help="可选: 'pkg.mod:ClassName' 形式覆盖 eval 子进程的 env_cfg 类")
+    parser.add_argument(
+        "--eval_warmup_action", type=str, default=None, choices=["zero", "hold"],
+        help=(
+            "Eval 子进程 rollout 前的 warmup 动作模式. 不传则按 --action_type 推断: "
+            "joint_abs → hold (arm=当前 qpos, gripper=-1/open); 其它 → zero. "
+            "显式传值会覆盖自动推断."
+        ),
+    )
 
     args = parser.parse_args()
+
+    # --- 根据 action_type 自动填 action_dim / eval_warmup_action ---
+    # joint_delta 数据侧是 delta, 但 eval env 是 JointPosition 绝对模式,
+    # 所以 warmup 必须用 hold (arm=当前 qpos), 否则 zero action 会把 robot 命令到全零关节位形.
+    _DIM_BY_TYPE = {"ee_delta": 7, "joint_delta": 8}
+    _WARMUP_BY_TYPE = {"ee_delta": "zero", "joint_delta": "hold"}
+
+    expected_dim = _DIM_BY_TYPE[args.action_type]
+    if args.action_dim is None:
+        args.action_dim = expected_dim
+        print(f"[INFO] --action_dim 未指定, 按 --action_type={args.action_type} 推断为 {expected_dim}")
+    elif args.action_dim != expected_dim:
+        print(
+            f"[WARN] --action_dim={args.action_dim} 与 --action_type={args.action_type} "
+            f"默认的 {expected_dim} 不一致, 沿用你显式传入的 {args.action_dim}; "
+            f"确认数据集 action 维度匹配再继续."
+        )
+
+    if args.eval_warmup_action is None:
+        args.eval_warmup_action = _WARMUP_BY_TYPE[args.action_type]
+        print(
+            f"[INFO] --eval_warmup_action 未指定, 按 --action_type={args.action_type} "
+            f"推断为 '{args.eval_warmup_action}'"
+        )
+
     train(args)

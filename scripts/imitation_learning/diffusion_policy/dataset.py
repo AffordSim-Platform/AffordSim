@@ -1,22 +1,21 @@
 """
-Diffusion Policy Dataset (ManiSkill reference style).
+Diffusion Policy Dataset (ACT-aligned style).
 
-与 ManiSkill 参考 DP 实现 (`/home/lmy/code/Real2Sim2Real-Pipeline-auto_task/diffusion_policy/train.py`)
-的数据处理完全对齐:
-  - **action 不做任何额外归一化**: 直接使用 upstream (`convert_hdf5_for_robomimic.py`) 已经
-    minmax 到 [-1, 1] 的 arm 维度, gripper 仍保持原始 ±1
-  - **不做 idle 过滤**: upstream 已经处理过
-  - **图像**: uint8 原样加载, 在 `__getitem__` 里 /255 → [0, 1]; ImageNet 均值方差
-    由模型内部的 ResNet18Encoder 负责
-  - **轨迹边界 padding** (关键):
-      pad_before = obs_horizon - 1       # traj 开头之前用第一帧 obs/action 重复填充
-      pad_after  = pred_horizon - obs_horizon  # traj 末尾用 "停住" 动作填充 (arm zeros + 最后一帧 gripper)
-    每条 traj 的可采样起点范围: start ∈ [-pad_before, L - pred_horizon + pad_after]
+数据流:
+  - action arm 已由 upstream minmax 到 [-1, 1], dataset 这里再 × 100 放大 SNR
+    (DDPM 的 noisy_action = sqrt(α̅)·action + sqrt(1-α̅)·noise, action 不放大时噪声
+     盖过 0 附近的小值, 模型塌成预测 0)
+  - gripper 从 ±1 二值 → [0, 1] 连续 (带 5 步 ramp), 训练目标更平滑
+  - idle 过滤由 upstream 做过, 这里不重复
+  - 图像 uint8 原样存内存, `__getitem__` 里 /255 → [0, 1]
+  - 轨迹边界: pad_before = T_o - 1, pad_after = T_a - T_o (末尾用 arm zeros + last gripper)
+
+与 ACT 的 `train_act.py._load_robomimic` 预处理完全一致, 只是额外加了 T_o/T_a 窗口和 pad.
 
 每个样本返回:
-  - obs_images:  (T_o, 2, 3, H, W)  过去 T_o 帧的双视角 RGB, [0, 1]
-  - obs_lowdim:  (T_o, D_low)       过去 T_o 帧的 state (qpos + qvel), 已归一化
-  - actions:     (T_a, D_act)       未来 T_a 步动作, 已归一化 (±1 范围)
+  - obs_images:  (T_o, 2, 3, H, W)  双视角 RGB, [0, 1]
+  - obs_lowdim:  (T_o, D_low)       qpos + qvel
+  - actions:     (T_a, D_act)       arm ∈ [-100, 100], gripper ∈ [0, 1]
 """
 
 import h5py
@@ -24,6 +23,33 @@ import numpy as np
 import torch
 from torch.utils.data import Dataset
 from tqdm import tqdm
+
+
+# ============================================================================
+# Helpers (与 ACT 一致)
+# ============================================================================
+
+def convert_binary_gripper_to_continuous(gripper_seq):
+    """二值 gripper (-1 open / +1 close) -> [0,1] 连续 (0=close, 1=open) + 5 步 ramp."""
+    N = len(gripper_seq)
+    is_open = gripper_seq < 0
+    physical = np.where(is_open, 0.04, 0.02).astype(np.float64)
+    for i in range(1, N):
+        if gripper_seq[i] != gripper_seq[i - 1]:
+            if gripper_seq[i] > 0:
+                for j in range(5):
+                    idx = i + j
+                    if idx < N and gripper_seq[idx] > 0:
+                        t = (j + 1) / 5.0
+                        physical[idx] = 0.04 * (1 - t) + 0.02 * t
+            else:
+                for j in range(5):
+                    idx = i + j
+                    if idx < N and gripper_seq[idx] < 0:
+                        t = (j + 1) / 5.0
+                        physical[idx] = 0.02 * (1 - t) + 0.04 * t
+    normalized = (physical - 0.02) / 0.02
+    return np.clip(normalized, 0.0, 1.0).astype(np.float32)
 
 
 class DiffusionPolicyDataset(Dataset):
@@ -103,11 +129,18 @@ class DiffusionPolicyDataset(Dataset):
 
         for demo_key in tqdm(demo_keys, desc="Loading demos"):
             demo = data_grp[demo_key]
-            action = np.array(demo["actions"]).astype(np.float32)       # upstream 已归一化
+            action_raw = np.array(demo["actions"]).astype(np.float32)   # arm upstream 已到 [-1,1], gripper 仍 ±1
             qpos = np.array(demo["obs/qpos"]).astype(np.float32)        # upstream 已归一化
             qvel = np.array(demo["obs/qvel"]).astype(np.float32)        # upstream 已归一化
-            front = np.array(demo["obs/front"], dtype=np.uint8)         # 原始 uint8
+            front = np.array(demo["obs/front"], dtype=np.uint8)
             wrist = np.array(demo["obs/wrist"], dtype=np.uint8)
+
+            # ACT 风格二次处理:
+            #   arm 列 × 100 -> [-100, 100] 放 SNR
+            #   gripper 二值 ±1 -> 连续 [0, 1] (close=0, open=1)
+            arm_scaled = (action_raw[:, :-1] * 100.0).astype(np.float32)
+            gripper_cont = convert_binary_gripper_to_continuous(action_raw[:, -1])
+            action = np.concatenate([arm_scaled, gripper_cont[:, None]], axis=-1)
 
             state = np.concatenate([qpos, qvel], axis=-1)
 
