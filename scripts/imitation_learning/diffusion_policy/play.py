@@ -20,7 +20,6 @@ DDPM 采样流程:
 """
 
 import argparse
-import copy
 import json
 import math
 import os
@@ -38,13 +37,21 @@ parser.add_argument("--horizon", type=int, default=500, help="最大步数")
 parser.add_argument("--num_rollouts", type=int, default=1, help="Rollout 次数")
 parser.add_argument("--seed", type=int, default=None, help="随机种子 (None=随机)")
 parser.add_argument("--save_img_interval", type=int, default=1, help="每隔多少步保存一次调试图像 (0=不保存)")
+parser.add_argument("--pick_lift_threshold", type=float, default=0.05)
 parser.add_argument(
     "--task_config",
     type=str,
     default="source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/task_gen/config/sceneconfig/generated_task_config.yaml",
     help="YAML 任务配置文件路径",
 )
-parser.add_argument("--pick_lift_threshold", type=float, default=0.05)
+parser.add_argument(
+    "--joint_delta_mode", type=str, default="cumulative", choices=["current", "cumulative"],
+    help=(
+        "joint_delta -> 绝对位置的展开方式 (仅 action_type=joint_delta 时生效). "
+        "'current'   : arm_target(k) = cur_qpos(k) + delta(k), 每步重新读最新 qpos, 偏差自我修正; "
+        "'cumulative': arm_target(k) = arm_target(k-1) + delta(k), 初值=首帧 arm qpos, 与训练数据一阶差分语义一致, 但对执行偏差无反馈."
+    ),
+)
 
 AppLauncher.add_app_launcher_args(parser)
 args_cli = parser.parse_args()
@@ -96,7 +103,6 @@ from isaaclab.motion_collect.tools.affordance_resolver import resolve_affordance
 from isaaclab.motion_collect.primitives.utils import load_affordance_centroid
 
 
-
 # ============================================================================
 # 工具函数
 # ============================================================================
@@ -140,7 +146,6 @@ def load_background_images(task_config_path):
             if os.path.isabs(bg_path):
                 full_path = bg_path
             else:
-                # 优先按 CWD 解析；文件不存在则回退到 yaml 所在目录
                 cwd_path = os.path.abspath(bg_path)
                 if os.path.exists(cwd_path):
                     full_path = cwd_path
@@ -154,17 +159,7 @@ def load_background_images(task_config_path):
 
 
 def process_image(image_tensor, seg_tensor=None, bg_image=None, target_size=256):
-    """处理 RGB 图像: 背景替换 + center crop + resize.
-
-    Args:
-        image_tensor: (3, H, W) float tensor, 范围 [0, 1]
-        seg_tensor: 可选, 语义分割 tensor
-        bg_image: 可选, 背景图片 numpy array (H, W, 3)
-        target_size: 目标分辨率
-
-    Returns:
-        (3, target_size, target_size) float tensor, 范围 [0, 1]
-    """
+    """处理 RGB 图像: 背景替换 + center crop + resize."""
     image = image_tensor.clone().float()
     C, H, W = image.shape
 
@@ -499,12 +494,6 @@ def frames_to_gif(frames: list[np.ndarray], save_path: str,
 def ddpm_sample(model, scheduler, obs_images, obs_lowdim, device):
     """DDPM 采样: 从噪声生成动作序列.
 
-    Args:
-        model: DiffusionPolicy 模型
-        scheduler: DDPMScheduler
-        obs_images: (1, T_o, 2, 3, H, W) 观测图像
-        obs_lowdim: (1, T_o, D_low) 低维观测
-
     Returns:
         actions: (T_a, D_act) 预测的动作序列 (numpy)
     """
@@ -548,20 +537,14 @@ def _build_warmup_action(mode: str, env, obs_dict, device):
 def rollout(model, scheduler, env, success_term, horizon, action_horizon, device,
             norm_params=None, bg_images=None, obs_horizon=2, trial_id=0, save_img_interval=1,
             pick_target=None, pour_target=None, pull_target=None, initial_obs_dict=None,
-            warmup_action: str = "zero", action_type: str = "ee_delta"):
+            warmup_action: str = "zero", action_type: str = "ee_delta",
+            joint_delta_mode: str = "cumulative"):
     """执行一次 rollout.
 
     Diffusion Policy 的 receding horizon control:
     - 每次预测 pred_horizon 步动作
     - 只执行前 action_horizon 步
     - 然后重新观测, 重新规划
-
-    Args:
-        pick_target: 用于追踪物体 z 峰值 (pick 成功判定).
-        initial_obs_dict: 若不为 None 则跳过 reset, 直接使用该 obs 开始 rollout.
-
-    Returns:
-        (success_by_term, pick_peak_z, front_frames): success_term 判定结果, 物体 z 峰值, front 帧列表.
     """
     # 创建图像保存目录
     _tc = getattr(args_cli, "task_config", None)
@@ -577,8 +560,11 @@ def rollout(model, scheduler, env, success_term, horizon, action_horizon, device
 
     pick_peak_z = None
     min_pour_tilt_z = None
-    pull_peak_displacement = None  # pull 关节 |位移| 峰值
+    pull_peak_displacement = None
     front_frames = []
+    # joint_delta: 一次性记下首帧 arm qpos, 之后每个 delta 累加到它上面 (而不是当前 qpos),
+    # 即 arm_target(k) = arm_target(k-1) + delta(k).
+    accumulated_arm = None
 
     def _update_peak():
         nonlocal pick_peak_z, min_pour_tilt_z
@@ -598,7 +584,6 @@ def rollout(model, scheduler, env, success_term, horizon, action_horizon, device
         z = float(pos_w[2])
         if pick_peak_z is None or z > pick_peak_z:
             pick_peak_z = z
-        # Track min z_component (max tilt) when pick object is within 10cm XY of pour target
         if pour_target and quat_w is not None:
             pour_pos_w, _ = _get_object_pose_world_from_scene(env.scene, pour_target, 0)
             if pour_pos_w is not None:
@@ -695,7 +680,7 @@ def rollout(model, scheduler, env, success_term, horizon, action_horizon, device
         for j in range(min(action_horizon, horizon - step)):
             action = action_chunk[j]  # (D_act,)
 
-            # 反归一化 ee_delta (前6维)
+            # 反归一化 ee_delta (前 D-1 维)
             if norm_params is not None and "action" in norm_params:
                 action[:-1] = minmax_denormalize(
                     action[:-1],
@@ -706,11 +691,20 @@ def rollout(model, scheduler, env, success_term, horizon, action_horizon, device
             # Gripper 二值化 (阈值 0)
             action[-1] = 1.0 if action[-1] > 0.0 else -1.0
 
-            # joint_delta: abs_target = current_qpos + delta, env 是 JointPosition 绝对模式.
+            # joint_delta: env 是 JointPosition 绝对模式. 两种展开方式 (--joint_delta_mode):
+            #   "current"   : arm_target(k) = cur_qpos(k) + delta(k), 偏差自我修正
+            #   "cumulative": arm_target(k) = arm_target(k-1) + delta(k), 初值=首帧 arm qpos
             if action_type == "joint_delta":
-                cur_qpos = obs_dict["policy"]["qpos"].squeeze().detach().cpu().numpy().astype(action.dtype)
-                arm_abs = cur_qpos[:action.shape[0] - 1] + action[:-1]
-                action_out = np.concatenate([arm_abs, action[-1:]], axis=0)
+                if joint_delta_mode == "current":
+                    cur_qpos = obs_dict["policy"]["qpos"].squeeze().detach().cpu().numpy().astype(action.dtype)
+                    arm_abs = cur_qpos[:action.shape[0] - 1] + action[:-1]
+                    action_out = np.concatenate([arm_abs, action[-1:]], axis=0)
+                else:  # "cumulative"
+                    if accumulated_arm is None:
+                        cur_qpos = obs_dict["policy"]["qpos"].squeeze().detach().cpu().numpy().astype(action.dtype)
+                        accumulated_arm = cur_qpos[:action.shape[0] - 1].copy()
+                    accumulated_arm = accumulated_arm + action[:-1]
+                    action_out = np.concatenate([accumulated_arm, action[-1:]], axis=0)
             else:
                 action_out = action
 
@@ -789,7 +783,7 @@ def main():
     # --- 加载模型 ---
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"[INFO] 加载 checkpoint: {args_cli.checkpoint}")
-    ckpt = torch.load(args_cli.checkpoint, map_location=device)
+    ckpt = torch.load(args_cli.checkpoint, map_location=device, weights_only=False)
 
     # 从 checkpoint 中恢复模型参数
     model_args = ckpt.get("args", {})
@@ -903,6 +897,7 @@ def main():
             initial_obs_dict=initial_obs_dict,
             warmup_action=warmup_action,
             action_type=action_type,
+            joint_delta_mode=args_cli.joint_delta_mode,
         )
         results.append(success)
 

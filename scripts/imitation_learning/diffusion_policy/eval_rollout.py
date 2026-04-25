@@ -45,6 +45,14 @@ parser.add_argument("--env_cfg_class", type=str, default=None,
                          "若不指定则沿用 play.py 默认的 pick env cfg.")
 parser.add_argument("--pick_lift_threshold", type=float, default=0.05)
 parser.add_argument(
+    "--joint_delta_mode", type=str, default="cumulative", choices=["current", "cumulative"],
+    help=(
+        "joint_delta -> 绝对位置的展开方式 (仅 action_type=joint_delta 时生效). "
+        "'current'   : arm_target(k) = cur_qpos(k) + delta(k), 每步重新读最新 qpos, 偏差自我修正; "
+        "'cumulative': arm_target(k) = arm_target(k-1) + delta(k), 初值=首帧 arm qpos."
+    ),
+)
+parser.add_argument(
     "--warmup_action", type=str, default="zero", choices=["zero", "hold"],
     help=(
         "Warmup action mode before rollout starts. "
@@ -447,7 +455,8 @@ def rollout_until_horizon(model, scheduler, env, horizon, action_horizon, device
                           stages=None, pick_initial_z=None, pick_lift_threshold: float = 0.05,
                           early_stop_check_every: int = 10,
                           warmup_action: str = "zero",
-                          action_type: str = "ee_delta"):
+                          action_type: str = "ee_delta",
+                          joint_delta_mode: str = "cumulative"):
     """跑满 horizon 或直到 env terminate, 不依赖 env success_term.
 
     调用方应该在外部先 env.reset() (以便记录 baseline), 然后把返回的 obs_dict
@@ -473,6 +482,9 @@ def rollout_until_horizon(model, scheduler, env, horizon, action_horizon, device
     pour_xy_at_cross = None
     pour_tilt_at_cross = None
     pull_peak_displacement = None
+    # joint_delta: 一次性记下首帧 arm qpos, 之后每个 delta 累加到它上面 (而不是当前 qpos),
+    # 即 arm_target(k) = arm_target(k-1) + delta(k).
+    accumulated_arm = None
 
     def _update_peak():
         nonlocal pick_peak_z, min_pour_tilt_z, pour_crossed_ok, pour_xy_at_cross, pour_tilt_at_cross
@@ -576,27 +588,28 @@ def rollout_until_horizon(model, scheduler, env, horizon, action_horizon, device
         truncated = False
         for j in range(min(action_horizon, horizon - step)):
             action = action_chunk[j]
-            # ACT 风格 postprocess: 先 ÷100 抵消训练时 arm × 100, 再反 minmax 回原始尺度;
-            # gripper 是连续值 [0, 1] (1=open, 0=close), 按 0.5 阈值二值化回 sim 的 ±1 (+1=close, -1=open).
-            action[:-1] = action[:-1] / 100.0
-            if norm_params is not None and "_minmax_params" in norm_params:
-                mp = norm_params["_minmax_params"]["action"]
-                action[:-1] = minmax_denormalize(
-                    action[:-1], np.asarray(mp["min"][:-1]), np.asarray(mp["max"][:-1]),
-                )
-            elif norm_params is not None and "action" in norm_params:
+            # 反归一化 ee_delta (前 D-1 维), gripper 按阈值 0 二值化为 ±1.
+            if norm_params is not None and "action" in norm_params:
                 action[:-1] = minmax_denormalize(
                     action[:-1],
                     norm_params["action"]["min"][:-1],
                     norm_params["action"]["max"][:-1],
                 )
-            action[-1] = -1.0 if action[-1] > 0.5 else 1.0
-            # joint_delta: model 输出的是关节角 delta, 但 env 用 JointPositionActionCfg 绝对模式,
-            # 必须用最新 qpos 累加: abs_target = current_qpos + delta. gripper 直通.
+            action[-1] = 1.0 if action[-1] > 0.0 else -1.0
+            # joint_delta: env 用 JointPositionActionCfg 绝对模式. 两种展开方式 (--joint_delta_mode):
+            #   "current"   : arm_target(k) = cur_qpos(k) + delta(k), 偏差自我修正
+            #   "cumulative": arm_target(k) = arm_target(k-1) + delta(k), 初值=首帧 arm qpos
             if action_type == "joint_delta":
-                cur_qpos = obs_dict["policy"]["qpos"].squeeze().detach().cpu().numpy().astype(action.dtype)
-                arm_abs = cur_qpos[:action.shape[0] - 1] + action[:-1]
-                action_out = np.concatenate([arm_abs, action[-1:]], axis=0)
+                if joint_delta_mode == "current":
+                    cur_qpos = obs_dict["policy"]["qpos"].squeeze().detach().cpu().numpy().astype(action.dtype)
+                    arm_abs = cur_qpos[:action.shape[0] - 1] + action[:-1]
+                    action_out = np.concatenate([arm_abs, action[-1:]], axis=0)
+                else:  # "cumulative"
+                    if accumulated_arm is None:
+                        cur_qpos = obs_dict["policy"]["qpos"].squeeze().detach().cpu().numpy().astype(action.dtype)
+                        accumulated_arm = cur_qpos[:action.shape[0] - 1].copy()
+                    accumulated_arm = accumulated_arm + action[:-1]
+                    action_out = np.concatenate([accumulated_arm, action[-1:]], axis=0)
             else:
                 action_out = action
             action_tensor = torch.from_numpy(action_out).float().to(device).view(1, -1)
@@ -713,7 +726,7 @@ def main():
     print(f"[EVAL] output_json(abs)={args_cli.output_json}")
 
     # --- 加载 ckpt + 模型 ---
-    ckpt = torch.load(args_cli.checkpoint, map_location=device)
+    ckpt = torch.load(args_cli.checkpoint, map_location=device, weights_only=False)
     model_args = ckpt.get("args", {})
     model = DiffusionPolicy(
         action_dim=model_args.get("action_dim", 7),
@@ -731,7 +744,7 @@ def main():
     action_horizon = model_args.get("action_horizon", 3)
     obs_horizon = model_args.get("obs_horizon", 2)
     action_type = model_args.get("action_type", "ee_delta")
-    print(f"[EVAL] action_type={action_type} (joint_delta 会按 abs_target=current_qpos+delta 下发)")
+    print(f"[EVAL] action_type={action_type}, joint_delta_mode={args_cli.joint_delta_mode}")
 
     # --- env ---
     # 优先使用显式 --env_cfg_class; 否则从 gym 注册表里按 task id 解析出 env_cfg_entry_point,
@@ -815,6 +828,7 @@ def main():
             pick_lift_threshold=args_cli.pick_lift_threshold,
             warmup_action=args_cli.warmup_action,
             action_type=action_type,
+            joint_delta_mode=args_cli.joint_delta_mode,
         )
 
         # 保存 GIF (抽帧到 30 帧, 缩放到 256x256)

@@ -9,8 +9,8 @@ DDPM (Denoising Diffusion Probabilistic Models) 训练流程:
 
 用法:
     python scripts/imitation_learning/diffusion_policy/train.py \
-        --dataset /home/lmy/code/Real2Sim2Real-Pipeline-auto_task/dataset/r2s2r_data/task_gen/pick_place/pick_banana_and_place_on_plate/hdf5/merged_trajectories_robomimic.hdf5 \
-        --stat /home/lmy/code/Real2Sim2Real-Pipeline-auto_task/dataset/r2s2r_data/task_gen/pick_place/pick_banana_and_place_on_plate/hdf5/dataset_stat.json \
+        --dataset /path/to/merged_trajectories_robomimic.hdf5 \
+        --stat /path/to/dataset_stat.json \
         --epochs 1000 \
         --batch_size 64 \
         --pred_horizon 16 \
@@ -18,7 +18,6 @@ DDPM (Denoising Diffusion Probabilistic Models) 训练流程:
 """
 
 import argparse
-import copy
 import json
 import math
 import os
@@ -39,48 +38,19 @@ from network import DiffusionPolicy
 
 
 # ============================================================================
-# EMA (Exponential Moving Average)
-# ============================================================================
-
-class EMAModel:
-    """简易 EMA, 与 diffusers EMAModel 行为对齐."""
-
-    def __init__(self, parameters, power=0.75):
-        self.shadow = [p.clone().detach() for p in parameters]
-        self.power = power
-        self.num_updates = 0
-
-    @torch.no_grad()
-    def step(self, parameters):
-        self.num_updates += 1
-        decay = 1 - (1 + self.num_updates) ** -self.power
-        for s, p in zip(self.shadow, parameters):
-            s.lerp_(p.data, 1 - decay)
-
-    def copy_to(self, parameters):
-        for s, p in zip(self.shadow, parameters):
-            p.data.copy_(s)
-
-
-# ============================================================================
 # DDPM Noise Schedule
 # ============================================================================
 
 class DDPMScheduler:
-    """DDPM 噪声调度器 (cosine beta schedule)."""
+    """DDPM 噪声调度器 (linear beta schedule)."""
 
-    def __init__(self, num_diffusion_steps: int = 100):
+    def __init__(self, num_diffusion_steps: int = 100, beta_start: float = 0.0001, beta_end: float = 0.02):
         self.num_steps = num_diffusion_steps
 
-        # Cosine beta schedule (squaredcos_cap_v2) — 与 diffusers 对齐
-        steps = torch.linspace(0, num_diffusion_steps, num_diffusion_steps + 1, dtype=torch.float64)
-        alphas_cumprod = torch.cos(((steps / num_diffusion_steps) + 0.008) / 1.008 * math.pi * 0.5) ** 2
-        alphas_cumprod = alphas_cumprod / alphas_cumprod[0]
-        betas = 1.0 - (alphas_cumprod[1:] / alphas_cumprod[:-1])
-        betas = torch.clamp(betas, max=0.999).float()
-        alphas_cumprod = alphas_cumprod[1:].float()
-
+        # Linear beta schedule
+        betas = torch.linspace(beta_start, beta_end, num_diffusion_steps, dtype=torch.float32)
         alphas = 1.0 - betas
+        alphas_cumprod = torch.cumprod(alphas, dim=0)
 
         self.betas = betas
         self.alphas = alphas
@@ -94,36 +64,17 @@ class DDPMScheduler:
         self.posterior_variance = betas * (1.0 - alphas_cumprod_prev) / (1.0 - alphas_cumprod)
 
     def add_noise(self, x0, noise, timestep):
-        """Forward diffusion: q(x_t | x_0) = sqrt(alpha_bar_t) * x_0 + sqrt(1 - alpha_bar_t) * noise.
-
-        Args:
-            x0: (B, T_a, D) 原始动作序列
-            noise: (B, T_a, D) 高斯噪声
-            timestep: (B,) diffusion timestep
-
-        Returns:
-            x_t: (B, T_a, D) 加噪后的动作序列
-        """
+        """Forward diffusion: q(x_t | x_0) = sqrt(alpha_bar_t) * x_0 + sqrt(1 - alpha_bar_t) * noise."""
         sqrt_alpha = self.sqrt_alphas_cumprod[timestep.cpu()].view(-1, 1, 1).to(x0.device)
         sqrt_one_minus_alpha = self.sqrt_one_minus_alphas_cumprod[timestep.cpu()].view(-1, 1, 1).to(x0.device)
         return sqrt_alpha * x0 + sqrt_one_minus_alpha * noise
 
     def step(self, noise_pred, timestep, x_t):
-        """Reverse diffusion: 从 x_t 采样 x_{t-1}.
-
-        Args:
-            noise_pred: (B, T_a, D) 模型预测的噪声
-            timestep: int, 当前 timestep
-            x_t: (B, T_a, D) 当前噪声样本
-
-        Returns:
-            x_{t-1}: (B, T_a, D)
-        """
+        """Reverse diffusion: 从 x_t 采样 x_{t-1}."""
         alpha = self.alphas[timestep]
         alpha_cumprod = self.alphas_cumprod[timestep]
         beta = self.betas[timestep]
 
-        # 预测均值
         pred_mean = (1 / math.sqrt(alpha)) * (
             x_t - (beta / math.sqrt(1 - alpha_cumprod)) * noise_pred
         )
@@ -131,17 +82,13 @@ class DDPMScheduler:
         if timestep > 0:
             noise = torch.randn_like(x_t)
             variance = self.posterior_variance[timestep]
-            result = pred_mean + math.sqrt(variance) * noise
+            return pred_mean + math.sqrt(variance) * noise
         else:
-            result = pred_mean
-
-        # ACT 风格: 数据侧 arm × 100 后在 [-100, 100], gripper 在 [0, 1].
-        # 这里不能 clamp(-1, 1), 否则 arm 预测直接塌掉.
-        return result
+            return pred_mean
 
 
 # ============================================================================
-# 训练
+# 训练期评估子进程
 # ============================================================================
 
 def run_eval_subprocess(args, ckpt_path: str, log_dir: str, epoch: int) -> dict | None:
@@ -176,6 +123,7 @@ def run_eval_subprocess(args, ckpt_path: str, log_dir: str, epoch: int) -> dict 
         cmd += ["--env_cfg_class", args.eval_env_cfg_class]
     if args.eval_warmup_action:
         cmd += ["--warmup_action", args.eval_warmup_action]
+    cmd += ["--joint_delta_mode", args.eval_joint_delta_mode]
 
     print(f"[EVAL] launching subprocess: {' '.join(cmd)}")
     result = subprocess.run(cmd)
@@ -191,24 +139,28 @@ def run_eval_subprocess(args, ckpt_path: str, log_dir: str, epoch: int) -> dict 
         return json.load(f)
 
 
+# ============================================================================
+# 训练
+# ============================================================================
+
 def train(args):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"[INFO] 使用设备: {device}")
 
-    # --- 数据集 (ManiSkill 参考风格: upstream 已归一化, dataset 只负责切片+pad) ---
+    # --- 数据集 ---
     train_dataset = DiffusionPolicyDataset(
         hdf5_path=args.dataset,
         pred_horizon=args.pred_horizon,
         obs_horizon=args.obs_horizon,
-        load_count=args.load_count,
         filter_key="train",
+        load_count=args.load_count,
     )
     valid_dataset = DiffusionPolicyDataset(
         hdf5_path=args.dataset,
         pred_horizon=args.pred_horizon,
         obs_horizon=args.obs_horizon,
-        load_count=args.load_count,
         filter_key="valid",
+        load_count=args.load_count,
     )
 
     train_loader = DataLoader(
@@ -239,7 +191,6 @@ def train(args):
         lowdim_feature_dim=args.lowdim_feature_dim,
         down_dims=tuple(args.down_dims),
         pretrained_resnet=args.pretrained,
-        freeze_resnet_early=args.freeze_resnet_early,
     ).to(device)
 
     num_params = sum(p.numel() for p in model.parameters())
@@ -250,25 +201,13 @@ def train(args):
         num_diffusion_steps=args.num_diffusion_steps,
     )
 
-    # --- EMA ---
-    ema = EMAModel(model.parameters(), power=0.75)
-    ema_model = copy.deepcopy(model)
-
     # --- 优化器 ---
-    optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr,
-                                  betas=(0.95, 0.999), weight_decay=args.weight_decay)
+    optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
 
-    # Cosine annealing with linear warmup
-    total_steps = args.epochs * len(train_loader)
-    warmup_steps = 500
-
-    def lr_lambda(step):
-        if step < warmup_steps:
-            return step / max(warmup_steps, 1)
-        progress = (step - warmup_steps) / max(total_steps - warmup_steps, 1)
-        return 0.5 * (1 + math.cos(math.pi * progress))
-
-    lr_scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lr_lambda)
+    # Cosine annealing scheduler
+    lr_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
+        optimizer, T_max=args.epochs,
+    )
 
     # --- 日志 ---
     timestamp = time.strftime("%Y%m%d%H%M%S")
@@ -287,7 +226,7 @@ def train(args):
     start_epoch = 1
     if args.resume is not None:
         print(f"[INFO] 加载 checkpoint: {args.resume}")
-        ckpt = torch.load(args.resume, map_location=device)
+        ckpt = torch.load(args.resume, map_location=device, weights_only=False)
         model.load_state_dict(ckpt["model"])
         if "optimizer" in ckpt:
             optimizer.load_state_dict(ckpt["optimizer"])
@@ -331,8 +270,6 @@ def train(args):
             # 梯度裁剪
             nn.utils.clip_grad_norm_(model.parameters(), args.max_grad_norm)
             optimizer.step()
-            lr_scheduler.step()  # step per batch (cosine + warmup)
-            ema.step(model.parameters())
 
             epoch_loss += loss.item()
             num_batches += 1
@@ -341,6 +278,8 @@ def train(args):
             if global_step % 100 == 0:
                 writer.add_scalar("Train/loss", loss.item(), global_step)
                 writer.add_scalar("Train/lr", optimizer.param_groups[0]["lr"], global_step)
+
+        lr_scheduler.step()
 
         avg_train_loss = epoch_loss / max(num_batches, 1)
 
@@ -373,17 +312,16 @@ def train(args):
 
         print(f"Epoch {epoch:4d} | Train Loss: {avg_train_loss:.6f} | Valid Loss: {avg_valid_loss:.6f} | LR: {optimizer.param_groups[0]['lr']:.2e}")
 
-        # --- 保存 checkpoint (使用 EMA 权重) ---
+        # --- 保存 checkpoint ---
         if epoch % args.save_every == 0:
-            ema.copy_to(ema_model.parameters())
             ckpt_path = os.path.join(log_dir, "models", f"model_epoch_{epoch}.pth")
             torch.save({
-                "model": ema_model.state_dict(),
+                "model": model.state_dict(),
                 "optimizer": optimizer.state_dict(),
                 "epoch": epoch,
                 "args": vars(args),
             }, ckpt_path)
-            print(f"  -> 保存 checkpoint (EMA): {ckpt_path}")
+            print(f"  -> 保存 checkpoint: {ckpt_path}")
 
             # --- 训练期评估 (subprocess.run 同步阻塞) ---
             if args.eval_task_config:
@@ -411,9 +349,8 @@ def train(args):
                             for frame_idx in range(gif.n_frames):
                                 gif.seek(frame_idx)
                                 frames.append(np.array(gif.convert("RGB")))
-                            # TensorBoard add_video 期望 (N, T, C, H, W), uint8
-                            vid = np.stack(frames)  # (T, H, W, 3)
-                            vid = vid.transpose(0, 3, 1, 2)  # (T, 3, H, W)
+                            vid = np.stack(frames)                          # (T, H, W, 3)
+                            vid = vid.transpose(0, 3, 1, 2)                 # (T, 3, H, W)
                             vid_tensor = torch.from_numpy(vid).unsqueeze(0)  # (1, T, 3, H, W)
                             writer.add_video(f"Eval/rollout_trial_{gi}", vid_tensor, epoch, fps=6)
                         except Exception as e:
@@ -421,15 +358,14 @@ def train(args):
 
         if avg_valid_loss < best_valid_loss:
             best_valid_loss = avg_valid_loss
-            ema.copy_to(ema_model.parameters())
             ckpt_path = os.path.join(log_dir, "models", "model_best.pth")
             torch.save({
-                "model": ema_model.state_dict(),
+                "model": model.state_dict(),
                 "optimizer": optimizer.state_dict(),
                 "epoch": epoch,
                 "args": vars(args),
             }, ckpt_path)
-            print(f"  -> 最佳模型 EMA (valid loss: {best_valid_loss:.6f})")
+            print(f"  -> 最佳模型 (valid loss: {best_valid_loss:.6f})")
 
     writer.close()
     train_dataset.close()
@@ -453,7 +389,7 @@ if __name__ == "__main__":
     parser.add_argument("--max_grad_norm", type=float, default=1.0, help="梯度裁剪")
     parser.add_argument("--num_workers", type=int, default=4, help="DataLoader workers")
     parser.add_argument("--resume", type=str, default=None, help="Checkpoint 路径")
-    parser.add_argument("--save_every", type=int, default=1, help="每 N 个 epoch 保存一次")
+    parser.add_argument("--save_every", type=int, default=20, help="每 N 个 epoch 保存一次")
 
     # Diffusion
     parser.add_argument("--num_diffusion_steps", type=int, default=100, help="Diffusion steps")
@@ -484,12 +420,6 @@ if __name__ == "__main__":
     parser.add_argument("--lowdim_feature_dim", type=int, default=64, help="低维特征维度")
     parser.add_argument("--down_dims", type=int, nargs="+", default=[256, 512, 1024], help="U-Net 通道")
     parser.add_argument("--pretrained", action="store_true", default=True, help="使用预训练 ResNet18")
-    parser.add_argument(
-        "--freeze_resnet_early",
-        action=argparse.BooleanOptionalAction,
-        default=True,
-        help="冻结 ResNet18 的 conv1~layer2, 只训练 layer3+layer4 (默认开启; 用 --no-freeze_resnet_early 解冻)",
-    )
 
     # 训练期评估 (每次 save ckpt 后同步拉起 eval_rollout.py 子进程)
     parser.add_argument("--eval_task_config", type=str, default=None,
@@ -506,8 +436,16 @@ if __name__ == "__main__":
         "--eval_warmup_action", type=str, default=None, choices=["zero", "hold"],
         help=(
             "Eval 子进程 rollout 前的 warmup 动作模式. 不传则按 --action_type 推断: "
-            "joint_abs → hold (arm=当前 qpos, gripper=-1/open); 其它 → zero. "
+            "joint_delta → hold (arm=当前 qpos, gripper=-1/open); 其它 → zero. "
             "显式传值会覆盖自动推断."
+        ),
+    )
+    parser.add_argument(
+        "--eval_joint_delta_mode", type=str, default="cumulative", choices=["current", "cumulative"],
+        help=(
+            "joint_delta -> 绝对位置的展开方式 (传给 eval 子进程, 仅 action_type=joint_delta 时生效). "
+            "'current'=arm_target(k)=cur_qpos(k)+delta(k); "
+            "'cumulative'=arm_target(k)=arm_target(k-1)+delta(k), 初值=首帧 arm qpos."
         ),
     )
 

@@ -192,7 +192,7 @@ def main():
 
     # --- 加载模型 ---
     print(f"[INFO] 加载 checkpoint: {args_cli.checkpoint}")
-    ckpt = torch.load(args_cli.checkpoint, map_location=device)
+    ckpt = torch.load(args_cli.checkpoint, map_location=device, weights_only=False)
     model_args = ckpt.get("args", {})
     model = DiffusionPolicy(
         action_dim=model_args.get("action_dim", 7),
