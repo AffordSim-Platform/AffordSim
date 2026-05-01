@@ -29,17 +29,6 @@ AffordSim addresses this by using **VoxAfford**, an open-vocabulary 3D affordanc
   <em>Affordance-guided grasp planning vs. generic grasp estimation.</em>
 </p>
 
-## Authors
-
-**Mingyang Li\***, **Haofan Xu\***, **Haowen Sun**, **Xinzhe Chen**, **Sihua Ren**, **Liqi Huang**, **Chenyang Miao**, **Xinyang Sui**, **Qiongjie Cui†**, **Zeyang Liu†**, **Xingyu Chen†**, **Xuguang Lan†**
-
-## Paper
-
-Our paper is available at: [main.pdf](main.pdf)
-
-> **AffordSim: A Scalable Data Generator and Benchmark for Affordance-Aware Robotic Manipulation**
->
-> Mingyang Li\*, Haofan Xu\*. *Preprint, 2025.*
 
 ## Installation
 
