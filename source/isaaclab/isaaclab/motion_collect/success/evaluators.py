@@ -8,6 +8,7 @@ from .constants import (
     HOLD_SUCCESS_MIN_Z,
     OPEN_SUCCESS_MIN_ANGLE_RAD,
     PICK_SUCCESS_LIFT_THRESHOLD,
+    PLACE_SUCCESS_GRIPPER_OPEN_THRESHOLD,
     PLACE_SUCCESS_XY_THRESHOLD,
     PLACE_SUCCESS_Z_MARGIN,
     POSITION_RANGE_TOLERANCE,
@@ -22,11 +23,28 @@ from .constants import (
 from .scene_helpers import (
     _get_articulation_all_joint_pos,
     _get_articulation_joint_pos,
+    _get_gripper_max_finger_pos,
     _get_object_pose_env_from_scene,
     _get_object_pose_world_from_scene,
     _get_position_range,
     _is_position_in_range,
 )
+
+
+def _check_gripper_released(
+    scene,
+    env_idx: int = 0,
+    threshold: float = PLACE_SUCCESS_GRIPPER_OPEN_THRESHOLD,
+) -> tuple[bool, float]:
+    """Place 成功的额外条件: 夹爪已松开. 返回 (is_released, finger_pos).
+
+    finger_pos 为 NaN 表示读不到 robot/finger 关节; 这种情况按 "未松开" 处理,
+    避免兼容性 fallback 把不该过的 case 判过.
+    """
+    pos = _get_gripper_max_finger_pos(scene, env_idx=env_idx)
+    if pos is None:
+        return False, float("nan")
+    return pos >= float(threshold), float(pos)
 
 
 def _evaluate_place_success_with_metrics(
@@ -69,12 +87,15 @@ def _evaluate_place_success_with_metrics(
     )
     xy_dist = float(np.linalg.norm(pick_pos_world[:2] - compensated_target_xy))
     z_ok = bool(float(pick_pos_world[2]) >= float(place_pos_world[2]) + float(z_margin))
-    success = place_in_range and xy_dist <= float(xy_threshold) and z_ok
+    gripper_released, finger_pos = _check_gripper_released(scene, env_idx)
+    success = place_in_range and xy_dist <= float(xy_threshold) and z_ok and gripper_released
     return success, {
         "pick_place_xy_dist": xy_dist,
         "pick_higher_than_place": 1.0 if z_ok else 0.0,
         "place_target_in_range": 1.0 if place_in_range else 0.0,
         "place_target_offset_compensated": 1.0 if offset_compensated else 0.0,
+        "gripper_released": 1.0 if gripper_released else 0.0,
+        "gripper_finger_pos": finger_pos,
     }
 
 
@@ -103,10 +124,14 @@ def _evaluate_place_on_success_with_metrics(
     expected_pos = np.array([float(place_pos_w[0]), float(place_pos_w[1]), expected_z], dtype=np.float64)
     pick_pos = np.asarray(pick_pos_w, dtype=np.float64)
     dist_3d = float(np.linalg.norm(pick_pos - expected_pos))
-    return dist_3d <= dist_threshold, {
+    gripper_released, finger_pos = _check_gripper_released(scene, env_idx)
+    success = (dist_3d <= dist_threshold) and gripper_released
+    return success, {
         "pick_place_on_dist_3d": dist_3d,
         "pick_pos_world": pick_pos.tolist(),
         "expected_place_pos": expected_pos.tolist(),
+        "gripper_released": 1.0 if gripper_released else 0.0,
+        "gripper_finger_pos": finger_pos,
     }
 
 
@@ -133,10 +158,14 @@ def _evaluate_place_affordance_xy_success_with_metrics(
     pick_aff_world = rot_pick @ np.asarray(pick_aff_local, dtype=np.float64) + np.asarray(pick_pos_w, dtype=np.float64)
     target_aff_world = rot_place @ np.asarray(target_aff_local, dtype=np.float64) + np.asarray(place_pos_w, dtype=np.float64)
     xy_dist = float(np.linalg.norm(pick_aff_world[:2] - target_aff_world[:2]))
-    return xy_dist <= float(xy_threshold), {
+    gripper_released, finger_pos = _check_gripper_released(scene, env_idx)
+    success = (xy_dist <= float(xy_threshold)) and gripper_released
+    return success, {
         "pick_place_affordance_xy_dist": xy_dist,
         "pick_aff_world": pick_aff_world.tolist(),
         "target_aff_world": target_aff_world.tolist(),
+        "gripper_released": 1.0 if gripper_released else 0.0,
+        "gripper_finger_pos": finger_pos,
     }
 
 
@@ -164,10 +193,13 @@ def _evaluate_place_pose_success_with_metrics(
         offset_compensated = True
 
     xy_dist = float(np.linalg.norm(pick_pos_env[:2] - target_position_env[:2]))
-    success = xy_dist <= float(xy_threshold)
+    gripper_released, finger_pos = _check_gripper_released(scene, env_idx)
+    success = (xy_dist <= float(xy_threshold)) and gripper_released
     return success, {
         "pick_pose_xy_dist": xy_dist,
         "pose_offset_compensated": 1.0 if offset_compensated else 0.0,
+        "gripper_released": 1.0 if gripper_released else 0.0,
+        "gripper_finger_pos": finger_pos,
     }
 
 

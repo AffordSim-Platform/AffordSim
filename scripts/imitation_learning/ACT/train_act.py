@@ -103,12 +103,9 @@ def convert_binary_gripper_to_continuous(gripper_seq):
 # Dataset
 # ============================================================================
 
-def get_active_mask(action, action_type="ee_delta"):
-    """返回非零动作步骤 mask."""
-    if action_type == "joint_delta":
-        return np.abs(action[:, :7]).sum(axis=1) > 1e-8
-    else:
-        return np.abs(action[:, :6]).sum(axis=1) > 1e-8
+def get_active_mask(action):
+    """返回 EE delta 非零的步骤 mask."""
+    return np.abs(action[:, :6]).sum(axis=1) > 1e-8
 
 
 class ACTDataset(Dataset):
@@ -121,10 +118,9 @@ class ACTDataset(Dataset):
     """
 
     def __init__(self, dataset_file: str, load_count=None, remove_idle=True,
-                 action_chunk_size=1, action_type="ee_delta"):
+                 action_chunk_size=1):
         self.dataset_file = dataset_file
         self.action_chunk_size = action_chunk_size
-        self.action_type = action_type
         data = h5py.File(dataset_file, "r")
 
         top_keys = list(data.keys())
@@ -152,8 +148,7 @@ class ACTDataset(Dataset):
         print(f"[Dataset] action_chunk_size={action_chunk_size}, "
               f"valid frames: {len(self.valid_indices)}/{len(self.states)}")
         print(f"  state dim: {self.states.shape[1]}")
-        act_desc = "7 joint_delta + 1 gripper" if self.action_type == "joint_delta" else "6 ee_delta + 1 gripper"
-        print(f"  action dim: {self.actions.shape[1]} ({act_desc})")
+        print(f"  action dim: {self.actions.shape[1]} (6 ee + 1 gripper)")
         print(f"  front image shape: {self.front_images.shape[1:]}")
         print(f"  wrist image shape: {self.wrist_images.shape[1:]}")
 
@@ -183,7 +178,7 @@ class ACTDataset(Dataset):
             wrist = np.array(demo["obs/wrist"])
 
             if remove_idle:
-                mask = get_active_mask(action, self.action_type)
+                mask = get_active_mask(action)
                 if mask.sum() == 0:
                     continue
                 action = action[mask]
@@ -192,16 +187,9 @@ class ACTDataset(Dataset):
                 front = front[mask]
                 wrist = wrist[mask]
 
-            if self.action_type == "joint_delta":
-                # joint delta: 7 joint deltas + 1 gripper
-                norm_joints = (action[:, :7] * 100.0).astype(np.float32)
-                gripper_cont = convert_binary_gripper_to_continuous(action[:, -1])
-                full_action = np.concatenate([norm_joints, gripper_cont[:, None]], axis=-1)
-            else:
-                # ee_delta: 6 ee delta + 1 gripper
-                norm_ee = (action[:, :6] * 100.0).astype(np.float32)
-                gripper_cont = convert_binary_gripper_to_continuous(action[:, -1])
-                full_action = np.concatenate([norm_ee, gripper_cont[:, None]], axis=-1)
+            norm_ee = (action[:, :6] * 100.0).astype(np.float32)
+            gripper_cont = convert_binary_gripper_to_continuous(action[:, -1])
+            full_action = np.concatenate([norm_ee, gripper_cont[:, None]], axis=-1)
 
             state = np.concatenate([qpos, qvel], axis=-1).astype(np.float32)
             front_norm = front.astype(np.float32) / 255.0
@@ -215,12 +203,8 @@ class ACTDataset(Dataset):
 
         self._concat_all()
 
-        if self.action_type == "joint_delta":
-            self.action_ee_min = -np.ones(7, dtype=np.float32)
-            self.action_ee_max = np.ones(7, dtype=np.float32)
-        else:
-            self.action_ee_min = -np.ones(6, dtype=np.float32)
-            self.action_ee_max = np.ones(6, dtype=np.float32)
+        self.action_ee_min = -np.ones(6, dtype=np.float32)
+        self.action_ee_max = np.ones(6, dtype=np.float32)
         self.qpos_min = -np.ones(self.states.shape[1] // 2, dtype=np.float32)
         self.qpos_max = np.ones(self.states.shape[1] // 2, dtype=np.float32)
         self.qvel_min = -np.ones(self.states.shape[1] // 2, dtype=np.float32)
@@ -248,7 +232,7 @@ class ACTDataset(Dataset):
             wrist = np.array(traj["observations/images/wrist"])
 
             if remove_idle:
-                mask = get_active_mask(action, self.action_type)
+                mask = get_active_mask(action)
                 if mask.sum() == 0:
                     continue
                 action = action[mask]
@@ -266,8 +250,7 @@ class ACTDataset(Dataset):
         all_qpos_cat = np.concatenate(all_qpos, axis=0)
         all_qvel_cat = np.concatenate(all_qvel, axis=0)
 
-        act_cols = 7 if self.action_type == "joint_delta" else 6
-        self.action_ee_min, self.action_ee_max = compute_minmax(all_actions_cat[:, :act_cols])
+        self.action_ee_min, self.action_ee_max = compute_minmax(all_actions_cat[:, :6])
         self.qpos_min, self.qpos_max = compute_minmax(all_qpos_cat)
         self.qvel_min, self.qvel_max = compute_minmax(all_qvel_cat)
 
@@ -278,14 +261,9 @@ class ACTDataset(Dataset):
         self.traj_ids = []
 
         for traj_idx, (action, qpos, qvel, front, wrist) in enumerate(traj_data):
-            if self.action_type == "joint_delta":
-                norm_joints = (minmax_normalize(action[:, :7], self.action_ee_min, self.action_ee_max) * 100.0).astype(np.float32)
-                gripper_cont = convert_binary_gripper_to_continuous(action[:, -1])
-                full_action = np.concatenate([norm_joints, gripper_cont[:, None]], axis=-1)
-            else:
-                norm_ee = (minmax_normalize(action[:, :6], self.action_ee_min, self.action_ee_max) * 100.0).astype(np.float32)
-                gripper_cont = convert_binary_gripper_to_continuous(action[:, -1])
-                full_action = np.concatenate([norm_ee, gripper_cont[:, None]], axis=-1)
+            norm_ee = (minmax_normalize(action[:, :6], self.action_ee_min, self.action_ee_max) * 100.0).astype(np.float32)
+            gripper_cont = convert_binary_gripper_to_continuous(action[:, -1])
+            full_action = np.concatenate([norm_ee, gripper_cont[:, None]], axis=-1)
 
             norm_qpos = minmax_normalize(qpos, self.qpos_min, self.qpos_max).astype(np.float32)
             norm_qvel = minmax_normalize(qvel, self.qvel_min, self.qvel_max).astype(np.float32)
@@ -324,7 +302,6 @@ class ACTDataset(Dataset):
 
     def get_norm_params(self):
         return {
-            "action_type": self.action_type,
             "action_ee": {"min": self.action_ee_min.tolist(), "max": self.action_ee_max.tolist()},
             "qpos": {"min": self.qpos_min.tolist(), "max": self.qpos_max.tolist()},
             "qvel": {"min": self.qvel_min.tolist(), "max": self.qvel_max.tolist()},
@@ -467,9 +444,6 @@ def parse_args():
     parser.add_argument("--batch_size", type=int, default=64, help="Batch size")
     parser.add_argument("--lr", type=float, default=1e-4, help="Learning rate")
     parser.add_argument("--weight_decay", type=float, default=1e-4, help="Weight decay")
-    parser.add_argument("--action_type", type=str, default="ee_delta",
-                        choices=["ee_delta", "joint_delta"],
-                        help="Action type: ee_delta (6D) or joint_delta (7D)")
     parser.add_argument("--no_remove_idle", action="store_true",
                         help="Disable removing idle (zero EE delta) steps")
 
@@ -548,7 +522,6 @@ def main():
         load_count=args.num_demos,
         remove_idle=not args.no_remove_idle,
         action_chunk_size=args.action_chunk_size,
-        action_type=args.action_type,
     )
     norm_params = ds.get_norm_params()
 
@@ -567,7 +540,7 @@ def main():
     state_dim = ds.states.shape[1]
     policy = ACTPolicy(
         state_dim=state_dim,
-        action_dim=8 if args.action_type == "joint_delta" else 7,
+        action_dim=7,
         action_chunk_size=args.action_chunk_size,
         hidden_dim=args.hidden_dim,
         latent_dim=args.latent_dim,

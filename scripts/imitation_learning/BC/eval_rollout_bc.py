@@ -279,7 +279,9 @@ def evaluate_stages_at_episode_end(scene, stages, pick_initial_z, pick_lift_thre
             ok, metrics = _evaluate_pour_success_with_metrics(
                 scene=scene, pick_target=pick_target,
                 pour_target=pour_target, env_idx=0,
-                min_z_component_observed=min_pour_tilt_z,
+                min_tilt_z=min_pour_tilt_z,
+                pour_crossed_ok=pour_crossed_ok,
+                pour_xy_at_cross=pour_xy_at_cross,
             )
             results[key] = {"success": bool(ok), "metrics": metrics}
     return results
@@ -340,15 +342,20 @@ def rollout_until_horizon(policy, env, horizon, device, norm_params, bg_images,
         z = float(pos_w[2])
         if pick_peak_z is None or z > pick_peak_z:
             pick_peak_z = z
-        if pour_target and quat_w is not None:
-            pour_pos_w, _ = _get_object_pose_world_from_scene(env.scene, pour_target, 0)
-            if pour_pos_w is not None:
-                xy_dist = float(np.linalg.norm(pos_w[:2] - pour_pos_w[:2]))
-                if xy_dist <= 0.10:
-                    rot = _quat_wxyz_to_matrix(np.array(quat_w, dtype=float))
-                    tilt_z = float(rot[2, 2])
-                    if min_pour_tilt_z is None or tilt_z < min_pour_tilt_z:
-                        min_pour_tilt_z = tilt_z
+        if quat_w is not None:
+            from isaaclab.motion_collect.success.constants import POUR_SUCCESS_TILT_THRESHOLD, POUR_SUCCESS_XY_THRESHOLD
+            rot = _quat_wxyz_to_matrix(np.array(quat_w, dtype=float))
+            tilt_z = float(rot[2, 2])
+            if min_pour_tilt_z is None or tilt_z < min_pour_tilt_z:
+                min_pour_tilt_z = tilt_z
+            if not pour_crossed_ok and pour_tilt_at_cross is None and tilt_z <= POUR_SUCCESS_TILT_THRESHOLD:
+                if pour_target:
+                    pour_pos_w, _ = _get_object_pose_world_from_scene(env.scene, pour_target, 0)
+                    if pour_pos_w is not None:
+                        xy_dist = float(np.linalg.norm(pos_w[:2] - pour_pos_w[:2]))
+                        pour_xy_at_cross = xy_dist
+                        pour_tilt_at_cross = tilt_z
+                        pour_crossed_ok = xy_dist <= POUR_SUCCESS_XY_THRESHOLD
 
     for step in range(horizon):
         if step == 0:

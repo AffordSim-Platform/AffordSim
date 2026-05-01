@@ -10,6 +10,10 @@
 PLACE_SUCCESS_XY_THRESHOLD = 0.03
 # place 时要求 pick 时的 z >= place 时的 z + Z_MARGIN, 防止穿透
 PLACE_SUCCESS_Z_MARGIN = 0.0
+# place 成功还要求夹爪已松开 (单侧 finger 关节位置 >= 该阈值, 米).
+# Franka FR3 / Panda 完全张开 ≈ 0.04, 所以 0.025 留一些余量;
+# 调小阈值更宽松 (允许半开), 调大更严格.
+PLACE_SUCCESS_GRIPPER_OPEN_THRESHOLD = 0.018
 
 # --- 通用 (place / pour / push / pull / hang) ---
 # 物体落入 yaml 中 position_range.x / position_range.y 范围时允许的边界容差 (米)
@@ -18,7 +22,7 @@ POSITION_RANGE_TOLERANCE = 0.01
 # --- pour 原语 ---
 # 容器局部 z 轴在世界 z 方向上的分量阈值, 小于等于该值视为成功倾倒
 # 0.0 → 容器轴需水平或更低; 取负值 → 要求倒得更彻底
-POUR_SUCCESS_TILT_THRESHOLD = 0.707
+POUR_SUCCESS_TILT_THRESHOLD = 0.0 # 0.707
 # 倾倒时被倒物体与目标容器的最大 XY 距离 (米)
 POUR_SUCCESS_XY_THRESHOLD = 0.1
 

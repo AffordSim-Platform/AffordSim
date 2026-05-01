@@ -40,9 +40,50 @@ parser.add_argument(
 parser.add_argument("--output_json", type=str, default=None,
                     help="Path to save JSON results. Default: debug_images/pi05_eval_results.json")
 parser.add_argument("--pick_lift_threshold", type=float, default=0.05)
+parser.add_argument(
+    "--action_type", type=str, default=None, choices=["ee_delta", "joint_delta"],
+    help=(
+        "Action semantics the policy server returns. ee_delta=6D EE delta+gripper (env 用 IK-rel, 直接下发); "
+        "joint_delta=7D joint delta+gripper (env 用 JointPosition 绝对, play 时按 --joint_delta_mode 展开). "
+        "未指定则按 task id 自动推断: 含 'joint' → joint_delta, 否则 ee_delta."
+    ),
+)
+parser.add_argument(
+    "--joint_delta_mode", type=str, default="cumulative", choices=["current", "cumulative"],
+    help=(
+        "joint_delta -> 绝对位置的展开方式 (仅 action_type=joint_delta 时生效). "
+        "'current'   : arm_target(k) = cur_qpos(k) + delta(k), 每步重新读最新 qpos, 偏差自我修正; "
+        "'cumulative': arm_target(k) = arm_target(k-1) + delta(k), 初值=首帧 arm qpos, 与训练数据一阶差分语义一致, 但对执行偏差无反馈."
+    ),
+)
+parser.add_argument(
+    "--linger_frames", type=int, default=10,
+    help=(
+        "整个 play 流程结束 (early_success / terminated / horizon 到) 后, 用 freeze 动作再多跑这么多帧, "
+        "用来观察 place/pour/hang 完成后环境是否突变 (物体掉落/翻倒). "
+        "freeze 动作: arm 不动 (ee_delta=0 或 joint_delta=cur_qpos), gripper=最后一帧的 gripper 命令."
+    ),
+)
+parser.add_argument(
+    "--warmup_action", type=str, default=None, choices=["zero", "hold"],
+    help=(
+        "rollout 前的 warmup 模式. 'zero' 适合 delta 模式; 'hold' (arm=当前 qpos, gripper=-1/open) 适合 "
+        "JointPosition 绝对模式 (否则 zero 会把 robot 命令到全零关节位形). "
+        "未指定则按 --action_type 推断 (joint_delta → hold, 其它 → zero)."
+    ),
+)
 
 AppLauncher.add_app_launcher_args(parser)
 args_cli = parser.parse_args()
+
+# Auto-infer action_type / warmup_action from task id if not given.
+# 约定: task id 字符串里含 "joint" 的都是 *_joint-v0 绑 JointPositionActionCfg 绝对模式.
+if args_cli.action_type is None:
+    args_cli.action_type = "joint_delta" if "joint" in args_cli.task.lower() else "ee_delta"
+    print(f"[EVAL] --action_type 未指定, 按 task='{args_cli.task}' 推断为 '{args_cli.action_type}'")
+if args_cli.warmup_action is None:
+    args_cli.warmup_action = "hold" if args_cli.action_type == "joint_delta" else "zero"
+    print(f"[EVAL] --warmup_action 未指定, 按 action_type='{args_cli.action_type}' 推断为 '{args_cli.warmup_action}'")
 
 app_launcher = AppLauncher(args_cli)
 simulation_app = app_launcher.app
@@ -234,6 +275,17 @@ def resolve_pick_target(stages: list[dict]) -> str | None:
     return None
 
 
+def resolve_unique_pick_targets(stages: list[dict]) -> list[str]:
+    """Unique pick targets in encounter order (stack tasks pick more than one object)."""
+    out: list[str] = []
+    for s in stages:
+        if s["type"] == "pick":
+            tgt = s.get("target")
+            if tgt and tgt not in out:
+                out.append(tgt)
+    return out
+
+
 # ============================================================================
 # Stage evaluation
 # ============================================================================
@@ -241,30 +293,43 @@ def resolve_pick_target(stages: list[dict]) -> str | None:
 def evaluate_stages_at_episode_end(
     scene,
     stages: list[dict],
-    pick_initial_z: float | None,
+    pick_initial_z: dict[str, float] | float | None,
     pick_lift_threshold: float,
-    pick_peak_z: float | None = None,
+    pick_peak_z: dict[str, float] | float | None = None,
     pull_peak_displacement: float | None = None,
     pour_min_tilt_z: float | None = None,
 ) -> dict[str, dict]:
-    pick_target = resolve_pick_target(stages)
+    # 兼容: 旧签名传 float (单 pick_target). 新签名传 dict[target -> z], 支持 stack 多 pick.
+    if not isinstance(pick_initial_z, dict):
+        legacy_target = resolve_pick_target(stages)
+        pick_initial_z = {legacy_target: pick_initial_z} if legacy_target else {}
+    if not isinstance(pick_peak_z, dict):
+        legacy_target = resolve_pick_target(stages)
+        pick_peak_z = {legacy_target: pick_peak_z} if (legacy_target and pick_peak_z is not None) else {}
+
     results: dict[str, dict] = {}
+    held_target: str | None = None  # 最近一次 pick 抓的物体, place/pour/hang 用它
 
     for idx, stage in enumerate(stages):
         ptype = stage["type"]
         key = f"{idx:02d}_{ptype}"
 
         if ptype == "pick":
-            if pick_initial_z is None or not pick_target:
-                results[key] = {"success": False, "reason": "no_initial_z_or_target"}
+            stage_target = stage.get("target")
+            if stage_target:
+                held_target = stage_target
+            init_z = pick_initial_z.get(stage_target) if stage_target else None
+            if init_z is None or not stage_target:
+                results[key] = {"success": False, "reason": "no_initial_z_or_target",
+                                "target": stage_target}
                 continue
             ok, metrics = _evaluate_pick_success_with_metrics(
                 scene=scene,
-                pick_target=pick_target,
-                initial_z_world=pick_initial_z,
+                pick_target=stage_target,
+                initial_z_world=init_z,
                 env_idx=0,
                 lift_threshold=pick_lift_threshold,
-                peak_z_world=pick_peak_z,
+                peak_z_world=pick_peak_z.get(stage_target),
             )
             results[key] = {"success": bool(ok), "metrics": metrics}
 
@@ -279,16 +344,16 @@ def evaluate_stages_at_episode_end(
                     continue
                 ok, metrics = _evaluate_place_pose_success_with_metrics(
                     scene=scene,
-                    pick_target=pick_target,
+                    pick_target=held_target,
                     target_position_env=np.array(target_pos, dtype=float),
                     target_quat_wxyz=np.array(target_quat, dtype=float) if target_quat is not None else None,
                     env_idx=0,
                 )
             elif place_mode == "affordance":
-                if not place_target or not pick_target:
+                if not place_target or not held_target:
                     results[key] = {"success": False, "reason": "no_place_or_pick_target"}
                     continue
-                pick_aff_path = stage.get("pick_affordance_npz_path") or resolve_affordance_path(pick_target, "place")
+                pick_aff_path = stage.get("pick_affordance_npz_path") or resolve_affordance_path(held_target, "place")
                 target_aff_path = stage.get("target_affordance_npz_path") or resolve_affordance_path(place_target, "place")
                 if not pick_aff_path or not target_aff_path:
                     results[key] = {"success": False, "reason": "missing_place_affordance_npz",
@@ -307,15 +372,15 @@ def evaluate_stages_at_episode_end(
                 if place_scale is not None:
                     target_aff_local = target_aff_local * np.asarray(place_scale, dtype=np.float64)
                 ok, metrics = _evaluate_place_affordance_xy_success_with_metrics(
-                    scene=scene, pick_target=pick_target, place_target=place_target,
+                    scene=scene, pick_target=held_target, place_target=place_target,
                     pick_aff_local=pick_aff_local, target_aff_local=target_aff_local, env_idx=0,
                 )
             else:
-                if not place_target or not pick_target:
+                if not place_target or not held_target:
                     results[key] = {"success": False, "reason": "no_place_or_pick_target"}
                     continue
                 ok, metrics = _evaluate_place_on_success_with_metrics(
-                    scene=scene, pick_target=pick_target, place_target=place_target,
+                    scene=scene, pick_target=held_target, place_target=place_target,
                     place_target_height=stage.get("place_target_height") or 0.1,
                     on_height_margin=stage.get("place_on_height_margin") or 0.01,
                     env_idx=0,
@@ -324,12 +389,12 @@ def evaluate_stages_at_episode_end(
 
         elif ptype == "pour":
             pour_target = stage.get("pour_target")
-            if not pour_target or not pick_target:
+            if not pour_target or not held_target:
                 results[key] = {"success": False, "reason": "no_pour_or_pick_target"}
                 continue
             ok, metrics = _evaluate_pour_success_with_metrics(
                 scene=scene,
-                pick_target=pick_target,
+                pick_target=held_target,
                 pour_target=pour_target,
                 env_idx=0,
                 min_z_component_observed=pour_min_tilt_z,
@@ -338,7 +403,7 @@ def evaluate_stages_at_episode_end(
 
         elif ptype == "hang":
             hang_container = stage.get("hang_container")
-            if not hang_container or not pick_target:
+            if not hang_container or not held_target:
                 results[key] = {"success": False, "reason": "no_hang_container_or_pick_target"}
                 continue
             mount_npz = stage.get("hang_container_mount_npz")
@@ -365,7 +430,7 @@ def evaluate_stages_at_episode_end(
 
             ok, metrics = _evaluate_hang_success_with_metrics(
                 scene=scene,
-                held_object_label=pick_target,
+                held_object_label=held_target,
                 container_label=hang_container,
                 container_mount_local=container_mount_local,
                 env_idx=0,
@@ -462,14 +527,41 @@ def frames_to_gif(frames: list[np.ndarray], save_path: str,
 # Rollout
 # ============================================================================
 
+def _build_warmup_action(mode: str, env, obs_dict, device):
+    """(1, D_act) warmup action.
+
+    - "zero": 全零, 适合 delta action 模式 (IK-rel / JointDelta), delta=0 ≡ 不动.
+    - "hold": arm ← 当前 qpos, gripper ← -1 (open). 给 JointPosition 绝对模式用,
+              否则 zeros() 会把 robot 命令到全零关节位形, 砸坏场景.
+    """
+    D = env.action_space.shape[1]
+    if mode == "zero":
+        return torch.zeros(1, D, device=device)
+    if mode == "hold":
+        qpos = obs_dict["policy"]["qpos"].squeeze().detach().to(device=device, dtype=torch.float32)
+        arm_dim = D - 1
+        hold_arm = qpos[:arm_dim]
+        gripper = torch.tensor([-1.0], device=device, dtype=torch.float32)
+        return torch.cat([hold_arm, gripper]).view(1, -1)
+    raise ValueError(f"unknown warmup_action mode: {mode}")
+
+
 def rollout(policy, env, horizon, action_horizon, device, prompt,
             bg_images=None, trial_id=0, initial_obs_dict=None,
-            pick_target=None, pull_target=None, pour_target=None,
+            pick_targets=None, pull_target=None, pour_target=None,
+            primary_pick_target=None,
             collect_front_images=True,
             image_speckle_noise_std: float = 0.0,
             stages=None, pick_initial_z=None, pick_lift_threshold: float = 0.05,
-            early_stop_check_every: int = 10):
-    """Run one episode with Pi0.5 remote policy."""
+            early_stop_check_every: int = 10,
+            warmup_action: str = "zero", action_type: str = "ee_delta",
+            joint_delta_mode: str = "cumulative",
+            linger_frames: int = 0):
+    """Run one episode with Pi0.5 remote policy.
+
+    pick_targets: 全部 pick 物体名 (stack 任务有多个), 用于 per-target 追踪 peak_z.
+    primary_pick_target: 倾倒类任务里用来判断「靠近 pour_target」的主物体, 默认取首个 pick.
+    """
     debug_dir = f"debug_images/pi05_trial_{trial_id}"
     os.makedirs(debug_dir, exist_ok=True)
 
@@ -481,17 +573,24 @@ def rollout(policy, env, horizon, action_horizon, device, prompt,
     seg_keys = {"front": "semantic_segmentation_side", "wrist": "semantic_segmentation_wrist"}
     env_cam_h, env_cam_w = 480, 640
 
+    pick_targets = list(pick_targets or [])
+    if primary_pick_target is None and pick_targets:
+        primary_pick_target = pick_targets[0]
+
     front_frames = []
-    pick_peak_z = None
+    pick_peak_z: dict[str, float] = {tgt: None for tgt in pick_targets}  # type: ignore[assignment]
     pull_peak_displacement = None
     pour_min_tilt_z = None  # min z_component (max tilt) when pick obj within 10cm of pour target
+    # joint_delta: 一次性记下第一帧 arm qpos, 之后每个 delta 都累加到它上面 (而不是当前 qpos),
+    # 即 arm_target(k) = arm_target(k-1) + delta(k), 初值 = 首帧 arm qpos.
+    accumulated_arm = None
 
     POUR_NEAR_RADIUS = 0.15  # 20cm. 之前 10cm 经常漏掉真正的倾倒动作:
     # 壶嘴虽然在容器上方, 但壶身中心可能已经 12-15cm 外,
     # 导致 pour_min_tilt_z 在真正倾倒时没被更新.
 
     def _update_peak():
-        nonlocal pick_peak_z, pull_peak_displacement, pour_min_tilt_z
+        nonlocal pull_peak_displacement, pour_min_tilt_z
         if pull_target:
             from isaaclab.motion_collect.success.constants import PULL_SUCCESS_JOINT_NAME
             jp = _get_articulation_joint_pos(env.scene, pull_target, PULL_SUCCESS_JOINT_NAME, 0)
@@ -499,24 +598,24 @@ def rollout(policy, env, horizon, action_horizon, device, prompt,
                 disp = abs(float(jp))
                 if pull_peak_displacement is None or disp > pull_peak_displacement:
                     pull_peak_displacement = disp
-        if not pick_target:
-            return
-        pos_w, quat_w = _get_object_pose_world_from_scene(env.scene, pick_target, 0)
-        if pos_w is None:
-            return
-        z = float(pos_w[2])
-        if pick_peak_z is None or z > pick_peak_z:
-            pick_peak_z = z
-        # Track min z_component (max tilt) when pick object is within 10cm XY of pour target
-        if pour_target and quat_w is not None:
-            pour_pos_w, _ = _get_object_pose_world_from_scene(env.scene, pour_target, 0)
-            if pour_pos_w is not None:
-                xy_dist = float(np.linalg.norm(pos_w[:2] - pour_pos_w[:2]))
-                if xy_dist <= POUR_NEAR_RADIUS:
-                    rot = _quat_wxyz_to_matrix(np.array(quat_w, dtype=float))
-                    tilt_z = float(rot[2, 2])
-                    if pour_min_tilt_z is None or tilt_z < pour_min_tilt_z:
-                        pour_min_tilt_z = tilt_z
+        for tgt in pick_targets:
+            pos_w, quat_w = _get_object_pose_world_from_scene(env.scene, tgt, 0)
+            if pos_w is None:
+                continue
+            z = float(pos_w[2])
+            cur = pick_peak_z.get(tgt)
+            if cur is None or z > cur:
+                pick_peak_z[tgt] = z
+            # 倾倒判定: 仅对 primary pick (壶/容器) 跟踪倾斜.
+            if tgt == primary_pick_target and pour_target and quat_w is not None:
+                pour_pos_w, _ = _get_object_pose_world_from_scene(env.scene, pour_target, 0)
+                if pour_pos_w is not None:
+                    xy_dist = float(np.linalg.norm(pos_w[:2] - pour_pos_w[:2]))
+                    if xy_dist <= POUR_NEAR_RADIUS:
+                        rot = _quat_wxyz_to_matrix(np.array(quat_w, dtype=float))
+                        tilt_z = float(rot[2, 2])
+                        if pour_min_tilt_z is None or tilt_z < pour_min_tilt_z:
+                            pour_min_tilt_z = tilt_z
 
     def _check_early_success():
         """全部 stage 都已成功 -> True, 用于早停."""
@@ -534,12 +633,14 @@ def rollout(policy, env, horizon, action_horizon, device, prompt,
 
     step = 0
     early_success = False
+    last_gripper_cmd = -1.0  # 最后一次下发给 env 的 gripper 命令, linger 阶段保留它 (不要松手)
     while step < horizon and not early_success:
         obs = obs_dict["policy"]
 
         # Skip first frame (renderer not ready)
         if step == 0:
-            obs_dict, _, _, _, _ = env.step(torch.zeros(1, env.action_space.shape[1], device=device))
+            warmup = _build_warmup_action(warmup_action, env, obs_dict, device)
+            obs_dict, _, _, _, _ = env.step(warmup)
             step += 1
             if collect_front_images and "front" in obs_dict["policy"]:
                 _fr = obs_dict["policy"]["front"].squeeze().float().reshape(3, env_cam_h, env_cam_w)
@@ -588,8 +689,9 @@ def rollout(policy, env, horizon, action_horizon, device, prompt,
 
         # --- Build observation for Pi0.5 ---
         qpos = obs["qpos"].squeeze().cpu().numpy().astype(np.float32)
-        qvel = obs["qvel"].squeeze().cpu().numpy().astype(np.float32) if "qvel" in obs else np.zeros_like(qpos)
-        state = np.concatenate([qpos, qvel]).astype(np.float32)
+        # qvel = obs["qvel"].squeeze().cpu().numpy().astype(np.float32) if "qvel" in obs else np.zeros_like(qpos)
+        # state = np.concatenate([qpos, qvel]).astype(np.float32)
+        state = np.concatenate([qpos]).astype(np.float32)
 
         pi05_obs = {
             "observation/image": front_img,          # (H, W, 3) uint8
@@ -612,11 +714,29 @@ def rollout(policy, env, horizon, action_horizon, device, prompt,
         truncated = False
         for idx in range(n_exec):
             action = actions_chunk[idx]  # 7 or 8 dim, auto from server
-            action_tensor = torch.from_numpy(action).float().to(device).view(1, -1)
+            # joint_delta: server 返回的是关节角 delta, env 是 JointPositionActionCfg 绝对模式.
+            # 两种展开方式 (--joint_delta_mode 控制), gripper 维直通:
+            #   "current"   : arm_target(k) = cur_qpos(k) + delta(k), 偏差自我修正
+            #   "cumulative": arm_target(k) = arm_target(k-1) + delta(k), 初值=首帧 arm qpos
+            if action_type == "joint_delta":
+                if joint_delta_mode == "current":
+                    cur_qpos = obs_dict["policy"]["qpos"].squeeze().detach().cpu().numpy().astype(action.dtype)
+                    arm_abs = cur_qpos[:action.shape[0] - 1] + action[:-1]
+                    action_out = np.concatenate([arm_abs, action[-1:]], axis=0)
+                else:  # "cumulative"
+                    if accumulated_arm is None:
+                        cur_qpos = obs_dict["policy"]["qpos"].squeeze().detach().cpu().numpy().astype(action.dtype)
+                        accumulated_arm = cur_qpos[:action.shape[0] - 1].copy()
+                    accumulated_arm = accumulated_arm + action[:-1]
+                    action_out = np.concatenate([accumulated_arm, action[-1:]], axis=0)
+            else:
+                action_out = action
+            action_tensor = torch.from_numpy(action_out).float().to(device).view(1, -1)
+            last_gripper_cmd = float(action_out[-1])
             obs_dict, _, terminated, truncated, _ = env.step(action_tensor)
             step += 1
             if step <= 5 or step % 50 == 0:
-                print(f"[EVAL] step={step}, action={np.array2string(action, precision=4, suppress_small=True)}")
+                print(f"[EVAL] step={step}, action({action_type})={np.array2string(action_out, precision=4, suppress_small=True)}")
             _update_peak()
 
             if collect_front_images and "front" in obs_dict["policy"]:
@@ -640,6 +760,35 @@ def rollout(policy, env, horizon, action_horizon, device, prompt,
 
         if terminated or truncated or early_success:
             break
+
+    # --- Linger: 整个 play 结束后多跑 N 帧观察是否有突变 (物体掉落 / place 后翻倒等). ---
+    # freeze 动作: arm 不动, gripper 维持最后一次命令 (不要松开正在抓的物体).
+    #   ee_delta:    arm = 6 维全 0 delta
+    #   joint_delta: arm = 当前 qpos (env 走 JointPosition 绝对)
+    if linger_frames > 0:
+        D = env.action_space.shape[1]
+        arm_dim = D - 1
+        print(f"[EVAL] play done at step={step}, lingering {linger_frames} frames "
+              f"(action_type={action_type}, gripper={last_gripper_cmd:+.2f}) ...")
+        for _ in range(linger_frames):
+            if action_type == "joint_delta":
+                cur_qpos = obs_dict["policy"]["qpos"].squeeze().detach().cpu().numpy()
+                arm_part = cur_qpos[:arm_dim].astype(np.float32)
+            else:
+                arm_part = np.zeros(arm_dim, dtype=np.float32)
+            freeze = np.concatenate([arm_part, np.array([last_gripper_cmd], dtype=np.float32)])
+            action_tensor = torch.from_numpy(freeze).float().to(device).view(1, -1)
+            obs_dict, _, terminated, truncated, _ = env.step(action_tensor)
+            _update_peak()
+            if collect_front_images and "front" in obs_dict["policy"]:
+                _fr = obs_dict["policy"]["front"].squeeze().float().reshape(3, env_cam_h, env_cam_w)
+                _seg = obs_dict["policy"].get(seg_keys["front"], None)
+                if _seg is not None:
+                    _seg = _seg.squeeze()
+                _bg = bg_images.get("front") if bg_images else None
+                front_frames.append(process_image(_fr, _seg, _bg))
+            if terminated or truncated:
+                break
 
     return obs_dict, pick_peak_z, pull_peak_displacement, pour_min_tilt_z, front_frames
 
@@ -708,10 +857,12 @@ def main():
 
     # --- Eval stages ---
     stages = load_eval_stages(args_cli.task_config)
-    pick_target = resolve_pick_target(stages)
+    pick_targets = resolve_unique_pick_targets(stages)  # stack 任务有多个 pick
+    primary_pick_target = pick_targets[0] if pick_targets else None
     pull_target = next((s.get("pull_target") for s in stages if s["type"] == "pull"), None)
     pour_target = next((s.get("pour_target") for s in stages if s["type"] == "pour"), None)
-    print(f"[EVAL] stages={[s['type'] for s in stages]}, pick_target={pick_target}, pull_target={pull_target}, pour_target={pour_target}")
+    print(f"[EVAL] stages={[s['type'] for s in stages]}, pick_targets={pick_targets}, "
+          f"pull_target={pull_target}, pour_target={pour_target}")
 
     # Set seeds
     if args_cli.seed is not None:
@@ -733,8 +884,14 @@ def main():
 
         initial_obs_dict, _ = env.reset()
         for _ in range(10):
-            env.step(torch.zeros(1, env.action_space.shape[1], device=device))
-        pick_initial_z = capture_object_initial_z(env.scene, pick_target, env_idx=0) if pick_target else None
+            warmup = _build_warmup_action(args_cli.warmup_action, env, initial_obs_dict, device)
+            initial_obs_dict, _, _, _, _ = env.step(warmup)
+        # Per-target initial_z (stack 任务里每个 block 都要单独记).
+        pick_initial_z = {
+            tgt: capture_object_initial_z(env.scene, tgt, env_idx=0)
+            for tgt in pick_targets
+        }
+        pick_initial_z = {k: v for k, v in pick_initial_z.items() if v is not None}
 
         _, pick_peak_z, pull_peak_displacement, pour_min_tilt_z, front_frames = rollout(
             policy=policy,
@@ -746,7 +903,8 @@ def main():
             bg_images=bg_images,
             trial_id=trial,
             initial_obs_dict=initial_obs_dict,
-            pick_target=pick_target,
+            pick_targets=pick_targets,
+            primary_pick_target=primary_pick_target,
             pull_target=pull_target,
             pour_target=pour_target,
             collect_front_images=True,
@@ -754,6 +912,10 @@ def main():
             stages=stages,
             pick_initial_z=pick_initial_z,
             pick_lift_threshold=args_cli.pick_lift_threshold,
+            warmup_action=args_cli.warmup_action,
+            action_type=args_cli.action_type,
+            joint_delta_mode=args_cli.joint_delta_mode,
+            linger_frames=args_cli.linger_frames,
         )
 
         # Save GIF

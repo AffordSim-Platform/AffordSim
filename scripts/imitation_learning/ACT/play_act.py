@@ -509,38 +509,25 @@ def postprocess_action(action_np, norm_params):
     """
     将模型输出的 action 转换为环境 action.
 
-    ee_delta:    action_np: (7,) — [ee_delta(6) * 100, gripper_continuous]
-    joint_delta: action_np: (8,) — [joint_delta(7) * 100, gripper_continuous]
+    action_np: (7,) — [ee_delta(6) * 100, gripper_continuous]
+    返回: (7,) — [ee_delta(6), gripper(-1 or +1)]
     """
     result = action_np.copy()
-    action_type = norm_params.get("action_type", "ee_delta") if norm_params else "ee_delta"
 
-    if action_type == "joint_delta":
-        # Joint delta: 训练时放大了 100 倍, 缩回来
-        result[:7] = result[:7] / 100.0
-        # 反归一化
-        if norm_params is not None and "action_ee" in norm_params:
-            result[:7] = minmax_denormalize(
-                result[:7],
-                np.array(norm_params["action_ee"]["min"], dtype=np.float32),
-                np.array(norm_params["action_ee"]["max"], dtype=np.float32),
-            )
-        # Gripper: continuous [0, 1] -> env action (-1=open, +1=close)
-        gripper_cont = result[7]
-        result[7] = -1.0 if gripper_cont > 0.5 else 1.0
-    else:
-        # EE delta: 训练时放大了 100 倍, 缩回来
-        result[:6] = result[:6] / 100.0
-        # 反归一化
-        if norm_params is not None and "action_ee" in norm_params:
-            result[:6] = minmax_denormalize(
-                result[:6],
-                np.array(norm_params["action_ee"]["min"], dtype=np.float32),
-                np.array(norm_params["action_ee"]["max"], dtype=np.float32),
-            )
-        # Gripper: continuous [0, 1] -> env action (-1=open, +1=close)
-        gripper_cont = result[6]
-        result[6] = -1.0 if gripper_cont > 0.5 else 1.0
+    # EE: 训练时放大了 100 倍, 缩回来
+    result[:6] = result[:6] / 100.0
+
+    # EE: 反归一化
+    if norm_params is not None and "action_ee" in norm_params:
+        result[:6] = minmax_denormalize(
+            result[:6],
+            np.array(norm_params["action_ee"]["min"], dtype=np.float32),
+            np.array(norm_params["action_ee"]["max"], dtype=np.float32),
+        )
+
+    # Gripper: continuous [0, 1] -> env action (-1=open, +1=close)
+    gripper_cont = result[6]
+    result[6] = -1.0 if gripper_cont > 0.5 else 1.0
 
     return result
 
@@ -674,13 +661,6 @@ def rollout(policy, env, success_term, horizon, device, norm_params,
 
         # Post-process
         action_env = postprocess_action(action_np, norm_params)
-
-        # Joint delta: 读当前 qpos + delta -> 绝对目标，通过绝对位置控制执行
-        action_type = norm_params.get("action_type", "ee_delta") if norm_params else "ee_delta"
-        if action_type == "joint_delta":
-            cur_qpos = env.env.scene["robot"].data.joint_pos[0, :7].cpu().numpy()
-            abs_target = cur_qpos + action_env[:7]
-            action_env = np.concatenate([abs_target, action_env[7:]])
 
         if step <= 5 or step % 50 == 0:
             print(f"[DEBUG] step {step} raw_action: {np.round(action_np, 4)}")

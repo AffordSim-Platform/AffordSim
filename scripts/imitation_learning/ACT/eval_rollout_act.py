@@ -428,9 +428,7 @@ def frames_to_gif(frames, save_path, target_frames=30, target_size=256):
 def rollout_until_horizon(policy, env, horizon, device, norm_params, bg_images,
                           action_chunk_size, action_horizon, initial_obs_dict,
                           pick_target=None, pour_target=None, pull_target=None,
-                          collect_front_images=False,
-                          stages=None, pick_initial_z=None, pick_lift_threshold: float = 0.05,
-                          early_stop_check_every: int = 10):
+                          collect_front_images=False):
     obs_dict = initial_obs_dict
     action_chunk_buffer = []
     front_frames = []
@@ -464,7 +462,7 @@ def rollout_until_horizon(policy, env, horizon, device, norm_params, bg_images,
             pour_pos_w, _ = _get_object_pose_world_from_scene(env.scene, pour_target, 0)
             if pour_pos_w is not None:
                 xy_dist = float(np.linalg.norm(pos_w[:2] - pour_pos_w[:2]))
-                if xy_dist <= 0.20:  # 放宽到 20cm: 壶嘴在容器上方时壶身中心经常 >10cm
+                if xy_dist <= 0.10:
                     rot = _quat_wxyz_to_matrix(np.array(quat_w, dtype=float))
                     tilt_z = float(rot[2, 2])
                     if min_pour_tilt_z is None or tilt_z < min_pour_tilt_z:
@@ -531,22 +529,6 @@ def rollout_until_horizon(policy, env, horizon, device, norm_params, bg_images,
         _update_peak()
         if terminated or truncated:
             break
-
-        # 早停: 全部 stage 都成功就立刻结束这个 trial
-        if stages is not None and step > 0 and step % early_stop_check_every == 0:
-            _res = evaluate_stages_at_episode_end(
-                scene=env.scene, stages=stages,
-                pick_initial_z=pick_initial_z,
-                pick_lift_threshold=pick_lift_threshold,
-                pick_peak_z=pick_peak_z,
-                min_pour_tilt_z=min_pour_tilt_z,
-                pour_crossed_ok=pour_crossed_ok,
-                pour_xy_at_cross=pour_xy_at_cross,
-                pull_peak_displacement=pull_peak_displacement,
-            )
-            if _res and all(r.get("success") for r in _res.values()):
-                print(f"[EVAL_ACT] early stop at step={step}: all stages passed")
-                break
 
     return obs_dict, pick_peak_z, min_pour_tilt_z, pour_crossed_ok, pour_xy_at_cross, pull_peak_displacement, front_frames
 
@@ -635,9 +617,6 @@ def main():
             pour_target=pour_target,
             pull_target=pull_target,
             collect_front_images=True,
-            stages=stages,
-            pick_initial_z=pick_initial_z,
-            pick_lift_threshold=args_cli.pick_lift_threshold,
         )
 
         gif_path = os.path.join(gif_dir, f"trial_{trial}.gif")

@@ -159,6 +159,33 @@ def _get_articulation_joint_pos(
     return None
 
 
+def _get_gripper_max_finger_pos(
+    scene,
+    env_idx: int = 0,
+    robot_label: str = "robot",
+    joint_name_substr: str = "finger",
+) -> float | None:
+    """读 robot articulation 上最大 finger 关节位置 (米). 数值越大表示夹爪越开.
+
+    适用于 Franka FR3 (`fr3_finger_joint.*`) / Panda (`panda_finger_joint.*`) 这类
+    平行夹爪 (joint name 含 "finger"). 找不到时返回 None, 调用方按需 fallback.
+    """
+    import numpy as _np
+    articulations = getattr(scene, "articulations", None)
+    if not articulations or robot_label not in articulations:
+        return None
+    art = articulations[robot_label]
+    try:
+        names = list(art.joint_names)
+        finger_idx = [i for i, n in enumerate(names) if joint_name_substr in n.lower()]
+        if not finger_idx:
+            return None
+        joint_pos = art.data.joint_pos[env_idx].detach().cpu().numpy()
+        return float(_np.max(joint_pos[finger_idx]))
+    except Exception:
+        return None
+
+
 def _get_articulation_all_joint_pos(
     scene, label: str, env_idx: int
 ) -> dict[str, float] | None:
