@@ -1,7 +1,6 @@
 # AffordSim: A Scalable Data Generator and Benchmark for Affordance-Aware Robotic Manipulation
 
 <p align="center">
-  <a href="https://arxiv.org/abs/XXXX.XXXXX"><img src="https://img.shields.io/badge/arXiv-Paper-red.svg" alt="arXiv"></a>
   <a href="#license"><img src="https://img.shields.io/badge/license-BSD--3-yellow.svg" alt="License"></a>
   <img src="https://img.shields.io/badge/python-3.11-blue.svg" alt="Python">
   <img src="https://img.shields.io/badge/IsaacSim-5.1.0-silver.svg" alt="IsaacSim">
@@ -42,7 +41,6 @@ AffordSim addresses this by using **VoxAfford**, an open-vocabulary 3D affordanc
 ### Step 1: Clone the Repository
 
 ```bash
-git clone https://github.com/yangml071/AffordSim.git
 cd AffordSim
 ```
 
@@ -337,7 +335,6 @@ AffordSim/
 ├── curobo/                       # GPU-accelerated motion planning library
 ├── backgrounds/                  # DA3 Gaussian background assets
 ├── isaaclab.sh                   # Build and execution interface
-└── main.pdf                      # Paper
 ```
 
 ## License
@@ -349,12 +346,14 @@ The AffordSim framework is released under [BSD-3 License](LICENSE). The `isaacla
 If you find AffordSim useful in your research, please cite:
 
 ```bibtex
-@article{li2025affordsim,
+@article{anonymous2026affordsim,
   title={AffordSim: A Scalable Data Generator and Benchmark for Affordance-Aware Robotic Manipulation},
+  author={Anonymous},
+  journal={Under review},
   year={2026}
 }
 ```
 
 ## Acknowledgement
 
-AffordSim is built on top of [Isaac Lab](https://github.com/isaac-sim/IsaacLab). We gratefully acknowledge the Isaac Lab team for their foundational framework.
+AffordSim is built on top of Isaac Lab.
