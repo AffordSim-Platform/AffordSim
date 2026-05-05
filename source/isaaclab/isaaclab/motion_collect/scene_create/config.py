@@ -2,9 +2,9 @@
 import os
 
 # Qwen API Settings (DashScope)
-API_KEY = os.getenv("DASHSCOPE_API_KEY", "sk-18f3f0aa86044683bd58ec537de79a6f")
-BASE_URL = os.getenv("DASHSCOPE_BASE_URL", "https://dashscope.aliyuncs.com/compatible-mode/v1")
-MODEL = os.getenv("DASHSCOPE_MODEL", "qwen-vl-plus")
+API_KEY = os.getenv("DASHSCOPE_API_KEY", "your_api_key_here")
+BASE_URL = os.getenv("DASHSCOPE_BASE_URL", "your_base_url_here")
+MODEL = os.getenv("DASHSCOPE_MODEL", "your_model_name_here")
 TIMEOUT = float(os.getenv("SCENE_LLM_TIMEOUT", "30"))
 
 # Paths

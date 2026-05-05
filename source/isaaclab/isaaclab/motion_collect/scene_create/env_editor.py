@@ -187,7 +187,16 @@ def _normalize_reference_text(text: str) -> str:
     lowered = re.sub(r"([a-z])(\d)", r"\1 \2", lowered)
     lowered = re.sub(r"(\d)([a-z])", r"\1 \2", lowered)
     lowered = re.sub(r"[^a-z0-9\s]+", " ", lowered)
-    return " ".join(lowered.split())
+    tokens = lowered.split()
+    if tokens:
+        last = tokens[-1]
+        if last.endswith("ies") and len(last) > 3:
+            tokens[-1] = last[:-3] + "y"
+        elif last.endswith(("ses", "xes", "zes", "ches", "shes")) and len(last) > 3:
+            tokens[-1] = last[:-2]
+        elif last.endswith("s") and not last.endswith("ss") and len(last) > 1:
+            tokens[-1] = last[:-1]
+    return " ".join(tokens)
 
 
 def _collect_containing_labels(raw_text: str, candidate_labels: list[str]) -> list[str]:

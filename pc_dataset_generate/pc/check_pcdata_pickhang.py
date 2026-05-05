@@ -22,8 +22,6 @@ EE_OFFSET_Z = 0.220              # fr3_hand → ee_frame 偏移
 # 固定抓取参数
 # ============================================================================
 TILT_ANGLE_DEG = 90.0             # 90° = 竖直向下抓取
-POINT_CLOUD_GRAY = np.array([0.58, 0.58, 0.58])
-AFFORDANCE_RED = np.array([1.0, 0.22, 0.22])
 
 
 # ============================================================================
@@ -583,8 +581,9 @@ def process_type_path(type_path, visualize=True, default_threshold=DEFAULT_UNIT_
         print(f"[INFO] 总点数: {len(points)}, label=0: {(labels==0).sum()}, label=1: {(labels==1).sum()}")
         print(f"[INFO] 固定抓取姿态: 竖直向下, 不偏转角度")
 
-        colors = np.tile(POINT_CLOUD_GRAY, (len(labels), 1))
-        colors[labels == 1] = AFFORDANCE_RED
+        colors = np.zeros((len(labels), 3))
+        colors[labels == 0] = [0.0, 1.0, 0.0]
+        colors[labels == 1] = [1.0, 0.0, 0.0]
 
         pcd = o3d.geometry.PointCloud()
         pcd.points = o3d.utility.Vector3dVector(points)

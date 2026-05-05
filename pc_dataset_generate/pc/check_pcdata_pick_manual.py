@@ -17,14 +17,14 @@ GRIPPER_FINGER_DEPTH = 0.10       # 100mm 手指深度/长度(Z/approach方向)
 GRIPPER_FINGER_WIDTH = 0.02       # 20mm 手指宽度(X方向)
 GRIPPER_FINGER_THICKNESS = 0.012  # 12mm 手指厚度(Y/开合方向)
 EE_OFFSET_Z = 0.220              # fr3_hand → ee_frame 偏移
-LOCAL_X_ROTATION_DEG = 0.0       # 输出抓取姿态绕局部 X(binormal) 旋转角度
-LOCAL_Y_ROTATION_DEG = 0.0       # 输出抓取姿态绕局部 Y(grip_axis) 旋转角度
-LOCAL_Z_ROTATION_DEG = 0.0      # 输出抓取姿态绕局部 Z(approach) 旋转角度
+LOCAL_X_ROTATION_DEG = 45.0       # 输出抓取姿态绕局部 X(binormal) 旋转角度
+LOCAL_Y_ROTATION_DEG = 45.0       # 输出抓取姿态绕局部 Y(grip_axis) 旋转角度
+LOCAL_Z_ROTATION_DEG = -5.0      # 输出抓取姿态绕局部 Z(approach) 旋转角度
 
 # ============================================================================
 # ★ 倾斜抓取参数
 # ============================================================================
-TILT_ANGLE_DEG = 90.0             # approach 方向与水平面的夹角 (度)
+TILT_ANGLE_DEG = 45.0             # approach 方向与水平面的夹角 (度)
                                    # 45° = 从斜上方45度接近物体
                                    # 0°  = 水平接近 (原始行为)
                                    # 90° = 从正上方下压
@@ -32,13 +32,11 @@ TILT_ANGLE_DEG = 90.0             # approach 方向与水平面的夹角 (度)
 # ============================================================================
 # 输入输出配置
 # ============================================================================
-INPUT_DIR = "red_mugcup_pick"
-OUTPUT_FILE = "grasp_result_hang.npz"
-PT_CANDIDATE_NAMES = ("labeled_result_hang.pt",)
-NPZ_CANDIDATE_NAMES = ("labeled_result_hang.npz",)
+INPUT_DIR = "***"
+OUTPUT_FILE = "***"
+PT_CANDIDATE_NAMES = ("labeled_result.pt",)
+NPZ_CANDIDATE_NAMES = ("labeled_result.npz",)
 DEFAULT_UNIT_THRESHOLD_VALUE = DEFAULT_UNIT_THRESHOLD
-POINT_CLOUD_GRAY = np.array([0.58, 0.58, 0.58])
-AFFORDANCE_RED = np.array([1.0, 0.22, 0.22])
 
 
 # ============================================================================
@@ -757,8 +755,9 @@ def process_type_path(type_path, default_threshold=DEFAULT_UNIT_THRESHOLD_VALUE)
     def preview_fn(points, threshold, converted, coord_range):
         print(f"[INFO] 总点数: {len(points)}, label=0: {(labels==0).sum()}, label=1: {(labels==1).sum()}")
         print(f"[INFO] 目标倾斜角: {TILT_ANGLE_DEG}° (从斜上方接近)")
-        colors = np.tile(POINT_CLOUD_GRAY, (len(labels), 1))
-        colors[labels == 1] = AFFORDANCE_RED
+        colors = np.zeros((len(labels), 3))
+        colors[labels == 0] = [0.0, 1.0, 0.0]
+        colors[labels == 1] = [1.0, 0.0, 0.0]
 
         pcd = o3d.geometry.PointCloud()
         pcd.points = o3d.utility.Vector3dVector(points)

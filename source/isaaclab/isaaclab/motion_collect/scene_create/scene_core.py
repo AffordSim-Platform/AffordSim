@@ -25,6 +25,19 @@ from scene_utils import (
 class LLMClient:
     """Handles LLM-based instruction parsing."""
 
+    _COUNT_WORDS = {
+        "one": 1,
+        "two": 2,
+        "three": 3,
+        "four": 4,
+        "five": 5,
+        "six": 6,
+        "seven": 7,
+        "eight": 8,
+        "nine": 9,
+        "ten": 10,
+    }
+
     def __init__(self):
         self.model = config.MODEL
         self.client = OpenAI(
@@ -52,6 +65,121 @@ class LLMClient:
             print(f"[LLM ERROR] {e}")
             return {}
 
+    def _singularize_reference_phrase(self, phrase: str) -> str:
+        """Normalize simple English plurals in an object reference phrase."""
+        tokens = str(phrase).strip().split()
+        if not tokens:
+            return ""
+
+        last = tokens[-1].lower()
+        if last.endswith("ies") and len(last) > 3:
+            last = last[:-3] + "y"
+        elif last.endswith(("ses", "xes", "zes", "ches", "shes")) and len(last) > 3:
+            last = last[:-2]
+        elif last.endswith("s") and not last.endswith("ss") and len(last) > 1:
+            last = last[:-1]
+        tokens[-1] = last
+        return " ".join(tokens)
+
+    def _extract_counted_object_mentions(self, instruction: str) -> list[tuple[str, int]]:
+        """Extract simple counted concrete object phrases such as 'two kettles'."""
+        normalized = re.sub(r"[^a-zA-Z0-9_\-\s]+", " ", str(instruction).lower())
+        tokens = normalized.split()
+        if not tokens:
+            return []
+
+        stop_words = {
+            "and", "or", "plus", "with",
+            "in", "into", "inside", "on", "onto", "atop",
+            "left", "right", "front", "behind", "near", "next", "close", "beside",
+            "to", "of", "from", "above", "below", "under",
+            "please", "create", "generate", "make", "put", "place", "add",
+        }
+        random_markers = {"random", "arbitrary", "any", "misc", "miscellaneous"}
+        generic_objects = {"object", "item", "thing"}
+
+        mentions: list[tuple[str, int]] = []
+        index = 0
+        while index < len(tokens):
+            raw_count = tokens[index]
+            count = None
+            if raw_count.isdigit():
+                count = int(raw_count)
+            else:
+                count = self._COUNT_WORDS.get(raw_count)
+
+            if count is None or count <= 0:
+                index += 1
+                continue
+
+            phrase_tokens = []
+            cursor = index + 1
+            while cursor < len(tokens) and len(phrase_tokens) < 3:
+                token = tokens[cursor]
+                if token in stop_words:
+                    break
+                phrase_tokens.append(token)
+                cursor += 1
+
+            if phrase_tokens:
+                phrase = self._singularize_reference_phrase(" ".join(phrase_tokens))
+                phrase_head = phrase_tokens[0]
+                phrase_tail = self._singularize_reference_phrase(phrase_tokens[-1])
+                if phrase_head not in random_markers and phrase_tail not in generic_objects:
+                    mentions.append((phrase, count))
+
+            index = max(cursor, index + 1)
+
+        return mentions
+
+    def _coerce_counted_scene_objects(self, instruction: str, parsed: dict) -> dict:
+        """Fix common LLM mistakes around counted specific objects vs random objects."""
+        if not isinstance(parsed, dict):
+            return {}
+
+        specified = [
+            self._singularize_reference_phrase(str(item).strip())
+            for item in parsed.get("specified_objects", []) or []
+            if str(item).strip()
+        ]
+        raw_random_count = parsed.get("random_objects_count", 0) or 0
+        try:
+            random_count = int(raw_random_count)
+        except (TypeError, ValueError):
+            random_count = self._COUNT_WORDS.get(str(raw_random_count).strip().lower(), 0)
+        counted_mentions = self._extract_counted_object_mentions(instruction)
+        if not counted_mentions:
+            parsed["specified_objects"] = specified
+            parsed["random_objects_count"] = random_count
+            return parsed
+
+        expanded = list(specified)
+        consumed_random = 0
+        for phrase, count in counted_mentions:
+            if count <= 1:
+                continue
+
+            matching_indexes = [
+                index
+                for index, item in enumerate(expanded)
+                if self._singularize_reference_phrase(item) == phrase
+            ]
+            if not matching_indexes:
+                expanded.extend([phrase] * count)
+                continue
+
+            existing_count = len(matching_indexes)
+            if existing_count < count:
+                expanded.extend([phrase] * (count - existing_count))
+                consumed_random += count - existing_count
+
+        parsed["specified_objects"] = expanded
+        if consumed_random and random_count:
+            parsed["random_objects_count"] = max(0, random_count - consumed_random)
+        else:
+            parsed["random_objects_count"] = random_count
+        return parsed
+
     def parse_scene_instruction(self, instruction: str) -> dict:
         """Parse scene generation instruction."""
         system_prompt = """You are a Scene Graph Parser.
@@ -72,13 +200,18 @@ Rules:
 3. `child` and `parent` must also be short object reference phrases only.
 4. Do not invent extra disambiguating attributes that the user did not say. Never add colors, materials, sizes,
    indices, or serial numbers on your own. If the user says "kettle", output "kettle", not "blue_kettle".
-5. If the user mentions a count of random objects, put the integer in `random_objects_count`. Otherwise use 0.
-6. Do not duplicate the same object mention multiple times in `specified_objects`.
-7. Output relation values using only these canonical relations:
+5. If the user mentions a count of concrete named objects, repeat that object phrase in `specified_objects`
+   exactly that many times and use the singular noun. Example: "two kettles" -> ["kettle", "kettle"].
+   Do not put the extra counted concrete objects in `random_objects_count`.
+6. Put a number in `random_objects_count` only when the user explicitly asks for random/any/arbitrary objects,
+   such as "two random objects". Otherwise use 0.
+7. Do not duplicate an uncounted object mention multiple times in `specified_objects`; counted concrete objects
+   are the only exception.
+8. Output relation values using only these canonical relations:
    - "inside", "on_top"
    - "left_of", "right_of", "front", "behind"
    - "near"
-8. Normalize common phrasing to the canonical relations above:
+9. Normalize common phrasing to the canonical relations above:
    - in / into / inside -> "inside"
    - on / onto / on top of / atop -> "on_top"
    - left / on the left of / to the left of -> "left_of"
@@ -86,8 +219,8 @@ Rules:
    - in front of / ahead of -> "front"
    - back of / behind / in back of -> "behind"
    - near / next to / close to / beside -> "near"
-9. Ignore filler words like "please", "carefully", "then", "after that", "could you".
-10. If a relation is not clearly expressed, omit it instead of inventing one.
+10. Ignore filler words like "please", "carefully", "then", "after that", "could you".
+11. If a relation is not clearly expressed, omit it instead of inventing one.
 
 Example input:
 "Please create a plate with a banana inside, and a fork on the left of the plate."
@@ -100,8 +233,28 @@ Example output:
     {"child": "banana", "relation": "inside", "parent": "plate"},
     {"child": "fork", "relation": "left_of", "parent": "plate"}
   ]
+}
+
+Example input:
+"two kettles"
+
+Example output:
+{
+  "specified_objects": ["kettle", "kettle"],
+  "random_objects_count": 0,
+  "relationships": []
+}
+
+Example input:
+"one kettle and two random objects"
+
+Example output:
+{
+  "specified_objects": ["kettle"],
+  "random_objects_count": 2,
+  "relationships": []
 }"""
-        result = self._call_llm(system_prompt, instruction)
+        result = self._coerce_counted_scene_objects(instruction, self._call_llm(system_prompt, instruction))
         print(f"[LLM] Parsed scene instruction: {result}")
         return {
             "specified_objects": result.get("specified_objects", []),

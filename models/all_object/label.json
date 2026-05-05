@@ -1,0 +1,7268 @@
+[
+    {
+        "label": "base",
+        "dimensions_cm": {
+            "length": 40.0,
+            "width": 40.0,
+            "height": 5.0
+        },
+        "bottom_offset_m": 0.025,
+        "scale": [
+            0.5,
+            0.5,
+            0.5
+        ]
+    },
+    {
+        "label": "blue_coffeecan",
+        "dimensions_cm": {
+            "length": 10.24,
+            "width": 10.23,
+            "height": 14.02
+        },
+        "bottom_offset_m": 0.0701,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "blue_cube",
+        "dimensions_cm": {
+            "length": 5.0,
+            "width": 5.0,
+            "height": 5.0
+        },
+        "bottom_offset_m": 0.025,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "blue_kettle",
+        "dimensions_cm": {
+            "length": 18.86,
+            "width": 13.31,
+            "height": 24.24
+        },
+        "bottom_offset_m": 0.1212,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "blue_pen",
+        "dimensions_cm": {
+            "length": 18.79,
+            "width": 1.23,
+            "height": 1.69
+        },
+        "bottom_offset_m": 0.0104,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "blue_spamcan",
+        "dimensions_cm": {
+            "length": 10.16,
+            "width": 5.76,
+            "height": 8.35
+        },
+        "bottom_offset_m": 0.0418,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "blue_tray",
+        "dimensions_cm": {
+            "length": 32.39,
+            "width": 32.4,
+            "height": 2.4
+        },
+        "bottom_offset_m": 0.0121,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "blue_tunacan",
+        "dimensions_cm": {
+            "length": 6.84,
+            "width": 6.84,
+            "height": 3.35
+        },
+        "bottom_offset_m": 0.0168,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "box",
+        "dimensions_cm": {
+            "length": 304.35,
+            "width": 219.71,
+            "height": 88.0
+        },
+        "bottom_offset_m": 0.0,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "brown_chocolatebox",
+        "dimensions_cm": {
+            "length": 5.68,
+            "width": 4.49,
+            "height": 1.92
+        },
+        "bottom_offset_m": 0.0096,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "brown_woodshelf",
+        "dimensions_cm": {
+            "length": 15.49,
+            "width": 24.0,
+            "height": 42.3
+        },
+        "bottom_offset_m": 0.2781,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "cabinet1",
+        "dimensions_cm": {
+            "length": 84.29,
+            "width": 104.21,
+            "height": 149.8
+        },
+        "bottom_offset_m": 0.8236,
+        "scale": [
+            0.3,
+            0.3,
+            0.3
+        ]
+    },
+    {
+        "label": "cabinet10",
+        "dimensions_cm": {
+            "length": 117.24,
+            "width": 92.73,
+            "height": 149.4
+        },
+        "bottom_offset_m": 0.7575,
+        "scale": [
+            0.3,
+            0.3,
+            0.3
+        ]
+    },
+    {
+        "label": "cabinet11",
+        "dimensions_cm": {
+            "length": 85.72,
+            "width": 100.97,
+            "height": 145.14
+        },
+        "bottom_offset_m": 0.7963,
+        "scale": [
+            0.3,
+            0.3,
+            0.3
+        ]
+    },
+    {
+        "label": "cabinet12",
+        "dimensions_cm": {
+            "length": 115.09,
+            "width": 79.2,
+            "height": 151.8
+        },
+        "bottom_offset_m": 0.8152,
+        "scale": [
+            0.3,
+            0.3,
+            0.3
+        ]
+    },
+    {
+        "label": "cabinet13",
+        "dimensions_cm": {
+            "length": 85.67,
+            "width": 103.41,
+            "height": 148.66
+        },
+        "bottom_offset_m": 0.7874,
+        "scale": [
+            0.3,
+            0.3,
+            0.3
+        ]
+    },
+    {
+        "label": "cabinet14",
+        "dimensions_cm": {
+            "length": 125.83,
+            "width": 119.6,
+            "height": 113.01
+        },
+        "bottom_offset_m": 0.5537,
+        "scale": [
+            0.3,
+            0.3,
+            0.3
+        ]
+    },
+    {
+        "label": "cabinet15",
+        "dimensions_cm": {
+            "length": 94.33,
+            "width": 83.33,
+            "height": 159.72
+        },
+        "bottom_offset_m": 0.8211,
+        "scale": [
+            0.3,
+            0.3,
+            0.3
+        ]
+    },
+    {
+        "label": "cabinet16",
+        "dimensions_cm": {
+            "length": 128.76,
+            "width": 122.39,
+            "height": 115.64
+        },
+        "bottom_offset_m": 0.6012,
+        "scale": [
+            0.3,
+            0.3,
+            0.3
+        ]
+    },
+    {
+        "label": "cabinet17",
+        "dimensions_cm": {
+            "length": 114.64,
+            "width": 79.7,
+            "height": 152.76
+        },
+        "bottom_offset_m": 0.8139,
+        "scale": [
+            0.3,
+            0.3,
+            0.3
+        ]
+    },
+    {
+        "label": "cabinet18",
+        "dimensions_cm": {
+            "length": 92.66,
+            "width": 121.48,
+            "height": 155.23
+        },
+        "bottom_offset_m": 0.8094,
+        "scale": [
+            0.3,
+            0.3,
+            0.3
+        ]
+    },
+    {
+        "label": "cabinet19",
+        "dimensions_cm": {
+            "length": 117.21,
+            "width": 81.91,
+            "height": 156.99
+        },
+        "bottom_offset_m": 0.7914,
+        "scale": [
+            0.3,
+            0.3,
+            0.3
+        ]
+    },
+    {
+        "label": "cabinet2",
+        "dimensions_cm": {
+            "length": 113.61,
+            "width": 92.18,
+            "height": 151.43
+        },
+        "bottom_offset_m": 0.7818,
+        "scale": [
+            0.3,
+            0.3,
+            0.3
+        ]
+    },
+    {
+        "label": "cabinet20",
+        "dimensions_cm": {
+            "length": 111.55,
+            "width": 76.77,
+            "height": 138.6
+        },
+        "bottom_offset_m": 0.7868,
+        "scale": [
+            0.3,
+            0.3,
+            0.3
+        ]
+    },
+    {
+        "label": "cabinet21",
+        "dimensions_cm": {
+            "length": 111.82,
+            "width": 89.03,
+            "height": 146.27
+        },
+        "bottom_offset_m": 0.7609,
+        "scale": [
+            0.3,
+            0.3,
+            0.3
+        ]
+    },
+    {
+        "label": "cabinet22",
+        "dimensions_cm": {
+            "length": 89.0,
+            "width": 103.72,
+            "height": 149.09
+        },
+        "bottom_offset_m": 0.8078,
+        "scale": [
+            0.3,
+            0.3,
+            0.3
+        ]
+    },
+    {
+        "label": "cabinet23",
+        "dimensions_cm": {
+            "length": 85.71,
+            "width": 117.96,
+            "height": 150.72
+        },
+        "bottom_offset_m": 0.8065,
+        "scale": [
+            0.3,
+            0.3,
+            0.3
+        ]
+    },
+    {
+        "label": "cabinet24",
+        "dimensions_cm": {
+            "length": 90.66,
+            "width": 109.3,
+            "height": 157.12
+        },
+        "bottom_offset_m": 0.8172,
+        "scale": [
+            0.3,
+            0.3,
+            0.3
+        ]
+    },
+    {
+        "label": "cabinet25",
+        "dimensions_cm": {
+            "length": 110.55,
+            "width": 90.62,
+            "height": 148.87
+        },
+        "bottom_offset_m": 0.777,
+        "scale": [
+            0.3,
+            0.3,
+            0.3
+        ]
+    },
+    {
+        "label": "cabinet26",
+        "dimensions_cm": {
+            "length": 117.67,
+            "width": 82.67,
+            "height": 158.45
+        },
+        "bottom_offset_m": 0.8492,
+        "scale": [
+            0.3,
+            0.3,
+            0.3
+        ]
+    },
+    {
+        "label": "cabinet27",
+        "dimensions_cm": {
+            "length": 116.06,
+            "width": 93.3,
+            "height": 153.27
+        },
+        "bottom_offset_m": 0.8222,
+        "scale": [
+            0.3,
+            0.3,
+            0.3
+        ]
+    },
+    {
+        "label": "cabinet28",
+        "dimensions_cm": {
+            "length": 90.23,
+            "width": 108.92,
+            "height": 156.57
+        },
+        "bottom_offset_m": 0.8305,
+        "scale": [
+            0.3,
+            0.3,
+            0.3
+        ]
+    },
+    {
+        "label": "cabinet29",
+        "dimensions_cm": {
+            "length": 116.24,
+            "width": 81.7,
+            "height": 156.6
+        },
+        "bottom_offset_m": 0.8689,
+        "scale": [
+            0.3,
+            0.3,
+            0.3
+        ]
+    },
+    {
+        "label": "cabinet3",
+        "dimensions_cm": {
+            "length": 110.85,
+            "width": 91.18,
+            "height": 149.79
+        },
+        "bottom_offset_m": 0.7947,
+        "scale": [
+            0.3,
+            0.3,
+            0.3
+        ]
+    },
+    {
+        "label": "cabinet30",
+        "dimensions_cm": {
+            "length": 87.69,
+            "width": 105.81,
+            "height": 152.11
+        },
+        "bottom_offset_m": 0.8294,
+        "scale": [
+            0.3,
+            0.3,
+            0.3
+        ]
+    },
+    {
+        "label": "cabinet4",
+        "dimensions_cm": {
+            "length": 112.72,
+            "width": 79.85,
+            "height": 153.04
+        },
+        "bottom_offset_m": 0.8269,
+        "scale": [
+            0.3,
+            0.3,
+            0.3
+        ]
+    },
+    {
+        "label": "cabinet5",
+        "dimensions_cm": {
+            "length": 90.66,
+            "width": 120.14,
+            "height": 153.51
+        },
+        "bottom_offset_m": 0.8091,
+        "scale": [
+            0.3,
+            0.3,
+            0.3
+        ]
+    },
+    {
+        "label": "cabinet6",
+        "dimensions_cm": {
+            "length": 94.71,
+            "width": 112.94,
+            "height": 162.36
+        },
+        "bottom_offset_m": 0.866,
+        "scale": [
+            0.3,
+            0.3,
+            0.3
+        ]
+    },
+    {
+        "label": "cabinet7",
+        "dimensions_cm": {
+            "length": 123.81,
+            "width": 117.68,
+            "height": 111.2
+        },
+        "bottom_offset_m": 0.5858,
+        "scale": [
+            0.3,
+            0.3,
+            0.3
+        ]
+    },
+    {
+        "label": "cabinet8",
+        "dimensions_cm": {
+            "length": 112.06,
+            "width": 90.08,
+            "height": 147.99
+        },
+        "bottom_offset_m": 0.8019,
+        "scale": [
+            0.3,
+            0.3,
+            0.3
+        ]
+    },
+    {
+        "label": "cabinet9",
+        "dimensions_cm": {
+            "length": 84.7,
+            "width": 103.61,
+            "height": 148.94
+        },
+        "bottom_offset_m": 0.7866,
+        "scale": [
+            0.3,
+            0.3,
+            0.3
+        ]
+    },
+    {
+        "label": "coffeemachine1",
+        "dimensions_cm": {
+            "length": 143.06,
+            "width": 104.22,
+            "height": 137.72
+        },
+        "bottom_offset_m": 0.6834,
+        "scale": [
+            0.3,
+            0.3,
+            0.3
+        ]
+    },
+    {
+        "label": "coffeemachine2",
+        "dimensions_cm": {
+            "length": 109.46,
+            "width": 134.67,
+            "height": 127.76
+        },
+        "bottom_offset_m": 0.6331,
+        "scale": [
+            0.3,
+            0.3,
+            0.3
+        ]
+    },
+    {
+        "label": "coffeemachine3",
+        "dimensions_cm": {
+            "length": 93.58,
+            "width": 145.97,
+            "height": 110.03
+        },
+        "bottom_offset_m": 0.5286,
+        "scale": [
+            0.3,
+            0.3,
+            0.3
+        ]
+    },
+    {
+        "label": "doraemoncup",
+        "dimensions_cm": {
+            "length": 8.72,
+            "width": 8.7,
+            "height": 9.43
+        },
+        "bottom_offset_m": 0.0572,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "green_bellpepper",
+        "dimensions_cm": {
+            "length": 11.19,
+            "width": 11.09,
+            "height": 14.25
+        },
+        "bottom_offset_m": 0.0675,
+        "scale": [
+            0.7,
+            0.7,
+            0.7
+        ]
+    },
+    {
+        "label": "green_cabbage",
+        "dimensions_cm": {
+            "length": 20.02,
+            "width": 19.65,
+            "height": 19.33
+        },
+        "bottom_offset_m": 0.0938,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "green_cube",
+        "dimensions_cm": {
+            "length": 5.0,
+            "width": 5.0,
+            "height": 5.0
+        },
+        "bottom_offset_m": 0.025,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "green_leek",
+        "dimensions_cm": {
+            "length": 29.89,
+            "width": 27.07,
+            "height": 19.7
+        },
+        "bottom_offset_m": 0.0969,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "lid",
+        "dimensions_cm": {
+            "length": 12.33,
+            "width": 12.33,
+            "height": 1.56
+        },
+        "bottom_offset_m": 0.0,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "microwave1",
+        "dimensions_cm": {
+            "length": 62.42,
+            "width": 49.83,
+            "height": 36.12
+        },
+        "bottom_offset_m": 0.1806,
+        "scale": [
+            0.7,
+            0.6,
+            0.7
+        ]
+    },
+    {
+        "label": "microwave2",
+        "dimensions_cm": {
+            "length": 119.8,
+            "width": 155.68,
+            "height": 93.07
+        },
+        "bottom_offset_m": 0.4954,
+        "scale": [
+            0.3,
+            0.3,
+            0.3
+        ]
+    },
+    {
+        "label": "microwave3",
+        "dimensions_cm": {
+            "length": 104.16,
+            "width": 161.9,
+            "height": 91.45
+        },
+        "bottom_offset_m": 0.4465,
+        "scale": [
+            0.3,
+            0.3,
+            0.3
+        ]
+    },
+    {
+        "label": "microwave4",
+        "dimensions_cm": {
+            "length": 82.31,
+            "width": 162.83,
+            "height": 93.29
+        },
+        "bottom_offset_m": 0.4758,
+        "scale": [
+            0.3,
+            0.3,
+            0.3
+        ]
+    },
+    {
+        "label": "microwave5",
+        "dimensions_cm": {
+            "length": 133.28,
+            "width": 131.79,
+            "height": 88.96
+        },
+        "bottom_offset_m": 0.4259,
+        "scale": [
+            0.3,
+            0.3,
+            0.3
+        ]
+    },
+    {
+        "label": "microwave6",
+        "dimensions_cm": {
+            "length": 91.39,
+            "width": 160.3,
+            "height": 90.55
+        },
+        "bottom_offset_m": 0.4343,
+        "scale": [
+            0.3,
+            0.3,
+            0.3
+        ]
+    },
+    {
+        "label": "open_paperbox",
+        "dimensions_cm": {
+            "length": 18.02,
+            "width": 18.02,
+            "height": 10.55
+        },
+        "bottom_offset_m": 0.0557,
+        "scale": [
+            2.0,
+            2.0,
+            1.0
+        ]
+    },
+    {
+        "label": "orange_carrot",
+        "dimensions_cm": {
+            "length": 21.4,
+            "width": 10.03,
+            "height": 4.94
+        },
+        "bottom_offset_m": 0.0264,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "pink_basket",
+        "dimensions_cm": {
+            "length": 16.03,
+            "width": 8.86,
+            "height": 7.46
+        },
+        "bottom_offset_m": 0.0378,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "pink_cup",
+        "dimensions_cm": {
+            "length": 11.68,
+            "width": 8.83,
+            "height": 10.61
+        },
+        "bottom_offset_m": 0.0569,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "pot",
+        "dimensions_cm": {
+            "length": 18.31,
+            "width": 14.37,
+            "height": 9.75
+        },
+        "bottom_offset_m": 0.0553,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "red_apple",
+        "dimensions_cm": {
+            "length": 11.86,
+            "width": 11.56,
+            "height": 11.99
+        },
+        "bottom_offset_m": 0.0476,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "red_bottle",
+        "dimensions_cm": {
+            "length": 41.14,
+            "width": 41.14,
+            "height": 163.92
+        },
+        "bottom_offset_m": 0.6385,
+        "scale": [
+            0.1,
+            0.1,
+            0.1
+        ]
+    },
+    {
+        "label": "red_cheezbox",
+        "dimensions_cm": {
+            "length": 16.4,
+            "width": 21.34,
+            "height": 7.18
+        },
+        "bottom_offset_m": 0.0359,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "red_cube",
+        "dimensions_cm": {
+            "length": 5.0,
+            "width": 5.0,
+            "height": 5.0
+        },
+        "bottom_offset_m": 0.025,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "red_mugcup",
+        "dimensions_cm": {
+            "length": 11.7,
+            "width": 9.31,
+            "height": 8.13
+        },
+        "bottom_offset_m": 0.0407,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "red_soupcan",
+        "dimensions_cm": {
+            "length": 5.41,
+            "width": 5.42,
+            "height": 9.17
+        },
+        "bottom_offset_m": 0.0458,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "starbuckscup",
+        "dimensions_cm": {
+            "length": 8.57,
+            "width": 8.58,
+            "height": 11.75
+        },
+        "bottom_offset_m": 0.0699,
+        "scale": [
+            0.8,
+            0.8,
+            0.8
+        ]
+    },
+    {
+        "label": "steamcolorcup",
+        "dimensions_cm": {
+            "length": 7.66,
+            "width": 7.64,
+            "height": 8.07
+        },
+        "bottom_offset_m": 0.0477,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "toy",
+        "dimensions_cm": {
+            "length": 14.8,
+            "width": 15.07,
+            "height": 25.77
+        },
+        "bottom_offset_m": 0.0722,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "white_100mmcup",
+        "dimensions_cm": {
+            "length": 10.5,
+            "width": 10.49,
+            "height": 8.62
+        },
+        "bottom_offset_m": 0.0487,
+        "scale": [
+            1.2,
+            1.2,
+            1.0
+        ]
+    },
+    {
+        "label": "white_75mmcup",
+        "dimensions_cm": {
+            "length": 7.68,
+            "width": 7.71,
+            "height": 6.97
+        },
+        "bottom_offset_m": 0.0367,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "white_80mmcup",
+        "dimensions_cm": {
+            "length": 8.29,
+            "width": 8.33,
+            "height": 6.52
+        },
+        "bottom_offset_m": 0.0368,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "white_95mmcup",
+        "dimensions_cm": {
+            "length": 10.08,
+            "width": 10.1,
+            "height": 7.6
+        },
+        "bottom_offset_m": 0.0392,
+        "scale": [
+            1.2,
+            1.2,
+            1.0
+        ]
+    },
+    {
+        "label": "white_cup",
+        "dimensions_cm": {
+            "length": 11.59,
+            "width": 8.47,
+            "height": 11.18
+        },
+        "bottom_offset_m": 0.0637,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "white_kettle1",
+        "dimensions_cm": {
+            "length": 135.76,
+            "width": 95.41,
+            "height": 165.26
+        },
+        "bottom_offset_m": 0.653,
+        "scale": [
+            0.15,
+            0.15,
+            0.15
+        ]
+    },
+    {
+        "label": "white_kettle10",
+        "dimensions_cm": {
+            "length": 186.87,
+            "width": 137.52,
+            "height": 89.88
+        },
+        "bottom_offset_m": 0.3729,
+        "scale": [
+            0.15,
+            0.15,
+            0.15
+        ]
+    },
+    {
+        "label": "white_kettle11",
+        "dimensions_cm": {
+            "length": 181.95,
+            "width": 106.87,
+            "height": 113.91
+        },
+        "bottom_offset_m": 0.541,
+        "scale": [
+            0.15,
+            0.15,
+            0.15
+        ]
+    },
+    {
+        "label": "white_kettle12",
+        "dimensions_cm": {
+            "length": 201.06,
+            "width": 123.3,
+            "height": 90.82
+        },
+        "bottom_offset_m": 0.3939,
+        "scale": [
+            0.15,
+            0.15,
+            0.15
+        ]
+    },
+    {
+        "label": "white_kettle13",
+        "dimensions_cm": {
+            "length": 185.39,
+            "width": 130.41,
+            "height": 116.96
+        },
+        "bottom_offset_m": 0.4898,
+        "scale": [
+            0.15,
+            0.15,
+            0.15
+        ]
+    },
+    {
+        "label": "white_kettle14",
+        "dimensions_cm": {
+            "length": 153.87,
+            "width": 96.95,
+            "height": 143.97
+        },
+        "bottom_offset_m": 0.7694,
+        "scale": [
+            0.15,
+            0.15,
+            0.15
+        ]
+    },
+    {
+        "label": "white_kettle15",
+        "dimensions_cm": {
+            "length": 182.06,
+            "width": 121.77,
+            "height": 141.8
+        },
+        "bottom_offset_m": 0.5456,
+        "scale": [
+            0.15,
+            0.15,
+            0.15
+        ]
+    },
+    {
+        "label": "white_kettle2",
+        "dimensions_cm": {
+            "length": 169.59,
+            "width": 74.72,
+            "height": 164.35
+        },
+        "bottom_offset_m": 0.7548,
+        "scale": [
+            0.15,
+            0.15,
+            0.15
+        ]
+    },
+    {
+        "label": "white_kettle3",
+        "dimensions_cm": {
+            "length": 190.91,
+            "width": 116.63,
+            "height": 98.96
+        },
+        "bottom_offset_m": 0.4115,
+        "scale": [
+            0.15,
+            0.15,
+            0.15
+        ]
+    },
+    {
+        "label": "white_kettle4",
+        "dimensions_cm": {
+            "length": 135.42,
+            "width": 118.84,
+            "height": 119.17
+        },
+        "bottom_offset_m": 0.3072,
+        "scale": [
+            0.15,
+            0.15,
+            0.15
+        ]
+    },
+    {
+        "label": "white_kettle5",
+        "dimensions_cm": {
+            "length": 153.56,
+            "width": 137.88,
+            "height": 135.68
+        },
+        "bottom_offset_m": 0.3232,
+        "scale": [
+            0.15,
+            0.15,
+            0.15
+        ]
+    },
+    {
+        "label": "white_kettle6",
+        "dimensions_cm": {
+            "length": 153.83,
+            "width": 90.08,
+            "height": 134.18
+        },
+        "bottom_offset_m": 0.4928,
+        "scale": [
+            0.15,
+            0.15,
+            0.15
+        ]
+    },
+    {
+        "label": "white_kettle7",
+        "dimensions_cm": {
+            "length": 131.58,
+            "width": 93.21,
+            "height": 145.13
+        },
+        "bottom_offset_m": 0.456,
+        "scale": [
+            0.15,
+            0.15,
+            0.15
+        ]
+    },
+    {
+        "label": "white_kettle8",
+        "dimensions_cm": {
+            "length": 122.97,
+            "width": 83.39,
+            "height": 141.15
+        },
+        "bottom_offset_m": 0.476,
+        "scale": [
+            0.15,
+            0.15,
+            0.15
+        ]
+    },
+    {
+        "label": "white_kettle9",
+        "dimensions_cm": {
+            "length": 198.68,
+            "width": 123.63,
+            "height": 97.36
+        },
+        "bottom_offset_m": 0.416,
+        "scale": [
+            0.15,
+            0.15,
+            0.15
+        ]
+    },
+    {
+        "label": "white_pan",
+        "dimensions_cm": {
+            "length": 38.13,
+            "width": 21.87,
+            "height": 10.25
+        },
+        "bottom_offset_m": 0.0412,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "white_papercup1",
+        "dimensions_cm": {
+            "length": 7.87,
+            "width": 7.87,
+            "height": 9.45
+        },
+        "bottom_offset_m": 0.0377,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "white_papercup2",
+        "dimensions_cm": {
+            "length": 7.87,
+            "width": 7.87,
+            "height": 9.45
+        },
+        "bottom_offset_m": 0.0377,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "white_papercup3",
+        "dimensions_cm": {
+            "length": 7.87,
+            "width": 7.87,
+            "height": 9.45
+        },
+        "bottom_offset_m": 0.0377,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "white_plate",
+        "dimensions_cm": {
+            "length": 26.77,
+            "width": 26.77,
+            "height": 5.89
+        },
+        "bottom_offset_m": 0.0252,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "white_scrubbottle",
+        "dimensions_cm": {
+            "length": 10.24,
+            "width": 6.77,
+            "height": 25.06
+        },
+        "bottom_offset_m": 0.1253,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "wood_cuttingboard",
+        "dimensions_cm": {
+            "length": 40.0,
+            "width": 30.0,
+            "height": 3.0
+        },
+        "bottom_offset_m": 0.015,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "wood_rack",
+        "dimensions_cm": {
+            "length": 19.51,
+            "width": 11.43,
+            "height": 38.74
+        },
+        "bottom_offset_m": 0.0063,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "wood_spacerblock",
+        "dimensions_cm": {
+            "length": 15.0,
+            "width": 15.0,
+            "height": 10.0
+        },
+        "bottom_offset_m": 0.05,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "yellow_banana",
+        "dimensions_cm": {
+            "length": 19.72,
+            "width": 7.41,
+            "height": 3.86
+        },
+        "bottom_offset_m": 0.0193,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "yellow_bigbowl",
+        "dimensions_cm": {
+            "length": 18.82,
+            "width": 18.74,
+            "height": 8.17
+        },
+        "bottom_offset_m": 0.0504,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "yellow_bowl",
+        "dimensions_cm": {
+            "length": 16.12,
+            "width": 16.15,
+            "height": 5.5
+        },
+        "bottom_offset_m": 0.0275,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "yellow_cube",
+        "dimensions_cm": {
+            "length": 5.0,
+            "width": 5.0,
+            "height": 5.0
+        },
+        "bottom_offset_m": 0.025,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "yellow_mustardbottle",
+        "dimensions_cm": {
+            "length": 5.82,
+            "width": 9.6,
+            "height": 19.13
+        },
+        "bottom_offset_m": 0.0957,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "yellow_pumpkin",
+        "dimensions_cm": {
+            "length": 19.11,
+            "width": 19.11,
+            "height": 32.8
+        },
+        "bottom_offset_m": 0.1722,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "yellow_sugarbox",
+        "dimensions_cm": {
+            "length": 9.27,
+            "width": 17.63,
+            "height": 4.51
+        },
+        "bottom_offset_m": 0.0226,
+        "scale": [
+            0.7,
+            0.7,
+            0.7
+        ]
+    },
+    {
+        "label": "orange",
+        "dimensions_cm": {
+            "length": 683.38,
+            "width": 567.27,
+            "height": 671.54
+        },
+        "bottom_offset_m": 3.3641,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "pepper",
+        "dimensions_cm": {
+            "length": 1566.24,
+            "width": 360.91,
+            "height": 345.73
+        },
+        "bottom_offset_m": 1.8081,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "red_bigbowl",
+        "dimensions_cm": {
+            "length": 18.82,
+            "width": 18.74,
+            "height": 8.17
+        },
+        "bottom_offset_m": 0.0504,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "knife1",
+        "dimensions_cm": {
+            "length": 17.71,
+            "width": 3.61,
+            "height": 0.83
+        },
+        "bottom_offset_m": 0.0041,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "knife10",
+        "dimensions_cm": {
+            "length": 16.93,
+            "width": 3.05,
+            "height": 1.57
+        },
+        "bottom_offset_m": 0.0078,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "knife11",
+        "dimensions_cm": {
+            "length": 20.7,
+            "width": 7.05,
+            "height": 1.47
+        },
+        "bottom_offset_m": 0.0075,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "knife12",
+        "dimensions_cm": {
+            "length": 19.26,
+            "width": 7.18,
+            "height": 1.8
+        },
+        "bottom_offset_m": 0.0091,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "knife13",
+        "dimensions_cm": {
+            "length": 14.0,
+            "width": 4.2,
+            "height": 11.52
+        },
+        "bottom_offset_m": 0.0162,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "knife14",
+        "dimensions_cm": {
+            "length": 17.89,
+            "width": 4.25,
+            "height": 2.03
+        },
+        "bottom_offset_m": 0.0081,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "knife15",
+        "dimensions_cm": {
+            "length": 20.94,
+            "width": 7.1,
+            "height": 1.49
+        },
+        "bottom_offset_m": 0.0069,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "knife16",
+        "dimensions_cm": {
+            "length": 16.34,
+            "width": 11.09,
+            "height": 2.07
+        },
+        "bottom_offset_m": 0.0114,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "knife17",
+        "dimensions_cm": {
+            "length": 16.54,
+            "width": 2.85,
+            "height": 1.39
+        },
+        "bottom_offset_m": 0.007,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "knife18",
+        "dimensions_cm": {
+            "length": 18.78,
+            "width": 11.03,
+            "height": 1.88
+        },
+        "bottom_offset_m": 0.0098,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "knife19",
+        "dimensions_cm": {
+            "length": 18.4,
+            "width": 11.29,
+            "height": 2.54
+        },
+        "bottom_offset_m": 0.0128,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "knife2",
+        "dimensions_cm": {
+            "length": 16.62,
+            "width": 3.47,
+            "height": 1.62
+        },
+        "bottom_offset_m": 0.0106,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "knife20",
+        "dimensions_cm": {
+            "length": 14.96,
+            "width": 17.92,
+            "height": 2.61
+        },
+        "bottom_offset_m": 0.0128,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "knife21",
+        "dimensions_cm": {
+            "length": 17.74,
+            "width": 1.61,
+            "height": 1.17
+        },
+        "bottom_offset_m": 0.0059,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "knife22",
+        "dimensions_cm": {
+            "length": 16.42,
+            "width": 5.94,
+            "height": 1.27
+        },
+        "bottom_offset_m": 0.0051,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "knife23",
+        "dimensions_cm": {
+            "length": 19.63,
+            "width": 3.35,
+            "height": 1.6
+        },
+        "bottom_offset_m": 0.0041,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "knife24",
+        "dimensions_cm": {
+            "length": 16.23,
+            "width": 2.23,
+            "height": 1.15
+        },
+        "bottom_offset_m": 0.0062,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "knife25",
+        "dimensions_cm": {
+            "length": 19.96,
+            "width": 4.41,
+            "height": 1.14
+        },
+        "bottom_offset_m": 0.0057,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "knife26",
+        "dimensions_cm": {
+            "length": 16.33,
+            "width": 1.89,
+            "height": 0.51
+        },
+        "bottom_offset_m": 0.0024,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "knife27",
+        "dimensions_cm": {
+            "length": 17.71,
+            "width": 2.29,
+            "height": 0.81
+        },
+        "bottom_offset_m": 0.0039,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "knife28",
+        "dimensions_cm": {
+            "length": 20.27,
+            "width": 4.75,
+            "height": 1.61
+        },
+        "bottom_offset_m": 0.0081,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "knife29",
+        "dimensions_cm": {
+            "length": 17.14,
+            "width": 2.91,
+            "height": 0.91
+        },
+        "bottom_offset_m": 0.0032,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "knife3",
+        "dimensions_cm": {
+            "length": 18.76,
+            "width": 1.95,
+            "height": 0.75
+        },
+        "bottom_offset_m": 0.0028,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "knife30",
+        "dimensions_cm": {
+            "length": 17.59,
+            "width": 1.95,
+            "height": 0.88
+        },
+        "bottom_offset_m": 0.0036,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "knife31",
+        "dimensions_cm": {
+            "length": 17.38,
+            "width": 2.78,
+            "height": 0.93
+        },
+        "bottom_offset_m": 0.0046,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "knife32",
+        "dimensions_cm": {
+            "length": 16.41,
+            "width": 3.05,
+            "height": 1.28
+        },
+        "bottom_offset_m": 0.008,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "knife33",
+        "dimensions_cm": {
+            "length": 18.02,
+            "width": 4.15,
+            "height": 2.57
+        },
+        "bottom_offset_m": 0.0108,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "knife34",
+        "dimensions_cm": {
+            "length": 18.62,
+            "width": 2.88,
+            "height": 1.97
+        },
+        "bottom_offset_m": 0.0098,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "knife35",
+        "dimensions_cm": {
+            "length": 17.14,
+            "width": 2.31,
+            "height": 0.77
+        },
+        "bottom_offset_m": 0.0039,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "knife36",
+        "dimensions_cm": {
+            "length": 17.27,
+            "width": 3.48,
+            "height": 0.87
+        },
+        "bottom_offset_m": 0.0044,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "knife37",
+        "dimensions_cm": {
+            "length": 17.28,
+            "width": 4.23,
+            "height": 2.34
+        },
+        "bottom_offset_m": 0.0141,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "knife38",
+        "dimensions_cm": {
+            "length": 19.2,
+            "width": 2.72,
+            "height": 1.22
+        },
+        "bottom_offset_m": 0.0051,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "knife39",
+        "dimensions_cm": {
+            "length": 19.07,
+            "width": 5.26,
+            "height": 0.95
+        },
+        "bottom_offset_m": 0.0034,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "knife4",
+        "dimensions_cm": {
+            "length": 18.24,
+            "width": 4.21,
+            "height": 1.84
+        },
+        "bottom_offset_m": 0.0073,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "knife40",
+        "dimensions_cm": {
+            "length": 20.38,
+            "width": 1.85,
+            "height": 1.3
+        },
+        "bottom_offset_m": 0.0064,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "knife41",
+        "dimensions_cm": {
+            "length": 18.9,
+            "width": 6.26,
+            "height": 2.64
+        },
+        "bottom_offset_m": 0.0155,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "knife42",
+        "dimensions_cm": {
+            "length": 17.09,
+            "width": 2.72,
+            "height": 0.78
+        },
+        "bottom_offset_m": 0.0038,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "knife43",
+        "dimensions_cm": {
+            "length": 20.79,
+            "width": 6.08,
+            "height": 3.06
+        },
+        "bottom_offset_m": 0.0146,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "knife44",
+        "dimensions_cm": {
+            "length": 19.15,
+            "width": 13.05,
+            "height": 1.28
+        },
+        "bottom_offset_m": 0.0075,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "knife5",
+        "dimensions_cm": {
+            "length": 20.38,
+            "width": 2.89,
+            "height": 1.61
+        },
+        "bottom_offset_m": 0.0059,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "knife6",
+        "dimensions_cm": {
+            "length": 18.39,
+            "width": 12.74,
+            "height": 1.84
+        },
+        "bottom_offset_m": 0.0089,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "knife7",
+        "dimensions_cm": {
+            "length": 17.47,
+            "width": 8.27,
+            "height": 0.86
+        },
+        "bottom_offset_m": 0.0039,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "knife8",
+        "dimensions_cm": {
+            "length": 15.47,
+            "width": 2.68,
+            "height": 1.53
+        },
+        "bottom_offset_m": 0.0065,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "knife9",
+        "dimensions_cm": {
+            "length": 19.2,
+            "width": 2.63,
+            "height": 1.35
+        },
+        "bottom_offset_m": 0.0043,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "lamp1",
+        "dimensions_cm": {
+            "length": 34.74,
+            "width": 8.06,
+            "height": 35.14
+        },
+        "bottom_offset_m": 0.1915,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "lamp10",
+        "dimensions_cm": {
+            "length": 41.09,
+            "width": 12.41,
+            "height": 31.59
+        },
+        "bottom_offset_m": 0.1541,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "lamp11",
+        "dimensions_cm": {
+            "length": 42.73,
+            "width": 11.11,
+            "height": 31.41
+        },
+        "bottom_offset_m": 0.1519,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "lamp12",
+        "dimensions_cm": {
+            "length": 37.77,
+            "width": 9.22,
+            "height": 21.54
+        },
+        "bottom_offset_m": 0.0903,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "lamp13",
+        "dimensions_cm": {
+            "length": 20.06,
+            "width": 14.69,
+            "height": 35.4
+        },
+        "bottom_offset_m": 0.2295,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "lamp14",
+        "dimensions_cm": {
+            "length": 29.79,
+            "width": 7.57,
+            "height": 34.39
+        },
+        "bottom_offset_m": 0.202,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "lamp15",
+        "dimensions_cm": {
+            "length": 25.17,
+            "width": 27.47,
+            "height": 41.38
+        },
+        "bottom_offset_m": 0.2213,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "lamp16",
+        "dimensions_cm": {
+            "length": 30.32,
+            "width": 9.74,
+            "height": 36.3
+        },
+        "bottom_offset_m": 0.1691,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "lamp17",
+        "dimensions_cm": {
+            "length": 30.85,
+            "width": 23.98,
+            "height": 42.73
+        },
+        "bottom_offset_m": 0.2041,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "lamp18",
+        "dimensions_cm": {
+            "length": 13.62,
+            "width": 7.6,
+            "height": 17.66
+        },
+        "bottom_offset_m": 0.0876,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "lamp19",
+        "dimensions_cm": {
+            "length": 13.04,
+            "width": 7.6,
+            "height": 38.5
+        },
+        "bottom_offset_m": 0.2425,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "lamp2",
+        "dimensions_cm": {
+            "length": 16.15,
+            "width": 16.15,
+            "height": 32.32
+        },
+        "bottom_offset_m": 0.074,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "lamp20",
+        "dimensions_cm": {
+            "length": 12.65,
+            "width": 6.77,
+            "height": 39.51
+        },
+        "bottom_offset_m": 0.1466,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "lamp21",
+        "dimensions_cm": {
+            "length": 21.11,
+            "width": 10.41,
+            "height": 34.32
+        },
+        "bottom_offset_m": 0.1148,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "lamp22",
+        "dimensions_cm": {
+            "length": 33.73,
+            "width": 15.45,
+            "height": 40.49
+        },
+        "bottom_offset_m": 0.1881,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "lamp23",
+        "dimensions_cm": {
+            "length": 26.04,
+            "width": 18.69,
+            "height": 36.57
+        },
+        "bottom_offset_m": 0.1961,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "lamp24",
+        "dimensions_cm": {
+            "length": 34.99,
+            "width": 11.73,
+            "height": 42.38
+        },
+        "bottom_offset_m": 0.1925,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "lamp25",
+        "dimensions_cm": {
+            "length": 20.47,
+            "width": 11.91,
+            "height": 20.01
+        },
+        "bottom_offset_m": 0.0823,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "lamp26",
+        "dimensions_cm": {
+            "length": 27.39,
+            "width": 10.77,
+            "height": 27.35
+        },
+        "bottom_offset_m": 0.0889,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "lamp27",
+        "dimensions_cm": {
+            "length": 34.59,
+            "width": 9.68,
+            "height": 27.28
+        },
+        "bottom_offset_m": 0.1055,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "lamp28",
+        "dimensions_cm": {
+            "length": 28.93,
+            "width": 8.01,
+            "height": 36.29
+        },
+        "bottom_offset_m": 0.1557,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "lamp29",
+        "dimensions_cm": {
+            "length": 44.21,
+            "width": 3.13,
+            "height": 23.24
+        },
+        "bottom_offset_m": 0.1773,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "lamp3",
+        "dimensions_cm": {
+            "length": 14.56,
+            "width": 11.97,
+            "height": 20.69
+        },
+        "bottom_offset_m": 0.1232,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "lamp30",
+        "dimensions_cm": {
+            "length": 33.82,
+            "width": 9.13,
+            "height": 40.14
+        },
+        "bottom_offset_m": 0.1605,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "lamp31",
+        "dimensions_cm": {
+            "length": 13.4,
+            "width": 7.47,
+            "height": 43.14
+        },
+        "bottom_offset_m": 0.1916,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "lamp32",
+        "dimensions_cm": {
+            "length": 23.87,
+            "width": 14.05,
+            "height": 39.05
+        },
+        "bottom_offset_m": 0.2225,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "lamp33",
+        "dimensions_cm": {
+            "length": 11.08,
+            "width": 6.12,
+            "height": 41.68
+        },
+        "bottom_offset_m": 0.2509,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "lamp34",
+        "dimensions_cm": {
+            "length": 20.97,
+            "width": 5.89,
+            "height": 38.78
+        },
+        "bottom_offset_m": 0.1603,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "lamp35",
+        "dimensions_cm": {
+            "length": 21.9,
+            "width": 9.43,
+            "height": 28.34
+        },
+        "bottom_offset_m": 0.1138,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "lamp36",
+        "dimensions_cm": {
+            "length": 28.79,
+            "width": 14.34,
+            "height": 46.1
+        },
+        "bottom_offset_m": 0.218,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "lamp37",
+        "dimensions_cm": {
+            "length": 18.96,
+            "width": 8.17,
+            "height": 32.59
+        },
+        "bottom_offset_m": 0.2469,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "lamp38",
+        "dimensions_cm": {
+            "length": 33.18,
+            "width": 11.32,
+            "height": 19.77
+        },
+        "bottom_offset_m": 0.1093,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "lamp39",
+        "dimensions_cm": {
+            "length": 20.31,
+            "width": 34.75,
+            "height": 40.21
+        },
+        "bottom_offset_m": 0.2081,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "lamp4",
+        "dimensions_cm": {
+            "length": 14.49,
+            "width": 26.55,
+            "height": 44.58
+        },
+        "bottom_offset_m": 0.2155,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "lamp40",
+        "dimensions_cm": {
+            "length": 24.3,
+            "width": 20.51,
+            "height": 33.79
+        },
+        "bottom_offset_m": 0.194,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "lamp41",
+        "dimensions_cm": {
+            "length": 32.05,
+            "width": 13.83,
+            "height": 37.68
+        },
+        "bottom_offset_m": 0.2027,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "lamp42",
+        "dimensions_cm": {
+            "length": 29.06,
+            "width": 7.53,
+            "height": 27.39
+        },
+        "bottom_offset_m": 0.0933,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "lamp43",
+        "dimensions_cm": {
+            "length": 38.71,
+            "width": 12.29,
+            "height": 37.03
+        },
+        "bottom_offset_m": 0.1947,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "lamp44",
+        "dimensions_cm": {
+            "length": 18.78,
+            "width": 7.18,
+            "height": 41.77
+        },
+        "bottom_offset_m": 0.234,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "lamp45",
+        "dimensions_cm": {
+            "length": 11.83,
+            "width": 21.3,
+            "height": 39.38
+        },
+        "bottom_offset_m": 0.2428,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "lamp5",
+        "dimensions_cm": {
+            "length": 25.69,
+            "width": 10.07,
+            "height": 38.73
+        },
+        "bottom_offset_m": 0.2304,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "lamp6",
+        "dimensions_cm": {
+            "length": 19.92,
+            "width": 19.92,
+            "height": 48.9
+        },
+        "bottom_offset_m": 0.2476,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "lamp7",
+        "dimensions_cm": {
+            "length": 7.01,
+            "width": 7.01,
+            "height": 29.76
+        },
+        "bottom_offset_m": 0.042,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "lamp8",
+        "dimensions_cm": {
+            "length": 19.72,
+            "width": 10.49,
+            "height": 43.3
+        },
+        "bottom_offset_m": 0.2389,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "lamp9",
+        "dimensions_cm": {
+            "length": 13.79,
+            "width": 5.59,
+            "height": 42.09
+        },
+        "bottom_offset_m": 0.1866,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "pen1",
+        "dimensions_cm": {
+            "length": 1.47,
+            "width": 19.88,
+            "height": 1.13
+        },
+        "bottom_offset_m": 0.0058,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "pen10",
+        "dimensions_cm": {
+            "length": 1.49,
+            "width": 17.89,
+            "height": 1.35
+        },
+        "bottom_offset_m": 0.0069,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "pen11",
+        "dimensions_cm": {
+            "length": 1.52,
+            "width": 18.77,
+            "height": 1.52
+        },
+        "bottom_offset_m": 0.0074,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "pen12",
+        "dimensions_cm": {
+            "length": 1.82,
+            "width": 18.55,
+            "height": 1.15
+        },
+        "bottom_offset_m": 0.0056,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "pen13",
+        "dimensions_cm": {
+            "length": 1.29,
+            "width": 19.76,
+            "height": 1.17
+        },
+        "bottom_offset_m": 0.0057,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "pen14",
+        "dimensions_cm": {
+            "length": 1.27,
+            "width": 19.82,
+            "height": 1.12
+        },
+        "bottom_offset_m": 0.0054,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "pen15",
+        "dimensions_cm": {
+            "length": 1.58,
+            "width": 17.73,
+            "height": 1.08
+        },
+        "bottom_offset_m": 0.0053,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "pen16",
+        "dimensions_cm": {
+            "length": 2.86,
+            "width": 18.5,
+            "height": 2.86
+        },
+        "bottom_offset_m": 0.0142,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "pen17",
+        "dimensions_cm": {
+            "length": 0.99,
+            "width": 17.95,
+            "height": 0.87
+        },
+        "bottom_offset_m": 0.0042,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "pen18",
+        "dimensions_cm": {
+            "length": 3.97,
+            "width": 19.61,
+            "height": 3.97
+        },
+        "bottom_offset_m": 0.0205,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "pen19",
+        "dimensions_cm": {
+            "length": 1.78,
+            "width": 18.28,
+            "height": 1.35
+        },
+        "bottom_offset_m": 0.0066,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "pen2",
+        "dimensions_cm": {
+            "length": 1.69,
+            "width": 18.79,
+            "height": 1.23
+        },
+        "bottom_offset_m": 0.0061,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "pen20",
+        "dimensions_cm": {
+            "length": 1.56,
+            "width": 17.2,
+            "height": 1.41
+        },
+        "bottom_offset_m": 0.007,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "pen21",
+        "dimensions_cm": {
+            "length": 1.3,
+            "width": 18.57,
+            "height": 1.18
+        },
+        "bottom_offset_m": 0.006,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "pen22",
+        "dimensions_cm": {
+            "length": 1.36,
+            "width": 19.57,
+            "height": 1.12
+        },
+        "bottom_offset_m": 0.0055,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "pen23",
+        "dimensions_cm": {
+            "length": 2.32,
+            "width": 18.41,
+            "height": 1.9
+        },
+        "bottom_offset_m": 0.0098,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "pen24",
+        "dimensions_cm": {
+            "length": 1.37,
+            "width": 18.71,
+            "height": 1.11
+        },
+        "bottom_offset_m": 0.0057,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "pen25",
+        "dimensions_cm": {
+            "length": 1.09,
+            "width": 18.98,
+            "height": 0.83
+        },
+        "bottom_offset_m": 0.0041,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "pen26",
+        "dimensions_cm": {
+            "length": 3.09,
+            "width": 18.75,
+            "height": 2.61
+        },
+        "bottom_offset_m": 0.0131,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "pen27",
+        "dimensions_cm": {
+            "length": 1.77,
+            "width": 17.18,
+            "height": 1.61
+        },
+        "bottom_offset_m": 0.0088,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "pen28",
+        "dimensions_cm": {
+            "length": 1.33,
+            "width": 19.02,
+            "height": 1.25
+        },
+        "bottom_offset_m": 0.0063,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "pen29",
+        "dimensions_cm": {
+            "length": 1.8,
+            "width": 18.59,
+            "height": 1.14
+        },
+        "bottom_offset_m": 0.0056,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "pen3",
+        "dimensions_cm": {
+            "length": 2.55,
+            "width": 19.55,
+            "height": 1.75
+        },
+        "bottom_offset_m": 0.0086,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "pen30",
+        "dimensions_cm": {
+            "length": 2.57,
+            "width": 20.22,
+            "height": 2.21
+        },
+        "bottom_offset_m": 0.011,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "pen31",
+        "dimensions_cm": {
+            "length": 1.64,
+            "width": 17.7,
+            "height": 2.19
+        },
+        "bottom_offset_m": 0.0117,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "pen32",
+        "dimensions_cm": {
+            "length": 1.92,
+            "width": 18.61,
+            "height": 1.69
+        },
+        "bottom_offset_m": 0.0085,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "pen33",
+        "dimensions_cm": {
+            "length": 1.99,
+            "width": 19.55,
+            "height": 1.51
+        },
+        "bottom_offset_m": 0.0073,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "pen34",
+        "dimensions_cm": {
+            "length": 1.4,
+            "width": 19.5,
+            "height": 1.15
+        },
+        "bottom_offset_m": 0.0057,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "pen35",
+        "dimensions_cm": {
+            "length": 1.49,
+            "width": 18.71,
+            "height": 1.09
+        },
+        "bottom_offset_m": 0.0053,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "pen36",
+        "dimensions_cm": {
+            "length": 1.55,
+            "width": 20.05,
+            "height": 1.32
+        },
+        "bottom_offset_m": 0.0065,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "pen37",
+        "dimensions_cm": {
+            "length": 1.3,
+            "width": 18.99,
+            "height": 1.1
+        },
+        "bottom_offset_m": 0.0059,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "pen38",
+        "dimensions_cm": {
+            "length": 2.02,
+            "width": 17.07,
+            "height": 1.76
+        },
+        "bottom_offset_m": 0.0089,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "pen39",
+        "dimensions_cm": {
+            "length": 2.05,
+            "width": 17.82,
+            "height": 1.79
+        },
+        "bottom_offset_m": 0.0089,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "pen4",
+        "dimensions_cm": {
+            "length": 1.93,
+            "width": 18.29,
+            "height": 1.67
+        },
+        "bottom_offset_m": 0.0084,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "pen40",
+        "dimensions_cm": {
+            "length": 2.6,
+            "width": 19.26,
+            "height": 1.78
+        },
+        "bottom_offset_m": 0.0087,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "pen41",
+        "dimensions_cm": {
+            "length": 1.73,
+            "width": 17.98,
+            "height": 1.33
+        },
+        "bottom_offset_m": 0.0066,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "pen42",
+        "dimensions_cm": {
+            "length": 1.47,
+            "width": 19.23,
+            "height": 1.35
+        },
+        "bottom_offset_m": 0.0069,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "pen43",
+        "dimensions_cm": {
+            "length": 1.04,
+            "width": 19.63,
+            "height": 0.82
+        },
+        "bottom_offset_m": 0.0041,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "pen44",
+        "dimensions_cm": {
+            "length": 1.76,
+            "width": 18.99,
+            "height": 1.4
+        },
+        "bottom_offset_m": 0.0069,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "pen45",
+        "dimensions_cm": {
+            "length": 3.19,
+            "width": 19.54,
+            "height": 2.24
+        },
+        "bottom_offset_m": 0.0112,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "pen46",
+        "dimensions_cm": {
+            "length": 1.84,
+            "width": 19.23,
+            "height": 1.84
+        },
+        "bottom_offset_m": 0.0094,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "pen47",
+        "dimensions_cm": {
+            "length": 2.03,
+            "width": 19.28,
+            "height": 1.31
+        },
+        "bottom_offset_m": 0.0064,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "pen48",
+        "dimensions_cm": {
+            "length": 1.91,
+            "width": 20.24,
+            "height": 1.59
+        },
+        "bottom_offset_m": 0.0079,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "pen5",
+        "dimensions_cm": {
+            "length": 1.58,
+            "width": 19.26,
+            "height": 1.05
+        },
+        "bottom_offset_m": 0.0054,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "pen6",
+        "dimensions_cm": {
+            "length": 1.55,
+            "width": 20.02,
+            "height": 1.26
+        },
+        "bottom_offset_m": 0.0062,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "pen7",
+        "dimensions_cm": {
+            "length": 1.74,
+            "width": 17.44,
+            "height": 1.16
+        },
+        "bottom_offset_m": 0.0058,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "pen8",
+        "dimensions_cm": {
+            "length": 3.64,
+            "width": 19.59,
+            "height": 3.64
+        },
+        "bottom_offset_m": 0.0188,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "pen9",
+        "dimensions_cm": {
+            "length": 2.84,
+            "width": 19.36,
+            "height": 2.84
+        },
+        "bottom_offset_m": 0.0143,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "globe1",
+        "dimensions_cm": {
+            "length": 23.06,
+            "width": 23.06,
+            "height": 25.61
+        },
+        "bottom_offset_m": 0.0945,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "globe10",
+        "dimensions_cm": {
+            "length": 28.98,
+            "width": 28.16,
+            "height": 35.37
+        },
+        "bottom_offset_m": 0.1956,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "globe11",
+        "dimensions_cm": {
+            "length": 27.98,
+            "width": 24.94,
+            "height": 35.8
+        },
+        "bottom_offset_m": 0.1634,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "globe12",
+        "dimensions_cm": {
+            "length": 20.15,
+            "width": 18.61,
+            "height": 34.99
+        },
+        "bottom_offset_m": 0.1763,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "globe13",
+        "dimensions_cm": {
+            "length": 27.97,
+            "width": 26.23,
+            "height": 35.7
+        },
+        "bottom_offset_m": 0.1564,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "globe14",
+        "dimensions_cm": {
+            "length": 31.06,
+            "width": 25.27,
+            "height": 36.34
+        },
+        "bottom_offset_m": 0.1698,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "globe15",
+        "dimensions_cm": {
+            "length": 29.23,
+            "width": 28.43,
+            "height": 36.13
+        },
+        "bottom_offset_m": 0.1923,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "globe16",
+        "dimensions_cm": {
+            "length": 28.27,
+            "width": 25.2,
+            "height": 36.18
+        },
+        "bottom_offset_m": 0.1684,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "globe17",
+        "dimensions_cm": {
+            "length": 24.38,
+            "width": 22.06,
+            "height": 36.3
+        },
+        "bottom_offset_m": 0.1858,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "globe18",
+        "dimensions_cm": {
+            "length": 21.81,
+            "width": 26.2,
+            "height": 32.79
+        },
+        "bottom_offset_m": 0.1706,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "globe19",
+        "dimensions_cm": {
+            "length": 30.61,
+            "width": 28.32,
+            "height": 31.46
+        },
+        "bottom_offset_m": 0.1128,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "globe2",
+        "dimensions_cm": {
+            "length": 27.67,
+            "width": 23.47,
+            "height": 35.55
+        },
+        "bottom_offset_m": 0.1524,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "globe20",
+        "dimensions_cm": {
+            "length": 29.92,
+            "width": 28.63,
+            "height": 35.78
+        },
+        "bottom_offset_m": 0.1935,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "globe21",
+        "dimensions_cm": {
+            "length": 25.9,
+            "width": 25.26,
+            "height": 30.69
+        },
+        "bottom_offset_m": 0.1618,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "globe22",
+        "dimensions_cm": {
+            "length": 27.32,
+            "width": 24.35,
+            "height": 34.96
+        },
+        "bottom_offset_m": 0.1666,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "globe23",
+        "dimensions_cm": {
+            "length": 26.08,
+            "width": 26.08,
+            "height": 28.37
+        },
+        "bottom_offset_m": 0.1606,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "globe24",
+        "dimensions_cm": {
+            "length": 32.68,
+            "width": 28.71,
+            "height": 36.64
+        },
+        "bottom_offset_m": 0.1958,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "globe25",
+        "dimensions_cm": {
+            "length": 27.56,
+            "width": 24.57,
+            "height": 35.27
+        },
+        "bottom_offset_m": 0.1661,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "globe26",
+        "dimensions_cm": {
+            "length": 30.15,
+            "width": 28.57,
+            "height": 32.03
+        },
+        "bottom_offset_m": 0.1427,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "globe27",
+        "dimensions_cm": {
+            "length": 33.65,
+            "width": 29.72,
+            "height": 38.31
+        },
+        "bottom_offset_m": 0.1934,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "globe28",
+        "dimensions_cm": {
+            "length": 30.69,
+            "width": 30.69,
+            "height": 31.58
+        },
+        "bottom_offset_m": 0.1472,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "globe29",
+        "dimensions_cm": {
+            "length": 19.08,
+            "width": 17.63,
+            "height": 33.15
+        },
+        "bottom_offset_m": 0.1794,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "globe3",
+        "dimensions_cm": {
+            "length": 26.78,
+            "width": 23.87,
+            "height": 34.26
+        },
+        "bottom_offset_m": 0.1603,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "globe30",
+        "dimensions_cm": {
+            "length": 24.86,
+            "width": 23.1,
+            "height": 35.35
+        },
+        "bottom_offset_m": 0.1847,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "globe31",
+        "dimensions_cm": {
+            "length": 28.53,
+            "width": 25.43,
+            "height": 36.5
+        },
+        "bottom_offset_m": 0.1677,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "globe32",
+        "dimensions_cm": {
+            "length": 29.09,
+            "width": 24.69,
+            "height": 36.2
+        },
+        "bottom_offset_m": 0.169,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "globe33",
+        "dimensions_cm": {
+            "length": 27.58,
+            "width": 24.58,
+            "height": 35.29
+        },
+        "bottom_offset_m": 0.1619,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "globe34",
+        "dimensions_cm": {
+            "length": 29.63,
+            "width": 27.58,
+            "height": 37.72
+        },
+        "bottom_offset_m": 0.1823,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "globe35",
+        "dimensions_cm": {
+            "length": 29.14,
+            "width": 28.47,
+            "height": 35.82
+        },
+        "bottom_offset_m": 0.1952,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "globe36",
+        "dimensions_cm": {
+            "length": 29.51,
+            "width": 28.16,
+            "height": 35.51
+        },
+        "bottom_offset_m": 0.195,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "globe37",
+        "dimensions_cm": {
+            "length": 26.41,
+            "width": 24.18,
+            "height": 35.87
+        },
+        "bottom_offset_m": 0.1925,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "globe38",
+        "dimensions_cm": {
+            "length": 24.14,
+            "width": 24.11,
+            "height": 30.04
+        },
+        "bottom_offset_m": 0.1629,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "globe39",
+        "dimensions_cm": {
+            "length": 19.24,
+            "width": 20.16,
+            "height": 28.66
+        },
+        "bottom_offset_m": 0.1714,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "globe4",
+        "dimensions_cm": {
+            "length": 24.41,
+            "width": 21.55,
+            "height": 35.69
+        },
+        "bottom_offset_m": 0.1807,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "globe40",
+        "dimensions_cm": {
+            "length": 26.36,
+            "width": 26.6,
+            "height": 32.76
+        },
+        "bottom_offset_m": 0.1674,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "globe41",
+        "dimensions_cm": {
+            "length": 19.13,
+            "width": 17.67,
+            "height": 33.23
+        },
+        "bottom_offset_m": 0.1755,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "globe42",
+        "dimensions_cm": {
+            "length": 23.25,
+            "width": 22.08,
+            "height": 36.94
+        },
+        "bottom_offset_m": 0.1875,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "globe43",
+        "dimensions_cm": {
+            "length": 29.41,
+            "width": 28.12,
+            "height": 35.56
+        },
+        "bottom_offset_m": 0.1918,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "globe44",
+        "dimensions_cm": {
+            "length": 26.7,
+            "width": 24.96,
+            "height": 33.54
+        },
+        "bottom_offset_m": 0.1768,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "globe45",
+        "dimensions_cm": {
+            "length": 25.54,
+            "width": 23.7,
+            "height": 34.4
+        },
+        "bottom_offset_m": 0.1859,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "globe46",
+        "dimensions_cm": {
+            "length": 23.16,
+            "width": 21.03,
+            "height": 32.12
+        },
+        "bottom_offset_m": 0.1221,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "globe47",
+        "dimensions_cm": {
+            "length": 22.38,
+            "width": 22.29,
+            "height": 33.78
+        },
+        "bottom_offset_m": 0.162,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "globe48",
+        "dimensions_cm": {
+            "length": 31.27,
+            "width": 29.99,
+            "height": 35.89
+        },
+        "bottom_offset_m": 0.1786,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "globe49",
+        "dimensions_cm": {
+            "length": 10.45,
+            "width": 10.7,
+            "height": 29.63
+        },
+        "bottom_offset_m": 0.1923,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "globe5",
+        "dimensions_cm": {
+            "length": 24.59,
+            "width": 30.21,
+            "height": 35.35
+        },
+        "bottom_offset_m": 0.1614,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "globe50",
+        "dimensions_cm": {
+            "length": 39.69,
+            "width": 39.69,
+            "height": 24.63
+        },
+        "bottom_offset_m": 0.1212,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "globe51",
+        "dimensions_cm": {
+            "length": 27.8,
+            "width": 30.71,
+            "height": 35.17
+        },
+        "bottom_offset_m": 0.1646,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "globe52",
+        "dimensions_cm": {
+            "length": 24.28,
+            "width": 21.97,
+            "height": 36.15
+        },
+        "bottom_offset_m": 0.1872,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "globe53",
+        "dimensions_cm": {
+            "length": 29.27,
+            "width": 24.83,
+            "height": 37.62
+        },
+        "bottom_offset_m": 0.1671,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "globe54",
+        "dimensions_cm": {
+            "length": 30.8,
+            "width": 30.8,
+            "height": 31.03
+        },
+        "bottom_offset_m": 0.1497,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "globe55",
+        "dimensions_cm": {
+            "length": 33.73,
+            "width": 32.6,
+            "height": 36.18
+        },
+        "bottom_offset_m": 0.1718,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "globe56",
+        "dimensions_cm": {
+            "length": 28.38,
+            "width": 25.54,
+            "height": 36.85
+        },
+        "bottom_offset_m": 0.1793,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "globe57",
+        "dimensions_cm": {
+            "length": 31.28,
+            "width": 31.28,
+            "height": 35.33
+        },
+        "bottom_offset_m": 0.1566,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "globe58",
+        "dimensions_cm": {
+            "length": 29.99,
+            "width": 27.69,
+            "height": 37.63
+        },
+        "bottom_offset_m": 0.1898,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "globe59",
+        "dimensions_cm": {
+            "length": 26.35,
+            "width": 23.72,
+            "height": 36.49
+        },
+        "bottom_offset_m": 0.1678,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "globe6",
+        "dimensions_cm": {
+            "length": 30.25,
+            "width": 29.07,
+            "height": 36.5
+        },
+        "bottom_offset_m": 0.1957,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "globe60",
+        "dimensions_cm": {
+            "length": 29.01,
+            "width": 26.79,
+            "height": 36.41
+        },
+        "bottom_offset_m": 0.187,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "globe61",
+        "dimensions_cm": {
+            "length": 25.39,
+            "width": 24.75,
+            "height": 30.08
+        },
+        "bottom_offset_m": 0.1615,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "globe7",
+        "dimensions_cm": {
+            "length": 25.14,
+            "width": 25.14,
+            "height": 30.47
+        },
+        "bottom_offset_m": 0.1649,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "globe8",
+        "dimensions_cm": {
+            "length": 22.34,
+            "width": 21.33,
+            "height": 30.83
+        },
+        "bottom_offset_m": 0.1685,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "globe9",
+        "dimensions_cm": {
+            "length": 31.59,
+            "width": 31.66,
+            "height": 37.94
+        },
+        "bottom_offset_m": 0.198,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "keyboard1",
+        "dimensions_cm": {
+            "length": 16.55,
+            "width": 35.58,
+            "height": 2.35
+        },
+        "bottom_offset_m": 0.0111,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "keyboard10",
+        "dimensions_cm": {
+            "length": 17.07,
+            "width": 36.77,
+            "height": 2.39
+        },
+        "bottom_offset_m": 0.0127,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "keyboard11",
+        "dimensions_cm": {
+            "length": 14.19,
+            "width": 37.38,
+            "height": 3.71
+        },
+        "bottom_offset_m": 0.0154,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "keyboard12",
+        "dimensions_cm": {
+            "length": 20.15,
+            "width": 22.93,
+            "height": 4.35
+        },
+        "bottom_offset_m": 0.0264,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "keyboard13",
+        "dimensions_cm": {
+            "length": 4.59,
+            "width": 18.02,
+            "height": 0.76
+        },
+        "bottom_offset_m": 0.0055,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "keyboard14",
+        "dimensions_cm": {
+            "length": 14.48,
+            "width": 37.57,
+            "height": 2.45
+        },
+        "bottom_offset_m": 0.0098,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "keyboard15",
+        "dimensions_cm": {
+            "length": 10.65,
+            "width": 38.72,
+            "height": 1.29
+        },
+        "bottom_offset_m": 0.0077,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "keyboard16",
+        "dimensions_cm": {
+            "length": 13.49,
+            "width": 36.88,
+            "height": 2.99
+        },
+        "bottom_offset_m": 0.0116,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "keyboard17",
+        "dimensions_cm": {
+            "length": 17.03,
+            "width": 37.64,
+            "height": 1.93
+        },
+        "bottom_offset_m": 0.0149,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "keyboard18",
+        "dimensions_cm": {
+            "length": 16.12,
+            "width": 37.55,
+            "height": 3.7
+        },
+        "bottom_offset_m": 0.017,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "keyboard19",
+        "dimensions_cm": {
+            "length": 11.65,
+            "width": 38.72,
+            "height": 1.34
+        },
+        "bottom_offset_m": 0.0055,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "keyboard2",
+        "dimensions_cm": {
+            "length": 15.71,
+            "width": 36.21,
+            "height": 1.53
+        },
+        "bottom_offset_m": 0.0063,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "keyboard20",
+        "dimensions_cm": {
+            "length": 12.52,
+            "width": 39.76,
+            "height": 1.74
+        },
+        "bottom_offset_m": 0.0087,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "keyboard21",
+        "dimensions_cm": {
+            "length": 20.06,
+            "width": 13.08,
+            "height": 5.72
+        },
+        "bottom_offset_m": 0.0348,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "keyboard22",
+        "dimensions_cm": {
+            "length": 11.84,
+            "width": 37.76,
+            "height": 6.28
+        },
+        "bottom_offset_m": 0.0311,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "keyboard23",
+        "dimensions_cm": {
+            "length": 14.85,
+            "width": 37.22,
+            "height": 1.96
+        },
+        "bottom_offset_m": 0.0082,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "keyboard24",
+        "dimensions_cm": {
+            "length": 10.33,
+            "width": 25.88,
+            "height": 1.36
+        },
+        "bottom_offset_m": 0.0058,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "keyboard25",
+        "dimensions_cm": {
+            "length": 13.98,
+            "width": 37.16,
+            "height": 2.84
+        },
+        "bottom_offset_m": 0.0126,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "keyboard26",
+        "dimensions_cm": {
+            "length": 14.09,
+            "width": 37.45,
+            "height": 2.86
+        },
+        "bottom_offset_m": 0.0122,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "keyboard27",
+        "dimensions_cm": {
+            "length": 10.65,
+            "width": 38.73,
+            "height": 1.29
+        },
+        "bottom_offset_m": 0.0078,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "keyboard28",
+        "dimensions_cm": {
+            "length": 20.23,
+            "width": 23.02,
+            "height": 4.09
+        },
+        "bottom_offset_m": 0.0261,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "keyboard29",
+        "dimensions_cm": {
+            "length": 10.71,
+            "width": 38.59,
+            "height": 3.29
+        },
+        "bottom_offset_m": 0.011,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "keyboard3",
+        "dimensions_cm": {
+            "length": 11.7,
+            "width": 37.11,
+            "height": 1.83
+        },
+        "bottom_offset_m": 0.0073,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "keyboard30",
+        "dimensions_cm": {
+            "length": 12.69,
+            "width": 37.92,
+            "height": 1.25
+        },
+        "bottom_offset_m": 0.0073,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "keyboard31",
+        "dimensions_cm": {
+            "length": 9.91,
+            "width": 37.99,
+            "height": 3.15
+        },
+        "bottom_offset_m": 0.0135,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "keyboard32",
+        "dimensions_cm": {
+            "length": 13.96,
+            "width": 38.17,
+            "height": 2.07
+        },
+        "bottom_offset_m": 0.0114,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "keyboard33",
+        "dimensions_cm": {
+            "length": 11.13,
+            "width": 38.13,
+            "height": 4.0
+        },
+        "bottom_offset_m": 0.019,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "keyboard34",
+        "dimensions_cm": {
+            "length": 10.87,
+            "width": 36.2,
+            "height": 0.72
+        },
+        "bottom_offset_m": 0.0035,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "keyboard35",
+        "dimensions_cm": {
+            "length": 10.58,
+            "width": 38.78,
+            "height": 3.52
+        },
+        "bottom_offset_m": 0.0112,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "keyboard36",
+        "dimensions_cm": {
+            "length": 4.6,
+            "width": 18.06,
+            "height": 0.76
+        },
+        "bottom_offset_m": 0.0053,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "keyboard37",
+        "dimensions_cm": {
+            "length": 15.03,
+            "width": 37.11,
+            "height": 1.18
+        },
+        "bottom_offset_m": 0.0092,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "keyboard4",
+        "dimensions_cm": {
+            "length": 10.4,
+            "width": 38.25,
+            "height": 1.69
+        },
+        "bottom_offset_m": 0.0084,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "keyboard5",
+        "dimensions_cm": {
+            "length": 15.83,
+            "width": 36.67,
+            "height": 1.5
+        },
+        "bottom_offset_m": 0.0068,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "keyboard6",
+        "dimensions_cm": {
+            "length": 22.93,
+            "width": 34.22,
+            "height": 1.65
+        },
+        "bottom_offset_m": 0.0065,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "keyboard7",
+        "dimensions_cm": {
+            "length": 7.22,
+            "width": 19.88,
+            "height": 1.49
+        },
+        "bottom_offset_m": 0.0068,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "keyboard8",
+        "dimensions_cm": {
+            "length": 11.92,
+            "width": 39.25,
+            "height": 1.15
+        },
+        "bottom_offset_m": 0.0053,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "keyboard9",
+        "dimensions_cm": {
+            "length": 14.33,
+            "width": 38.95,
+            "height": 2.98
+        },
+        "bottom_offset_m": 0.0152,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "dispenser1",
+        "dimensions_cm": {
+            "length": 17.61,
+            "width": 17.61,
+            "height": 34.88
+        },
+        "bottom_offset_m": 0.15,
+        "scale": [
+            0.4,
+            0.4,
+            0.4
+        ]
+    },
+    {
+        "label": "dispenser10",
+        "dimensions_cm": {
+            "length": 15.46,
+            "width": 8.73,
+            "height": 32.98
+        },
+        "bottom_offset_m": 0.1455,
+        "scale": [
+            0.4,
+            0.4,
+            0.4
+        ]
+    },
+    {
+        "label": "dispenser11",
+        "dimensions_cm": {
+            "length": 19.66,
+            "width": 33.29,
+            "height": 21.32
+        },
+        "bottom_offset_m": 0.0643,
+        "scale": [
+            0.4,
+            0.4,
+            0.4
+        ]
+    },
+    {
+        "label": "dispenser12",
+        "dimensions_cm": {
+            "length": 18.2,
+            "width": 13.3,
+            "height": 29.46
+        },
+        "bottom_offset_m": 0.0937,
+        "scale": [
+            0.4,
+            0.4,
+            0.4
+        ]
+    },
+    {
+        "label": "dispenser13",
+        "dimensions_cm": {
+            "length": 18.11,
+            "width": 18.11,
+            "height": 32.05
+        },
+        "bottom_offset_m": 0.1286,
+        "scale": [
+            0.4,
+            0.4,
+            0.4
+        ]
+    },
+    {
+        "label": "dispenser14",
+        "dimensions_cm": {
+            "length": 14.8,
+            "width": 10.94,
+            "height": 33.35
+        },
+        "bottom_offset_m": 0.1213,
+        "scale": [
+            0.4,
+            0.4,
+            0.4
+        ]
+    },
+    {
+        "label": "dispenser15",
+        "dimensions_cm": {
+            "length": 17.69,
+            "width": 17.69,
+            "height": 38.44
+        },
+        "bottom_offset_m": 0.1746,
+        "scale": [
+            0.4,
+            0.4,
+            0.4
+        ]
+    },
+    {
+        "label": "dispenser16",
+        "dimensions_cm": {
+            "length": 15.86,
+            "width": 7.91,
+            "height": 34.24
+        },
+        "bottom_offset_m": 0.1952,
+        "scale": [
+            0.4,
+            0.4,
+            0.4
+        ]
+    },
+    {
+        "label": "dispenser17",
+        "dimensions_cm": {
+            "length": 22.9,
+            "width": 22.9,
+            "height": 31.14
+        },
+        "bottom_offset_m": 0.1124,
+        "scale": [
+            0.4,
+            0.4,
+            0.4
+        ]
+    },
+    {
+        "label": "dispenser18",
+        "dimensions_cm": {
+            "length": 14.85,
+            "width": 11.64,
+            "height": 38.09
+        },
+        "bottom_offset_m": 0.1859,
+        "scale": [
+            0.4,
+            0.4,
+            0.4
+        ]
+    },
+    {
+        "label": "dispenser19",
+        "dimensions_cm": {
+            "length": 18.3,
+            "width": 12.58,
+            "height": 33.67
+        },
+        "bottom_offset_m": 0.1455,
+        "scale": [
+            0.4,
+            0.4,
+            0.4
+        ]
+    },
+    {
+        "label": "dispenser2",
+        "dimensions_cm": {
+            "length": 12.28,
+            "width": 12.28,
+            "height": 28.59
+        },
+        "bottom_offset_m": 0.0886,
+        "scale": [
+            0.4,
+            0.4,
+            0.4
+        ]
+    },
+    {
+        "label": "dispenser20",
+        "dimensions_cm": {
+            "length": 17.94,
+            "width": 14.55,
+            "height": 31.3
+        },
+        "bottom_offset_m": 0.1066,
+        "scale": [
+            0.4,
+            0.4,
+            0.4
+        ]
+    },
+    {
+        "label": "dispenser21",
+        "dimensions_cm": {
+            "length": 27.6,
+            "width": 17.18,
+            "height": 35.83
+        },
+        "bottom_offset_m": 0.1605,
+        "scale": [
+            0.4,
+            0.4,
+            0.4
+        ]
+    },
+    {
+        "label": "dispenser22",
+        "dimensions_cm": {
+            "length": 13.75,
+            "width": 14.49,
+            "height": 34.59
+        },
+        "bottom_offset_m": 0.1517,
+        "scale": [
+            0.4,
+            0.4,
+            0.4
+        ]
+    },
+    {
+        "label": "dispenser23",
+        "dimensions_cm": {
+            "length": 17.53,
+            "width": 16.12,
+            "height": 33.57
+        },
+        "bottom_offset_m": 0.1379,
+        "scale": [
+            0.4,
+            0.4,
+            0.4
+        ]
+    },
+    {
+        "label": "dispenser24",
+        "dimensions_cm": {
+            "length": 17.32,
+            "width": 10.27,
+            "height": 33.01
+        },
+        "bottom_offset_m": 0.1312,
+        "scale": [
+            0.4,
+            0.4,
+            0.4
+        ]
+    },
+    {
+        "label": "dispenser25",
+        "dimensions_cm": {
+            "length": 26.99,
+            "width": 13.25,
+            "height": 35.46
+        },
+        "bottom_offset_m": 0.1672,
+        "scale": [
+            0.4,
+            0.4,
+            0.4
+        ]
+    },
+    {
+        "label": "dispenser26",
+        "dimensions_cm": {
+            "length": 13.1,
+            "width": 13.1,
+            "height": 38.73
+        },
+        "bottom_offset_m": 0.189,
+        "scale": [
+            0.4,
+            0.4,
+            0.4
+        ]
+    },
+    {
+        "label": "dispenser27",
+        "dimensions_cm": {
+            "length": 15.24,
+            "width": 15.0,
+            "height": 33.75
+        },
+        "bottom_offset_m": 0.1375,
+        "scale": [
+            0.4,
+            0.4,
+            0.4
+        ]
+    },
+    {
+        "label": "dispenser28",
+        "dimensions_cm": {
+            "length": 14.75,
+            "width": 14.51,
+            "height": 32.66
+        },
+        "bottom_offset_m": 0.1247,
+        "scale": [
+            0.4,
+            0.4,
+            0.4
+        ]
+    },
+    {
+        "label": "dispenser29",
+        "dimensions_cm": {
+            "length": 14.87,
+            "width": 14.63,
+            "height": 32.93
+        },
+        "bottom_offset_m": 0.1294,
+        "scale": [
+            0.4,
+            0.4,
+            0.4
+        ]
+    },
+    {
+        "label": "dispenser3",
+        "dimensions_cm": {
+            "length": 15.12,
+            "width": 13.43,
+            "height": 31.77
+        },
+        "bottom_offset_m": 0.123,
+        "scale": [
+            0.4,
+            0.4,
+            0.4
+        ]
+    },
+    {
+        "label": "dispenser30",
+        "dimensions_cm": {
+            "length": 11.37,
+            "width": 11.37,
+            "height": 33.61
+        },
+        "bottom_offset_m": 0.1391,
+        "scale": [
+            0.4,
+            0.4,
+            0.4
+        ]
+    },
+    {
+        "label": "dispenser31",
+        "dimensions_cm": {
+            "length": 11.39,
+            "width": 11.39,
+            "height": 33.66
+        },
+        "bottom_offset_m": 0.1401,
+        "scale": [
+            0.4,
+            0.4,
+            0.4
+        ]
+    },
+    {
+        "label": "dispenser32",
+        "dimensions_cm": {
+            "length": 11.41,
+            "width": 11.41,
+            "height": 33.67
+        },
+        "bottom_offset_m": 0.1352,
+        "scale": [
+            0.4,
+            0.4,
+            0.4
+        ]
+    },
+    {
+        "label": "dispenser33",
+        "dimensions_cm": {
+            "length": 11.46,
+            "width": 11.46,
+            "height": 33.87
+        },
+        "bottom_offset_m": 0.1395,
+        "scale": [
+            0.4,
+            0.4,
+            0.4
+        ]
+    },
+    {
+        "label": "dispenser34",
+        "dimensions_cm": {
+            "length": 11.62,
+            "width": 11.62,
+            "height": 34.35
+        },
+        "bottom_offset_m": 0.142,
+        "scale": [
+            0.4,
+            0.4,
+            0.4
+        ]
+    },
+    {
+        "label": "dispenser35",
+        "dimensions_cm": {
+            "length": 11.17,
+            "width": 11.17,
+            "height": 33.02
+        },
+        "bottom_offset_m": 0.1336,
+        "scale": [
+            0.4,
+            0.4,
+            0.4
+        ]
+    },
+    {
+        "label": "dispenser36",
+        "dimensions_cm": {
+            "length": 12.68,
+            "width": 9.67,
+            "height": 34.56
+        },
+        "bottom_offset_m": 0.1468,
+        "scale": [
+            0.4,
+            0.4,
+            0.4
+        ]
+    },
+    {
+        "label": "dispenser37",
+        "dimensions_cm": {
+            "length": 8.93,
+            "width": 8.93,
+            "height": 36.49
+        },
+        "bottom_offset_m": 0.1651,
+        "scale": [
+            0.4,
+            0.4,
+            0.4
+        ]
+    },
+    {
+        "label": "dispenser38",
+        "dimensions_cm": {
+            "length": 10.36,
+            "width": 10.36,
+            "height": 36.88
+        },
+        "bottom_offset_m": 0.1693,
+        "scale": [
+            0.4,
+            0.4,
+            0.4
+        ]
+    },
+    {
+        "label": "dispenser39",
+        "dimensions_cm": {
+            "length": 16.84,
+            "width": 10.55,
+            "height": 30.39
+        },
+        "bottom_offset_m": 0.1288,
+        "scale": [
+            0.4,
+            0.4,
+            0.4
+        ]
+    },
+    {
+        "label": "dispenser4",
+        "dimensions_cm": {
+            "length": 13.55,
+            "width": 13.55,
+            "height": 31.57
+        },
+        "bottom_offset_m": 0.1168,
+        "scale": [
+            0.4,
+            0.4,
+            0.4
+        ]
+    },
+    {
+        "label": "dispenser40",
+        "dimensions_cm": {
+            "length": 15.31,
+            "width": 9.57,
+            "height": 27.87
+        },
+        "bottom_offset_m": 0.0981,
+        "scale": [
+            0.4,
+            0.4,
+            0.4
+        ]
+    },
+    {
+        "label": "dispenser41",
+        "dimensions_cm": {
+            "length": 14.92,
+            "width": 14.92,
+            "height": 31.92
+        },
+        "bottom_offset_m": 0.1217,
+        "scale": [
+            0.4,
+            0.4,
+            0.4
+        ]
+    },
+    {
+        "label": "dispenser42",
+        "dimensions_cm": {
+            "length": 12.45,
+            "width": 12.45,
+            "height": 33.36
+        },
+        "bottom_offset_m": 0.1327,
+        "scale": [
+            0.4,
+            0.4,
+            0.4
+        ]
+    },
+    {
+        "label": "dispenser43",
+        "dimensions_cm": {
+            "length": 16.13,
+            "width": 16.52,
+            "height": 32.3
+        },
+        "bottom_offset_m": 0.1262,
+        "scale": [
+            0.4,
+            0.4,
+            0.4
+        ]
+    },
+    {
+        "label": "dispenser44",
+        "dimensions_cm": {
+            "length": 12.31,
+            "width": 12.31,
+            "height": 37.89
+        },
+        "bottom_offset_m": 0.1684,
+        "scale": [
+            0.4,
+            0.4,
+            0.4
+        ]
+    },
+    {
+        "label": "dispenser45",
+        "dimensions_cm": {
+            "length": 19.05,
+            "width": 13.1,
+            "height": 35.07
+        },
+        "bottom_offset_m": 0.1625,
+        "scale": [
+            0.4,
+            0.4,
+            0.4
+        ]
+    },
+    {
+        "label": "dispenser46",
+        "dimensions_cm": {
+            "length": 12.12,
+            "width": 10.69,
+            "height": 33.83
+        },
+        "bottom_offset_m": 0.1455,
+        "scale": [
+            0.4,
+            0.4,
+            0.4
+        ]
+    },
+    {
+        "label": "dispenser47",
+        "dimensions_cm": {
+            "length": 12.57,
+            "width": 11.34,
+            "height": 34.41
+        },
+        "bottom_offset_m": 0.1434,
+        "scale": [
+            0.4,
+            0.4,
+            0.4
+        ]
+    },
+    {
+        "label": "dispenser48",
+        "dimensions_cm": {
+            "length": 19.16,
+            "width": 13.12,
+            "height": 29.47
+        },
+        "bottom_offset_m": 0.1003,
+        "scale": [
+            0.4,
+            0.4,
+            0.4
+        ]
+    },
+    {
+        "label": "dispenser49",
+        "dimensions_cm": {
+            "length": 20.01,
+            "width": 10.39,
+            "height": 34.94
+        },
+        "bottom_offset_m": 0.1496,
+        "scale": [
+            0.4,
+            0.4,
+            0.4
+        ]
+    },
+    {
+        "label": "dispenser5",
+        "dimensions_cm": {
+            "length": 19.9,
+            "width": 12.55,
+            "height": 30.28
+        },
+        "bottom_offset_m": 0.1139,
+        "scale": [
+            0.4,
+            0.4,
+            0.4
+        ]
+    },
+    {
+        "label": "dispenser50",
+        "dimensions_cm": {
+            "length": 12.72,
+            "width": 12.72,
+            "height": 34.09
+        },
+        "bottom_offset_m": 0.1386,
+        "scale": [
+            0.4,
+            0.4,
+            0.4
+        ]
+    },
+    {
+        "label": "dispenser51",
+        "dimensions_cm": {
+            "length": 25.58,
+            "width": 12.56,
+            "height": 33.62
+        },
+        "bottom_offset_m": 0.1507,
+        "scale": [
+            0.4,
+            0.4,
+            0.4
+        ]
+    },
+    {
+        "label": "dispenser52",
+        "dimensions_cm": {
+            "length": 15.97,
+            "width": 14.46,
+            "height": 33.73
+        },
+        "bottom_offset_m": 0.1379,
+        "scale": [
+            0.4,
+            0.4,
+            0.4
+        ]
+    },
+    {
+        "label": "dispenser53",
+        "dimensions_cm": {
+            "length": 12.28,
+            "width": 21.73,
+            "height": 35.9
+        },
+        "bottom_offset_m": 0.1911,
+        "scale": [
+            0.4,
+            0.4,
+            0.4
+        ]
+    },
+    {
+        "label": "dispenser54",
+        "dimensions_cm": {
+            "length": 17.63,
+            "width": 16.21,
+            "height": 33.76
+        },
+        "bottom_offset_m": 0.1401,
+        "scale": [
+            0.4,
+            0.4,
+            0.4
+        ]
+    },
+    {
+        "label": "dispenser55",
+        "dimensions_cm": {
+            "length": 11.82,
+            "width": 10.41,
+            "height": 33.19
+        },
+        "bottom_offset_m": 0.1339,
+        "scale": [
+            0.4,
+            0.4,
+            0.4
+        ]
+    },
+    {
+        "label": "dispenser56",
+        "dimensions_cm": {
+            "length": 15.42,
+            "width": 15.42,
+            "height": 35.9
+        },
+        "bottom_offset_m": 0.1518,
+        "scale": [
+            0.4,
+            0.4,
+            0.4
+        ]
+    },
+    {
+        "label": "dispenser57",
+        "dimensions_cm": {
+            "length": 16.99,
+            "width": 14.06,
+            "height": 32.69
+        },
+        "bottom_offset_m": 0.1455,
+        "scale": [
+            0.4,
+            0.4,
+            0.4
+        ]
+    },
+    {
+        "label": "dispenser6",
+        "dimensions_cm": {
+            "length": 35.13,
+            "width": 18.91,
+            "height": 13.36
+        },
+        "bottom_offset_m": 0.0462,
+        "scale": [
+            0.4,
+            0.4,
+            0.4
+        ]
+    },
+    {
+        "label": "dispenser7",
+        "dimensions_cm": {
+            "length": 15.39,
+            "width": 13.87,
+            "height": 34.15
+        },
+        "bottom_offset_m": 0.1464,
+        "scale": [
+            0.4,
+            0.4,
+            0.4
+        ]
+    },
+    {
+        "label": "dispenser8",
+        "dimensions_cm": {
+            "length": 21.33,
+            "width": 15.62,
+            "height": 31.6
+        },
+        "bottom_offset_m": 0.1346,
+        "scale": [
+            0.4,
+            0.4,
+            0.4
+        ]
+    },
+    {
+        "label": "dispenser9",
+        "dimensions_cm": {
+            "length": 13.56,
+            "width": 12.04,
+            "height": 33.12
+        },
+        "bottom_offset_m": 0.1366,
+        "scale": [
+            0.4,
+            0.4,
+            0.4
+        ]
+    },
+    {
+        "label": "display1",
+        "dimensions_cm": {
+            "length": 32.69,
+            "width": 76.62,
+            "height": 68.58
+        },
+        "bottom_offset_m": 0.3205,
+        "scale": [
+            0.5,
+            0.5,
+            0.5
+        ]
+    },
+    {
+        "label": "display10",
+        "dimensions_cm": {
+            "length": 20.55,
+            "width": 80.64,
+            "height": 66.92
+        },
+        "bottom_offset_m": 0.3567,
+        "scale": [
+            0.5,
+            0.5,
+            0.5
+        ]
+    },
+    {
+        "label": "display11",
+        "dimensions_cm": {
+            "length": 43.62,
+            "width": 79.92,
+            "height": 56.89
+        },
+        "bottom_offset_m": 0.2624,
+        "scale": [
+            0.5,
+            0.5,
+            0.5
+        ]
+    },
+    {
+        "label": "display12",
+        "dimensions_cm": {
+            "length": 13.05,
+            "width": 93.22,
+            "height": 33.59
+        },
+        "bottom_offset_m": 0.1627,
+        "scale": [
+            0.5,
+            0.5,
+            0.5
+        ]
+    },
+    {
+        "label": "display13",
+        "dimensions_cm": {
+            "length": 23.46,
+            "width": 81.63,
+            "height": 67.56
+        },
+        "bottom_offset_m": 0.38,
+        "scale": [
+            0.5,
+            0.5,
+            0.5
+        ]
+    },
+    {
+        "label": "display14",
+        "dimensions_cm": {
+            "length": 8.22,
+            "width": 91.06,
+            "height": 43.54
+        },
+        "bottom_offset_m": 0.2245,
+        "scale": [
+            0.5,
+            0.5,
+            0.5
+        ]
+    },
+    {
+        "label": "display15",
+        "dimensions_cm": {
+            "length": 15.84,
+            "width": 93.12,
+            "height": 62.93
+        },
+        "bottom_offset_m": 0.3733,
+        "scale": [
+            0.5,
+            0.5,
+            0.5
+        ]
+    },
+    {
+        "label": "display16",
+        "dimensions_cm": {
+            "length": 21.84,
+            "width": 77.23,
+            "height": 66.74
+        },
+        "bottom_offset_m": 0.3402,
+        "scale": [
+            0.5,
+            0.5,
+            0.5
+        ]
+    },
+    {
+        "label": "display17",
+        "dimensions_cm": {
+            "length": 28.78,
+            "width": 80.57,
+            "height": 62.61
+        },
+        "bottom_offset_m": 0.3209,
+        "scale": [
+            0.5,
+            0.5,
+            0.5
+        ]
+    },
+    {
+        "label": "display18",
+        "dimensions_cm": {
+            "length": 24.01,
+            "width": 79.4,
+            "height": 57.06
+        },
+        "bottom_offset_m": 0.2399,
+        "scale": [
+            0.5,
+            0.5,
+            0.5
+        ]
+    },
+    {
+        "label": "display19",
+        "dimensions_cm": {
+            "length": 35.26,
+            "width": 82.47,
+            "height": 60.58
+        },
+        "bottom_offset_m": 0.2981,
+        "scale": [
+            0.5,
+            0.5,
+            0.5
+        ]
+    },
+    {
+        "label": "display2",
+        "dimensions_cm": {
+            "length": 19.07,
+            "width": 81.03,
+            "height": 56.72
+        },
+        "bottom_offset_m": 0.2588,
+        "scale": [
+            0.5,
+            0.5,
+            0.5
+        ]
+    },
+    {
+        "label": "display20",
+        "dimensions_cm": {
+            "length": 24.66,
+            "width": 74.11,
+            "height": 67.65
+        },
+        "bottom_offset_m": 0.3331,
+        "scale": [
+            0.5,
+            0.5,
+            0.5
+        ]
+    },
+    {
+        "label": "display21",
+        "dimensions_cm": {
+            "length": 21.55,
+            "width": 93.56,
+            "height": 45.05
+        },
+        "bottom_offset_m": 0.2327,
+        "scale": [
+            0.5,
+            0.5,
+            0.5
+        ]
+    },
+    {
+        "label": "display22",
+        "dimensions_cm": {
+            "length": 26.44,
+            "width": 82.89,
+            "height": 60.51
+        },
+        "bottom_offset_m": 0.307,
+        "scale": [
+            0.5,
+            0.5,
+            0.5
+        ]
+    },
+    {
+        "label": "display23",
+        "dimensions_cm": {
+            "length": 15.48,
+            "width": 73.55,
+            "height": 64.13
+        },
+        "bottom_offset_m": 0.2708,
+        "scale": [
+            0.5,
+            0.5,
+            0.5
+        ]
+    },
+    {
+        "label": "display24",
+        "dimensions_cm": {
+            "length": 39.53,
+            "width": 71.41,
+            "height": 68.86
+        },
+        "bottom_offset_m": 0.3467,
+        "scale": [
+            0.5,
+            0.5,
+            0.5
+        ]
+    },
+    {
+        "label": "display25",
+        "dimensions_cm": {
+            "length": 34.78,
+            "width": 74.46,
+            "height": 65.61
+        },
+        "bottom_offset_m": 0.3055,
+        "scale": [
+            0.5,
+            0.5,
+            0.5
+        ]
+    },
+    {
+        "label": "display26",
+        "dimensions_cm": {
+            "length": 63.38,
+            "width": 63.16,
+            "height": 67.31
+        },
+        "bottom_offset_m": 0.3576,
+        "scale": [
+            0.5,
+            0.5,
+            0.5
+        ]
+    },
+    {
+        "label": "display27",
+        "dimensions_cm": {
+            "length": 29.73,
+            "width": 90.64,
+            "height": 53.09
+        },
+        "bottom_offset_m": 0.2734,
+        "scale": [
+            0.5,
+            0.5,
+            0.5
+        ]
+    },
+    {
+        "label": "display28",
+        "dimensions_cm": {
+            "length": 29.8,
+            "width": 79.09,
+            "height": 65.05
+        },
+        "bottom_offset_m": 0.3367,
+        "scale": [
+            0.5,
+            0.5,
+            0.5
+        ]
+    },
+    {
+        "label": "display29",
+        "dimensions_cm": {
+            "length": 29.61,
+            "width": 80.42,
+            "height": 65.48
+        },
+        "bottom_offset_m": 0.3123,
+        "scale": [
+            0.5,
+            0.5,
+            0.5
+        ]
+    },
+    {
+        "label": "display3",
+        "dimensions_cm": {
+            "length": 37.67,
+            "width": 75.97,
+            "height": 69.39
+        },
+        "bottom_offset_m": 0.3644,
+        "scale": [
+            0.5,
+            0.5,
+            0.5
+        ]
+    },
+    {
+        "label": "display30",
+        "dimensions_cm": {
+            "length": 43.29,
+            "width": 67.54,
+            "height": 81.0
+        },
+        "bottom_offset_m": 0.4103,
+        "scale": [
+            0.5,
+            0.5,
+            0.5
+        ]
+    },
+    {
+        "label": "display31",
+        "dimensions_cm": {
+            "length": 20.28,
+            "width": 89.37,
+            "height": 58.23
+        },
+        "bottom_offset_m": 0.2721,
+        "scale": [
+            0.5,
+            0.5,
+            0.5
+        ]
+    },
+    {
+        "label": "display32",
+        "dimensions_cm": {
+            "length": 28.33,
+            "width": 80.04,
+            "height": 66.55
+        },
+        "bottom_offset_m": 0.3535,
+        "scale": [
+            0.5,
+            0.5,
+            0.5
+        ]
+    },
+    {
+        "label": "display33",
+        "dimensions_cm": {
+            "length": 42.16,
+            "width": 70.1,
+            "height": 59.58
+        },
+        "bottom_offset_m": 0.2162,
+        "scale": [
+            0.5,
+            0.5,
+            0.5
+        ]
+    },
+    {
+        "label": "display34",
+        "dimensions_cm": {
+            "length": 23.12,
+            "width": 51.64,
+            "height": 77.85
+        },
+        "bottom_offset_m": 0.4721,
+        "scale": [
+            0.5,
+            0.5,
+            0.5
+        ]
+    },
+    {
+        "label": "display35",
+        "dimensions_cm": {
+            "length": 25.44,
+            "width": 79.41,
+            "height": 61.57
+        },
+        "bottom_offset_m": 0.3073,
+        "scale": [
+            0.5,
+            0.5,
+            0.5
+        ]
+    },
+    {
+        "label": "display36",
+        "dimensions_cm": {
+            "length": 64.61,
+            "width": 62.23,
+            "height": 60.9
+        },
+        "bottom_offset_m": 0.2727,
+        "scale": [
+            0.5,
+            0.5,
+            0.5
+        ]
+    },
+    {
+        "label": "display37",
+        "dimensions_cm": {
+            "length": 32.93,
+            "width": 79.71,
+            "height": 56.0
+        },
+        "bottom_offset_m": 0.2649,
+        "scale": [
+            0.5,
+            0.5,
+            0.5
+        ]
+    },
+    {
+        "label": "display4",
+        "dimensions_cm": {
+            "length": 65.3,
+            "width": 67.2,
+            "height": 54.43
+        },
+        "bottom_offset_m": 0.2418,
+        "scale": [
+            0.5,
+            0.5,
+            0.5
+        ]
+    },
+    {
+        "label": "display5",
+        "dimensions_cm": {
+            "length": 25.67,
+            "width": 79.97,
+            "height": 62.68
+        },
+        "bottom_offset_m": 0.3223,
+        "scale": [
+            0.5,
+            0.5,
+            0.5
+        ]
+    },
+    {
+        "label": "display6",
+        "dimensions_cm": {
+            "length": 36.19,
+            "width": 83.09,
+            "height": 83.56
+        },
+        "bottom_offset_m": 0.4693,
+        "scale": [
+            0.5,
+            0.5,
+            0.5
+        ]
+    },
+    {
+        "label": "display7",
+        "dimensions_cm": {
+            "length": 8.8,
+            "width": 83.85,
+            "height": 57.09
+        },
+        "bottom_offset_m": 0.2847,
+        "scale": [
+            0.5,
+            0.5,
+            0.5
+        ]
+    },
+    {
+        "label": "display8",
+        "dimensions_cm": {
+            "length": 20.55,
+            "width": 80.64,
+            "height": 66.92
+        },
+        "bottom_offset_m": 0.3567,
+        "scale": [
+            0.5,
+            0.5,
+            0.5
+        ]
+    },
+    {
+        "label": "display9",
+        "dimensions_cm": {
+            "length": 20.52,
+            "width": 82.51,
+            "height": 59.83
+        },
+        "bottom_offset_m": 0.29,
+        "scale": [
+            0.5,
+            0.5,
+            0.5
+        ]
+    },
+    {
+        "label": "eyeglasses1",
+        "dimensions_cm": {
+            "length": 13.09,
+            "width": 20.4,
+            "height": 6.25
+        },
+        "bottom_offset_m": 0.0382,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "eyeglasses10",
+        "dimensions_cm": {
+            "length": 13.79,
+            "width": 18.55,
+            "height": 7.11
+        },
+        "bottom_offset_m": 0.0353,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "eyeglasses11",
+        "dimensions_cm": {
+            "length": 15.29,
+            "width": 21.38,
+            "height": 10.02
+        },
+        "bottom_offset_m": 0.0556,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "eyeglasses12",
+        "dimensions_cm": {
+            "length": 14.08,
+            "width": 21.23,
+            "height": 6.47
+        },
+        "bottom_offset_m": 0.0345,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "eyeglasses13",
+        "dimensions_cm": {
+            "length": 16.52,
+            "width": 15.82,
+            "height": 4.46
+        },
+        "bottom_offset_m": 0.0275,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "eyeglasses14",
+        "dimensions_cm": {
+            "length": 14.72,
+            "width": 22.39,
+            "height": 3.96
+        },
+        "bottom_offset_m": 0.02,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "eyeglasses15",
+        "dimensions_cm": {
+            "length": 18.47,
+            "width": 17.12,
+            "height": 4.25
+        },
+        "bottom_offset_m": 0.0224,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "eyeglasses16",
+        "dimensions_cm": {
+            "length": 14.29,
+            "width": 18.85,
+            "height": 5.77
+        },
+        "bottom_offset_m": 0.0312,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "eyeglasses17",
+        "dimensions_cm": {
+            "length": 15.24,
+            "width": 15.9,
+            "height": 6.0
+        },
+        "bottom_offset_m": 0.0325,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "eyeglasses18",
+        "dimensions_cm": {
+            "length": 17.41,
+            "width": 16.74,
+            "height": 5.77
+        },
+        "bottom_offset_m": 0.0378,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "eyeglasses19",
+        "dimensions_cm": {
+            "length": 15.52,
+            "width": 18.09,
+            "height": 4.85
+        },
+        "bottom_offset_m": 0.0311,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "eyeglasses2",
+        "dimensions_cm": {
+            "length": 16.35,
+            "width": 17.79,
+            "height": 5.17
+        },
+        "bottom_offset_m": 0.0274,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "eyeglasses20",
+        "dimensions_cm": {
+            "length": 13.68,
+            "width": 20.7,
+            "height": 5.5
+        },
+        "bottom_offset_m": 0.0304,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "eyeglasses21",
+        "dimensions_cm": {
+            "length": 15.54,
+            "width": 19.57,
+            "height": 4.16
+        },
+        "bottom_offset_m": 0.0249,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "eyeglasses22",
+        "dimensions_cm": {
+            "length": 19.26,
+            "width": 15.34,
+            "height": 4.04
+        },
+        "bottom_offset_m": 0.0217,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "eyeglasses23",
+        "dimensions_cm": {
+            "length": 14.23,
+            "width": 18.61,
+            "height": 4.67
+        },
+        "bottom_offset_m": 0.0283,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "eyeglasses24",
+        "dimensions_cm": {
+            "length": 13.8,
+            "width": 19.95,
+            "height": 4.98
+        },
+        "bottom_offset_m": 0.0303,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "eyeglasses25",
+        "dimensions_cm": {
+            "length": 16.02,
+            "width": 15.33,
+            "height": 5.08
+        },
+        "bottom_offset_m": 0.0286,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "eyeglasses26",
+        "dimensions_cm": {
+            "length": 14.26,
+            "width": 18.06,
+            "height": 6.62
+        },
+        "bottom_offset_m": 0.0394,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "eyeglasses27",
+        "dimensions_cm": {
+            "length": 14.7,
+            "width": 15.79,
+            "height": 5.35
+        },
+        "bottom_offset_m": 0.0292,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "eyeglasses28",
+        "dimensions_cm": {
+            "length": 14.44,
+            "width": 19.31,
+            "height": 7.19
+        },
+        "bottom_offset_m": 0.0439,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "eyeglasses29",
+        "dimensions_cm": {
+            "length": 16.01,
+            "width": 16.86,
+            "height": 6.89
+        },
+        "bottom_offset_m": 0.0325,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "eyeglasses3",
+        "dimensions_cm": {
+            "length": 18.22,
+            "width": 16.96,
+            "height": 4.74
+        },
+        "bottom_offset_m": 0.0249,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "eyeglasses30",
+        "dimensions_cm": {
+            "length": 7.6,
+            "width": 28.09,
+            "height": 10.68
+        },
+        "bottom_offset_m": 0.0583,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "eyeglasses31",
+        "dimensions_cm": {
+            "length": 17.67,
+            "width": 15.01,
+            "height": 4.52
+        },
+        "bottom_offset_m": 0.0284,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "eyeglasses32",
+        "dimensions_cm": {
+            "length": 10.16,
+            "width": 23.35,
+            "height": 5.48
+        },
+        "bottom_offset_m": 0.029,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "eyeglasses33",
+        "dimensions_cm": {
+            "length": 18.61,
+            "width": 15.09,
+            "height": 2.29
+        },
+        "bottom_offset_m": 0.0152,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "eyeglasses34",
+        "dimensions_cm": {
+            "length": 14.91,
+            "width": 15.19,
+            "height": 6.67
+        },
+        "bottom_offset_m": 0.0362,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "eyeglasses35",
+        "dimensions_cm": {
+            "length": 16.05,
+            "width": 13.9,
+            "height": 3.01
+        },
+        "bottom_offset_m": 0.0153,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "eyeglasses36",
+        "dimensions_cm": {
+            "length": 17.39,
+            "width": 16.12,
+            "height": 6.06
+        },
+        "bottom_offset_m": 0.032,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "eyeglasses37",
+        "dimensions_cm": {
+            "length": 16.92,
+            "width": 23.44,
+            "height": 8.39
+        },
+        "bottom_offset_m": 0.05,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "eyeglasses38",
+        "dimensions_cm": {
+            "length": 17.53,
+            "width": 16.25,
+            "height": 6.11
+        },
+        "bottom_offset_m": 0.0325,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "eyeglasses39",
+        "dimensions_cm": {
+            "length": 16.77,
+            "width": 23.23,
+            "height": 8.31
+        },
+        "bottom_offset_m": 0.0485,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "eyeglasses4",
+        "dimensions_cm": {
+            "length": 16.99,
+            "width": 15.93,
+            "height": 3.68
+        },
+        "bottom_offset_m": 0.0179,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "eyeglasses40",
+        "dimensions_cm": {
+            "length": 14.37,
+            "width": 18.19,
+            "height": 5.48
+        },
+        "bottom_offset_m": 0.0307,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "eyeglasses41",
+        "dimensions_cm": {
+            "length": 15.16,
+            "width": 20.66,
+            "height": 7.12
+        },
+        "bottom_offset_m": 0.0405,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "eyeglasses42",
+        "dimensions_cm": {
+            "length": 13.3,
+            "width": 18.39,
+            "height": 6.53
+        },
+        "bottom_offset_m": 0.0312,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "eyeglasses43",
+        "dimensions_cm": {
+            "length": 14.17,
+            "width": 17.94,
+            "height": 5.41
+        },
+        "bottom_offset_m": 0.0305,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "eyeglasses44",
+        "dimensions_cm": {
+            "length": 13.82,
+            "width": 20.1,
+            "height": 6.3
+        },
+        "bottom_offset_m": 0.0377,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "eyeglasses45",
+        "dimensions_cm": {
+            "length": 18.32,
+            "width": 14.93,
+            "height": 5.29
+        },
+        "bottom_offset_m": 0.024,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "eyeglasses46",
+        "dimensions_cm": {
+            "length": 17.34,
+            "width": 16.25,
+            "height": 3.75
+        },
+        "bottom_offset_m": 0.0176,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "eyeglasses47",
+        "dimensions_cm": {
+            "length": 14.31,
+            "width": 18.11,
+            "height": 5.46
+        },
+        "bottom_offset_m": 0.0316,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "eyeglasses48",
+        "dimensions_cm": {
+            "length": 16.53,
+            "width": 18.68,
+            "height": 6.76
+        },
+        "bottom_offset_m": 0.0467,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "eyeglasses49",
+        "dimensions_cm": {
+            "length": 17.57,
+            "width": 17.56,
+            "height": 6.58
+        },
+        "bottom_offset_m": 0.037,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "eyeglasses5",
+        "dimensions_cm": {
+            "length": 17.1,
+            "width": 14.17,
+            "height": 5.2
+        },
+        "bottom_offset_m": 0.0289,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "eyeglasses50",
+        "dimensions_cm": {
+            "length": 13.64,
+            "width": 21.34,
+            "height": 3.99
+        },
+        "bottom_offset_m": 0.0215,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "eyeglasses51",
+        "dimensions_cm": {
+            "length": 18.07,
+            "width": 15.42,
+            "height": 5.58
+        },
+        "bottom_offset_m": 0.0321,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "eyeglasses52",
+        "dimensions_cm": {
+            "length": 14.37,
+            "width": 18.19,
+            "height": 5.65
+        },
+        "bottom_offset_m": 0.0319,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "eyeglasses53",
+        "dimensions_cm": {
+            "length": 5.17,
+            "width": 30.03,
+            "height": 10.94
+        },
+        "bottom_offset_m": 0.0604,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "eyeglasses54",
+        "dimensions_cm": {
+            "length": 14.27,
+            "width": 18.06,
+            "height": 5.61
+        },
+        "bottom_offset_m": 0.0314,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "eyeglasses55",
+        "dimensions_cm": {
+            "length": 11.41,
+            "width": 27.96,
+            "height": 8.25
+        },
+        "bottom_offset_m": 0.0432,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "eyeglasses56",
+        "dimensions_cm": {
+            "length": 11.82,
+            "width": 28.6,
+            "height": 8.44
+        },
+        "bottom_offset_m": 0.043,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "eyeglasses57",
+        "dimensions_cm": {
+            "length": 15.4,
+            "width": 18.71,
+            "height": 5.26
+        },
+        "bottom_offset_m": 0.0305,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "eyeglasses58",
+        "dimensions_cm": {
+            "length": 16.03,
+            "width": 17.51,
+            "height": 5.43
+        },
+        "bottom_offset_m": 0.0319,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "eyeglasses59",
+        "dimensions_cm": {
+            "length": 13.56,
+            "width": 19.52,
+            "height": 5.42
+        },
+        "bottom_offset_m": 0.03,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "eyeglasses6",
+        "dimensions_cm": {
+            "length": 16.13,
+            "width": 18.25,
+            "height": 6.61
+        },
+        "bottom_offset_m": 0.0452,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "eyeglasses60",
+        "dimensions_cm": {
+            "length": 18.72,
+            "width": 15.23,
+            "height": 4.55
+        },
+        "bottom_offset_m": 0.029,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "eyeglasses61",
+        "dimensions_cm": {
+            "length": 18.52,
+            "width": 15.15,
+            "height": 4.56
+        },
+        "bottom_offset_m": 0.0265,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "eyeglasses62",
+        "dimensions_cm": {
+            "length": 16.12,
+            "width": 16.31,
+            "height": 5.86
+        },
+        "bottom_offset_m": 0.0307,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "eyeglasses63",
+        "dimensions_cm": {
+            "length": 18.28,
+            "width": 15.19,
+            "height": 8.76
+        },
+        "bottom_offset_m": 0.0355,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "eyeglasses64",
+        "dimensions_cm": {
+            "length": 15.15,
+            "width": 16.99,
+            "height": 5.67
+        },
+        "bottom_offset_m": 0.0331,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "eyeglasses65",
+        "dimensions_cm": {
+            "length": 13.15,
+            "width": 20.5,
+            "height": 6.28
+        },
+        "bottom_offset_m": 0.039,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "eyeglasses7",
+        "dimensions_cm": {
+            "length": 14.39,
+            "width": 20.76,
+            "height": 5.48
+        },
+        "bottom_offset_m": 0.0314,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "eyeglasses8",
+        "dimensions_cm": {
+            "length": 16.02,
+            "width": 17.23,
+            "height": 4.94
+        },
+        "bottom_offset_m": 0.0312,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "eyeglasses9",
+        "dimensions_cm": {
+            "length": 16.3,
+            "width": 16.55,
+            "height": 6.76
+        },
+        "bottom_offset_m": 0.0339,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "laptop1",
+        "dimensions_cm": {
+            "length": 124.21,
+            "width": 110.45,
+            "height": 96.24
+        },
+        "bottom_offset_m": 0.237,
+        "scale": [
+            0.25,
+            0.25,
+            0.25
+        ]
+    },
+    {
+        "label": "laptop2",
+        "dimensions_cm": {
+            "length": 121.73,
+            "width": 128.55,
+            "height": 87.74
+        },
+        "bottom_offset_m": 0.2153,
+        "scale": [
+            0.25,
+            0.25,
+            0.25
+        ]
+    },
+    {
+        "label": "laptop3",
+        "dimensions_cm": {
+            "length": 93.97,
+            "width": 106.95,
+            "height": 71.46
+        },
+        "bottom_offset_m": 0.0308,
+        "scale": [
+            0.25,
+            0.25,
+            0.25
+        ]
+    },
+    {
+        "label": "laptop4",
+        "dimensions_cm": {
+            "length": 104.01,
+            "width": 131.53,
+            "height": 89.88
+        },
+        "bottom_offset_m": 0.2174,
+        "scale": [
+            0.25,
+            0.25,
+            0.25
+        ]
+    },
+    {
+        "label": "refrigerator1",
+        "dimensions_cm": {
+            "length": 59.03,
+            "width": 58.13,
+            "height": 186.64
+        },
+        "bottom_offset_m": 0.9647,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "refrigerator2",
+        "dimensions_cm": {
+            "length": 62.31,
+            "width": 66.8,
+            "height": 186.54
+        },
+        "bottom_offset_m": 0.9169,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "refrigerator3",
+        "dimensions_cm": {
+            "length": 54.52,
+            "width": 96.22,
+            "height": 164.37
+        },
+        "bottom_offset_m": 0.8326,
+        "scale": [
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    {
+        "label": "scissors1",
+        "dimensions_cm": {
+            "length": 92.97,
+            "width": 160.89,
+            "height": 5.25
+        },
+        "bottom_offset_m": 0.0259,
+        "scale": [
+            0.1,
+            0.1,
+            0.1
+        ]
+    },
+    {
+        "label": "scissors2",
+        "dimensions_cm": {
+            "length": 137.71,
+            "width": 140.55,
+            "height": 7.68
+        },
+        "bottom_offset_m": 0.0428,
+        "scale": [
+            0.1,
+            0.1,
+            0.1
+        ]
+    },
+    {
+        "label": "stapler1",
+        "dimensions_cm": {
+            "length": 187.4,
+            "width": 54.56,
+            "height": 85.0
+        },
+        "bottom_offset_m": 0.325,
+        "scale": [
+            0.1,
+            0.1,
+            0.1
+        ]
+    },
+    {
+        "label": "stapler2",
+        "dimensions_cm": {
+            "length": 193.98,
+            "width": 52.55,
+            "height": 53.26
+        },
+        "bottom_offset_m": 0.2141,
+        "scale": [
+            0.1,
+            0.1,
+            0.1
+        ]
+    },
+    {
+        "label": "trashcan1",
+        "dimensions_cm": {
+            "length": 115.16,
+            "width": 115.16,
+            "height": 173.45
+        },
+        "bottom_offset_m": 0.8425,
+        "scale": [
+            0.2,
+            0.2,
+            0.2
+        ]
+    },
+    {
+        "label": "trashcan2",
+        "dimensions_cm": {
+            "length": 105.78,
+            "width": 109.03,
+            "height": 170.15
+        },
+        "bottom_offset_m": 0.8564,
+        "scale": [
+            0.2,
+            0.2,
+            0.2
+        ]
+    },
+    {
+        "label": "washingmachine1",
+        "dimensions_cm": {
+            "length": 103.16,
+            "width": 103.16,
+            "height": 147.0
+        },
+        "bottom_offset_m": 0.7584,
+        "scale": [
+            0.7,
+            0.7,
+            0.7
+        ]
+    },
+    {
+        "label": "washingmachine2",
+        "dimensions_cm": {
+            "length": 99.1,
+            "width": 95.11,
+            "height": 167.9
+        },
+        "bottom_offset_m": 0.7545,
+        "scale": [
+            0.7,
+            0.7,
+            0.7
+        ]
+    },
+    {
+        "label": "washingmachine3",
+        "dimensions_cm": {
+            "length": 112.25,
+            "width": 99.12,
+            "height": 140.3
+        },
+        "bottom_offset_m": 0.7469,
+        "scale": [
+            0.7,
+            0.7,
+            0.7
+        ]
+    }
+]
