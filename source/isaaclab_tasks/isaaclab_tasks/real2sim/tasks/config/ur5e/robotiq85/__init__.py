@@ -1,5 +1,5 @@
 import gymnasium as gym
-from isaaclab_tasks.real2sim.tasks.pick import agents
+from isaaclab_tasks.real2sim.tasks import agents
 
 gym.register(
     id="UR5e-Robotiq85-IKRel-EE-VisPick-v0",

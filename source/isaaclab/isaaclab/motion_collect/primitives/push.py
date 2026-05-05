@@ -6,9 +6,20 @@ from scipy.spatial.transform import Rotation
 from ..success.constants import PUSH_SUCCESS_TILT_THRESHOLD, PUSH_SUCCESS_XY_THRESHOLD
 from ..success.evaluators import _evaluate_push_success_with_metrics
 from ..tools.affordance_resolver import resolve_affordance_path
-from .utils import compute_target_availability_mask, log_target_missing_envs, transform_grasp_to_world
+from .utils import (
+    FAILURE_REASON_TARGET_MISSING,
+    commit_plan_failures,
+    commit_task_failures,
+    compute_target_availability_mask,
+    get_prev_alive_mask,
+    init_local_active_mask,
+    log_target_missing_envs,
+    mark_local_inactive_with_reason,
+    merge_segment_into_local_active,
+    transform_grasp_to_world,
+)
 
-FIXED_GRIPPER_STEPS = 10
+FIXED_GRIPPER_STEPS = 3
 
 
 def primitive_push(collector, mode: Optional[str], params: Dict[str, Any], context: Dict[str, Any]) -> bool:
@@ -352,62 +363,71 @@ def primitive_execute_push(collector, params: Dict[str, Any], context: Dict[str,
     down_interp_steps = int(params.get("down_interpolation_steps", 5))
     push_interp_steps = int(params.get("push_interpolation_steps", 30))
     lift_interp_steps = int(params.get("lift_interpolation_steps", 10))
-    prev_success_mask = list(context.get("env_alive_mask", [True] * collector.num_envs))
-    target_available_mask = list(push_pose.get("target_available_mask", [True] * collector.num_envs))
+    n = collector.num_envs
+    prev_alive = get_prev_alive_mask(context, n)
+    local_active = init_local_active_mask(context, n)
+    target_available_mask = list(push_pose.get("target_available_mask", [True] * n))
+    for env_idx in range(n):
+        if prev_alive[env_idx] and not target_available_mask[env_idx]:
+            mark_local_inactive_with_reason(
+                context, local_active, env_idx, FAILURE_REASON_TARGET_MISSING
+            )
 
     print(f"  👉 [Primitive] Executing push on '{push_pose.get('target_label')}'")
     pre_plans, pre_plan_successes = collector.motion_planner.plan_to_pose_batch(
-        collector.robot.data.joint_pos[: collector.num_envs].cpu().numpy(),
-        collector.robot.data.joint_vel[: collector.num_envs].cpu().numpy(),
+        collector.robot.data.joint_pos[:n].cpu().numpy(),
+        collector.robot.data.joint_vel[:n].cpu().numpy(),
         collector.robot.joint_names,
         np.array(push_pose["pre_positions"]),
         np.array(push_pose["pre_quats"]),
         target_prim_path=collector.target_prim_path,
     )
-    pre_successes = [prev and available and cur for prev, available, cur in zip(prev_success_mask, target_available_mask, pre_plan_successes)]
+    pre_segment = [local_active[i] and bool(pre_plan_successes[i]) for i in range(n)]
+    merge_segment_into_local_active(local_active, pre_segment)
     collector.execute_trajectory_batch(
         pre_plans,
-        [1.0 if s else 0.0 for s in pre_successes],
+        [1.0 if s else 0.0 for s in local_active],
         desc="Primitive Push Pre",
-        active_mask=pre_successes,
+        active_mask=list(local_active),
     )
 
     _, down_successes = collector.execute_ik_motion(
         target_positions=np.array(push_pose["down_positions"]),
         target_quaternions=np.array(push_pose["pre_quats"]),
-        gripper_states=[1.0 if s else 0.0 for s in pre_successes],
+        gripper_states=[1.0 if s else 0.0 for s in local_active],
         interpolation_steps=down_interp_steps,
         desc="Primitive Push Down",
-        active_mask=pre_successes,
+        active_mask=list(local_active),
     )
-    phase_successes = [a and b for a, b in zip(pre_successes, down_successes)]
+    merge_segment_into_local_active(local_active, down_successes)
 
     _, push_successes = collector.execute_ik_motion(
         target_positions=np.array(push_pose["push_positions"]),
         target_quaternions=np.array(push_pose["push_quats"]),
-        gripper_states=[1.0 if s else 0.0 for s in phase_successes],
+        gripper_states=[1.0 if s else 0.0 for s in local_active],
         interpolation_steps=push_interp_steps,
         desc="Primitive Push Sweep",
-        active_mask=phase_successes,
+        active_mask=list(local_active),
     )
-    phase_successes = [a and b for a, b in zip(phase_successes, push_successes)]
+    merge_segment_into_local_active(local_active, push_successes)
 
-    final_successes = phase_successes
     if push_pose.get("lift_positions") is not None:
         _, lift_successes = collector.execute_ik_motion(
             target_positions=np.array(push_pose["lift_positions"]),
             target_quaternions=np.array(push_pose["lift_quats"]),
-            gripper_states=[1.0 if s else 0.0 for s in phase_successes],
+            gripper_states=[1.0 if s else 0.0 for s in local_active],
             interpolation_steps=lift_interp_steps,
             desc="Primitive Push Lift",
-            active_mask=phase_successes,
+            active_mask=list(local_active),
         )
-        final_successes = [a and b for a, b in zip(phase_successes, lift_successes)]
+        merge_segment_into_local_active(local_active, lift_successes)
+
+    plan_active_after = list(local_active)
 
     collector.control_gripper_batch(
-        [1.0 if s else 0.0 for s in final_successes],
+        [1.0 if s else 0.0 for s in local_active],
         steps=FIXED_GRIPPER_STEPS,
-        active_mask=final_successes,
+        active_mask=list(local_active),
     )
 
     success_eval_enabled = bool(params.get("success_eval", False))
@@ -418,7 +438,7 @@ def primitive_execute_push(collector, params: Dict[str, Any], context: Dict[str,
         else:
             state_successes = []
             state_metrics = []
-            for env_idx in range(collector.num_envs):
+            for env_idx in range(n):
                 env_success, env_metrics = _evaluate_push_success_with_metrics(
                     scene=collector.scene,
                     push_target_label=target_label,
@@ -428,8 +448,7 @@ def primitive_execute_push(collector, params: Dict[str, Any], context: Dict[str,
                 state_successes.append(env_success)
                 state_metrics.append(env_metrics)
 
-            final_successes = [motion_ok and state_ok for motion_ok, state_ok in zip(final_successes, state_successes)]
-            context["task_success_mask"] = list(final_successes)
+            commit_task_failures(context, prev_alive, plan_active_after, list(state_successes))
             context["task_success_metrics"] = list(state_metrics)
             for env_idx, metrics in enumerate(state_metrics):
                 dist_ok = metrics["push_xy_dist"] <= float(PUSH_SUCCESS_XY_THRESHOLD)
@@ -442,25 +461,23 @@ def primitive_execute_push(collector, params: Dict[str, Any], context: Dict[str,
                 )
             print(
                 f"  ✅ [Primitive] Task success (push): "
-                f"{sum(final_successes)}/{collector.num_envs} "
+                f"{sum(1 for i in range(n) if plan_active_after[i] and state_successes[i])}/{n} "
                 f"(push_xy_dist<={PUSH_SUCCESS_XY_THRESHOLD:.3f})"
             )
 
-    context["post_push_success_mask"] = list(final_successes)
-    context["step_failure_reason_mask"] = [
-        "inactive"
-        if not prev_success_mask[env_idx]
-        else "target_missing"
-        if not target_available_mask[env_idx]
-        else "planning_failed"
-        if not final_successes[env_idx]
-        else "none"
-        for env_idx in range(collector.num_envs)
+    commit_plan_failures(context, prev_alive, local_active)
+
+    plan_mask_final = list(context.get("plan_success_mask", [True] * n))
+    task_mask_final = list(context.get("task_success_mask", [True] * n))
+    final_alive = [
+        bool(prev_alive[i] and plan_mask_final[i] and task_mask_final[i])
+        for i in range(n)
     ]
-    context["env_alive_mask"] = list(final_successes)
+    context["post_push_success_mask"] = list(final_alive)
+    context["env_alive_mask"] = list(final_alive)
     context["current_gripper_state"] = "open"
-    context["push_completed"] = any(final_successes)
+    context["push_completed"] = any(final_alive)
     context["primitive_executed_motion"] = True
 
-    print(f"  ✅ [Primitive] Push success: {sum(final_successes)}/{collector.num_envs}")
-    return any(final_successes)
+    print(f"  ✅ [Primitive] Push success (alive): {sum(final_alive)}/{n}")
+    return any(final_alive)

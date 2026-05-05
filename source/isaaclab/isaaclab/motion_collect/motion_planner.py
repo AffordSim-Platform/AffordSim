@@ -37,8 +37,7 @@ class MotionPlanner:
             device: Device to run planning on
             curobo_path: Path to CuRobo installation
             num_envs: Number of parallel environments (for obstacle filtering)
-            use_table_obstacle: Whether to add a table cuboid obstacle. Set False for UR5e
-                                 (whose base is on the table, so the table would block planning)
+            use_table_obstacle: Whether to add a table cuboid obstacle.
         """
         self.robot_cfg_name = robot_cfg_name
         self.device = device
@@ -124,7 +123,7 @@ class MotionPlanner:
             optimize_dt=True,
             trajopt_tsteps=16,
             collision_activation_distance=0.15,  # red cup
-            # collision_activation_distance=0.01, 
+            # collision_activation_distance=0.03, 
             # collision_activation_distance=0.23,
         )
         
@@ -356,7 +355,7 @@ class MotionPlanner:
                     if debug:
                         print(f"  ⚠️  Failed to update pose for {obj_name}: {e}")
         
-        # Append table cuboid to obstacle list (disabled in UR5e mode)
+        # Append table cuboid to obstacle list when enabled.
         if self.use_table_obstacle and hasattr(self, '_table_cuboid'):
             if obstacles.cuboid is None:
                 obstacles.cuboid = [self._table_cuboid]
@@ -430,8 +429,12 @@ class MotionPlanner:
         
         cu_js = cu_js.get_ordered_joint_state(self.motion_gen.kinematics.joint_names)
         
-        # UR5e / Kinova ee_link frame differs from the upper-level grasp frame by 90 degrees around Z axis; compensate here
-        if "ur5e" in self.robot_cfg_name or "kinova" in self.robot_cfg_name:
+        # UR5e / Kinova ee_link frame differs from the upper-level grasp
+        # frame by 90 degrees around Z axis.
+        if (
+            "ur5e" in self.robot_cfg_name
+            or "kinova" in self.robot_cfg_name
+        ):
             r_target = R.from_quat([target_quat[1], target_quat[2], target_quat[3], target_quat[0]])
             r_z90 = R.from_euler('z', 90, degrees=True)
             q_corrected = (r_target * r_z90).as_quat()  # scipy xyzw
@@ -600,7 +603,7 @@ class MotionPlanner:
         quaternions: np.ndarray,
         robot_cfg_name: str,
     ) -> np.ndarray:
-        """Apply Z+90° quaternion correction for UR5e/Kinova (batch vectorized).
+        """Apply robot-specific quaternion correction for batch IK.
 
         Args:
             quaternions: (batch, 4) wxyz
@@ -609,13 +612,16 @@ class MotionPlanner:
         Returns:
             Corrected quaternions (batch, 4) wxyz
         """
-        if "ur5e" not in robot_cfg_name and "kinova" not in robot_cfg_name:
+        if (
+            "ur5e" not in robot_cfg_name
+            and "kinova" not in robot_cfg_name
+        ):
             return quaternions.copy()
         # wxyz -> xyzw for scipy
         q_scipy = quaternions[:, [1, 2, 3, 0]].astype(np.float64)
         r_target = R.from_quat(q_scipy)
-        r_z90 = R.from_euler('z', 90, degrees=True)
-        q_corrected = (r_target * r_z90).as_quat()  # (batch, 4) xyzw
+        r_corr = R.from_euler('z', 90, degrees=True)
+        q_corrected = (r_target * r_corr).as_quat()  # (batch, 4) xyzw
         # xyzw -> wxyz
         return q_corrected[:, [3, 0, 1, 2]]
 
@@ -1101,7 +1107,6 @@ class MotionPlanner:
             env_origins = env_origins.reshape(1, -1)
 
         ee_pos_rel = ee_pos_w - env_origins
-
         if robot_type in {"ur5e", "kinova_robotiq85"}:
             qz_neg90 = np.array([0.7071068, 0.0, 0.0, -0.7071068])
             for i in range(ee_quat_w.shape[0]):
@@ -1194,7 +1199,7 @@ class MotionPlanner:
         robot: Any,
         num_envs: int,
         recorder: Any = None,
-        steps: int = 10,
+        steps: int = 3,
         active_mask: Optional[List[bool]] = None,
     ):
         """Control grippers for all environments."""

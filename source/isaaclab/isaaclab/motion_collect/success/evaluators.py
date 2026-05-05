@@ -15,7 +15,6 @@ from .constants import (
     POUR_PROCESS_TILT_MONOTONIC_SLACK,
     POUR_PROCESS_XY_TOLERANCE,
     POUR_SUCCESS_TILT_THRESHOLD,
-    PULL_SUCCESS_JOINT_NAME,
     PULL_SUCCESS_MIN_DISPLACEMENT,
     PUSH_SUCCESS_TILT_THRESHOLD,
     PUSH_SUCCESS_XY_THRESHOLD,
@@ -35,16 +34,75 @@ def _check_gripper_released(
     scene,
     env_idx: int = 0,
     threshold: float = PLACE_SUCCESS_GRIPPER_OPEN_THRESHOLD,
-) -> tuple[bool, float]:
-    """Place 成功的额外条件: 夹爪已松开. 返回 (is_released, finger_pos).
-
-    finger_pos 为 NaN 表示读不到 robot/finger 关节; 这种情况按 "未松开" 处理,
-    避免兼容性 fallback 把不该过的 case 判过.
-    """
-    pos = _get_gripper_max_finger_pos(scene, env_idx=env_idx)
+    joint_name_substr: str = "finger,drive",
+    open_direction: str = "auto",
+    robot_label: str = "robot",
+) -> tuple[bool, float, str]:
+    """Return whether the robot gripper is released, plus measured joint position."""
+    pos, matched_names = _get_gripper_max_finger_pos(
+        scene,
+        env_idx=env_idx,
+        robot_label=robot_label,
+        joint_name_substr=joint_name_substr,
+    )
     if pos is None:
-        return False, float("nan")
-    return pos >= float(threshold), float(pos)
+        return False, float("nan"), "missing"
+
+    direction = str(open_direction or "auto").strip().lower()
+    if direction == "auto":
+        names_text = " ".join(str(name).lower() for name in matched_names)
+        direction = "ge" if ("fr3" in names_text or "panda" in names_text) else "le"
+
+    if direction in {"ge", ">=", "greater", "greater_equal"}:
+        released = pos >= float(threshold)
+        direction_tag = "ge"
+    elif direction in {"le", "<=", "less", "less_equal"}:
+        released = pos <= float(threshold)
+        direction_tag = "le"
+    else:
+        released = pos >= float(threshold)
+        direction_tag = "ge"
+    return bool(released), float(pos), direction_tag
+
+
+def _merge_gripper_release_metrics(
+    metrics: dict[str, float],
+    scene,
+    env_idx: int,
+    require_gripper_release: bool,
+    gripper_open_threshold: float,
+    gripper_joint_name_substr: str,
+    gripper_open_direction: str,
+) -> tuple[bool, dict[str, float]]:
+    if not require_gripper_release:
+        metrics.update(
+            {
+                "gripper_release_required": 0.0,
+                "gripper_released": 1.0,
+                "gripper_finger_pos": float("nan"),
+                "gripper_open_threshold": float(gripper_open_threshold),
+                "gripper_open_direction": "disabled",
+            }
+        )
+        return True, metrics
+
+    released, finger_pos, direction = _check_gripper_released(
+        scene,
+        env_idx=env_idx,
+        threshold=gripper_open_threshold,
+        joint_name_substr=gripper_joint_name_substr,
+        open_direction=gripper_open_direction,
+    )
+    metrics.update(
+        {
+            "gripper_release_required": 1.0,
+            "gripper_released": 1.0 if released else 0.0,
+            "gripper_finger_pos": finger_pos,
+            "gripper_open_threshold": float(gripper_open_threshold),
+            "gripper_open_direction": direction,
+        }
+    )
+    return released, metrics
 
 
 def _evaluate_place_success_with_metrics(
@@ -57,18 +115,31 @@ def _evaluate_place_success_with_metrics(
     range_tolerance: float = POSITION_RANGE_TOLERANCE,
     ee_target_quat_wxyz: np.ndarray | None = None,
     pick_target_offset_in_ee: np.ndarray | None = None,
+    require_gripper_release: bool = True,
+    gripper_open_threshold: float = PLACE_SUCCESS_GRIPPER_OPEN_THRESHOLD,
+    gripper_joint_name_substr: str = "finger,drive",
+    gripper_open_direction: str = "auto",
 ) -> tuple[bool, dict[str, float]]:
     pick_pos_world, _ = _get_object_pose_world_from_scene(scene, pick_target, env_idx)
     place_pos_world, _ = _get_object_pose_world_from_scene(scene, place_target, env_idx)
     place_pos_env, _ = _get_object_pose_env_from_scene(scene, place_target, env_idx)
 
     if pick_pos_world is None or place_pos_world is None or place_pos_env is None:
-        return False, {
-            "pick_place_xy_dist": float("inf"),
-            "pick_higher_than_place": 0.0,
-            "place_target_in_range": 0.0,
-            "place_target_offset_compensated": 0.0,
-        }
+        _, metrics = _merge_gripper_release_metrics(
+            {
+                "pick_place_xy_dist": float("inf"),
+                "pick_higher_than_place": 0.0,
+                "place_target_in_range": 0.0,
+                "place_target_offset_compensated": 0.0,
+            },
+            scene,
+            env_idx,
+            require_gripper_release,
+            gripper_open_threshold,
+            gripper_joint_name_substr,
+            gripper_open_direction,
+        )
+        return False, metrics
 
     offset_compensated = False
     if ee_target_quat_wxyz is not None and pick_target_offset_in_ee is not None:
@@ -87,16 +158,22 @@ def _evaluate_place_success_with_metrics(
     )
     xy_dist = float(np.linalg.norm(pick_pos_world[:2] - compensated_target_xy))
     z_ok = bool(float(pick_pos_world[2]) >= float(place_pos_world[2]) + float(z_margin))
-    gripper_released, finger_pos = _check_gripper_released(scene, env_idx)
-    success = place_in_range and xy_dist <= float(xy_threshold) and z_ok and gripper_released
-    return success, {
-        "pick_place_xy_dist": xy_dist,
-        "pick_higher_than_place": 1.0 if z_ok else 0.0,
-        "place_target_in_range": 1.0 if place_in_range else 0.0,
-        "place_target_offset_compensated": 1.0 if offset_compensated else 0.0,
-        "gripper_released": 1.0 if gripper_released else 0.0,
-        "gripper_finger_pos": finger_pos,
-    }
+    gripper_ok, metrics = _merge_gripper_release_metrics(
+        {
+            "pick_place_xy_dist": xy_dist,
+            "pick_higher_than_place": 1.0 if z_ok else 0.0,
+            "place_target_in_range": 1.0 if place_in_range else 0.0,
+            "place_target_offset_compensated": 1.0 if offset_compensated else 0.0,
+        },
+        scene,
+        env_idx,
+        require_gripper_release,
+        gripper_open_threshold,
+        gripper_joint_name_substr,
+        gripper_open_direction,
+    )
+    success = place_in_range and xy_dist <= float(xy_threshold) and z_ok and gripper_ok
+    return success, metrics
 
 
 def _evaluate_place_on_success_with_metrics(
@@ -107,6 +184,10 @@ def _evaluate_place_on_success_with_metrics(
     on_height_margin: float = 0.01,
     env_idx: int = 0,
     dist_threshold: float = 0.08,
+    require_gripper_release: bool = True,
+    gripper_open_threshold: float = PLACE_SUCCESS_GRIPPER_OPEN_THRESHOLD,
+    gripper_joint_name_substr: str = "finger,drive",
+    gripper_open_direction: str = "auto",
 ) -> tuple[bool, dict[str, float]]:
     """Evaluate 'on' mode placement using 3D distance to expected position.
 
@@ -115,24 +196,38 @@ def _evaluate_place_on_success_with_metrics(
     pick_pos_w, _ = _get_object_pose_world_from_scene(scene, pick_target, env_idx)
     place_pos_w, _ = _get_object_pose_world_from_scene(scene, place_target, env_idx)
     if pick_pos_w is None or place_pos_w is None:
-        return False, {
-            "pick_place_on_dist_3d": float("inf"),
-            "pick_pos_world": None,
-            "expected_place_pos": None,
-        }
+        _, metrics = _merge_gripper_release_metrics(
+            {
+                "pick_place_on_dist_3d": float("inf"),
+                "pick_pos_world": None,
+                "expected_place_pos": None,
+            },
+            scene,
+            env_idx,
+            require_gripper_release,
+            gripper_open_threshold,
+            gripper_joint_name_substr,
+            gripper_open_direction,
+        )
+        return False, metrics
     expected_z = float(place_pos_w[2]) + place_target_height / 2.0 + on_height_margin
     expected_pos = np.array([float(place_pos_w[0]), float(place_pos_w[1]), expected_z], dtype=np.float64)
     pick_pos = np.asarray(pick_pos_w, dtype=np.float64)
     dist_3d = float(np.linalg.norm(pick_pos - expected_pos))
-    gripper_released, finger_pos = _check_gripper_released(scene, env_idx)
-    success = (dist_3d <= dist_threshold) and gripper_released
-    return success, {
-        "pick_place_on_dist_3d": dist_3d,
-        "pick_pos_world": pick_pos.tolist(),
-        "expected_place_pos": expected_pos.tolist(),
-        "gripper_released": 1.0 if gripper_released else 0.0,
-        "gripper_finger_pos": finger_pos,
-    }
+    gripper_ok, metrics = _merge_gripper_release_metrics(
+        {
+            "pick_place_on_dist_3d": dist_3d,
+            "pick_pos_world": pick_pos.tolist(),
+            "expected_place_pos": expected_pos.tolist(),
+        },
+        scene,
+        env_idx,
+        require_gripper_release,
+        gripper_open_threshold,
+        gripper_joint_name_substr,
+        gripper_open_direction,
+    )
+    return dist_3d <= dist_threshold and gripper_ok, metrics
 
 
 def _evaluate_place_affordance_xy_success_with_metrics(
@@ -143,30 +238,48 @@ def _evaluate_place_affordance_xy_success_with_metrics(
     target_aff_local: np.ndarray,
     env_idx: int = 0,
     xy_threshold: float = 0.10,
+    require_gripper_release: bool = True,
+    gripper_open_threshold: float = PLACE_SUCCESS_GRIPPER_OPEN_THRESHOLD,
+    gripper_joint_name_substr: str = "finger,drive",
+    gripper_open_direction: str = "auto",
 ) -> tuple[bool, dict[str, float]]:
     """Evaluate affordance-mode placement by XY distance between affordance centroids."""
     pick_pos_w, pick_quat_w = _get_object_pose_world_from_scene(scene, pick_target, env_idx)
     place_pos_w, place_quat_w = _get_object_pose_world_from_scene(scene, place_target, env_idx)
     if pick_pos_w is None or pick_quat_w is None or place_pos_w is None or place_quat_w is None:
-        return False, {
-            "pick_place_affordance_xy_dist": float("inf"),
-            "pick_aff_world": None,
-            "target_aff_world": None,
-        }
+        _, metrics = _merge_gripper_release_metrics(
+            {
+                "pick_place_affordance_xy_dist": float("inf"),
+                "pick_aff_world": None,
+                "target_aff_world": None,
+            },
+            scene,
+            env_idx,
+            require_gripper_release,
+            gripper_open_threshold,
+            gripper_joint_name_substr,
+            gripper_open_direction,
+        )
+        return False, metrics
     rot_pick = _quat_wxyz_to_matrix(np.asarray(pick_quat_w, dtype=np.float64))
     rot_place = _quat_wxyz_to_matrix(np.asarray(place_quat_w, dtype=np.float64))
     pick_aff_world = rot_pick @ np.asarray(pick_aff_local, dtype=np.float64) + np.asarray(pick_pos_w, dtype=np.float64)
     target_aff_world = rot_place @ np.asarray(target_aff_local, dtype=np.float64) + np.asarray(place_pos_w, dtype=np.float64)
     xy_dist = float(np.linalg.norm(pick_aff_world[:2] - target_aff_world[:2]))
-    gripper_released, finger_pos = _check_gripper_released(scene, env_idx)
-    success = (xy_dist <= float(xy_threshold)) and gripper_released
-    return success, {
-        "pick_place_affordance_xy_dist": xy_dist,
-        "pick_aff_world": pick_aff_world.tolist(),
-        "target_aff_world": target_aff_world.tolist(),
-        "gripper_released": 1.0 if gripper_released else 0.0,
-        "gripper_finger_pos": finger_pos,
-    }
+    gripper_ok, metrics = _merge_gripper_release_metrics(
+        {
+            "pick_place_affordance_xy_dist": xy_dist,
+            "pick_aff_world": pick_aff_world.tolist(),
+            "target_aff_world": target_aff_world.tolist(),
+        },
+        scene,
+        env_idx,
+        require_gripper_release,
+        gripper_open_threshold,
+        gripper_joint_name_substr,
+        gripper_open_direction,
+    )
+    return xy_dist <= float(xy_threshold) and gripper_ok, metrics
 
 
 def _evaluate_place_pose_success_with_metrics(
@@ -177,13 +290,26 @@ def _evaluate_place_pose_success_with_metrics(
     pick_target_offset_in_ee: np.ndarray | None = None,
     env_idx: int = 0,
     xy_threshold: float = PLACE_SUCCESS_XY_THRESHOLD,
+    require_gripper_release: bool = True,
+    gripper_open_threshold: float = PLACE_SUCCESS_GRIPPER_OPEN_THRESHOLD,
+    gripper_joint_name_substr: str = "finger,drive",
+    gripper_open_direction: str = "auto",
 ) -> tuple[bool, dict[str, float]]:
     pick_pos_env, _ = _get_object_pose_env_from_scene(scene, pick_target, env_idx)
     if pick_pos_env is None:
-        return False, {
-            "pick_pose_xy_dist": float("inf"),
-            "pose_offset_compensated": 0.0,
-        }
+        _, metrics = _merge_gripper_release_metrics(
+            {
+                "pick_pose_xy_dist": float("inf"),
+                "pose_offset_compensated": 0.0,
+            },
+            scene,
+            env_idx,
+            require_gripper_release,
+            gripper_open_threshold,
+            gripper_joint_name_substr,
+            gripper_open_direction,
+        )
+        return False, metrics
 
     target_position_env = np.array(target_position_env, dtype=float)
     offset_compensated = False
@@ -193,14 +319,20 @@ def _evaluate_place_pose_success_with_metrics(
         offset_compensated = True
 
     xy_dist = float(np.linalg.norm(pick_pos_env[:2] - target_position_env[:2]))
-    gripper_released, finger_pos = _check_gripper_released(scene, env_idx)
-    success = (xy_dist <= float(xy_threshold)) and gripper_released
-    return success, {
-        "pick_pose_xy_dist": xy_dist,
-        "pose_offset_compensated": 1.0 if offset_compensated else 0.0,
-        "gripper_released": 1.0 if gripper_released else 0.0,
-        "gripper_finger_pos": finger_pos,
-    }
+    gripper_ok, metrics = _merge_gripper_release_metrics(
+        {
+            "pick_pose_xy_dist": xy_dist,
+            "pose_offset_compensated": 1.0 if offset_compensated else 0.0,
+        },
+        scene,
+        env_idx,
+        require_gripper_release,
+        gripper_open_threshold,
+        gripper_joint_name_substr,
+        gripper_open_direction,
+    )
+    success = xy_dist <= float(xy_threshold) and gripper_ok
+    return success, metrics
 
 
 def _evaluate_pour_success_with_metrics(
@@ -210,7 +342,6 @@ def _evaluate_pour_success_with_metrics(
     env_idx: int = 0,
     tilt_threshold: float = POUR_SUCCESS_TILT_THRESHOLD,
     range_tolerance: float = POSITION_RANGE_TOLERANCE,
-    min_z_component_observed: float | None = None,
 ) -> tuple[bool, dict[str, float]]:
     _, pick_quat = _get_object_pose_world_from_scene(scene, pick_target, env_idx)
     pour_pos_env, _ = _get_object_pose_env_from_scene(scene, pour_target, env_idx)
@@ -223,21 +354,15 @@ def _evaluate_pour_success_with_metrics(
 
     rot = _quat_wxyz_to_matrix(np.array(pick_quat, dtype=float))
     world_z_component = float(rot[2, 2])
-
-    # If a per-step minimum was tracked (max tilt near pour target),
-    # use it instead of the instantaneous (end-of-episode) value.
-    tilt_z_for_check = min_z_component_observed if min_z_component_observed is not None else world_z_component
-
     pour_in_range = _is_position_in_range(
         pour_pos_env,
         _get_position_range(scene, pour_target),
         tolerance=range_tolerance,
         axes=("x", "y"),
     )
-    success = pour_in_range and (tilt_z_for_check <= float(tilt_threshold))
+    success = pour_in_range and (world_z_component <= float(tilt_threshold))
     return success, {
-        "object_local_z_world_z": tilt_z_for_check,
-        "object_local_z_world_z_final": world_z_component,
+        "object_local_z_world_z": world_z_component,
         "pour_target_in_range": 1.0 if pour_in_range else 0.0,
     }
 
@@ -374,21 +499,22 @@ def _evaluate_open_success_with_metrics(
 def _evaluate_pull_success_with_metrics(
     scene,
     target_label: str,
+    joint_name: str,
     min_displacement: float = PULL_SUCCESS_MIN_DISPLACEMENT,
     env_idx: int = 0,
     range_tolerance: float = POSITION_RANGE_TOLERANCE,
     peak_displacement: float | None = None,
 ) -> tuple[bool, dict[str, float]]:
     """pull 成功判定:
-    - 读取 `target_label` articulation 上固定关节 `PULL_SUCCESS_JOINT_NAME` 的位移 (prismatic, 单位米)
+    - 读取 `target_label` articulation 上 YAML 指定关节 `joint_name` 的位移 (prismatic, 单位米)
     - 若给定 ``peak_displacement`` (rollout 过程中观察到的 |joint_pos| 峰值), 用峰值判定;
       这样拉出后又被推回的情况下仍能正确识别 pull 成功. 否则回退到当前 scene 的 joint_pos.
     - 位移绝对值 >= `min_displacement` 视为拉动到位
     - articulation 本体仍在 position_range 内 (与 open/close 对称)
     """
-    joint_pos = _get_articulation_joint_pos(
-        scene, target_label, PULL_SUCCESS_JOINT_NAME, env_idx
-    )
+    if not joint_name:
+        raise ValueError("pull success evaluation requires an explicit joint_name")
+    joint_pos = _get_articulation_joint_pos(scene, target_label, joint_name, env_idx)
     all_joints = _get_articulation_all_joint_pos(scene, target_label, env_idx) or {}
     art_pos_env, _ = _get_object_pose_env_from_scene(scene, target_label, env_idx)
 

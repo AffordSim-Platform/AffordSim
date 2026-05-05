@@ -25,6 +25,8 @@ from isaaclab.sim.spawners.from_files.from_files_cfg import GroundPlaneCfg
 from . import mdp
 from isaaclab_tasks.real2sim.assets.franka import *
 from isaaclab_tasks.real2sim.assets.ur5e import UR5E_ROBOTIQ85_CFG
+from isaaclab_tasks.real2sim.assets.sawyer import SAWYER_ROBOTIQ85_CFG
+from isaaclab_tasks.real2sim.assets.xarm7 import XARM7_CFG
 from isaaclab.envs.mdp.commands.commands_cfg import ObjectRelativePoseCommandCfg
 
 from isaaclab_tasks.real2sim.utils.task_config_loader import load_task_config, TaskConfig, ObjectConfig, ArticulationObjectConfig, print_task_config
@@ -34,6 +36,8 @@ ROBOT_CONFIGS = {
     "franka_fr3_ourgripper": FRANKA_FR3_OURGRIPPER_CFG,
     "franka_panda_ourgripper": FRANKA_PANDA_OURGRIPPER_CFG,
     "ur5e_robotiq85": UR5E_ROBOTIQ85_CFG,
+    "sawyer_robotiq85": SAWYER_ROBOTIQ85_CFG,
+    "xarm7_ufactory": XARM7_CFG,
 }
 
 USE_BACKGROUND_REPLACE = True
@@ -41,11 +45,34 @@ USE_BACKGROUND_REPLACE = True
 _CURRENT_TASK_CONFIG: Optional[TaskConfig] = None
 
 
+def _get_project_root() -> Path:
+    """Find the project root that contains the models directory."""
+    root = Path(__file__).resolve()
+    while root != root.parent:
+        if (root / "models").is_dir():
+            return root
+        root = root.parent
+    return Path.cwd()
+
+
 def _get_use_background_replace() -> bool:
     """Read background replacement switch from the active task config."""
     if _CURRENT_TASK_CONFIG is not None:
         return _CURRENT_TASK_CONFIG.runtime.use_background_replace
     return False
+
+
+def _get_scene_usd_path() -> str:
+    """Read the selected static scene USD from the active task config."""
+    project_root = _get_project_root()
+    if _CURRENT_TASK_CONFIG is not None:
+        raw_path = str(_CURRENT_TASK_CONFIG.scene.usd_path or "").strip()
+        if raw_path:
+            scene_path = Path(raw_path).expanduser()
+            if not scene_path.is_absolute():
+                scene_path = project_root / scene_path
+            return str(scene_path)
+    return str(project_root / "models/table.usd")
 
 
 def _get_sim_camera_resolution() -> tuple[int, int]:
@@ -70,7 +97,8 @@ class SceneCfg(InteractiveSceneCfg):
     )
     light_distant = AssetBaseCfg(
         prim_path="/World/light_distant",
-        spawn=sim_utils.DistantLightCfg(intensity=1200.0, color=(1.0, 1.0, 1.0)),
+        spawn=sim_utils.DistantLightCfg(intensity=2500.0, color=(1.0, 1.0, 1.0)),
+        init_state=AssetBaseCfg.InitialStateCfg(rot=(0.9238795, 0.3826834, 0.0, 0.0)),
     )
 
     robot: ArticulationCfg = FRANKA_FR3_CFG.replace(prim_path="{ENV_REGEX_NS}/Robot")
@@ -153,21 +181,21 @@ class ObservationCfg:
 LIGHT_RANDOMIZATION_CONFIGS = [
     {
         "prim_path": "/World/light_sphere",
-        "intensity_range": (1800.0, 8000.0),
-        "color_range": ((0.7, 0.6, 0.5), (1.0, 1.0, 1.0)),
-        "position_range": ((-1.5, -1.5, 1.5), (1.5, 1.5, 3.0)),
+        "intensity_range": (500.0, 14000.0),
+        "color_range": ((0.35, 0.30, 0.25), (1.0, 0.95, 0.85)),
+        "position_range": ((-2.8, -2.8, 0.8), (2.8, 2.8, 4.2)),
     },
     {
         "prim_path": "/World/light_disk",
-        "intensity_range": (1500.0, 5000.0),
-        "color_range": ((0.7, 0.6, 0.5), (1.0, 1.0, 1.0)),
-        "position_range": ((-2.0, -2.0, 1.5), (2.0, 2.0, 3.5)),
+        "intensity_range": (300.0, 12000.0),
+        "color_range": ((0.30, 0.35, 0.45), (1.0, 0.95, 1.0)),
+        "position_range": ((-3.5, -3.0, 0.7), (3.5, 3.0, 4.5)),
     },
     {
         "prim_path": "/World/light_distant",
-        "intensity_range": (300.0, 1500.0),
-        "color_range": ((0.75, 0.65, 0.55), (1.0, 1.0, 1.0)),
-        "direction_range": ((-60.0, -60.0, -180.0), (60.0, 60.0, 180.0)),  # rotateXYZ in degrees
+        "intensity_range": (100.0, 5000.0),
+        "color_range": ((0.45, 0.40, 0.35), (1.0, 1.0, 0.95)),
+        "direction_range": ((-85.0, -85.0, -180.0), (85.0, 85.0, 180.0)),  # rotateXYZ in degrees
     },
 ]
 
@@ -401,7 +429,7 @@ class EnvCfg(ManagerBasedRLEnvCfg):
         self.sim.physx.gpu_temp_buffer_capacity = 2**20
         self.sim.physx.gpu_heap_capacity = 2**20
         self.sim.physx.gpu_found_lost_pairs_capacity = 2**20
-        self.sim.physx.gpu_collision_stack_size = 2**20
+        self.sim.physx.gpu_collision_stack_size = 2**22
         self.sim.physx.gpu_max_rigid_contact_count = 2**20
         self.sim.physx.gpu_total_aggregate_pairs_capacity = 2**20
         self.sim.physx.gpu_found_lost_aggregate_pairs_capacity = 2**20
@@ -700,9 +728,18 @@ def create_pick_env_cfg_from_yaml(
     return env_cfg
 
 def get_pick_env_cfg_class_by_name(task_name: str) -> type:
-    if "UR5e" in task_name and "Robotiq85" in task_name:
+    if "Kinova" in task_name and "Robotiq85" in task_name:
+        from isaaclab_tasks.real2sim.tasks.config.kinova.robotiq85.joint_ee_vis_env_cfg import KinovaRobotiq85JointEEVisPickEnvCfg
+        return KinovaRobotiq85JointEEVisPickEnvCfg
+    elif "Sawyer" in task_name and "Robotiq85" in task_name:
+        from isaaclab_tasks.real2sim.tasks.config.sawyer.robotiq85.joint_ee_vis_env_cfg import SawyerRobotiq85JointEEVisPickEnvCfg
+        return SawyerRobotiq85JointEEVisPickEnvCfg
+    elif "UR5e" in task_name and "Robotiq85" in task_name:
         from isaaclab_tasks.real2sim.tasks.config.ur5e.robotiq85.ik_rel_ee_vis_env_cfg import UR5eRobotiq85IKRelEEVisPickEnvCfg
         return UR5eRobotiq85IKRelEEVisPickEnvCfg
+    elif "XArm7" in task_name and "UFactory" in task_name:
+        from isaaclab_tasks.real2sim.tasks.config.xarm7.ufactory.joint_ee_vis_env_cfg import XArm7UFactoryJointEEVisPickEnvCfg
+        return XArm7UFactoryJointEEVisPickEnvCfg
     elif "IKRel" in task_name and "OurGripper" in task_name:
         from isaaclab_tasks.real2sim.tasks.config.franka_fr3.ourgripper.ik_rel_vis_env_cfg import FrankaFr3OurGripperIKRelVisPickEnvCfg
         return FrankaFr3OurGripperIKRelVisPickEnvCfg

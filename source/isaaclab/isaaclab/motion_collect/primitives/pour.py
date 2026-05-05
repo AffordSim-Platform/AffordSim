@@ -12,13 +12,20 @@ from ..success.scene_helpers import _get_object_pose_world_from_scene
 from ..tools.affordance_resolver import resolve_affordance_path
 from ..tools.pose_utils import _quat_wxyz_to_matrix
 from .utils import (
+    FAILURE_REASON_TARGET_MISSING,
     _normalize_xy,
+    commit_plan_failures,
+    commit_task_failures,
     compute_target_availability_mask,
     compute_tilt_quaternion_from_pour_direction,
+    get_prev_alive_mask,
+    init_local_active_mask,
     load_affordance_centroid,
     load_affordance_clusters,
-    prepare_pour_geometry,
     log_target_missing_envs,
+    mark_local_inactive_with_reason,
+    merge_segment_into_local_active,
+    prepare_pour_geometry,
     search_best_pour_rotation,
     select_effective_pour_point_local,
     select_pour_cluster,
@@ -233,8 +240,16 @@ def primitive_execute_pour(collector, params: Dict[str, Any], context: Dict[str,
         print("[ERROR] Primitive 'execute_pour' requires pour poses first.")
         return False
 
-    prev_success_mask = list(context.get("post_pick_success_mask", [True] * collector.num_envs))
-    target_available_mask = list(pour_pose.get("target_available_mask", [True] * collector.num_envs))
+    n = collector.num_envs
+    prev_alive = get_prev_alive_mask(context, n)
+    local_active = init_local_active_mask(context, n)
+    target_available_mask = list(pour_pose.get("target_available_mask", [True] * n))
+    for env_idx in range(n):
+        if prev_alive[env_idx] and not target_available_mask[env_idx]:
+            mark_local_inactive_with_reason(
+                context, local_active, env_idx, FAILURE_REASON_TARGET_MISSING
+            )
+
     move_hover_height = float(params.get("move_hover_height", pour_pose.get("move_hover_height", 0.15)))
     tilt_angle = float(params.get("tilt_angle_deg", pour_pose.get("tilt_angle_deg", 90.0)))
     tilt_lift_height = float(params.get("tilt_lift_height", pour_pose.get("tilt_lift_height", 0.08)))
@@ -251,40 +266,39 @@ def primitive_execute_pour(collector, params: Dict[str, Any], context: Dict[str,
     move_targets[:, 2] += move_hover_height
     move_quats = np.array(pour_pose["orientations"], dtype=np.float64)
 
-    move_plans, move_successes = collector.motion_planner.plan_to_pose_batch(
-        collector.robot.data.joint_pos[: collector.num_envs].cpu().numpy(),
-        collector.robot.data.joint_vel[: collector.num_envs].cpu().numpy(),
+    move_plans, move_plan_successes = collector.motion_planner.plan_to_pose_batch(
+        collector.robot.data.joint_pos[:n].cpu().numpy(),
+        collector.robot.data.joint_vel[:n].cpu().numpy(),
         collector.robot.joint_names,
         move_targets,
         move_quats,
         target_prim_path=collector.target_prim_path,
     )
-    move_successes = [prev and available and cur for prev, available, cur in zip(prev_success_mask, target_available_mask, move_successes)]
+    move_successes = [
+        local_active[i] and bool(move_plan_successes[i]) for i in range(n)
+    ]
+    merge_segment_into_local_active(local_active, move_successes)
     collector.execute_trajectory_batch(
         move_plans,
-        [-1.0 if success else 0.0 for success in move_successes],
+        [-1.0 if s else 0.0 for s in local_active],
         desc="Primitive Move to Pour",
-        active_mask=move_successes,
+        active_mask=list(local_active),
     )
-    if not any(move_successes):
+    if not any(local_active):
         print("  [ABORT] All envs failed at MOVE to pour position.")
-        context["task_success_mask"] = [False] * collector.num_envs
-        context["post_pour_success_mask"] = [False] * collector.num_envs
-        context["step_failure_reason_mask"] = [
-            "inactive"
-            if not prev_success_mask[env_idx]
-            else "target_missing"
-            if not target_available_mask[env_idx]
-            else "planning_failed"
-            for env_idx in range(collector.num_envs)
+        commit_plan_failures(context, prev_alive, local_active)
+        context["post_pour_success_mask"] = [False] * n
+        context["env_alive_mask"] = [
+            bool(context.get("plan_success_mask", [True] * n)[i]
+                 and context.get("task_success_mask", [True] * n)[i])
+            for i in range(n)
         ]
-        context["env_alive_mask"] = [False] * collector.num_envs
         return False
 
     all_tilt_quat = []
     all_tilt_pos = []
-    for env_idx in range(collector.num_envs):
-        if not move_successes[env_idx]:
+    for env_idx in range(n):
+        if not local_active[env_idx]:
             all_tilt_quat.append(move_quats[env_idx])
             tilt_pos = np.array(pour_pose["positions"][env_idx], dtype=np.float64).copy()
             tilt_pos[2] += tilt_lift_height
@@ -307,14 +321,18 @@ def primitive_execute_pour(collector, params: Dict[str, Any], context: Dict[str,
         all_tilt_quat.append(tilt_quat)
         all_tilt_pos.append(tilt_pos)
 
+    # Snapshot of envs that survived the move stage (used to gate per-step
+    # trajectory sampling for downstream pour-process metric evaluation).
+    move_active_snapshot = list(local_active)
+
     # ---- Per-step tilt trajectory sampling (for pour process success check) ----
     held_pick_target = context.get("held_object") or context.get("pick_target_label")
     pour_meta_list = pour_pose.get("meta", [])
     object_scale = np.asarray(pour_pose.get("object_scale", [1.0, 1.0, 1.0]), dtype=np.float64)
-    per_step_trajectory: list[list[dict]] = [[] for _ in range(collector.num_envs)]
+    per_step_trajectory: list[list[dict]] = [[] for _ in range(n)]
 
     def _sample_env_state(env_idx: int) -> None:
-        if not move_successes[env_idx]:
+        if not move_active_snapshot[env_idx]:
             return
         meta = pour_meta_list[env_idx] if env_idx < len(pour_meta_list) else None
         if not isinstance(meta, dict) or meta.get("status") != "ok":
@@ -342,62 +360,56 @@ def primitive_execute_pour(collector, params: Dict[str, Any], context: Dict[str,
         )
 
     # Seed step 0 sample (state right before tilt motion begins)
-    for env_idx in range(collector.num_envs):
+    for env_idx in range(n):
         _sample_env_state(env_idx)
 
     def tilt_step_debug_fn(step: int, total_steps: int, env_successes_snapshot) -> None:
-        for env_idx in range(collector.num_envs):
+        for env_idx in range(n):
             _sample_env_state(env_idx)
 
-    _, tilt_successes = collector.execute_ik_motion(
+    _, tilt_segment_successes = collector.execute_ik_motion(
         target_positions=all_tilt_pos,
         target_quaternions=all_tilt_quat,
-        gripper_states=[-1.0 if s else 0.0 for s in move_successes],
+        gripper_states=[-1.0 if s else 0.0 for s in local_active],
         interpolation_steps=tilt_interpolation_steps,
         desc="Primitive Tilt Pour",
-        active_mask=move_successes,
+        active_mask=list(local_active),
         step_debug_fn=tilt_step_debug_fn,
     )
-    tilt_successes = [a and b for a, b in zip(move_successes, tilt_successes)]
+    merge_segment_into_local_active(local_active, tilt_segment_successes)
+    tilt_active = list(local_active)  # post-tilt plan-active snapshot
 
     print("  ⏱️ [Primitive] Holding pour pose...")
     action_dim = collector.env.env.action_manager.total_action_dim
     for _ in range(hold_steps):
-        action = torch.zeros(collector.num_envs, action_dim, device=collector.device)
-        action[:, :] = collector.robot.data.joint_pos[: collector.num_envs, :action_dim]
-        for env_idx in range(collector.num_envs):
-            action[env_idx, -1] = -1.0 if tilt_successes[env_idx] else 0.0
+        action = torch.zeros(n, action_dim, device=collector.device)
+        action[:, :] = collector.robot.data.joint_pos[:n, :action_dim]
+        for env_idx in range(n):
+            action[env_idx, -1] = -1.0 if tilt_active[env_idx] else 0.0
         collector.env.step(action)
 
-    final_successes = list(tilt_successes)
-    step_failure_reason_mask = ["none"] * collector.num_envs
-    for env_idx in range(collector.num_envs):
-        if not prev_success_mask[env_idx]:
-            step_failure_reason_mask[env_idx] = "inactive"
-        elif not target_available_mask[env_idx]:
-            step_failure_reason_mask[env_idx] = "target_missing"
-        elif not tilt_successes[env_idx]:
-            step_failure_reason_mask[env_idx] = "planning_failed"
     success_eval_enabled = bool(params.get("success_eval", False))
+    axis_metrics: list[dict] = []
+    process_metrics: list[dict] = []
     if success_eval_enabled:
         pick_target = context.get("held_object") or context.get("pick_target_label")
         pour_pose = context.get("pour_pose") or {}
         pour_target = params.get("target") or pour_pose.get("target_label")
         if not pick_target or not pour_target:
             print("[ERROR] Pour success_eval requires pick target and pour target.")
-            context["task_success_mask"] = [False] * collector.num_envs
-            context["post_pour_success_mask"] = [False] * collector.num_envs
-            context["env_alive_mask"] = [False] * collector.num_envs
-            context["step_failure_reason_mask"] = [
-                "inactive" if not prev_success_mask[env_idx] else "success_eval_failed"
-                for env_idx in range(collector.num_envs)
-            ]
+            # Treat configuration error as a hard task-side failure for all
+            # envs that were still alive entering this primitive.
+            commit_plan_failures(context, prev_alive, local_active)
+            commit_task_failures(
+                context, prev_alive, tilt_active, [False] * n
+            )
+            context["post_pour_success_mask"] = [False] * n
+            context["env_alive_mask"] = [False] * n
             return False
 
         axis_successes = []
-        axis_metrics = []
         tilt_threshold = float(POUR_SUCCESS_TILT_THRESHOLD)
-        for env_idx in range(collector.num_envs):
+        for env_idx in range(n):
             env_success, env_metrics = _evaluate_pour_success_with_metrics(
                 scene=collector.scene,
                 pick_target=pick_target,
@@ -410,9 +422,8 @@ def primitive_execute_pour(collector, params: Dict[str, Any], context: Dict[str,
 
         # ---- Per-step process checks (tip XY range + tilt monotonicity) ----
         process_successes: list[bool] = []
-        process_metrics: list[dict] = []
-        for env_idx in range(collector.num_envs):
-            if not tilt_successes[env_idx]:
+        for env_idx in range(n):
+            if not tilt_active[env_idx]:
                 process_successes.append(False)
                 process_metrics.append({})
                 continue
@@ -433,29 +444,18 @@ def primitive_execute_pour(collector, params: Dict[str, Any], context: Dict[str,
             process_successes.append(proc_ok)
             process_metrics.append(proc_metric)
 
-        final_successes = [
-            a and b and c
-            for a, b, c in zip(tilt_successes, axis_successes, process_successes)
+        # Task-line pass = axis ∧ process. Plan failures are NOT folded in here;
+        # they are tracked separately via plan_success_mask.
+        task_pass = [
+            bool(axis_successes[i] and process_successes[i]) for i in range(n)
         ]
-        for env_idx in range(collector.num_envs):
-            if not prev_success_mask[env_idx]:
-                continue
-            if tilt_successes[env_idx] and not axis_successes[env_idx]:
-                step_failure_reason_mask[env_idx] = "success_eval_failed"
-            elif (
-                tilt_successes[env_idx]
-                and axis_successes[env_idx]
-                and not process_successes[env_idx]
-            ):
-                step_failure_reason_mask[env_idx] = "pour_process_failed"
-            elif final_successes[env_idx]:
-                step_failure_reason_mask[env_idx] = "none"
-        context["task_success_mask"] = list(final_successes)
+        commit_task_failures(context, prev_alive, tilt_active, task_pass)
         context["task_success_metrics"] = list(axis_metrics)
         context["task_process_metrics"] = list(process_metrics)
+        task_mask_now = list(context.get("task_success_mask", [True] * n))
         for env_idx, metrics in enumerate(axis_metrics):
             z_comp = metrics["object_local_z_world_z"]
-            tilt_ok = bool(tilt_successes[env_idx])
+            tilt_ok = bool(tilt_active[env_idx])
             z_ok = np.isfinite(z_comp) and (z_comp <= tilt_threshold)
             pour_target_ok = bool(metrics["pour_target_in_range"] > 0.5)
             proc_ok = bool(process_successes[env_idx])
@@ -465,7 +465,7 @@ def primitive_execute_pour(collector, params: Dict[str, Any], context: Dict[str,
             max_xy_excess = proc_metric.get("max_xy_excess", float("nan"))
             max_tilt_reverse = proc_metric.get("max_tilt_reverse", float("nan"))
             total_tilt_decrease = proc_metric.get("total_tilt_decrease", float("nan"))
-            final_ok = bool(final_successes[env_idx])
+            final_ok = bool(tilt_active[env_idx] and task_mask_now[env_idx])
             z_text = f"{z_comp:.4f}" if np.isfinite(z_comp) else "nan"
             xy_excess_text = (
                 f"{max_xy_excess:.4f}" if isinstance(max_xy_excess, float) and np.isfinite(max_xy_excess) else "nan"
@@ -502,9 +502,11 @@ def primitive_execute_pour(collector, params: Dict[str, Any], context: Dict[str,
             )
         print(
             "  ✅ [Primitive] Task success (pour): "
-            f"{sum(final_successes)}/{collector.num_envs}"
+            f"{sum(1 for i in range(n) if tilt_active[i] and task_mask_now[i])}/{n}"
         )
 
+    # ---- Return-upright phase (planning line; failure here also kills env) ----
+    return_active_in = list(local_active)
     if has_return_lift:
         print("  ↩️ [Primitive] Lifting before returning upright...")
         return_positions = []
@@ -513,39 +515,51 @@ def primitive_execute_pour(collector, params: Dict[str, Any], context: Dict[str,
             lifted[2] += return_lift_height
             return_positions.append(lifted)
 
-        collector.execute_ik_motion(
+        _, lift_seg_successes = collector.execute_ik_motion(
             target_positions=return_positions,
             target_quaternions=all_tilt_quat,
-            gripper_states=[-1.0 if s else 0.0 for s in tilt_successes],
+            gripper_states=[-1.0 if s else 0.0 for s in local_active],
             interpolation_steps=5,
             desc="Primitive Lift Before Return",
-            active_mask=tilt_successes,
+            active_mask=list(local_active),
         )
-        collector.execute_ik_motion(
+        merge_segment_into_local_active(local_active, lift_seg_successes)
+
+        _, return_seg_successes = collector.execute_ik_motion(
             target_positions=return_positions,
             target_quaternions=move_quats,
-            gripper_states=[-1.0 if s else 0.0 for s in tilt_successes],
+            gripper_states=[-1.0 if s else 0.0 for s in local_active],
             interpolation_steps=10,
             desc="Primitive Return Upright",
-            active_mask=tilt_successes,
+            active_mask=list(local_active),
         )
+        merge_segment_into_local_active(local_active, return_seg_successes)
     else:
         print("  ↩️ [Primitive] Returning upright...")
-        collector.execute_ik_motion(
+        _, return_seg_successes = collector.execute_ik_motion(
             target_positions=all_tilt_pos,
             target_quaternions=move_quats,
-            gripper_states=[-1.0 if s else 0.0 for s in tilt_successes],
+            gripper_states=[-1.0 if s else 0.0 for s in local_active],
             interpolation_steps=10,
             desc="Primitive Return Upright",
-            active_mask=tilt_successes,
+            active_mask=list(local_active),
         )
+        merge_segment_into_local_active(local_active, return_seg_successes)
 
-    context["post_pour_success_mask"] = list(final_successes)
-    context["step_failure_reason_mask"] = list(step_failure_reason_mask)
-    context["env_alive_mask"] = list(final_successes)
+    # Commit accumulated planning failures (entire move + tilt + return chain).
+    commit_plan_failures(context, prev_alive, local_active)
+
+    plan_mask_final = list(context.get("plan_success_mask", [True] * n))
+    task_mask_final = list(context.get("task_success_mask", [True] * n))
+    final_alive = [
+        bool(prev_alive[i] and plan_mask_final[i] and task_mask_final[i])
+        for i in range(n)
+    ]
+    context["post_pour_success_mask"] = list(final_alive)
+    context["env_alive_mask"] = list(final_alive)
     context["current_gripper_state"] = "closed"
-    context["pour_completed"] = any(final_successes)
+    context["pour_completed"] = any(final_alive)
     context["primitive_executed_motion"] = True
 
-    print(f"  ✅ [Primitive] Pour success: {sum(final_successes)}/{collector.num_envs}")
-    return any(final_successes)
+    print(f"  ✅ [Primitive] Pour success (alive): {sum(final_alive)}/{n}")
+    return any(final_alive)

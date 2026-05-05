@@ -121,7 +121,7 @@ FRANKA_FR3_OURGRIPPER_CFG = ArticulationCfg(
         ),
         "fr3_hand": ImplicitActuatorCfg(
             joint_names_expr=["fr3_finger_joint.*"],
-            effort_limit_sim=500.0,
+            effort_limit_sim=5000.0,
             velocity_limit_sim=0.2,
             stiffness=5e3,
             damping=2e2,

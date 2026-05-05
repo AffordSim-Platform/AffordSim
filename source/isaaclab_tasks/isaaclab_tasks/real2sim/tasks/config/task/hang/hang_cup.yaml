@@ -1,5 +1,5 @@
 simulation:
-  decimation: 35
+  decimation: 30
   dt: 0.00833333
   render_interval: 5
   episode_length_s: 100
@@ -7,15 +7,15 @@ scene:
   num_envs: 1
   env_spacing: 10
 task:
-  name: interactive task
+  name: hang_cup
   description: grasp the white cup and hang it on the wood rack
 runtime:
   headless: false
-  episodes: 1
-  save_npy: false
-  save_camera_images: false
-  save_composite_images: false
-  save_mask_images: false
+  episodes: 5
+  save_npy: true
+  save_camera_images: true
+  save_composite_images: true
+  save_mask_images: true
   save_original_images: true
   enable_motion_planning: true
   sim_camera_resolution: [640, 480]
@@ -35,31 +35,55 @@ objects:
   white_cup:
     usd_path: models/all_object/white_cup.usd
     semantic_tags:
-    - - class
-      - white_cup
+      -   - class
+          - white_cup
     init_pos: [0.55, 0.18, 0.10]
     init_rot: [-0.7071, 0.0, 0.0, 0.7071]
     height: 0.15
     position_range:
-      x: [0.50, 0.60]
-      y: [0.13, 0.23]
-      z: [0.10, 0.10]
+      x: [0.5, 0.7]
+      y: [0.1, 0.3]
+      z: [0.09, 0.09]
     orientation_range:
-      yaw: [-0.261799, 0.261799]
+      yaw: [-3.14, 3.14]
   wood_rack:
     usd_path: models/all_object/wood_rack.usd
     semantic_tags:
-    - - class
-      - wood_rack
+      -   - class
+          - wood_rack
     init_pos: [0.78, -0.22, 0.25]
     init_rot: [0.7071, 0.0, 0.0, 0.7071]
     height: 0.30
     position_range:
-      x: [0.73, 0.83]
-      y: [-0.27, -0.17]
+      x: [0.75, 0.80]
+      y: [-0.25, -0.20]
       z: [0.25, 0.25]
     orientation_range:
-      yaw: [-0.261799, 0.261799]
+      yaw: [-0.1745, 0.1745]
+  # starbuckscup:
+  #   usd_path: models/all_object/starbuckscup.usd
+  #   semantic_tags:
+  #     -   - class
+  #         - starbuckscup
+  #   init_pos: [0.52, -0.05, 0.10]
+  #   init_rot: [1.0, 0.0, 0.0, 0.0]
+  #   height: 0.10
+  # doraemoncup:
+  #   usd_path: models/all_object/doraemoncup.usd
+  #   semantic_tags:
+  #     -   - class
+  #         - doraemoncup
+  #   init_pos: [0.75, 0.05, 0.09]
+  #   init_rot: [0.9239, 0.0, 0.0, 0.3827]
+  #   height: 0.09
+  # pink_cup:
+  #   usd_path: models/all_object/pink_cup.usd
+  #   semantic_tags:
+  #     -   - class
+  #         - pink_cup
+  #   init_pos: [0.45, -0.25, 0.08]
+  #   init_rot: [1.0, 0.0, 0.0, 0.0]
+  #   height: 0.08
 primitives:
   - type: pick
     mode: hang
@@ -86,8 +110,8 @@ enable_objects_randomization: true
 enable_objects_randomization_curriculum: false
 texture_randomization:
   enabled: false
-  texture_dir: models/random_pic
+  texture_dir: models/random_pic/table
   targets:
     table:
       prim_path: /World/envs/env_{i}/table/Xform_01/Xform/leg/node_/Cube
-      texture_dir: models/random_pic
+      texture_dir: models/random_pic/table

@@ -90,6 +90,7 @@ class DataCollector(
             save_composite_images: Whether to save background-replaced composite images
             save_mask_images: Whether to save foreground mask images
             save_original_images: Whether to save original images before replacement
+            save_depth_images: Whether to save depth images
             data_dir: Directory to save data
             episodes: Number of episodes to collect
             video_dir: Directory to save videos
@@ -318,24 +319,55 @@ class DataCollector(
         return None
 
     def _run_primitives(self, primitive_steps: List[Dict[str, Any]], context: Dict[str, Any]) -> bool:
-        """Execute primitive steps in order."""
+        """Execute primitive steps in order.
+
+        Maintains two independent success lines on ``context``:
+          * ``plan_success_mask`` — always evaluated, AND'd across every plan/IK
+            segment of every primitive in the episode.
+          * ``task_success_mask`` — only updated by primitives whose YAML sets
+            ``success_eval: true``; otherwise stays True.
+
+        ``env_alive_mask`` is derived as ``plan ∧ task`` after each primitive;
+        once an env dies it is excluded from all subsequent primitives.
+        Failure reason for each dead env is recorded once with the first
+        triggering category (``planning_failed`` / ``task_failed`` /
+        ``target_missing`` / ``inactive``).
+        """
         primitive_handlers = self._get_primitive_handlers()
 
         if not self._prepare_primitive_episode(context):
             return False
 
         print(f"[INFO] Running {len(primitive_steps)} primitives for episode {context['episode_num']}")
-        if "env_alive_mask" not in context:
-            context["env_alive_mask"] = [True] * self.num_envs
-        if "env_failure_reasons" not in context or len(list(context.get("env_failure_reasons", []))) != self.num_envs:
-            context["env_failure_reasons"] = ["none"] * self.num_envs
+        n = self.num_envs
+        if "plan_success_mask" not in context or len(list(context.get("plan_success_mask", []))) != n:
+            context["plan_success_mask"] = [True] * n
+        if "task_success_mask" not in context or len(list(context.get("task_success_mask", []))) != n:
+            context["task_success_mask"] = [True] * n
+        if "env_alive_mask" not in context or len(list(context.get("env_alive_mask", []))) != n:
+            context["env_alive_mask"] = [True] * n
+        if "env_failure_reasons" not in context or len(list(context.get("env_failure_reasons", []))) != n:
+            context["env_failure_reasons"] = ["none"] * n
+
+        def _kill_all_with_reason(reason: str) -> None:
+            failure_reasons = list(context.get("env_failure_reasons", ["none"] * n))
+            if len(failure_reasons) != n:
+                failure_reasons = ["none"] * n
+            for i in range(n):
+                if prev_alive[i] and failure_reasons[i] == "none":
+                    failure_reasons[i] = reason
+            context["env_failure_reasons"] = failure_reasons
+            context["plan_success_mask"] = [
+                p and not prev_alive[i] for i, p in enumerate(context.get("plan_success_mask", [True] * n))
+            ]
+            context["env_alive_mask"] = [False] * n
 
         for step_idx, primitive in enumerate(primitive_steps, start=1):
-            if not any(context.get("env_alive_mask", [True] * self.num_envs)):
+            prev_alive = list(context.get("env_alive_mask", [True] * n))
+            if not any(prev_alive):
                 print("[ERROR] No active environments remaining. Aborting primitive sequence.")
                 return False
 
-            prev_alive = list(context.get("env_alive_mask", [True] * self.num_envs))
             primitive_type = primitive.get("type", "")
             primitive_mode = self._normalize_primitive_mode(primitive.get("mode"))
             primitive_params = dict(primitive.get("params", {}) or {})
@@ -344,12 +376,7 @@ class DataCollector(
 
             if handler is None:
                 print(f"[ERROR] Unsupported primitive type: {primitive_type}")
-                context["env_failure_reasons"] = [
-                    "planning_failed" if prev_alive[i] and context["env_failure_reasons"][i] == "none" else context["env_failure_reasons"][i]
-                    for i in range(self.num_envs)
-                ]
-                context["env_alive_mask"] = [False] * self.num_envs
-                context["task_success_mask"] = [False] * self.num_envs
+                _kill_all_with_reason("planning_failed")
                 return False
 
             print(
@@ -361,86 +388,71 @@ class DataCollector(
                 success = handler(primitive_mode, primitive_params, context)
             except NotImplementedError as exc:
                 print(f"[ERROR] {exc}")
-                context["env_failure_reasons"] = [
-                    "planning_failed" if prev_alive[i] and context["env_failure_reasons"][i] == "none" else context["env_failure_reasons"][i]
-                    for i in range(self.num_envs)
-                ]
-                context["env_alive_mask"] = [False] * self.num_envs
-                context["task_success_mask"] = [False] * self.num_envs
+                _kill_all_with_reason("planning_failed")
                 return False
             except Exception as exc:
                 print(f"[ERROR] Primitive '{primitive_type}' failed: {exc}")
-                context["env_failure_reasons"] = [
-                    "planning_failed" if prev_alive[i] and context["env_failure_reasons"][i] == "none" else context["env_failure_reasons"][i]
-                    for i in range(self.num_envs)
-                ]
-                context["env_alive_mask"] = [False] * self.num_envs
-                context["task_success_mask"] = [False] * self.num_envs
+                _kill_all_with_reason("planning_failed")
                 return False
 
-            step_mask = self._extract_latest_success_mask(context, primitive_type=primitive_type)
-            if step_mask is not None:
-                step_reason_mask_raw = context.get("step_failure_reason_mask")
-                if step_reason_mask_raw is not None:
-                    try:
-                        step_reason_mask = list(step_reason_mask_raw)
-                    except Exception:
-                        step_reason_mask = [None] * self.num_envs
-                    if len(step_reason_mask) != self.num_envs:
-                        step_reason_mask = [None] * self.num_envs
-                else:
-                    step_reason_mask = [None] * self.num_envs
+            # --- Aggregate the two success lines + failure reasons ---
+            plan_mask = list(context.get("plan_success_mask", [True] * n))
+            task_mask = list(context.get("task_success_mask", [True] * n))
+            if len(plan_mask) != n:
+                plan_mask = [True] * n
+            if len(task_mask) != n:
+                task_mask = [True] * n
 
-                env_failure_reasons = list(context.get("env_failure_reasons", ["none"] * self.num_envs))
-                if len(env_failure_reasons) != self.num_envs:
-                    env_failure_reasons = ["none"] * self.num_envs
+            step_reason_mask_raw = context.get("step_failure_reason_mask")
+            try:
+                step_reason_mask = (
+                    list(step_reason_mask_raw) if step_reason_mask_raw is not None else [None] * n
+                )
+            except Exception:
+                step_reason_mask = [None] * n
+            if len(step_reason_mask) != n:
+                step_reason_mask = [None] * n
 
-                for env_idx in range(self.num_envs):
-                    if not prev_alive[env_idx] or step_mask[env_idx]:
-                        continue
-                    reason = step_reason_mask[env_idx]
-                    if reason not in {"planning_failed", "success_eval_failed", "target_missing"}:
-                        reason = "planning_failed"
-                    if env_failure_reasons[env_idx] == "none":
-                        env_failure_reasons[env_idx] = reason
-                context["env_failure_reasons"] = env_failure_reasons
-                context["env_alive_mask"] = [a and b for a, b in zip(prev_alive, step_mask)]
-                # Keep task-success mask aligned with the latest primitive result.
-                context["task_success_mask"] = list(context["env_alive_mask"])
+            env_failure_reasons = list(context.get("env_failure_reasons", ["none"] * n))
+            if len(env_failure_reasons) != n:
+                env_failure_reasons = ["none"] * n
 
-            if not success:
+            new_alive = [bool(prev_alive[i] and plan_mask[i] and task_mask[i]) for i in range(n)]
+
+            for env_idx in range(n):
+                if not prev_alive[env_idx] or new_alive[env_idx]:
+                    continue
+                if env_failure_reasons[env_idx] != "none":
+                    continue
+                reason = step_reason_mask[env_idx]
+                if reason not in {
+                    "planning_failed",
+                    "task_failed",
+                    "target_missing",
+                    "inactive",
+                }:
+                    # Fall back: planning side died first, else task.
+                    reason = (
+                        "planning_failed"
+                        if not plan_mask[env_idx]
+                        else "task_failed"
+                    )
+                env_failure_reasons[env_idx] = reason
+
+            context["env_failure_reasons"] = env_failure_reasons
+            context["env_alive_mask"] = new_alive
+
+            if not success and not any(new_alive):
+                # Hard primitive failure with no alive envs to keep going.
                 print(f"[ERROR] Primitive '{primitive_type}' returned failure")
-                if step_mask is None:
-                    env_failure_reasons = list(context.get("env_failure_reasons", ["none"] * self.num_envs))
-                    if len(env_failure_reasons) != self.num_envs:
-                        env_failure_reasons = ["none"] * self.num_envs
-                    for env_idx in range(self.num_envs):
-                        if prev_alive[env_idx] and env_failure_reasons[env_idx] == "none":
-                            env_failure_reasons[env_idx] = "planning_failed"
-                    context["env_failure_reasons"] = env_failure_reasons
-                    context["env_alive_mask"] = [False] * self.num_envs
-                context["task_success_mask"] = list(context.get("env_alive_mask", [False] * self.num_envs))
                 return False
 
-            if step_mask is not None:
-                alive_count = sum(context["env_alive_mask"])
-                print(f"[INFO] Active envs after primitive {step_idx}: {alive_count}/{self.num_envs}")
-                if alive_count == 0:
-                    print("[ERROR] All environments failed before finishing primitive sequence.")
-                    return False
+            alive_count = sum(new_alive)
+            print(f"[INFO] Active envs after primitive {step_idx}: {alive_count}/{n}")
+            if alive_count == 0:
+                print("[ERROR] All environments failed before finishing primitive sequence.")
+                return False
 
-        if context.get("task_success_mask") is None:
-            context["task_success_mask"] = list(context.get("env_alive_mask", [False] * self.num_envs))
-        env_failure_reasons = list(context.get("env_failure_reasons", ["none"] * self.num_envs))
-        if len(env_failure_reasons) != self.num_envs:
-            env_failure_reasons = ["none"] * self.num_envs
-        task_success_mask = list(context.get("task_success_mask", [False] * self.num_envs))
-        for env_idx in range(self.num_envs):
-            if task_success_mask[env_idx]:
-                env_failure_reasons[env_idx] = "none"
-            elif env_failure_reasons[env_idx] == "none":
-                env_failure_reasons[env_idx] = "planning_failed"
-        context["env_failure_reasons"] = env_failure_reasons
         return True
 
     def collect(self, save_video: bool = False) -> Dict:
@@ -462,7 +474,8 @@ class DataCollector(
         self._init_environment()
         
         if self.enable_motion_planning:
-            use_table = (self.robot_type not in {"ur5e", "kinova_robotiq85"})
+            # Keep USD table ignored; use the synthetic table cuboid for all robot configurations.
+            use_table = True
             self.motion_planner = MotionPlanner(
                 robot_cfg_name=self.robot_cfg_name,
                 device=self.device,
@@ -562,31 +575,36 @@ class DataCollector(
                         task_desc=task_desc,
                     )
                     success = self._run_primitives(primitive_steps, primitive_context)
-                    task_success_mask = list(
+                    # Treat the per-env final outcome as ``plan ∧ task`` (i.e.
+                    # ``env_alive_mask`` after the last primitive). ``task_success_mask``
+                    # alone is now the task-eval-only line and stays True for envs
+                    # without ``success_eval``, so it is no longer a sufficient
+                    # success signal on its own.
+                    final_alive_mask = list(
                         primitive_context.get(
-                            "task_success_mask",
-                            primitive_context.get("env_alive_mask", [False] * self.num_envs),
+                            "env_alive_mask",
+                            [False] * self.num_envs,
                         )
                     )
-                    if len(task_success_mask) != self.num_envs:
-                        task_success_mask = [bool(success)] * self.num_envs
-                    successful_env_count = int(sum(bool(v) for v in task_success_mask))
+                    if len(final_alive_mask) != self.num_envs:
+                        final_alive_mask = [bool(success)] * self.num_envs
+                    successful_env_count = int(sum(bool(v) for v in final_alive_mask))
                     env_failure_reasons = list(primitive_context.get("env_failure_reasons", ["unknown"] * self.num_envs))
                     if len(env_failure_reasons) != self.num_envs:
                         env_failure_reasons = ["unknown"] * self.num_envs
                     for env_idx in range(self.num_envs):
                         total_env_attempts += 1
-                        if bool(task_success_mask[env_idx]):
+                        if bool(final_alive_mask[env_idx]):
                             total_env_success += 1
                             continue
                         reason = str(env_failure_reasons[env_idx])
-                        if reason == "success_eval_failed":
+                        if reason == "task_failed":
                             total_env_success_eval_failed += 1
                         elif reason == "planning_failed":
                             total_env_planning_failed += 1
                         else:
                             total_env_other_failed += 1
-                        
+
                     if successful_env_count == self.num_envs:
                         status_icon, status_label = "✓", "FULL"
                     elif successful_env_count > 0:
@@ -597,13 +615,13 @@ class DataCollector(
                     reason_counter = Counter(
                         str(env_failure_reasons[i])
                         for i in range(self.num_envs)
-                        if not bool(task_success_mask[i])
+                        if not bool(final_alive_mask[i])
                     )
                     reason_str = ", ".join(f"{k}={v}" for k, v in sorted(reason_counter.items())) or "none"
 
                     if success and successful_env_count > 0:
                         if self.recorder is not None:
-                            self.recorder.save_episode(success=True, successful_envs=task_success_mask)
+                            self.recorder.save_episode(success=True, successful_envs=final_alive_mask)
                         total_success += 1
                         print(f"{status_icon} Episode {ep+1} {status_label}: {successful_env_count}/{self.num_envs} envs succeeded")
                         if successful_env_count < self.num_envs:

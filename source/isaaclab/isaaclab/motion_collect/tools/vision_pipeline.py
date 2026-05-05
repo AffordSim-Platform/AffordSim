@@ -117,8 +117,8 @@ class VisionPipeline:
     """
     
     # Default configuration
-    ANYGRASP_SCRIPT_PICK = repo_root / "anygrasp/grasp_detection/demo_pick.py"
-    DEFAULT_ANYGRASP_CWD = repo_root / "anygrasp/grasp_detection"
+    ANYGRASP_SCRIPT_PICK = Path("/home/xhf/anygrasp_sdk/grasp_detection/demo_pick.py")
+    DEFAULT_ANYGRASP_CWD = Path("/home/xhf/anygrasp_sdk/grasp_detection")
     DEFAULT_TEMP_DIR = repo_root / "anygrasp_file"
     DEFAULT_CAMERA_POSE = {'pos': [0.68, 0, 1], 'quat': [0.707, 0, 0, 0.707]}
 

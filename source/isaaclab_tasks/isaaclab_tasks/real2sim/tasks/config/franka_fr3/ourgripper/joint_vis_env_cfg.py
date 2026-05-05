@@ -14,6 +14,7 @@ from isaaclab_tasks.real2sim.tasks import mdp
 from isaaclab_tasks.real2sim.tasks.pick_r2s_env_cfg import (
     EnvCfg,
     _get_sim_camera_resolution,
+    _get_scene_usd_path,
     _get_use_background_replace,
 )
 from isaaclab_tasks.real2sim.utils.camera_cfg import realsense_435_side_cam, realsense_435_wrist_cam, top_camera
@@ -35,8 +36,8 @@ class FrankaFr3OurGripperJointVisPickEnvCfg(EnvCfg):
             arm_ee_pose = ObsTerm(func=mdp.arm_ee_pose)
             # gripper_pos = ObsTerm(func=mdp.gripper_pos)
             # arm_ee_vel = ObsTerm(func=mdp.arm_ee_vel)
-            qpos = ObsTerm(func=mdp.arm_joint_pos)  # 7
-            qvel = ObsTerm(func=mdp.arm_joint_vel)  # 7
+            q_pos = ObsTerm(func=mdp.arm_joint_pos)  # 7
+            q_vel = ObsTerm(func=mdp.arm_joint_vel)  # 7
 
             semantic_segmentation_side = ObsTerm(
                 func=mdp.image,
@@ -55,7 +56,7 @@ class FrankaFr3OurGripperJointVisPickEnvCfg(EnvCfg):
                 },
             )
 
-            front = ObsTerm(
+            external_cam_side = ObsTerm(
                 func=mdp.image,
                 params={
                     "sensor_cfg": SceneEntityCfg("external_cam_side"),
@@ -63,29 +64,11 @@ class FrankaFr3OurGripperJointVisPickEnvCfg(EnvCfg):
                     "normalize": True,
                 },
             )
-            wrist = ObsTerm(
+            wrist_cam = ObsTerm(
                 func=mdp.image,
                 params={
                     "sensor_cfg": SceneEntityCfg("wrist_cam"),
                     "data_type": "rgb",
-                    "normalize": True,
-                },
-            )
-
-            # 深度图 (米, float32). normalize=True 时把 inf 替换成 0.
-            front_depth = ObsTerm(
-                func=mdp.image,
-                params={
-                    "sensor_cfg": SceneEntityCfg("external_cam_side"),
-                    "data_type": "distance_to_image_plane",
-                    "normalize": True,
-                },
-            )
-            wrist_depth = ObsTerm(
-                func=mdp.image,
-                params={
-                    "sensor_cfg": SceneEntityCfg("wrist_cam"),
-                    "data_type": "distance_to_image_plane",
                     "normalize": True,
                 },
             )
@@ -122,20 +105,7 @@ class FrankaFr3OurGripperJointVisPickEnvCfg(EnvCfg):
         self.scene.table = AssetBaseCfg(
             prim_path="{ENV_REGEX_NS}/table",
             spawn=sim_utils.UsdFileCfg(
-                usd_path=str(PROJECT_ROOT / "models/table.usd"),
-                semantic_tags=[("class", "table")],
-            ),
-            init_state=RigidObjectCfg.InitialStateCfg(
-                pos=(0, 0, 0),
-                rot=(1.0, 0.0, 0.0, 0.0),
-            ),
-        )
-
-        self.scene.fr3_base = AssetBaseCfg(
-            prim_path="{ENV_REGEX_NS}/fr3_base",
-            spawn=sim_utils.UsdFileCfg(
-                usd_path=str(PROJECT_ROOT / "models/FR3_base.usd"),
-                semantic_tags=[("class", "table")],
+                usd_path=_get_scene_usd_path(),
             ),
             init_state=RigidObjectCfg.InitialStateCfg(
                 pos=(0, 0, 0),
@@ -182,7 +152,7 @@ class FrankaFr3OurGripperJointVisPickEnvCfg(EnvCfg):
                 prim_path="{ENV_REGEX_NS}/external_cam_side",
                 height=_cam_h,
                 width=_cam_w,
-                data_types=["rgb", "semantic_segmentation", "distance_to_image_plane"],
+                data_types=["rgb", "semantic_segmentation"],
                 spawn=sim_utils.PinholeCameraCfg.from_intrinsic_matrix(
                     intrinsic_matrix=realsense_435_side_cam["intrinsic_matrix"],
                     height=_cam_h,
@@ -199,7 +169,7 @@ class FrankaFr3OurGripperJointVisPickEnvCfg(EnvCfg):
                 # prim_path="{ENV_REGEX_NS}/fr3/fr3_hand/wrist_cam",
                 height=_cam_h,
                 width=_cam_w,
-                data_types=["rgb", "semantic_segmentation", "distance_to_image_plane"],
+                data_types=["rgb", "semantic_segmentation"],
                 spawn=sim_utils.PinholeCameraCfg.from_intrinsic_matrix(
                     intrinsic_matrix=realsense_435_wrist_cam["intrinsic_matrix"],
                     height=_cam_h,
@@ -255,7 +225,7 @@ class FrankaFr3OurGripperJointVisPickEnvCfg(EnvCfg):
                     prim_path="{ENV_REGEX_NS}/fr3/urdf_01/fr3_hand",
                     # prim_path="{ENV_REGEX_NS}/fr3/fr3_hand",
                     name="end_effector",
-                    offset=OffsetCfg(pos=[0.0, 0.0, 0.182]),
+                    offset=OffsetCfg(pos=[0.0, 0.0, 0.205]),
                 ),
             ],
         )
@@ -265,4 +235,3 @@ class FrankaFr3OurGripperJointVisPickEnvCfg(EnvCfg):
         self.decimation = 20
         self.sim.dt = 1 / (60 * 2)
         self.sim.render_interval = 10
-

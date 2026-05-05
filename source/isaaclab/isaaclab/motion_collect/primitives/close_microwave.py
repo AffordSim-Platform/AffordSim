@@ -3,12 +3,22 @@ from typing import Any, Dict, Optional
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 
-from ..success.constants import CLOSE_SUCCESS_JOINT_NAME, CLOSE_SUCCESS_MAX_ANGLE_RAD
+from ..success.constants import CLOSE_SUCCESS_MAX_ANGLE_RAD
 from ..success.evaluators import _evaluate_close_success_with_metrics
 from ..tools.pose_utils import parse_facing_axis_local
-from .utils import compute_target_availability_mask, log_target_missing_envs
+from .utils import (
+    FAILURE_REASON_TARGET_MISSING,
+    commit_plan_failures,
+    commit_task_failures,
+    compute_target_availability_mask,
+    get_prev_alive_mask,
+    init_local_active_mask,
+    log_target_missing_envs,
+    mark_local_inactive_with_reason,
+    merge_segment_into_local_active,
+)
 
-FIXED_GRIPPER_STEPS = 10
+FIXED_GRIPPER_STEPS = 3
 
 
 def primitive_close(collector, mode: Optional[str], params: Dict[str, Any], context: Dict[str, Any]) -> bool:
@@ -23,9 +33,27 @@ def primitive_execute_close(collector, params: Dict[str, Any], context: Dict[str
         print("[ERROR] Primitive 'close' requires a target articulation.")
         return False
 
-    prev_success_mask = list(context.get("env_alive_mask", [True] * collector.num_envs))
+    n = collector.num_envs
+    prev_alive = get_prev_alive_mask(context, n)
+    local_active = init_local_active_mask(context, n)
     target_available_mask = compute_target_availability_mask(collector, target_label)
-    log_target_missing_envs("close", target_label, target_available_mask, prev_success_mask)
+    log_target_missing_envs("close", target_label, target_available_mask, prev_alive)
+    for env_idx in range(n):
+        if prev_alive[env_idx] and not target_available_mask[env_idx]:
+            mark_local_inactive_with_reason(
+                context, local_active, env_idx, FAILURE_REASON_TARGET_MISSING
+            )
+    success_eval_enabled = bool(params.get("success_eval", False))
+    success_joint_name = params.get("success_joint_name")
+    if success_eval_enabled and not success_joint_name:
+        print("[ERROR] Primitive 'close' with success_eval=true requires `params.success_joint_name` in YAML.")
+        for i in range(n):
+            local_active[i] = False
+        commit_plan_failures(context, prev_alive, local_active)
+        commit_task_failures(context, prev_alive, list(local_active), [False] * n)
+        context["post_close_success_mask"] = [False] * n
+        context["env_alive_mask"] = [False] * n
+        return False
 
     if not hasattr(collector, "_containers_registry"):
         collector._containers_registry = collector._load_containers_registry()
@@ -59,7 +87,11 @@ def primitive_execute_close(collector, params: Dict[str, Any], context: Dict[str
     object_key = collector._find_object_in_scene(target_label)
     if object_key is None or object_key not in collector.scene.articulations:
         print(f"[ERROR] Articulation '{target_label}' not found in scene.")
-        _set_failure_context(context, collector.num_envs, prev_success_mask, target_available_mask)
+        for i in range(n):
+            local_active[i] = False
+        commit_plan_failures(context, prev_alive, local_active)
+        context["post_close_success_mask"] = [False] * n
+        context["env_alive_mask"] = [False] * n
         return False
 
     microwave = collector.scene.articulations[object_key]
@@ -71,8 +103,8 @@ def primitive_execute_close(collector, params: Dict[str, Any], context: Dict[str
     close_quaternions = []
     active_targets = []
 
-    for env_idx in range(collector.num_envs):
-        if not (prev_success_mask[env_idx] and target_available_mask[env_idx]):
+    for env_idx in range(n):
+        if not local_active[env_idx]:
             pre_close_positions.append(np.array([0.5, 0.0, 0.5], dtype=np.float64))
             close_positions.append(np.array([0.5, 0.0, 0.5], dtype=np.float64))
             close_quaternions.append(np.array([0.0, 1.0, 0.0, 0.0], dtype=np.float64))
@@ -135,84 +167,56 @@ def primitive_execute_close(collector, params: Dict[str, Any], context: Dict[str
         active_targets.append(True)
 
     collector.control_gripper_batch(
-        [1.0 if active else 0.0 for active in active_targets],
+        [1.0 if s else 0.0 for s in local_active],
         steps=FIXED_GRIPPER_STEPS,
-        active_mask=active_targets,
+        active_mask=list(local_active),
     )
 
     print(f"  🚪 [Primitive] Planning microwave pre-close pose for '{target_label}'")
     pre_close_plans, pre_close_plan_successes = collector.motion_planner.plan_to_pose_batch(
-        collector.robot.data.joint_pos[: collector.num_envs].cpu().numpy(),
-        collector.robot.data.joint_vel[: collector.num_envs].cpu().numpy(),
+        collector.robot.data.joint_pos[:n].cpu().numpy(),
+        collector.robot.data.joint_vel[:n].cpu().numpy(),
         collector.robot.joint_names,
         np.array(pre_close_positions, dtype=np.float64),
         np.array(close_quaternions, dtype=np.float64),
         target_prim_path=collector.target_prim_path,
     )
-    pre_close_successes = [
-        prev and available and plan_ok
-        for prev, available, plan_ok in zip(prev_success_mask, target_available_mask, pre_close_plan_successes)
-    ]
+    pre_segment = [local_active[i] and bool(pre_close_plan_successes[i]) for i in range(n)]
+    merge_segment_into_local_active(local_active, pre_segment)
     collector.execute_trajectory_batch(
         pre_close_plans,
-        [1.0 if success else 0.0 for success in pre_close_successes],
+        [1.0 if s else 0.0 for s in local_active],
         desc="Primitive Microwave Pre-Close",
-        active_mask=pre_close_successes,
+        active_mask=list(local_active),
     )
-
-    if not any(pre_close_successes):
-        _set_failure_context(context, collector.num_envs, prev_success_mask, target_available_mask)
-        return False
 
     _, close_motion_successes = collector.execute_ik_motion(
         target_positions=np.array(close_positions, dtype=np.float64),
         target_quaternions=np.array(close_quaternions, dtype=np.float64),
-        gripper_states=[1.0 if success else 0.0 for success in pre_close_successes],
+        gripper_states=[1.0 if s else 0.0 for s in local_active],
         interpolation_steps=close_interp_steps,
         desc="Primitive Close Microwave Door",
-        active_mask=pre_close_successes,
+        active_mask=list(local_active),
     )
-    final_successes = [plan_ok and motion_ok for plan_ok, motion_ok in zip(pre_close_successes, close_motion_successes)]
+    merge_segment_into_local_active(local_active, close_motion_successes)
+    plan_active_after = list(local_active)
 
-    step_failure_reason_mask = [
-        "inactive"
-        if not prev_success_mask[env_idx]
-        else "target_missing"
-        if not target_available_mask[env_idx]
-        else "planning_failed"
-        if not final_successes[env_idx]
-        else "none"
-        for env_idx in range(collector.num_envs)
-    ]
-
-    success_eval_enabled = bool(params.get("success_eval", False))
     if success_eval_enabled:
         max_angle = float(params.get("close_success_max_angle_rad", CLOSE_SUCCESS_MAX_ANGLE_RAD))
         state_successes = []
         state_metrics = []
-        for env_idx in range(collector.num_envs):
+        for env_idx in range(n):
             env_success, env_metrics = _evaluate_close_success_with_metrics(
                 scene=collector.scene,
                 target_label=target_label,
-                joint_name=CLOSE_SUCCESS_JOINT_NAME,
+                joint_name=success_joint_name,
                 max_angle_rad=max_angle,
                 env_idx=env_idx,
             )
             state_successes.append(env_success)
             state_metrics.append(env_metrics)
 
-        final_successes = [motion_ok and state_ok for motion_ok, state_ok in zip(final_successes, state_successes)]
-        for env_idx in range(collector.num_envs):
-            if not prev_success_mask[env_idx]:
-                continue
-            if final_successes[env_idx]:
-                step_failure_reason_mask[env_idx] = "none"
-            elif step_failure_reason_mask[env_idx] in {"planning_failed", "target_missing"}:
-                continue
-            else:
-                step_failure_reason_mask[env_idx] = "success_eval_failed"
-
-        context["task_success_mask"] = list(final_successes)
+        commit_task_failures(context, prev_alive, plan_active_after, list(state_successes))
         context["task_success_metrics"] = list(state_metrics)
         for env_idx, metrics in enumerate(state_metrics):
             joint_val = metrics["joint_pos_rad"]
@@ -226,29 +230,23 @@ def primitive_execute_close(collector, params: Dict[str, Any], context: Dict[str
             )
         print(
             f"  ✅ [Primitive] Task success (close): "
-            f"{sum(final_successes)}/{collector.num_envs} "
+            f"{sum(1 for i in range(n) if plan_active_after[i] and state_successes[i])}/{n} "
             f"(joint_pos<={max_angle:.3f} rad)"
         )
 
-    context["post_close_success_mask"] = list(final_successes)
-    context["step_failure_reason_mask"] = list(step_failure_reason_mask)
-    context["env_alive_mask"] = list(final_successes)
+    commit_plan_failures(context, prev_alive, local_active)
+
+    plan_mask_final = list(context.get("plan_success_mask", [True] * n))
+    task_mask_final = list(context.get("task_success_mask", [True] * n))
+    final_alive = [
+        bool(prev_alive[i] and plan_mask_final[i] and task_mask_final[i])
+        for i in range(n)
+    ]
+    context["post_close_success_mask"] = list(final_alive)
+    context["env_alive_mask"] = list(final_alive)
     context["current_gripper_state"] = "open"
-    context["close_completed"] = any(final_successes)
+    context["close_completed"] = any(final_alive)
     context["primitive_executed_motion"] = True
 
-    print(f"  ✅ [Primitive] Close success: {sum(final_successes)}/{collector.num_envs}")
-    return any(final_successes)
-
-
-def _set_failure_context(context: Dict[str, Any], num_envs: int, prev_mask: list, target_mask: list):
-    context["post_close_success_mask"] = [False] * num_envs
-    context["step_failure_reason_mask"] = [
-        "inactive"
-        if not prev_mask[env_idx]
-        else "target_missing"
-        if not target_mask[env_idx]
-        else "planning_failed"
-        for env_idx in range(num_envs)
-    ]
-    context["env_alive_mask"] = [False] * num_envs
+    print(f"  ✅ [Primitive] Close success (alive): {sum(final_alive)}/{n}")
+    return any(final_alive)

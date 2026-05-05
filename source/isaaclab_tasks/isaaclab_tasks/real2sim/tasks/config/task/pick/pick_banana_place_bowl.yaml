@@ -5,17 +5,17 @@ simulation:
   episode_length_s: 100
 scene:
   num_envs: 5
-  env_spacing: 20
+  env_spacing: 10
 task:
-  name: interactive task
+  name: pick_banana_place_bowl
   description: grasp the banana and put it in the bowl
 runtime:
   headless: false
-  episodes: 1
-  save_npy: false
-  save_camera_images: false
-  save_composite_images: false
-  save_mask_images: false
+  episodes: 5
+  save_npy: true
+  save_camera_images: true
+  save_composite_images: true
+  save_mask_images: true
   save_original_images: true
   enable_motion_planning: true
   sim_camera_resolution: [640, 480]
@@ -37,73 +37,54 @@ objects:
     semantic_tags:
       -   - class
           - yellow_bigbowl
-    init_pos: [
-            0.6258831024169922,
-            -0.1691715270280838,
-            0.07383299618959427
-          ]
-    init_rot: [
-            -0.983406662940979,
-            0.014567255042493343,
-            0.025751756504178047,
-            0.1789863556623459
-          ]
-    height: 0.054
+    init_pos: [0.65, 0.15, 0.0754]
+    init_rot: [-0.9838, 0.0, 0.0, 0.1791]
+    height: 0.0504
     position_range:
       x: [0.45, 0.65]
-      y: [-0.25, -0.15]
-      z: [0.077, 0.077]
+      y: [0.05, 0.25]
+      z: [0.0754, 0.0754]
     orientation_range:
-      yaw: [0, 0]
+      yaw: [-3.14, 3.14]
   yellow_banana:
     usd_path: models/all_object/yellow_banana.usd
     semantic_tags:
       -   - class
           - yellow_banana
-    init_pos: [
-            0.4783134460449219,
-            0.11295998096466064,
-            0.040932558476924896
-          ]
-    init_rot: [
-            0.353904664516449,
-            -0.010913796722888947,
-            -0.07608597725629807,
-            0.9321175813674927
-          ]
-    height: 0.036
+    init_pos: [0.48, -0.23, 0.0443]
+    init_rot: [-0.9838, 0.0, 0.0, 0.1791]
+    height: 0.0193
     position_range:
-      x: [0.45, 0.55]
-      y: [0.11, 0.18]
-      z: [0.098, 0.098]
+      x: [0.45, 0.65]
+      y: [-0.25, -0.05]
+      z: [0.0443, 0.0443]
     orientation_range:
-      # yaw: [-3.1416, 3.1416]
-      yaw: [-0.5, 0.5]
+      yaw: [-3.14, 3.14]
 primitives:
   - type: pick
     mode: affordance
     params:
       target: yellow_banana
-      pre_pick_offset: [0.0, 0.0, 0.10]
-      pick_interpolation_steps: 15
-      lift_interpolation_steps: 15
+      grasp_quat: [0.0, 1.0, 0.0, 0.0]
+      pre_pick_offset: 0.1
+      pick_interpolation_steps: 10
+      lift_interpolation_steps: 10
+      lift_offset: 0.1
   - type: place
     mode: on
     params:
       target: yellow_bigbowl
+      on_height_margin: 0.01 
       success_eval: true
-  - type: return_home
-    params:
-      post_settle_steps: 20
 enable_random_lights: false
 image_noise_std: 0
 image_speckle_noise_std: 0
-enable_objects_randomization: false
+enable_objects_randomization: true
 enable_objects_randomization_curriculum: false
 texture_randomization:
   enabled: false
-  texture_dir: models/random_pic
+  texture_dir: models/random_pic/table
   targets:
     table:
       prim_path: /World/envs/env_{i}/table/Xform_01/Xform/leg/node_/Cube
-      texture_dir: models/random_pic
+      texture_dir: models/random_pic/table

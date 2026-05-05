@@ -159,33 +159,6 @@ def _get_articulation_joint_pos(
     return None
 
 
-def _get_gripper_max_finger_pos(
-    scene,
-    env_idx: int = 0,
-    robot_label: str = "robot",
-    joint_name_substr: str = "finger",
-) -> float | None:
-    """读 robot articulation 上最大 finger 关节位置 (米). 数值越大表示夹爪越开.
-
-    适用于 Franka FR3 (`fr3_finger_joint.*`) / Panda (`panda_finger_joint.*`) 这类
-    平行夹爪 (joint name 含 "finger"). 找不到时返回 None, 调用方按需 fallback.
-    """
-    import numpy as _np
-    articulations = getattr(scene, "articulations", None)
-    if not articulations or robot_label not in articulations:
-        return None
-    art = articulations[robot_label]
-    try:
-        names = list(art.joint_names)
-        finger_idx = [i for i, n in enumerate(names) if joint_name_substr in n.lower()]
-        if not finger_idx:
-            return None
-        joint_pos = art.data.joint_pos[env_idx].detach().cpu().numpy()
-        return float(_np.max(joint_pos[finger_idx]))
-    except Exception:
-        return None
-
-
 def _get_articulation_all_joint_pos(
     scene, label: str, env_idx: int
 ) -> dict[str, float] | None:
@@ -203,3 +176,40 @@ def _get_articulation_all_joint_pos(
     except Exception:
         return None
     return {name: float(joint_pos[idx]) for idx, name in enumerate(joint_names)}
+
+
+def _get_gripper_max_finger_pos(
+    scene,
+    env_idx: int = 0,
+    robot_label: str = "robot",
+    joint_name_substr: str = "finger,drive",
+) -> tuple[float | None, list[str]]:
+    """Return max selected gripper joint position and the matched joint names."""
+    articulations = getattr(scene, "articulations", None)
+    if not articulations or robot_label not in articulations:
+        return None, []
+    art = articulations[robot_label]
+    try:
+        joint_names = list(art.joint_names)
+        joint_pos = art.data.joint_pos[env_idx].detach().cpu().numpy()
+    except Exception:
+        return None, []
+
+    substrings = [
+        part.strip().lower()
+        for part in str(joint_name_substr or "").split(",")
+        if part.strip()
+    ]
+    if not substrings:
+        substrings = ["finger"]
+
+    matched_indices = [
+        idx
+        for idx, name in enumerate(joint_names)
+        if any(substr in str(name).lower() for substr in substrings)
+    ]
+    if not matched_indices:
+        return None, []
+
+    matched_names = [joint_names[idx] for idx in matched_indices]
+    return float(np.max(joint_pos[matched_indices])), matched_names

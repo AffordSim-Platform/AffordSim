@@ -4,6 +4,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 import logging
+import numpy as np
 import torch
 from collections.abc import Sequence
 from typing import Any
@@ -134,7 +135,7 @@ class InteractiveScene:
         # physics scene path
         self._physics_scene_path = None
         # prepare cloner for environment replication
-        self.cloner = GridCloner(spacing=self.cfg.env_spacing, stage=self.stage)
+        self.cloner = GridCloner(spacing=self._grid_cloner_spacing(self.cfg.env_spacing), stage=self.stage)
         self.cloner.define_base_env(self.env_ns)
         self.env_prim_paths = self.cloner.generate_paths(f"{self.env_ns}/env", self.cfg.num_envs)
         # create source prim
@@ -151,6 +152,7 @@ class InteractiveScene:
                 env_origins = self.cloner.clone(
                     source_prim_path=self.env_prim_paths[0],
                     prim_paths=self.env_prim_paths,
+                    **self._clone_position_kwargs(),
                     replicate_physics=False,
                     copy_from_source=True,
                     enable_env_ids=(
@@ -162,6 +164,7 @@ class InteractiveScene:
                 env_origins = self.cloner.clone(
                     source_prim_path=self.env_prim_paths[0],
                     prim_paths=self.env_prim_paths,
+                    **self._clone_position_kwargs(),
                     replicate_physics=False,
                     copy_from_source=True,
                     enable_env_ids=(
@@ -236,6 +239,7 @@ class InteractiveScene:
             env_origins = self.cloner.clone(
                 source_prim_path=self.env_prim_paths[0],
                 prim_paths=self.env_prim_paths,
+                **self._clone_position_kwargs(),
                 replicate_physics=self.cfg.replicate_physics,
                 copy_from_source=copy_from_source,
                 enable_env_ids=(
@@ -247,6 +251,7 @@ class InteractiveScene:
             env_origins = self.cloner.clone(
                 source_prim_path=self.env_prim_paths[0],
                 prim_paths=self.env_prim_paths,
+                **self._clone_position_kwargs(),
                 replicate_physics=self.cfg.replicate_physics,
                 copy_from_source=copy_from_source,
                 enable_env_ids=(
@@ -708,6 +713,47 @@ class InteractiveScene:
     """
     Internal methods.
     """
+
+    @staticmethod
+    def _env_spacing_xy(env_spacing: float | Sequence[float] | dict[str, float]) -> tuple[float, float]:
+        """Return the configured environment spacing as ``(x, y)``."""
+        if isinstance(env_spacing, dict):
+            default = env_spacing.get("xy", 1.0)
+            return float(env_spacing.get("x", default)), float(env_spacing.get("y", default))
+        if isinstance(env_spacing, Sequence) and not isinstance(env_spacing, str):
+            if len(env_spacing) != 2:
+                raise ValueError("env_spacing sequence must contain exactly two values: (x, y).")
+            return float(env_spacing[0]), float(env_spacing[1])
+        spacing = float(env_spacing)
+        return spacing, spacing
+
+    @classmethod
+    def _grid_cloner_spacing(cls, env_spacing: float | Sequence[float] | dict[str, float]) -> float:
+        """Return a scalar fallback spacing for Isaac Sim's GridCloner."""
+        spacing_x, spacing_y = cls._env_spacing_xy(env_spacing)
+        return max(spacing_x, spacing_y)
+
+    def _clone_position_kwargs(self) -> dict[str, np.ndarray]:
+        """Return clone offsets when x/y environment spacing differs."""
+        spacing_x, spacing_y = self._env_spacing_xy(self.cfg.env_spacing)
+        if spacing_x == spacing_y:
+            return {}
+        target_origins = self._compute_env_origins_grid(self.cfg.num_envs, (spacing_x, spacing_y))
+        grid_spacing = self._grid_cloner_spacing(self.cfg.env_spacing)
+        grid_origins = self._compute_env_origins_grid(self.cfg.num_envs, (grid_spacing, grid_spacing))
+        return {"position_offsets": target_origins - grid_origins}
+
+    @staticmethod
+    def _compute_env_origins_grid(num_envs: int, env_spacing: tuple[float, float]) -> np.ndarray:
+        """Compute grid origins using different spacing on x and y axes."""
+        spacing_x, spacing_y = env_spacing
+        env_origins = np.zeros((num_envs, 3), dtype=np.float32)
+        num_rows = int(np.ceil(num_envs / int(np.sqrt(num_envs))))
+        num_cols = int(np.ceil(num_envs / num_rows))
+        ii, jj = np.meshgrid(np.arange(num_rows), np.arange(num_cols), indexing="ij")
+        env_origins[:, 0] = -(ii.flatten()[:num_envs] - (num_rows - 1) / 2) * spacing_x
+        env_origins[:, 1] = (jj.flatten()[:num_envs] - (num_cols - 1) / 2) * spacing_y
+        return env_origins
 
     def _is_scene_setup_from_cfg(self) -> bool:
         """Check if scene entities are setup from the config or not.

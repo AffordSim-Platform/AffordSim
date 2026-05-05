@@ -1,6 +1,8 @@
+from pathlib import Path
+
 import isaaclab.sim as sim_utils
-from isaaclab_tasks.real2sim.tasks.pick.pick_r2s_env_cfg import EnvCfg, _get_sim_camera_resolution, _get_use_background_replace
-from isaaclab_tasks.real2sim.tasks.pick import mdp
+from isaaclab_tasks.real2sim.tasks.pick_r2s_env_cfg import EnvCfg, _get_scene_usd_path, _get_sim_camera_resolution, _get_use_background_replace
+from isaaclab_tasks.real2sim.tasks import mdp
 from isaaclab.sensors import FrameTransformerCfg, CameraCfg, TiledCameraCfg
 from isaaclab.managers import ObservationTermCfg as ObsTerm
 from isaaclab.sensors.frame_transformer.frame_transformer_cfg import OffsetCfg
@@ -9,7 +11,14 @@ from isaaclab.managers import SceneEntityCfg
 from isaaclab.assets import AssetBaseCfg, RigidObjectCfg
 from isaaclab.utils import configclass
 from isaaclab_tasks.real2sim.assets.ur5e import UR5E_ROBOTIQ85_CFG
-from isaaclab_tasks.real2sim.utils.camera_cfg import top_camera, ur5e_side_cam, ur5e_wrist_cam
+from isaaclab_tasks.real2sim.utils.camera_cfg import realsense_435_side_cam, realsense_435_wrist_cam, top_camera
+
+_current = Path(__file__).resolve()
+PROJECT_ROOT = _current
+while PROJECT_ROOT != PROJECT_ROOT.parent:
+    if (PROJECT_ROOT / "models").is_dir():
+        break
+    PROJECT_ROOT = PROJECT_ROOT.parent
 
 # UR5e arm joint names
 _UR5E_ARM_JOINTS = [
@@ -108,7 +117,7 @@ class UR5eRobotiq85IKRelEEVisPickEnvCfg(EnvCfg):
 
         # --- EE frame transformer ---
         # USD root prim is also named 'ur5e', so actual path is ur5e/ur5e/...
-        # Robotiq 2F-85 TCP is approximately 0.17 m from wrist_3_link
+        # Robotiq 2F-85 TCP is approximately 0.137 m from wrist_3_link
         self.scene.ee_frame = FrameTransformerCfg(
             prim_path="{ENV_REGEX_NS}/ur5e/ur5e/base_link",
             debug_vis=False,
@@ -117,7 +126,7 @@ class UR5eRobotiq85IKRelEEVisPickEnvCfg(EnvCfg):
                     prim_path="{ENV_REGEX_NS}/ur5e/ur5e/wrist_3_link",
                     name="end_effector",
                     offset=OffsetCfg(
-                        pos=[0.0, 0.0, 0.17],   # gripper TCP offset from wrist_3_link
+                        pos=[0.0, 0.0, 0.137],  # gripper TCP offset from wrist_3_link
                     ),
                 ),
             ],
@@ -132,13 +141,13 @@ class UR5eRobotiq85IKRelEEVisPickEnvCfg(EnvCfg):
                 width=_cam_w,
                 data_types=["rgb", "semantic_segmentation"],
                 spawn=sim_utils.PinholeCameraCfg.from_intrinsic_matrix(
-                    intrinsic_matrix=ur5e_side_cam["intrinsic_matrix"],
+                    intrinsic_matrix=realsense_435_side_cam["intrinsic_matrix"],
                     height=_cam_h,
                     width=_cam_w,
                 ),
                 offset=CameraCfg.OffsetCfg(
-                    pos=ur5e_side_cam["pos"],
-                    rot=ur5e_side_cam["rot"], convention="ros"
+                    pos=realsense_435_side_cam["pos"],
+                    rot=realsense_435_side_cam["rot"], convention="ros"
                 ),
             )
 
@@ -148,13 +157,13 @@ class UR5eRobotiq85IKRelEEVisPickEnvCfg(EnvCfg):
                 width=_cam_w,
                 data_types=["rgb", "semantic_segmentation"],
                 spawn=sim_utils.PinholeCameraCfg.from_intrinsic_matrix(
-                    intrinsic_matrix=ur5e_wrist_cam["intrinsic_matrix"],
+                    intrinsic_matrix=realsense_435_wrist_cam["intrinsic_matrix"],
                     height=_cam_h,
                     width=_cam_w,
                 ),
                 offset=CameraCfg.OffsetCfg(
-                    pos=ur5e_wrist_cam["pos"],
-                    rot=ur5e_wrist_cam["rot"], convention="ros"
+                    pos=realsense_435_wrist_cam["pos"],
+                    rot=realsense_435_wrist_cam["rot"], convention="ros"
                 ),
             )
         else:
@@ -164,13 +173,13 @@ class UR5eRobotiq85IKRelEEVisPickEnvCfg(EnvCfg):
                 width=_cam_w,
                 data_types=["rgb", "distance_to_image_plane"],
                 spawn=sim_utils.PinholeCameraCfg.from_intrinsic_matrix(
-                    intrinsic_matrix=ur5e_side_cam["intrinsic_matrix"],
+                    intrinsic_matrix=realsense_435_side_cam["intrinsic_matrix"],
                     height=_cam_h,
                     width=_cam_w,
                 ),
                 offset=CameraCfg.OffsetCfg(
-                    pos=ur5e_side_cam["pos"],
-                    rot=ur5e_side_cam["rot"], convention="ros"
+                    pos=realsense_435_side_cam["pos"],
+                    rot=realsense_435_side_cam["rot"], convention="ros"
                 ),
             )
 
@@ -180,33 +189,21 @@ class UR5eRobotiq85IKRelEEVisPickEnvCfg(EnvCfg):
                 width=_cam_w,
                 data_types=["rgb", "distance_to_image_plane"],
                 spawn=sim_utils.PinholeCameraCfg.from_intrinsic_matrix(
-                    intrinsic_matrix=ur5e_wrist_cam["intrinsic_matrix"],
+                    intrinsic_matrix=realsense_435_wrist_cam["intrinsic_matrix"],
                     height=_cam_h,
                     width=_cam_w,
                 ),
                 offset=CameraCfg.OffsetCfg(
-                    pos=ur5e_wrist_cam["pos"],
-                    rot=ur5e_wrist_cam["rot"], convention="ros"
+                    pos=realsense_435_wrist_cam["pos"],
+                    rot=realsense_435_wrist_cam["rot"], convention="ros"
                 ),
             )
-
-        # --- Table (legacy UR5e cabinet) ---
-        # self.scene.table = AssetBaseCfg(
-        #     prim_path="{ENV_REGEX_NS}/table",
-        #     spawn=sim_utils.UsdFileCfg(
-        #         usd_path="/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/cabinet.usd",
-        #     ),
-        #     init_state=AssetBaseCfg.InitialStateCfg(
-        #         pos=(0, 0, 0),
-        #         rot=(1.0, 0.0, 0.0, 0.0),
-        #     ),
-        # )
 
         # --- Table (aligned with Franka configs) ---
         self.scene.table = AssetBaseCfg(
             prim_path="{ENV_REGEX_NS}/table",
             spawn=sim_utils.UsdFileCfg(
-                usd_path="/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/table.usd",
+                usd_path=_get_scene_usd_path(),
             ),
             init_state=AssetBaseCfg.InitialStateCfg(
                 pos=(0, 0, 0),

@@ -3,6 +3,10 @@ from isaaclab_tasks.real2sim.tasks import agents
 
 from isaaclab_tasks.real2sim.tasks.config.franka_fr3 import defaultgripper, ourgripper
 from isaaclab_tasks.real2sim.tasks.config.franka_panda import defaultgripper as panda_defaultgripper
+from isaaclab_tasks.real2sim.tasks.config.kinova import robotiq85 as kinova_robotiq85
+from isaaclab_tasks.real2sim.tasks.config.sawyer import robotiq85 as sawyer_robotiq85
+from isaaclab_tasks.real2sim.tasks.config.ur5e import robotiq85 as ur5e_robotiq85
+from isaaclab_tasks.real2sim.tasks.config.xarm7 import ufactory as xarm7_ufactory
 
 gym.register(
     id="Pick_Place_banana-v0",
@@ -40,5 +44,3 @@ gym.register(
         "rsl_rl_cfg_entry_point": f"{agents.__name__}.rsl_rl_ppo_cfg:BasePPORunnerCfg",
     },
 )
-
-

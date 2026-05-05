@@ -7,7 +7,7 @@ scene:
   num_envs: 3
   env_spacing: 10
 task:
-  name: task_gen
+  name: pour_pan
   description: grasp the pan and pour into the bowl
 runtime:
   headless: false
@@ -40,25 +40,25 @@ objects:
     init_pos: [0.71, 0.18, 0.1]
     init_rot: [0.0436, 0.0, 0.0, 0.999]
     height: 0.05
-  # yellow_bigbowl:
-  #   usd_path: models/all_object/yellow_bigbowl.usd
-  #   semantic_tags:
-  #     -   - class
-  #         - yellow_bigbowl
-  #   init_pos: [0.626, -0.076, 0.077]
-  #   init_rot: [-0.3826834, 0, 0, 0.9238795]
-  #   height: 0.054
-  white_plate:
-    usd_path: models/all_object/white_plate.usd
+  yellow_bigbowl:
+    usd_path: models/all_object/yellow_bigbowl.usd
     semantic_tags:
       -   - class
-          - white_plate
-    init_pos: [0.709, -0.471, 0.12]
-    init_rot: [-0.7238, 0.0, 0.0, 0.69]
-    height: 0.14
+          - yellow_bigbowl
+    init_pos: [0.626, -0.076, 0.077]
+    init_rot: [-0.3826834, 0, 0, 0.9238795]
+    height: 0.054
+  # white_plate:
+  #   usd_path: models/all_object/white_plate.usd
+  #   semantic_tags:
+  #     -   - class
+  #         - white_plate
+  #   init_pos: [0.709, -0.471, 0.12]
+  #   init_rot: [-0.7238, 0.0, 0.0, 0.69]
+  #   height: 0.14
 primitives:
   - type: pick
-    mode: anygrasp
+    mode: affordance_multidir
     params:
       target: white_pan
       pre_pick_offset: [0.0, 0.0, 0.10]
@@ -85,9 +85,9 @@ image_speckle_noise_std: 0
 enable_objects_randomization: false
 enable_objects_randomization_curriculum: false
 texture_randomization:
-  enabled: true
-  texture_dir: models/random_pic
+  enabled: false
+  texture_dir: models/random_pic/table
   targets:
     table:
       prim_path: "/World/envs/env_{i}/table/Xform_01/Xform/leg/node_/Cube"
-      texture_dir: models/random_pic
+      texture_dir: models/random_pic/table

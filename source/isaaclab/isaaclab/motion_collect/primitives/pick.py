@@ -3,9 +3,18 @@ from typing import Any, Dict, Optional
 import numpy as np
 
 from ..tools.pose_utils import _quat_wxyz_to_matrix
-from .utils import parse_position_offset, primitive_compute_grasp_pose
+from .utils import (
+    FAILURE_REASON_TARGET_MISSING,
+    commit_plan_failures,
+    get_prev_alive_mask,
+    init_local_active_mask,
+    mark_local_inactive_with_reason,
+    merge_segment_into_local_active,
+    parse_position_offset,
+    primitive_compute_grasp_pose,
+)
 
-FIXED_GRIPPER_STEPS = 10
+FIXED_GRIPPER_STEPS = 3
 
 
 def primitive_pick(collector, mode: Optional[str], params: Dict[str, Any], context: Dict[str, Any]) -> bool:
@@ -61,8 +70,15 @@ def primitive_execute_pick(collector, params: Dict[str, Any], context: Dict[str,
     pick_interpolation_steps = int(params.get("pick_interpolation_steps", context.get("pick_interpolation_steps", 5)))
     lift_interpolation_steps = int(params.get("lift_interpolation_steps", context.get("lift_interpolation_steps", 5)))
     lift_offset = float(params.get("lift_offset", robot_params.get("lift_offset", 0.1)))
-    prev_success_mask = list(context.get("env_alive_mask", [True] * collector.num_envs))
-    target_available_mask = list(context.get("grasp_pose", {}).get("target_available_mask", [True] * collector.num_envs))
+    n = collector.num_envs
+    prev_alive = get_prev_alive_mask(context, n)
+    local_active = init_local_active_mask(context, n)
+    target_available_mask = list(context.get("grasp_pose", {}).get("target_available_mask", [True] * n))
+    for env_idx in range(n):
+        if prev_alive[env_idx] and not target_available_mask[env_idx]:
+            mark_local_inactive_with_reason(
+                context, local_active, env_idx, FAILURE_REASON_TARGET_MISSING
+            )
 
     pre_pick_positions = context.get("pre_pick_positions")
     if pre_pick_positions is None:
@@ -70,46 +86,50 @@ def primitive_execute_pick(collector, params: Dict[str, Any], context: Dict[str,
         pre_pick_positions += parse_position_offset(None, context.get("pick_pre_pick_offset", 0.1))
 
     container_context = context.get("pick_container_context", {})
-    container_picks = list(container_context.get("container_picks", [None] * collector.num_envs))
+    container_picks = list(container_context.get("container_picks", [None] * n))
     if execution_mode == "normal":
-        container_picks = [None] * collector.num_envs
+        container_picks = [None] * n
 
     print(f"  🚀 [Primitive] Planning Pre-PICK ({execution_mode})...")
 
     pre_pick_plans, pre_pick_plan_successes = collector.motion_planner.plan_to_pose_batch(
-        collector.robot.data.joint_pos[: collector.num_envs].cpu().numpy(),
-        collector.robot.data.joint_vel[: collector.num_envs].cpu().numpy(),
+        collector.robot.data.joint_pos[:n].cpu().numpy(),
+        collector.robot.data.joint_vel[:n].cpu().numpy(),
         collector.robot.joint_names,
         np.array(pre_pick_positions),
         np.array(context["all_pick_quat"]),
         target_prim_path=collector.target_prim_path,
     )
-    pre_pick_successes = [prev and available and cur for prev, available, cur in zip(prev_success_mask, target_available_mask, pre_pick_plan_successes)]
+    pre_pick_segment = [
+        local_active[i] and bool(pre_pick_plan_successes[i]) for i in range(n)
+    ]
+    merge_segment_into_local_active(local_active, pre_pick_segment)
 
     collector.execute_trajectory_batch(
         pre_pick_plans,
-        [1.0 if success else 0.0 for success in pre_pick_successes],
+        [1.0 if s else 0.0 for s in local_active],
         desc="Primitive Pre-Picking",
-        active_mask=pre_pick_successes,
+        active_mask=list(local_active),
     )
 
     print("  🚀 [Primitive] Descending to PICK (IK)...")
-    pick_gripper_open = [1.0 if success else 0.0 for success in pre_pick_successes]
+    pick_gripper_open = [1.0 if s else 0.0 for s in local_active]
     pick_target_positions = np.array(context["all_pick_pos"], dtype=float).copy()
-    _, pick_env_successes = collector.execute_ik_motion(
+    _, pick_segment_successes = collector.execute_ik_motion(
         pick_target_positions,
         np.array(context["all_pick_quat"]),
         gripper_states=pick_gripper_open,
         interpolation_steps=pick_interpolation_steps,
         desc="Primitive Pick Descent",
-        active_mask=pre_pick_successes,
+        active_mask=list(local_active),
     )
-    pick_successes = [pre_success and ik_success for pre_success, ik_success in zip(pre_pick_successes, pick_env_successes)]
+    merge_segment_into_local_active(local_active, pick_segment_successes)
+    pick_successes_snapshot = list(local_active)
 
     collector.control_gripper_batch(
-        [-1.0 if success else 0.0 for success in pick_successes],
+        [-1.0 if s else 0.0 for s in local_active],
         steps=FIXED_GRIPPER_STEPS,
-        active_mask=pick_successes,
+        active_mask=list(local_active),
     )
 
     print("  🚀 [Primitive] Retreat/Lift after PICK (IK)...")
@@ -123,28 +143,37 @@ def primitive_execute_pick(collector, params: Dict[str, Any], context: Dict[str,
     # instead of lifting upward.
     if execution_mode != "normal":
         retreat_count = 0
-        for env_idx in range(collector.num_envs):
+        for env_idx in range(n):
             if container_picks[env_idx] is not None:
                 lift_positions[env_idx] = np.array(pre_pick_positions[env_idx], dtype=float)
                 retreat_count += 1
         if retreat_count > 0:
-            print(f"  [Primitive] Container pick retreat enabled: {retreat_count}/{collector.num_envs} envs -> pre-pick pose")
+            print(f"  [Primitive] Container pick retreat enabled: {retreat_count}/{n} envs -> pre-pick pose")
 
-    _, lift_env_successes = collector.execute_ik_motion(
+    _, lift_segment_successes = collector.execute_ik_motion(
         np.array(lift_positions),
         np.array(context["all_pick_quat"]),
-        gripper_states=[-1.0 if success else 0.0 for success in pick_successes],
+        gripper_states=[-1.0 if s else 0.0 for s in local_active],
         interpolation_steps=lift_interpolation_steps,
         desc="Primitive Lift",
-        active_mask=pick_successes,
+        active_mask=list(local_active),
     )
-    lift_successes = [pick_success and lift_success for pick_success, lift_success in zip(pick_successes, lift_env_successes)]
+    merge_segment_into_local_active(local_active, lift_segment_successes)
 
-    held_object_offset_in_ee = [None] * collector.num_envs
+    commit_plan_failures(context, prev_alive, local_active)
+
+    plan_mask_final = list(context.get("plan_success_mask", [True] * n))
+    task_mask_final = list(context.get("task_success_mask", [True] * n))
+    final_alive = [
+        bool(prev_alive[i] and plan_mask_final[i] and task_mask_final[i])
+        for i in range(n)
+    ]
+
+    held_object_offset_in_ee = [None] * n
     current_ee_pos, current_ee_quat = collector.get_current_ee_pose()
     target_label = context.get("pick_target_label")
-    for env_idx in range(collector.num_envs):
-        if not lift_successes[env_idx] or not target_label:
+    for env_idx in range(n):
+        if not final_alive[env_idx] or not target_label:
             continue
         object_pos_env, _ = collector.get_object_pose(target_label, env_idx=env_idx)
         if object_pos_env is None:
@@ -156,22 +185,12 @@ def primitive_execute_pick(collector, params: Dict[str, Any], context: Dict[str,
 
     context["lift_positions"] = np.array(lift_positions)
     context["held_object_offset_in_ee"] = list(held_object_offset_in_ee)
-    context["pick_successes"] = list(pick_successes)
-    context["post_pick_success_mask"] = list(lift_successes)
-    context["step_failure_reason_mask"] = [
-        "inactive"
-        if not prev_success_mask[env_idx]
-        else "target_missing"
-        if not target_available_mask[env_idx]
-        else "planning_failed"
-        if not lift_successes[env_idx]
-        else "none"
-        for env_idx in range(collector.num_envs)
-    ]
-    context["env_alive_mask"] = list(lift_successes)
+    context["pick_successes"] = list(pick_successes_snapshot)
+    context["post_pick_success_mask"] = list(final_alive)
+    context["env_alive_mask"] = list(final_alive)
     context["current_gripper_state"] = "closed"
-    context["pick_completed"] = any(lift_successes)
+    context["pick_completed"] = any(final_alive)
     context["primitive_executed_motion"] = True
 
-    print(f"  ✅ [Primitive] Pick success: {sum(lift_successes)}/{collector.num_envs}")
-    return any(lift_successes)
+    print(f"  ✅ [Primitive] Pick success (alive): {sum(final_alive)}/{n}")
+    return any(final_alive)

@@ -9,6 +9,7 @@ import logging
 import numpy as np
 import torch
 import trimesh
+from collections.abc import Sequence
 from typing import TYPE_CHECKING
 
 import isaaclab.sim as sim_utils
@@ -352,8 +353,22 @@ class TerrainImporter:
         env_origins[:] = origins[self.terrain_levels, self.terrain_types]
         return env_origins
 
-    def _compute_env_origins_grid(self, num_envs: int, env_spacing: float) -> torch.Tensor:
+    @staticmethod
+    def _env_spacing_xy(env_spacing: float | Sequence[float] | dict[str, float]) -> tuple[float, float]:
+        """Return the configured environment spacing as ``(x, y)``."""
+        if isinstance(env_spacing, dict):
+            default = env_spacing.get("xy", 1.0)
+            return float(env_spacing.get("x", default)), float(env_spacing.get("y", default))
+        if isinstance(env_spacing, Sequence) and not isinstance(env_spacing, str):
+            if len(env_spacing) != 2:
+                raise ValueError("env_spacing sequence must contain exactly two values: (x, y).")
+            return float(env_spacing[0]), float(env_spacing[1])
+        spacing = float(env_spacing)
+        return spacing, spacing
+
+    def _compute_env_origins_grid(self, num_envs: int, env_spacing: float | Sequence[float]) -> torch.Tensor:
         """Compute the origins of the environments in a grid based on configured spacing."""
+        spacing_x, spacing_y = self._env_spacing_xy(env_spacing)
         # create tensor based on number of environments
         env_origins = torch.zeros(num_envs, 3, device=self.device)
         # create a grid of origins
@@ -362,8 +377,8 @@ class TerrainImporter:
         ii, jj = torch.meshgrid(
             torch.arange(num_rows, device=self.device), torch.arange(num_cols, device=self.device), indexing="ij"
         )
-        env_origins[:, 0] = -(ii.flatten()[:num_envs] - (num_rows - 1) / 2) * env_spacing
-        env_origins[:, 1] = (jj.flatten()[:num_envs] - (num_cols - 1) / 2) * env_spacing
+        env_origins[:, 0] = -(ii.flatten()[:num_envs] - (num_rows - 1) / 2) * spacing_x
+        env_origins[:, 1] = (jj.flatten()[:num_envs] - (num_cols - 1) / 2) * spacing_y
         env_origins[:, 2] = 0.0
         return env_origins
 

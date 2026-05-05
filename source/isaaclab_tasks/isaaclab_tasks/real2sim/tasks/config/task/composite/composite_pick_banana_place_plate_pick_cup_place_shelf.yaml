@@ -7,7 +7,7 @@ scene:
   num_envs: 1
   env_spacing: 10
 task:
-  name: composite task
+  name: composite_pick_banana_place_plate_pick_cup_place_shelf
   description: pick banana into plate, then pick redcup into shelf
 runtime:
   headless: false
@@ -21,9 +21,9 @@ runtime:
   sim_camera_resolution: [640, 480]
   background_image_size: [640, 480]
   use_background_replace: true
-  cam_side_background: ../../../../../../../../../../backgrounds/1123_background.png
-  cam_wrist_background: ../../../../../../../../../../backgrounds/wristbackground_realworld1.png
-  data_dir: /home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/data/r2s2r_data/composite_pick_banana_place_plate_pick_cup_place_shelf
+  cam_side_background: backgrounds/1123_background.png
+  cam_wrist_background: backgrounds/wristbackground_realworld1.png
+  data_dir: data/r2s2r_data/composite_pick_banana_place_plate_pick_cup_place_shelf
   task_name: FrankaFr3-OurGripper-Joint-VisPick-v0
 robot:
   cfg_name: franka_fr3_our.yml
@@ -33,7 +33,7 @@ offsets:
   place: [0, 0, 0.0]
 objects:
   white_plate:
-    usd_path: /home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/white_plate.usd
+    usd_path: models/all_object/white_plate.usd
     semantic_tags:
       -   - class
           - white_plate
@@ -41,7 +41,7 @@ objects:
     init_rot: [-0.5935, 0.0, 0.0, 0.8048]
     height: 0.059
   yellow_banana:
-    usd_path: /home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/yellow_banana.usd
+    usd_path: models/all_object/yellow_banana.usd
     semantic_tags:
       -   - class
           - yellow_banana
@@ -49,7 +49,7 @@ objects:
     init_rot: [0.3994, 0.0, 0.0, 0.9168]
     height: 0.036
   red_mugcup:
-    usd_path: /home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/red_mugcup.usd
+    usd_path: models/all_object/red_mugcup.usd
     semantic_tags:
       -   - class
           - red_mugcup
@@ -57,7 +57,7 @@ objects:
     init_rot: [0.3173, 0.0, 0.0, 0.9483]
     height: 0.081
   brown_woodshelf:
-    usd_path: /home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/brown_woodshelf.usd
+    usd_path: models/all_object/brown_woodshelf.usd
     semantic_tags:
       -   - class
           - brown_woodshelf
@@ -96,9 +96,9 @@ image_speckle_noise_std: 0
 enable_objects_randomization: false
 enable_objects_randomization_curriculum: false
 texture_randomization:
-  enabled: true
-  texture_dir: /home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/random_pic
+  enabled: false
+  texture_dir: models/random_pic/table
   targets:
     table:
       prim_path: /World/envs/env_{i}/table/Xform_01/Xform/leg/node_/Cube
-      texture_dir: /home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/random_pic
+      texture_dir: models/random_pic/table

@@ -7,7 +7,7 @@ scene:
   num_envs: 1
   env_spacing: 10
 task:
-  name: interactive task
+  name: pick_papercup_place_table
   description: grasp the beige paper cup
 runtime:
   headless: false
@@ -21,9 +21,9 @@ runtime:
   sim_camera_resolution: [640, 480]
   background_image_size: [640, 480]
   use_background_replace: true
-  cam_side_background: ../../../../../../../../../../backgrounds/1123_background.png
-  cam_wrist_background: ../../../../../../../../../../backgrounds/wristbackground_realworld1.png
-  data_dir: /home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/data/r2s2r_data/pick_papercup_place_table
+  cam_side_background: backgrounds/1123_background.png
+  cam_wrist_background: backgrounds/wristbackground_realworld1.png
+  data_dir: data/r2s2r_data/pick_papercup_place_table
   task_name: FrankaFr3-OurGripper-Joint-VisPick-v0
 robot:
   cfg_name: franka_fr3_our.yml
@@ -32,39 +32,39 @@ offsets:
   grasp: [0, 0, 0.0]
   place: [0, 0, 0.0]
 objects:
-  red_mugcup:
-    usd_path: /home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/red_mugcup.usd
-    semantic_tags:
-      -   - class
-          - red_mugcup
-    init_pos: [0.482, -0.152, 0.09]
-    init_rot: [0.3173, 0, 0, 0.9483]
-    height: 0.081
-  blue_kettle:
-    usd_path: /home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/blue_kettle.usd
-    semantic_tags:
-      -   - class
-          - blue_kettle
-    init_pos: [0.722, 0.152, 0.18]
-    init_rot: [0.3173, 0, 0, 0.9483]
-    height: 0.242
+  # red_mugcup:
+  #   usd_path: models/all_object/red_mugcup.usd
+  #   semantic_tags:
+  #     -   - class
+  #         - red_mugcup
+  #   init_pos: [0.482, -0.152, 0.09]
+  #   init_rot: [0.3173, 0, 0, 0.9483]
+  #   height: 0.081
+  # blue_kettle:
+  #   usd_path: models/all_object/blue_kettle.usd
+  #   semantic_tags:
+  #     -   - class
+  #         - blue_kettle
+  #   init_pos: [0.722, 0.152, 0.18]
+  #   init_rot: [0.3173, 0, 0, 0.9483]
+  #   height: 0.242
   white_papercup1:
-    usd_path: /home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/white_papercup1.usd
+    usd_path: models/all_object/white_papercup1.usd
     semantic_tags:
       -   - class
           - white_papercup1
     init_pos: [0.519, 0.186, 0.068]
     init_rot: [1, 0, 0, 0]
     height: 0.094
-  box:
-    usd_path: /home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/box.usd
-    scale: [0.1, 0.1, 0.1]
-    semantic_tags:
-      -   - class
-          - box
-    init_pos: [0.5, -0.4, 0.07]
-    init_rot: [0.707107, 0.707107, 0.0, 0.0]
-    height: 0.1
+  # box:
+  #   usd_path: models/all_object/box.usd
+  #   scale: [0.1, 0.1, 0.1]
+  #   semantic_tags:
+  #     -   - class
+  #         - box
+  #   init_pos: [0.5, -0.4, 0.07]
+  #   init_rot: [0.707107, 0.707107, 0.0, 0.0]
+  #   height: 0.1
 primitives:
   - type: pick
     mode: affordance
@@ -86,9 +86,9 @@ image_speckle_noise_std: 0
 enable_objects_randomization: false
 enable_objects_randomization_curriculum: false
 texture_randomization:
-  enabled: true
-  texture_dir: /home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/random_pic
+  enabled: false
+  texture_dir: models/random_pic/table
   targets:
     table:
       prim_path: "/World/envs/env_{i}/table/Xform_01/Xform/leg/node_/Cube"
-      texture_dir: /home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/random_pic
+      texture_dir: models/random_pic/table

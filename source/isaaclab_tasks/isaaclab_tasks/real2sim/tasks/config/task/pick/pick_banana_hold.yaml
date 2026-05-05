@@ -7,7 +7,7 @@ scene:
   num_envs: 1
   env_spacing: 20
 task:
-  name: interactive task
+  name: pick_banana_hold
   description: grasp the banana and put it in the bowl
 runtime:
   headless: false
@@ -55,7 +55,7 @@ objects:
   #   height: 0.045
 primitives:
   - type: pick
-    mode: anygrasp
+    mode: affordance
     params:
       target: yellow_banana
       pre_pick_offset: [0.0, 0.0, 0.10]
@@ -72,9 +72,9 @@ image_speckle_noise_std: 0
 enable_objects_randomization: false
 enable_objects_randomization_curriculum: false
 texture_randomization:
-  enabled: true
-  texture_dir: models/random_pic
+  enabled: false
+  texture_dir: models/random_pic/table
   targets:
     table:
       prim_path: /World/envs/env_{i}/table/Xform_01/Xform/leg/node_/Cube
-      texture_dir: models/random_pic
+      texture_dir: models/random_pic/table

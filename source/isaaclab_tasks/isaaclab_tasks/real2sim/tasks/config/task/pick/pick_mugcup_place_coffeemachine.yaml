@@ -1,5 +1,5 @@
 simulation:
-  decimation: 35
+  decimation: 30
   dt: 0.00833333
   render_interval: 5
   episode_length_s: 100
@@ -7,15 +7,15 @@ scene:
   num_envs: 1
   env_spacing: 10
 task:
-  name: interactive task
+  name: pick_mugcup_place_coffeemachine
   description: grasp the red mugcup and place it into coffeemachine1 with affordance
 runtime:
   headless: false
   episodes: 5
-  save_npy: false
-  save_camera_images: false
-  save_composite_images: false
-  save_mask_images: false
+  save_npy: true
+  save_camera_images: true
+  save_composite_images: true
+  save_mask_images: true
   save_original_images: true
   enable_motion_planning: true
   sim_camera_resolution: [640, 480]
@@ -40,11 +40,11 @@ objects:
     init_pos: [0.55, 0.2, 0.09]
     init_rot: [0.3173, 0.0, 0.0, 0.9483]
     position_range:
-      x: [0.55, 0.6]
-      y: [0.15, 0.2]
+      x: [0.5, 0.7]
+      y: [0.15, 0.25]
       z: [0.09, 0.09]
     orientation_range:
-      yaw: [-0.1745, 0.1745]
+      yaw: [-0.785398, 0.785398]
   coffeemachine1:
     usd_path: models/all_object/coffeemachine1.usd
     semantic_tags:
@@ -94,8 +94,8 @@ enable_objects_randomization: true
 enable_objects_randomization_curriculum: false
 texture_randomization:
   enabled: false
-  texture_dir: models/random_pic
+  texture_dir: models/random_pic/table
   targets:
     table:
       prim_path: "/World/envs/env_{i}/table/Xform_01/Xform/leg/node_/Cube"
-      texture_dir: models/random_pic
+      texture_dir: models/random_pic/table

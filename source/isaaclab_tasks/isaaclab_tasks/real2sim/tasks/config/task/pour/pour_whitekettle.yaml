@@ -7,23 +7,23 @@ scene:
   num_envs: 1
   env_spacing: 10
 task:
-  name: interactive task
+  name: pour_whitekettle
   description: grasp the blue cup and pour into the bowl
 runtime:
   headless: false
   episodes: 1
-  save_npy: false
-  save_camera_images: false
-  save_composite_images: false
-  save_mask_images: false
+  save_npy: true
+  save_camera_images: true
+  save_composite_images: true
+  save_mask_images: true
   save_original_images: true
   enable_motion_planning: true
   sim_camera_resolution: [640, 480]
   background_image_size: [640, 480]
   use_background_replace: true
-  cam_side_background: ../../../../../../../../../../backgrounds/1123_background.png
-  cam_wrist_background: ../../../../../../../../../../backgrounds/wristbackground_realworld1.png
-  data_dir: /home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/data/r2s2r_data/pour_whitekettle
+  cam_side_background: backgrounds/1123_background.png
+  cam_wrist_background: backgrounds/wristbackground_realworld1.png
+  data_dir: data/r2s2r_data/pour_whitekettle
   task_name: FrankaFr3-OurGripper-Joint-VisPick-v0
 robot:
   cfg_name: franka_fr3_our.yml
@@ -33,38 +33,58 @@ offsets:
   place: [0, 0, 0.0]
 objects:
   white_kettle3:
-    usd_path: /home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/white_kettle3.usd
+    usd_path: models/all_object/white_kettle3.usd
     semantic_tags:
       -   - class
           - white_kettle3
     scale: [0.15, 0.15, 0.15]
-    init_pos: [0.722, 0.152, 0.18]
+    init_pos: [0.622, 0.182, 0.15]
     init_rot: [0, 0, 0, 1]
     height: 0.242
   yellow_bowl:
-    usd_path: /home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/yellow_bowl.usd
+    usd_path: models/all_object/yellow_bowl.usd
     semantic_tags:
       -   - class
           - yellow_bowl
-    init_pos: [0.7, -0.076, 0.077]
+    init_pos: [0.65, -0.076, 0.077]
     init_rot: [-0.3826834, 0, 0, 0.9238795]
     height: 0.054
-  white_80mmcup:
-    usd_path: /home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/white_80mmcup.usd
+  # white_80mmcup:
+  #   usd_path: models/all_object/white_80mmcup.usd
+  #   semantic_tags:
+  #     -   - class
+  #         - white_80mmcup
+  #   init_pos: [0.55, -0.45, 0.08]
+  #   init_rot: [1.0, 0.0, 0.0, 0.0]
+  #   height: 0.08
+  # white_75mmcup:
+  #   usd_path: models/all_object/white_75mmcup.usd
+  #   semantic_tags:
+  #     -   - class
+  #         - white_75mmcup
+  #   init_pos: [0.75, -0.35, 0.08]
+  #   init_rot: [1.0, 0.0, 0.0, 0.0]
+  #   height: 0.08
+articulations:
+  microwave:
+    usd_path: models/all_object/microwave1.usd
     semantic_tags:
       -   - class
-          - white_80mmcup
-    init_pos: [0.55, -0.35, 0.08]
-    init_rot: [1.0, 0.0, 0.0, 0.0]
-    height: 0.08
-  white_75mmcup:
-    usd_path: /home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/white_75mmcup.usd
-    semantic_tags:
-      -   - class
-          - white_75mmcup
-    init_pos: [0.75, -0.25, 0.08]
-    init_rot: [1.0, 0.0, 0.0, 0.0]
-    height: 0.08
+          - microwave
+    scale: [0.7, 0.6, 0.7]
+    disable_gravity: false
+    enabled_self_collisions: true
+    init_pos: [0.8, -0.4, 0.25]
+    init_rot: [-0.3826834, 0, 0, 0.9238795]
+    joint_pos:
+      microjoint: -2.355
+    actuators:
+      joint:
+        joint_names_expr: ["microjoint"]
+        effort_limit: 1
+        velocity_limit: 1
+        stiffness: 1
+        damping: 1
 primitives:
   - type: pick
     mode: affordance
@@ -87,9 +107,15 @@ image_speckle_noise_std: 0
 enable_objects_randomization: false
 enable_objects_randomization_curriculum: false
 texture_randomization:
-  enabled: true
-  texture_dir: /home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/random_pic
+  enabled: false
+  texture_dir: models/random_pic
   targets:
     table:
       prim_path: "/World/envs/env_{i}/table/Xform_01/Xform/leg/node_/Cube"
-      texture_dir: /home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/random_pic
+      texture_dir: models/random_pic/table
+    microwave:
+      prim_path: "/World/envs/env_{i}/microwave"
+      texture_dir: models/random_pic/microwave
+    white_kettle3:
+      prim_path: "/World/envs/env_{i}/white_kettle3"
+      texture_dir: models/random_pic/kettle

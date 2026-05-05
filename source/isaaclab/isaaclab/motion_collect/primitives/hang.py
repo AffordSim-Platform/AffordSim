@@ -10,11 +10,18 @@ from ..success.evaluators import _evaluate_hang_success_with_metrics
 from ..tools.affordance_resolver import resolve_affordance_path
 from ..tools.pose_utils import _quat_wxyz_to_matrix, _quat_xyzw_to_wxyz
 from .utils import (
+    FAILURE_REASON_TARGET_MISSING,
+    commit_plan_failures,
+    commit_task_failures,
     compute_target_availability_mask,
+    get_prev_alive_mask,
+    init_local_active_mask,
     log_target_missing_envs,
+    mark_local_inactive_with_reason,
+    merge_segment_into_local_active,
 )
 
-FIXED_GRIPPER_STEPS = 10
+FIXED_GRIPPER_STEPS = 3
 
 
 def _normalize(vec: np.ndarray, eps: float = 1e-8) -> Optional[np.ndarray]:
@@ -453,13 +460,15 @@ def primitive_execute_hang(collector, params: Dict[str, Any], context: Dict[str,
         print("[ERROR] Primitive 'execute_hang' requires hang poses first.")
         return False
 
-    prev_success_mask = list(
-        context.get(
-            "env_alive_mask",
-            context.get("post_pick_success_mask", [True] * collector.num_envs),
-        )
-    )
-    target_available_mask = list(hang_pose.get("target_available_mask", [True] * collector.num_envs))
+    n = collector.num_envs
+    prev_alive = get_prev_alive_mask(context, n)
+    local_active = init_local_active_mask(context, n)
+    target_available_mask = list(hang_pose.get("target_available_mask", [True] * n))
+    for env_idx in range(n):
+        if prev_alive[env_idx] and not target_available_mask[env_idx]:
+            mark_local_inactive_with_reason(
+                context, local_active, env_idx, FAILURE_REASON_TARGET_MISSING
+            )
     pre_positions = np.asarray(hang_pose["pre_positions"], dtype=np.float64)
     final_positions = np.asarray(hang_pose["positions"], dtype=np.float64)
     orientations = np.asarray(hang_pose["orientations"], dtype=np.float64)
@@ -473,31 +482,32 @@ def primitive_execute_hang(collector, params: Dict[str, Any], context: Dict[str,
     print(f"  🚀 [Primitive] Executing HANG to '{hang_pose.get('target_label')}'")
 
     pre_plans, pre_plan_successes = collector.motion_planner.plan_to_pose_batch(
-        collector.robot.data.joint_pos[: collector.num_envs].cpu().numpy(),
-        collector.robot.data.joint_vel[: collector.num_envs].cpu().numpy(),
+        collector.robot.data.joint_pos[:n].cpu().numpy(),
+        collector.robot.data.joint_vel[:n].cpu().numpy(),
         collector.robot.joint_names,
         pre_positions,
         orientations,
         target_prim_path=collector.target_prim_path,
     )
-    pre_success_mask = [prev and available and cur for prev, available, cur in zip(prev_success_mask, target_available_mask, pre_plan_successes)]
+    pre_segment = [local_active[i] and bool(pre_plan_successes[i]) for i in range(n)]
+    merge_segment_into_local_active(local_active, pre_segment)
 
     collector.execute_trajectory_batch(
         pre_plans,
-        [-1.0 if success else 0.0 for success in pre_success_mask],
+        [-1.0 if s else 0.0 for s in local_active],
         desc="Primitive Pre-Hang",
-        active_mask=pre_success_mask,
+        active_mask=list(local_active),
     )
 
     _, insert_successes = collector.execute_ik_motion(
         target_positions=final_positions,
         target_quaternions=orientations,
-        gripper_states=[-1.0 if success else 0.0 for success in pre_success_mask],
+        gripper_states=[-1.0 if s else 0.0 for s in local_active],
         interpolation_steps=int(params.get("insert_interpolation_steps", 20)),
         desc="Primitive Hang Insert",
-        active_mask=pre_success_mask,
+        active_mask=list(local_active),
     )
-    final_success_mask = [a and b for a, b in zip(pre_success_mask, insert_successes)]
+    merge_segment_into_local_active(local_active, insert_successes)
 
     release_positions = final_positions.copy()
     if extra_insert_distance > 0.0:
@@ -505,50 +515,43 @@ def primitive_execute_hang(collector, params: Dict[str, Any], context: Dict[str,
         _, extra_insert_successes = collector.execute_ik_motion(
             target_positions=extra_insert_positions,
             target_quaternions=orientations,
-            gripper_states=[-1.0 if success else 0.0 for success in final_success_mask],
+            gripper_states=[-1.0 if s else 0.0 for s in local_active],
             interpolation_steps=int(params.get("extra_insert_interpolation_steps", 10)),
             desc="Primitive Hang Extra Insert",
-            active_mask=final_success_mask,
+            active_mask=list(local_active),
         )
-        final_success_mask = [a and b for a, b in zip(final_success_mask, extra_insert_successes)]
+        merge_segment_into_local_active(local_active, extra_insert_successes)
         release_positions = extra_insert_positions
 
     collector.control_gripper_batch(
-        [1.0 if success else 0.0 for success in final_success_mask],
+        [1.0 if s else 0.0 for s in local_active],
         steps=FIXED_GRIPPER_STEPS,
-        active_mask=final_success_mask,
+        active_mask=list(local_active),
     )
 
     retreat_distance = float(params.get("post_release_retreat_distance", hang_pose.get("pre_hang_distance", 0.10)))
     if retreat_distance > 0.0:
         retreat_positions = release_positions.copy()
-        for env_idx in range(collector.num_envs):
+        for env_idx in range(n):
             gripper_z_axis = _quat_wxyz_to_matrix(orientations[env_idx])[:, 2]
             retreat_positions[env_idx] -= np.asarray(gripper_z_axis, dtype=np.float64) * retreat_distance
         _, retreat_successes = collector.execute_ik_motion(
             target_positions=retreat_positions,
             target_quaternions=orientations,
-            gripper_states=[1.0 if success else 0.0 for success in final_success_mask],
+            gripper_states=[1.0 if s else 0.0 for s in local_active],
             interpolation_steps=int(params.get("retreat_interpolation_steps", 10)),
             desc="Primitive Hang Retreat",
-            active_mask=final_success_mask,
+            active_mask=list(local_active),
         )
-        final_success_mask = [a and b for a, b in zip(final_success_mask, retreat_successes)]
+        merge_segment_into_local_active(local_active, retreat_successes)
 
-    step_failure_reason_mask = ["none"] * collector.num_envs
-    for env_idx in range(collector.num_envs):
-        if not prev_success_mask[env_idx]:
-            step_failure_reason_mask[env_idx] = "inactive"
-        elif not target_available_mask[env_idx]:
-            step_failure_reason_mask[env_idx] = "target_missing"
-        elif not final_success_mask[env_idx]:
-            step_failure_reason_mask[env_idx] = "planning_failed"
+    plan_active_after = list(local_active)
 
     success_eval_enabled = bool(params.get("success_eval", False))
     if success_eval_enabled:
         state_successes = []
         state_metrics = []
-        for env_idx in range(collector.num_envs):
+        for env_idx in range(n):
             env_success, env_metrics = _evaluate_hang_success_with_metrics(
                 scene=collector.scene,
                 held_object_label=held_object_label,
@@ -559,17 +562,7 @@ def primitive_execute_hang(collector, params: Dict[str, Any], context: Dict[str,
             state_successes.append(env_success)
             state_metrics.append(env_metrics)
 
-        final_success_mask = [motion_ok and state_ok for motion_ok, state_ok in zip(final_success_mask, state_successes)]
-        for env_idx in range(collector.num_envs):
-            if not prev_success_mask[env_idx]:
-                continue
-            if final_success_mask[env_idx]:
-                step_failure_reason_mask[env_idx] = "none"
-            elif step_failure_reason_mask[env_idx] in {"planning_failed", "target_missing"}:
-                continue
-            else:
-                step_failure_reason_mask[env_idx] = "success_eval_failed"
-
+        commit_task_failures(context, prev_alive, plan_active_after, list(state_successes))
         context["task_success_metrics"] = list(state_metrics)
         for env_idx, metrics in enumerate(state_metrics):
             obj_z = metrics["held_object_z_env"]
@@ -587,17 +580,23 @@ def primitive_execute_hang(collector, params: Dict[str, Any], context: Dict[str,
             )
         print(
             f"  ✅ [Primitive] Task success (hang): "
-            f"{sum(final_success_mask)}/{collector.num_envs}"
+            f"{sum(1 for i in range(n) if plan_active_after[i] and state_successes[i])}/{n}"
         )
 
-    context["post_hang_success_mask"] = list(final_success_mask)
-    context["env_alive_mask"] = list(final_success_mask)
-    context["task_success_mask"] = list(final_success_mask)
+    commit_plan_failures(context, prev_alive, local_active)
+
+    plan_mask_final = list(context.get("plan_success_mask", [True] * n))
+    task_mask_final = list(context.get("task_success_mask", [True] * n))
+    final_alive = [
+        bool(prev_alive[i] and plan_mask_final[i] and task_mask_final[i])
+        for i in range(n)
+    ]
+    context["post_hang_success_mask"] = list(final_alive)
+    context["env_alive_mask"] = list(final_alive)
     context["current_gripper_state"] = "open"
     context["held_object"] = None
     context["primitive_executed_motion"] = True
-    context["hang_completed"] = any(final_success_mask)
-    context["step_failure_reason_mask"] = step_failure_reason_mask
+    context["hang_completed"] = any(final_alive)
 
-    print(f"  ✅ [Primitive] Hang success: {sum(final_success_mask)}/{collector.num_envs}")
-    return any(final_success_mask)
+    print(f"  ✅ [Primitive] Hang success (alive): {sum(final_alive)}/{n}")
+    return any(final_alive)

@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import isaaclab.sim as sim_utils
 from isaaclab.assets import AssetBaseCfg
 from isaaclab.managers import ObservationGroupCfg as ObsGroup
@@ -8,13 +10,21 @@ from isaaclab.sensors.frame_transformer.frame_transformer_cfg import OffsetCfg
 from isaaclab.utils import configclass
 
 from isaaclab_tasks.real2sim.assets.kinova import KINOVA_ROBOTIQ85_CFG
-from isaaclab_tasks.real2sim.tasks.pick import mdp
-from isaaclab_tasks.real2sim.tasks.pick.pick_r2s_env_cfg import (
+from isaaclab_tasks.real2sim.tasks import mdp
+from isaaclab_tasks.real2sim.tasks.pick_r2s_env_cfg import (
     EnvCfg,
+    _get_scene_usd_path,
     _get_sim_camera_resolution,
     _get_use_background_replace,
 )
 from isaaclab_tasks.real2sim.utils.camera_cfg import realsense_435_side_cam, realsense_435_wrist_cam, top_camera
+
+_current = Path(__file__).resolve()
+PROJECT_ROOT = _current
+while PROJECT_ROOT != PROJECT_ROOT.parent:
+    if (PROJECT_ROOT / "models").is_dir():
+        break
+    PROJECT_ROOT = PROJECT_ROOT.parent
 
 _KINOVA_ARM_JOINTS = [
     "joint_1",
@@ -199,7 +209,7 @@ class KinovaRobotiq85JointEEVisPickEnvCfg(EnvCfg):
         self.scene.table = AssetBaseCfg(
             prim_path="{ENV_REGEX_NS}/table",
             spawn=sim_utils.UsdFileCfg(
-                usd_path="/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/table.usd",
+                usd_path=_get_scene_usd_path(),
             ),
             init_state=AssetBaseCfg.InitialStateCfg(
                 pos=(0, 0, 0),

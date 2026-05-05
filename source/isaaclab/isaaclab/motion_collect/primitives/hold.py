@@ -4,6 +4,13 @@ import numpy as np
 
 from ..success.constants import HOLD_SUCCESS_MIN_Z
 from ..success.evaluators import _evaluate_hold_success_with_metrics
+from .utils import (
+    commit_plan_failures,
+    commit_task_failures,
+    get_prev_alive_mask,
+    init_local_active_mask,
+    merge_segment_into_local_active,
+)
 
 
 def _expand_pose_array(value: Any, num_envs: int, expected_dim: int, name: str) -> np.ndarray:
@@ -24,18 +31,14 @@ def primitive_hold(collector, mode: Optional[str], params: Dict[str, Any], conte
     """Move to hold pose and keep object held for several frames."""
     del mode
 
-    prev_success_mask = list(
-        context.get(
-            "env_alive_mask",
-            context.get("post_pick_success_mask", [True] * collector.num_envs),
-        )
-    )
+    n = collector.num_envs
+    prev_alive = get_prev_alive_mask(context, n)
+    local_active = init_local_active_mask(context, n)
 
-    if not any(prev_success_mask):
+    if not any(prev_alive):
         print("  [ABORT] Primitive 'hold': no active envs.")
-        context["post_hold_success_mask"] = list(prev_success_mask)
-        context["step_failure_reason_mask"] = ["inactive"] * collector.num_envs
-        context["env_alive_mask"] = list(prev_success_mask)
+        context["post_hold_success_mask"] = list(prev_alive)
+        context["env_alive_mask"] = list(prev_alive)
         return False
 
     hold_steps = int(params.get("hold_steps", 10))
@@ -49,7 +52,7 @@ def primitive_hold(collector, mode: Optional[str], params: Dict[str, Any], conte
     # 1) explicit `position`, or
     # 2) use `lift_positions`/current_ee and add `lift_height` (default 0.10m).
     if "position" in params:
-        target_positions = _expand_pose_array(params["position"], collector.num_envs, 3, "position")
+        target_positions = _expand_pose_array(params["position"], n, 3, "position")
     else:
         lift_height = float(params.get("lift_height", 0.10))
         if context.get("lift_positions") is not None:
@@ -63,7 +66,7 @@ def primitive_hold(collector, mode: Optional[str], params: Dict[str, Any], conte
     # 1) explicit `orientation`, or
     # 2) keep pick orientation if available, else current EE orientation.
     if "orientation" in params:
-        target_quaternions = _expand_pose_array(params["orientation"], collector.num_envs, 4, "orientation")
+        target_quaternions = _expand_pose_array(params["orientation"], n, 4, "orientation")
     elif context.get("all_pick_quat") is not None:
         target_quaternions = np.array(context["all_pick_quat"], dtype=float)
     else:
@@ -71,51 +74,46 @@ def primitive_hold(collector, mode: Optional[str], params: Dict[str, Any], conte
 
     print(
         f"  🤲 [Primitive] HOLD: moving to target pose, then holding for {hold_steps} frames "
-        f"(active envs: {sum(prev_success_mask)}/{collector.num_envs})"
+        f"(active envs: {sum(prev_alive)}/{n})"
     )
 
     if collector.motion_planner is None:
         print("  [ERROR] Primitive 'hold' requires motion planner to be enabled.")
-        context["post_hold_success_mask"] = [False] * collector.num_envs
-        context["step_failure_reason_mask"] = [
-            "inactive" if not prev_success_mask[i] else "planning_failed" for i in range(collector.num_envs)
-        ]
-        context["env_alive_mask"] = [False] * collector.num_envs
+        # Treat missing planner as a planning-side failure for all alive envs.
+        for i in range(n):
+            local_active[i] = False
+        commit_plan_failures(context, prev_alive, local_active)
+        context["post_hold_success_mask"] = [False] * n
+        context["env_alive_mask"] = [False] * n
         return False
 
     move_plans, move_plan_successes = collector.motion_planner.plan_to_pose_batch(
-        collector.robot.data.joint_pos[: collector.num_envs].cpu().numpy(),
-        collector.robot.data.joint_vel[: collector.num_envs].cpu().numpy(),
+        collector.robot.data.joint_pos[:n].cpu().numpy(),
+        collector.robot.data.joint_vel[:n].cpu().numpy(),
         collector.robot.joint_names,
         target_positions,
         target_quaternions,
         target_prim_path=collector.target_prim_path,
     )
-    move_successes = [prev and cur for prev, cur in zip(prev_success_mask, move_plan_successes)]
+    move_segment = [local_active[i] and bool(move_plan_successes[i]) for i in range(n)]
+    merge_segment_into_local_active(local_active, move_segment)
 
     collector.execute_trajectory_batch(
         move_plans,
-        [-1.0 if success else 0.0 for success in move_successes],
+        [-1.0 if s else 0.0 for s in local_active],
         desc="Primitive Hold Move",
-        active_mask=move_successes,
+        active_mask=list(local_active),
     )
 
     # Keep holding (and record) by reusing gripper control loop.
-    if hold_steps > 0 and any(move_successes):
+    if hold_steps > 0 and any(local_active):
         collector.control_gripper_batch(
-            [-1.0 if success else 0.0 for success in move_successes],
+            [-1.0 if s else 0.0 for s in local_active],
             steps=hold_steps,
-            active_mask=move_successes,
+            active_mask=list(local_active),
         )
 
-    step_failure_reason_mask = []
-    for i, success in enumerate(move_successes):
-        if not prev_success_mask[i]:
-            step_failure_reason_mask.append("inactive")
-        elif success:
-            step_failure_reason_mask.append("none")
-        else:
-            step_failure_reason_mask.append("planning_failed")
+    plan_active_after = list(local_active)
 
     success_eval_enabled = bool(params.get("success_eval", False))
     if success_eval_enabled:
@@ -125,7 +123,7 @@ def primitive_hold(collector, mode: Optional[str], params: Dict[str, Any], conte
         else:
             state_successes = []
             state_metrics = []
-            for env_idx in range(collector.num_envs):
+            for env_idx in range(n):
                 env_success, env_metrics = _evaluate_hold_success_with_metrics(
                     scene=collector.scene,
                     held_object_label=held_object_label,
@@ -134,18 +132,7 @@ def primitive_hold(collector, mode: Optional[str], params: Dict[str, Any], conte
                 state_successes.append(env_success)
                 state_metrics.append(env_metrics)
 
-            move_successes = [motion_ok and state_ok for motion_ok, state_ok in zip(move_successes, state_successes)]
-            for i, success in enumerate(move_successes):
-                if not prev_success_mask[i]:
-                    continue
-                if success:
-                    step_failure_reason_mask[i] = "none"
-                elif step_failure_reason_mask[i] == "planning_failed":
-                    continue
-                else:
-                    step_failure_reason_mask[i] = "success_eval_failed"
-
-            context["task_success_mask"] = list(move_successes)
+            commit_task_failures(context, prev_alive, plan_active_after, list(state_successes))
             context["task_success_metrics"] = list(state_metrics)
             for env_idx, metrics in enumerate(state_metrics):
                 obj_z = metrics["held_object_z_env"]
@@ -157,19 +144,26 @@ def primitive_hold(collector, mode: Optional[str], params: Dict[str, Any], conte
                 )
             print(
                 f"  ✅ [Primitive] Task success (hold): "
-                f"{sum(move_successes)}/{collector.num_envs}"
+                f"{sum(1 for i in range(n) if plan_active_after[i] and state_successes[i])}/{n}"
             )
 
+    commit_plan_failures(context, prev_alive, local_active)
+
+    plan_mask_final = list(context.get("plan_success_mask", [True] * n))
+    task_mask_final = list(context.get("task_success_mask", [True] * n))
+    final_alive = [
+        bool(prev_alive[i] and plan_mask_final[i] and task_mask_final[i])
+        for i in range(n)
+    ]
     context["hold_pose"] = {
         "positions": np.array(target_positions, dtype=float),
         "orientations": np.array(target_quaternions, dtype=float),
         "hold_steps": hold_steps,
     }
-    context["post_hold_success_mask"] = list(move_successes)
-    context["step_failure_reason_mask"] = step_failure_reason_mask
-    context["env_alive_mask"] = list(move_successes)
+    context["post_hold_success_mask"] = list(final_alive)
+    context["env_alive_mask"] = list(final_alive)
     context["current_gripper_state"] = "closed"
     context["primitive_executed_motion"] = True
 
-    print(f"  ✅ [Primitive] Hold success: {sum(move_successes)}/{collector.num_envs}")
-    return any(move_successes)
+    print(f"  ✅ [Primitive] Hold success (alive): {sum(final_alive)}/{n}")
+    return any(final_alive)

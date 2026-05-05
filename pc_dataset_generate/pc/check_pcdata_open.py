@@ -231,18 +231,10 @@ def create_grasp_visualization(grasp_result):
 # 数据加载与批处理
 # ============================================================================
 def find_pt_path(type_path):
-    pt_files = sorted(
-        file_name for file_name in os.listdir(type_path)
-        if file_name.endswith(".pt") and os.path.isfile(os.path.join(type_path, file_name))
-    )
-
-    if not pt_files:
-        raise FileNotFoundError(f"{type_path} 中未找到 .pt 文件")
-
-    if len(pt_files) > 1:
-        print(f"[WARN] {type_path} 中找到多个 .pt 文件, 使用第一个: {pt_files[0]}")
-
-    return os.path.join(type_path, pt_files[0])
+    pt_path = os.path.join(type_path, "labeled_result.pt")
+    if not os.path.isfile(pt_path):
+        raise FileNotFoundError(f"{type_path} 中未找到 labeled_result.pt")
+    return pt_path
 
 
 def load_points_and_labels(pt_path):

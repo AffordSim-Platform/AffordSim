@@ -40,8 +40,8 @@ CLUSTER_COLORS = [
     [0.5, 0.0, 1.0],  # 紫色
 ]
 
-PT_CANDIDATE_NAMES = ("labeled_result.pt", "label_result.pt", "lable_result.pt")
-NPZ_CANDIDATE_NAMES = ("labeled_result.npz", "label_result.npz", "lable_result.npz")
+PT_CANDIDATE_NAMES = ("labeled_result.pt",)
+NPZ_CANDIDATE_NAMES = ("labeled_result.npz",)
 
 
 # ============================================================================
@@ -272,14 +272,6 @@ def _iter_candidate_files(base_dir):
         path = os.path.join(base_dir, name)
         if os.path.isfile(path):
             yield path
-
-    numeric_pt_files = sorted(
-        os.path.join(base_dir, file_name)
-        for file_name in os.listdir(base_dir)
-        if file_name.endswith(".pt") and file_name not in PT_CANDIDATE_NAMES
-    )
-    for path in numeric_pt_files:
-        yield path
 
     for name in NPZ_CANDIDATE_NAMES:
         path = os.path.join(base_dir, name)

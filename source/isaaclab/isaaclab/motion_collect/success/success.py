@@ -199,6 +199,7 @@ def evaluate_open_success_batch(
 def evaluate_pull_success(
     scene,
     target_label: str,
+    joint_name: str,
     min_displacement: float = PULL_SUCCESS_MIN_DISPLACEMENT,
     env_idx: int = 0,
     range_tolerance: float = POSITION_RANGE_TOLERANCE,
@@ -206,6 +207,7 @@ def evaluate_pull_success(
     success, _ = _evaluate_pull_success_with_metrics(
         scene=scene,
         target_label=target_label,
+        joint_name=joint_name,
         min_displacement=min_displacement,
         env_idx=env_idx,
         range_tolerance=range_tolerance,
@@ -216,6 +218,7 @@ def evaluate_pull_success(
 def evaluate_pull_success_batch(
     scene,
     target_label: str,
+    joint_name: str,
     min_displacement: float = PULL_SUCCESS_MIN_DISPLACEMENT,
     range_tolerance: float = POSITION_RANGE_TOLERANCE,
 ) -> list[bool]:
@@ -223,6 +226,7 @@ def evaluate_pull_success_batch(
         evaluate_pull_success(
             scene=scene,
             target_label=target_label,
+            joint_name=joint_name,
             min_displacement=min_displacement,
             env_idx=env_idx,
             range_tolerance=range_tolerance,

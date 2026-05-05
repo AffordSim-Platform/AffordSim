@@ -70,11 +70,11 @@ class InteractiveSceneCfg:
     num_envs: int = MISSING
     """Number of environment instances handled by the scene."""
 
-    env_spacing: float = MISSING
+    env_spacing: float | tuple[float, float] = MISSING
     """Spacing between environments.
 
-    This is the default distance between environment origins in the scene. Used only when the
-    number of environments is greater than one.
+    This is the default distance between environment origins in the scene. If a tuple is provided,
+    it is interpreted as ``(x_spacing, y_spacing)``. Used only when the number of environments is greater than one.
     """
 
     lazy_sensor_update: bool = True

@@ -76,6 +76,137 @@ def compute_target_availability_mask(collector, target_label: Optional[str]) -> 
     return availability
 
 
+# =========================================================================
+# Dual-line success tracking helpers (planning line + task line)
+# =========================================================================
+
+# Failure reason categories (single source of truth).
+FAILURE_REASON_NONE = "none"
+FAILURE_REASON_INACTIVE = "inactive"
+FAILURE_REASON_TARGET_MISSING = "target_missing"
+FAILURE_REASON_PLANNING_FAILED = "planning_failed"
+FAILURE_REASON_TASK_FAILED = "task_failed"
+
+
+def _ensure_mask(value: Any, num_envs: int, default: bool) -> List[bool]:
+    if value is None:
+        return [default] * num_envs
+    try:
+        out = [bool(v) for v in list(value)]
+    except Exception:
+        return [default] * num_envs
+    if len(out) != num_envs:
+        return [default] * num_envs
+    return out
+
+
+def _ensure_reason_mask(value: Any, num_envs: int) -> List[str]:
+    if value is None:
+        return [FAILURE_REASON_NONE] * num_envs
+    try:
+        out = [str(v) if v is not None else FAILURE_REASON_NONE for v in list(value)]
+    except Exception:
+        return [FAILURE_REASON_NONE] * num_envs
+    if len(out) != num_envs:
+        return [FAILURE_REASON_NONE] * num_envs
+    return out
+
+
+def get_prev_alive_mask(context: Dict[str, Any], num_envs: int) -> List[bool]:
+    """Read the env-alive mask going INTO the current primitive."""
+    return _ensure_mask(context.get("env_alive_mask"), num_envs, True)
+
+
+def init_local_active_mask(context: Dict[str, Any], num_envs: int) -> List[bool]:
+    """Local mask tracking which envs are still planning-alive within this primitive."""
+    return list(get_prev_alive_mask(context, num_envs))
+
+
+def merge_segment_into_local_active(local_active: List[bool], segment_successes: List[bool]) -> None:
+    """AND segment successes into the local plan-active mask (in-place)."""
+    n = len(local_active)
+    for i in range(n):
+        if i >= len(segment_successes):
+            break
+        if not segment_successes[i]:
+            local_active[i] = False
+
+
+def mark_local_inactive_with_reason(
+    context: Dict[str, Any],
+    local_active: List[bool],
+    env_idx: int,
+    reason: str,
+) -> None:
+    """Mark a single env inactive locally and record a specific failure reason
+    (e.g. ``target_missing``) so the subsequent plan-failure commit does not
+    overwrite it with the default ``planning_failed``.
+    """
+    if env_idx < 0 or env_idx >= len(local_active):
+        return
+    local_active[env_idx] = False
+    reason_mask = _ensure_reason_mask(context.get("step_failure_reason_mask"), len(local_active))
+    if reason_mask[env_idx] == FAILURE_REASON_NONE:
+        reason_mask[env_idx] = reason
+    context["step_failure_reason_mask"] = reason_mask
+
+
+def commit_plan_failures(
+    context: Dict[str, Any],
+    prev_alive: List[bool],
+    local_active: List[bool],
+    default_reason: str = FAILURE_REASON_PLANNING_FAILED,
+) -> List[bool]:
+    """AND ``local_active`` into ``context.plan_success_mask`` for envs that
+    were alive entering this primitive. Records ``default_reason`` for envs
+    that died here unless a more specific reason is already set.
+    """
+    n = len(prev_alive)
+    plan_mask = _ensure_mask(context.get("plan_success_mask"), n, True)
+    reason_mask = _ensure_reason_mask(context.get("step_failure_reason_mask"), n)
+    for i in range(n):
+        if not prev_alive[i]:
+            continue
+        if not local_active[i]:
+            plan_mask[i] = False
+            if reason_mask[i] == FAILURE_REASON_NONE:
+                reason_mask[i] = default_reason
+    context["plan_success_mask"] = plan_mask
+    context["step_failure_reason_mask"] = reason_mask
+    return plan_mask
+
+
+def commit_task_failures(
+    context: Dict[str, Any],
+    prev_alive: List[bool],
+    plan_active_after: List[bool],
+    task_pass: List[bool],
+) -> List[bool]:
+    """AND ``task_pass`` into ``context.task_success_mask`` for envs that were
+    alive entering the primitive AND survived its planning chain.
+    """
+    n = len(prev_alive)
+    task_mask = _ensure_mask(context.get("task_success_mask"), n, True)
+    reason_mask = _ensure_reason_mask(context.get("step_failure_reason_mask"), n)
+    for i in range(n):
+        if not prev_alive[i] or not plan_active_after[i]:
+            continue
+        if i >= len(task_pass) or not task_pass[i]:
+            task_mask[i] = False
+            if reason_mask[i] == FAILURE_REASON_NONE:
+                reason_mask[i] = FAILURE_REASON_TASK_FAILED
+    context["task_success_mask"] = task_mask
+    context["step_failure_reason_mask"] = reason_mask
+    return task_mask
+
+
+def compute_env_alive_mask(context: Dict[str, Any], num_envs: int) -> List[bool]:
+    """env_alive = plan_success ∧ task_success."""
+    plan_mask = _ensure_mask(context.get("plan_success_mask"), num_envs, True)
+    task_mask = _ensure_mask(context.get("task_success_mask"), num_envs, True)
+    return [bool(p and t) for p, t in zip(plan_mask, task_mask)]
+
+
 def log_target_missing_envs(
     primitive_name: str,
     target_label: Optional[str],

@@ -2,12 +2,20 @@ import h5py
 import os
 
 
-data_dir = "dataset/r2s2r_data/task_gen/pour_with_affordance/pour_red_cup/hdf5"
-output_file = "dataset/r2s2r_data/task_gen/pour_with_affordance/pour_red_cup/merged_trajectories.hdf5"
+data_dir = os.environ.get(
+    "COMBINE_DATA_DIR",
+    "train_hdf5/pick_banana_place_bowl/hdf5",
+)
+output_file = os.environ.get(
+    "COMBINE_OUTPUT_FILE",
+    "train_hdf5/pick_banana_place_bowl/merged_trajectories.hdf5",
+)
+_episodes_env = os.environ.get("COMBINE_EPISODES")
+num_episodes = int(_episodes_env) if _episodes_env else 51
 
 
 with h5py.File(output_file, 'w') as h5out:
-    for i in range(157):  # episode_0 到 episode_293
+    for i in range(num_episodes):  # episode_0 到 episode_293
         episode_file = os.path.join(data_dir, f"episode_{i}.hdf5")
         group_name = f"traj_{i}"
         with h5py.File(episode_file, 'r') as h5in:

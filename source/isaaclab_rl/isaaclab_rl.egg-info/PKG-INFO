@@ -42,14 +42,14 @@ Provides-Extra: rsl-rl
 Requires-Dist: rsl-rl-lib==3.1.2; extra == "rsl-rl"
 Requires-Dist: onnxscript>=0.5; extra == "rsl-rl"
 Provides-Extra: all
-Requires-Dist: gym; extra == "all"
-Requires-Dist: onnxscript>=0.5; extra == "all"
-Requires-Dist: rsl-rl-lib==3.1.2; extra == "all"
-Requires-Dist: skrl>=1.4.3; extra == "all"
-Requires-Dist: rl-games @ git+https://github.com/isaac-sim/rl_games.git@python3.11 ; extra == "all"
-Requires-Dist: tqdm; extra == "all"
 Requires-Dist: rich; extra == "all"
 Requires-Dist: stable-baselines3>=2.6; extra == "all"
+Requires-Dist: skrl>=1.4.3; extra == "all"
+Requires-Dist: gym; extra == "all"
+Requires-Dist: rsl-rl-lib==3.1.2; extra == "all"
+Requires-Dist: onnxscript>=0.5; extra == "all"
+Requires-Dist: tqdm; extra == "all"
+Requires-Dist: rl-games @ git+https://github.com/isaac-sim/rl_games.git@python3.11 ; extra == "all"
 Dynamic: author
 Dynamic: classifier
 Dynamic: home-page

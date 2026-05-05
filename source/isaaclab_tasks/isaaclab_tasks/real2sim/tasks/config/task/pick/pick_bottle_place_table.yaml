@@ -7,7 +7,7 @@ scene:
   num_envs: 1
   env_spacing: 10
 task:
-  name: interactive task
+  name: pick_bottle_place_table
   description: grasp the red mug cup and hang it on the wood rack
 runtime:
   headless: false
@@ -21,9 +21,9 @@ runtime:
   sim_camera_resolution: [640, 480]
   background_image_size: [640, 480]
   use_background_replace: true
-  cam_side_background: ../../../../../../../../../../backgrounds/1123_background.png
-  cam_wrist_background: ../../../../../../../../../../backgrounds/wristbackground_realworld1.png
-  data_dir: /home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/data/r2s2r_data/pick_bottle_place_table
+  cam_side_background: backgrounds/1123_background.png
+  cam_wrist_background: backgrounds/wristbackground_realworld1.png
+  data_dir: data/r2s2r_data/pick_bottle_place_table
   task_name: FrankaFr3-OurGripper-Joint-VisPick-v0
 robot:
   cfg_name: franka_fr3_our.yml
@@ -32,32 +32,32 @@ offsets:
   grasp: [0, 0, 0.0]
   place: [0, 0, 0.0]
 objects:
-  red_mugcup:
-    usd_path: /home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/red_mugcup.usd
-    semantic_tags:
-      -   - class
-          - red_mugcup
-    init_pos: [0.70, 0.15, 0.09]
-    init_rot: [0.9239, 0.0, 0.0, 0.3827]
-    height: 0.081
-  starbuckscup:
-    usd_path: /home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/starbuckscup.usd
-    semantic_tags:
-      -   - class
-          - starbuckscup
-    init_pos: [0.48, 0.22, 0.10]
-    init_rot: [1.0, 0.0, 0.0, 0.0]
-    height: 0.10
-  white_100mmcup:
-    usd_path: /home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/white_100mmcup.usd
-    semantic_tags:
-      -   - class
-          - white_100mmcup
-    init_pos: [0.68, -0.05, 0.08]
-    init_rot: [1.0, 0.0, 0.0, 0.0]
-    height: 0.08
+  # red_mugcup:
+  #   usd_path: models/all_object/red_mugcup.usd
+  #   semantic_tags:
+  #     -   - class
+  #         - red_mugcup
+  #   init_pos: [0.70, 0.15, 0.09]
+  #   init_rot: [0.9239, 0.0, 0.0, 0.3827]
+  #   height: 0.081
+  # starbuckscup:
+  #   usd_path: models/all_object/starbuckscup.usd
+  #   semantic_tags:
+  #     -   - class
+  #         - starbuckscup
+  #   init_pos: [0.48, 0.22, 0.10]
+  #   init_rot: [1.0, 0.0, 0.0, 0.0]
+  #   height: 0.10
+  # white_100mmcup:
+  #   usd_path: models/all_object/white_100mmcup.usd
+  #   semantic_tags:
+  #     -   - class
+  #         - white_100mmcup
+  #   init_pos: [0.68, -0.05, 0.08]
+  #   init_rot: [1.0, 0.0, 0.0, 0.0]
+  #   height: 0.08
   red_bottle:
-    usd_path: /home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/red_bottle.usd
+    usd_path: models/all_object/red_bottle.usd
     semantic_tags:
       -   - class
           - red_bottle
@@ -83,9 +83,9 @@ image_speckle_noise_std: 0
 enable_objects_randomization: false
 enable_objects_randomization_curriculum: false
 texture_randomization:
-  enabled: true
-  texture_dir: /home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/random_pic
+  enabled: false
+  texture_dir: models/random_pic/table
   targets:
     table:
       prim_path: /World/envs/env_{i}/table/Xform_01/Xform/leg/node_/Cube
-      texture_dir: /home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/random_pic
+      texture_dir: models/random_pic/table

@@ -7,7 +7,7 @@ scene:
   num_envs: 1
   env_spacing: 10
 task:
-  name: interactive task
+  name: push_cheezbox
   description: push the red_cheezbox along +X direction
 runtime:
   headless: false
@@ -21,9 +21,9 @@ runtime:
   sim_camera_resolution: [640, 480]
   background_image_size: [640, 480]
   use_background_replace: true
-  cam_side_background: ../../../../../../../../../../backgrounds/1123_background.png
-  cam_wrist_background: ../../../../../../../../../../backgrounds/wristbackground_realworld1.png
-  data_dir: /home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/data/r2s2r_data/push_cheezbox
+  cam_side_background: backgrounds/1123_background.png
+  cam_wrist_background: backgrounds/wristbackground_realworld1.png
+  data_dir: data/r2s2r_data/push_cheezbox
   task_name: FrankaFr3-OurGripper-Joint-VisPick-v0
 robot:
   cfg_name: franka_fr3_our.yml
@@ -33,7 +33,7 @@ offsets:
   place: [0, 0, 0.0]
 objects:
   red_cheezbox:
-    usd_path: /home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/red_cheezbox.usd
+    usd_path: models/all_object/red_cheezbox.usd
     semantic_tags:
       -   - class
           - red_cheezbox
@@ -41,19 +41,19 @@ objects:
     init_rot: [1, 0, 0, 0]
     height: 0.045
   yellow_sugarbox:
-    usd_path: /home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/yellow_sugarbox.usd
+    usd_path: models/all_object/yellow_sugarbox.usd
     semantic_tags:
       -   - class
           - yellow_sugarbox
-    init_pos: [0.53, -0.270, 0.073]
+    init_pos: [0.80, -0.270, 0.073]
     init_rot: [0.9537, 0.0, 0.0, -0.3007]
     height: 0.045
   brown_chocolatebox:
-    usd_path: /home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/brown_chocolatebox.usd
+    usd_path: models/all_object/brown_chocolatebox.usd
     semantic_tags:
       -   - class
           - brown_chocolatebox
-    init_pos: [0.45, 0.05, 0.04]
+    init_pos: [0.75, 0.15, 0.04]
     init_rot: [0.9848, 0.0, 0.0, -0.1736]
     height: 0.06
 primitives:
@@ -72,10 +72,10 @@ image_noise_std: 0
 enable_objects_randomization: false
 enable_objects_randomization_curriculum: false
 texture_randomization:
-  enabled: true
-  texture_dir: /home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/random_pic
+  enabled: false
+  texture_dir: models/random_pic/table
   targets:
     table:
       prim_path: "/World/envs/env_{i}/table/Xform_01/Xform/leg/node_/Cube"
-      texture_dir: /home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/random_pic
+      texture_dir: models/random_pic/table
 image_speckle_noise_std: 0

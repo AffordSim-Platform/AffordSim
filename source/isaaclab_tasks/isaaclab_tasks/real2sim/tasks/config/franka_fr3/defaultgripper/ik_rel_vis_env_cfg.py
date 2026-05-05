@@ -10,6 +10,7 @@ from isaaclab_tasks.real2sim.assets.franka import FRANKA_FR3_OURGRIPPER_CFG
 from isaaclab_tasks.real2sim.tasks.pick import mdp
 from isaaclab_tasks.real2sim.tasks.pick.pick_r2s_env_cfg import (
     EnvCfg,
+    _get_scene_usd_path,
     _get_sim_camera_resolution,
     _get_use_background_replace,
 )
@@ -64,7 +65,7 @@ class FrankaFr3DefaultGripperIKRelVisPickEnvCfg(EnvCfg):
         self.scene.table = AssetBaseCfg(
             prim_path="{ENV_REGEX_NS}/table",
             spawn=sim_utils.UsdFileCfg(
-                usd_path=str(PROJECT_ROOT / "models/table.usd"),
+                usd_path=_get_scene_usd_path(),
             ),
             init_state=RigidObjectCfg.InitialStateCfg(
                 pos=(0, 0, 0),

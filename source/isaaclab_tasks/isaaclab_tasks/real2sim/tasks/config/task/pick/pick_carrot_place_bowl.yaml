@@ -1,0 +1,162 @@
+simulation:
+  decimation: 30
+  dt: 0.00833333
+  render_interval: 5
+  episode_length_s: 100
+scene:
+  num_envs: 5
+  env_spacing: 4
+task:
+  name: pick_banana_place_bowl
+  description: grasp the banana and put it in the bowl
+runtime:
+  headless: false
+  episodes: 1
+  save_npy: true
+  save_camera_images: true
+  save_composite_images: true
+  save_mask_images: true
+  save_original_images: true
+  enable_motion_planning: true
+  sim_camera_resolution: [640, 480]
+  background_image_size: [640, 480]
+  use_background_replace: true
+  cam_side_background: backgrounds/1123_background.png
+  cam_wrist_background: backgrounds/wristbackground_realworld1.png
+  data_dir: data/r2s2r_data/pick_banana_place_bowl
+  task_name: FrankaFr3-OurGripper-Joint-VisPick-v0
+robot:
+  cfg_name: franka_fr3_our.yml
+  type: franka_fr3_default
+offsets:
+  grasp: [0, 0, 0.0]
+  place: [0, 0, 0.0]
+objects:
+  yellow_bigbowl:
+    usd_path: models/all_object/yellow_bigbowl.usd
+    semantic_tags:
+      -   - class
+          - yellow_bigbowl
+    init_pos: [0.65, 0.0, 0.0754]
+    init_rot: [-0.9838, 0.0, 0.0, 0.1791]
+    height: 0.0504
+    position_range:
+      x: [0.64, 0.66]
+      y: [-0.01, 0.01]
+      z: [0.0754, 0.0754]
+    orientation_range:
+      yaw: [-0.1309, 0.1309]
+  red_bigbowl:
+    usd_path: models/all_object/red_bigbowl.usd
+    semantic_tags:
+      -   - class
+          - red_bigbowl
+    init_pos: [0.45, 0.0, 0.0754]
+    init_rot: [-0.9838, 0.0, 0.0, 0.1791]
+    height: 0.0504
+    position_range:
+      x: [0.44, 0.46]
+      y: [-0.01, 0.01]
+      z: [0.0754, 0.0754]
+    orientation_range:
+      yaw: [-0.1309, 0.1309]
+  yellow_banana:
+    usd_path: models/all_object/yellow_banana.usd
+    semantic_tags:
+      -   - class
+          - yellow_banana
+    init_pos: [0.48, -0.2, 0.0443]
+    init_rot: [1,0,0,0]
+    height: 0.0193
+    position_range:
+      x: [0.47, 0.49]
+      y: [-0.21, -0.19]
+      z: [0.0443, 0.0443]
+    orientation_range:
+      yaw: [-0.05, 0.05]
+  pepper:
+    usd_path: models/all_object/pepper.usd
+    semantic_tags:
+      -   - class
+          - pepper
+    init_pos: [0.65, -0.2, 0.065]
+    init_rot: [0,0,0,1]
+    height: 0.04
+    position_range:
+      x: [0.64, 0.66]
+      y: [-0.21, -0.19]
+      z: [0.065, 0.065]
+    orientation_range:
+      yaw: [-0.05, 0.05]
+  orange:
+    usd_path: models/all_object/orange.usd
+    semantic_tags:
+      -   - class
+          - orange
+    init_pos: [0.65, 0.2, 0.055]
+    init_rot: [1,0,0,0]
+    height: 0.03
+    position_range:
+      x: [0.64, 0.66]
+      y: [0.19, 0.21]
+      z: [0.055, 0.055]
+    orientation_range:
+      yaw: [-0.05, 0.05]
+  orange_carrot:
+    usd_path: models/all_object/orange_carrot.usd
+    semantic_tags:
+      -   - class
+          - orange_carrot
+    # init_pos: [0.48, 0.2, 0.0514]
+    init_pos: [0.50, 0.21, 0.0714]
+    # init_rot: [0,0,0,1]
+    init_rot: [0.1791, 0.0, 0.0, -0.9838]
+    height: 0.0264
+    position_range:
+      x: [0.47, 0.49]
+      y: [0.19, 0.21]
+      z: [0.0514, 0.0514]
+    orientation_range:
+      yaw: [-0.05, 0.05]
+primitives:
+  # - type: pick
+  #   mode: affordance
+  #   params:
+  #     target: orange_carrot
+  #     pre_pick_offset: [0.0, 0.0, 0.1]
+  #     pick_interpolation_steps: 15
+  #     lift_interpolation_steps: 15
+  - type: pick
+    mode: gt
+    params:
+      target: orange_carrot
+      grasp_quat: [0.0, 1.0, 0.0, 0.0]
+      pre_pick_offset: 0.1
+      pick_interpolation_steps: 10
+      lift_interpolation_steps: 10
+      lift_offset: 0.08
+
+  - type: place
+    mode: on
+    params:
+      target: yellow_bigbowl
+      on_height_margin: 0.03 
+      success_eval: true
+  # - type: place
+  #   mode: pose
+  #   params:
+  #     position: [0.5, -0.2, 0.15]  # Target position [x, y, z] (meters). __REQUIRED__ (required in pose mode)
+  #     orientation: [0,1,0,0]  # Target orientation [w, x, y, z] quaternion. Optional; keeps current if omitted
+  #     success_eval: false  
+enable_random_lights: false
+image_noise_std: 0
+image_speckle_noise_std: 0
+enable_objects_randomization: false
+enable_objects_randomization_curriculum: false
+texture_randomization:
+  enabled: false
+  texture_dir: models/random_pic/table
+  targets:
+    table:
+      prim_path: /World/envs/env_{i}/table/Xform_01/Xform/leg/node_/Cube
+      texture_dir: models/random_pic/table

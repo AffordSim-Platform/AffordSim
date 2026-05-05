@@ -151,6 +151,8 @@ class EpisodeDataRecorder:
         # Current episode buffer - one per environment
         self.episode_buffers = [None] * num_envs
         self.current_episode_num = None
+        # Track previous EE quaternion per env for sign-continuity fix
+        self._prev_ee_quat: Dict[int, np.ndarray] = {}
         self.aggregate_json_path = self.save_dir / "episodes_metadata.json"
         self._aggregate_json_data: Dict[str, Any] = {"episodes": []}
 
@@ -173,7 +175,8 @@ class EpisodeDataRecorder:
     ):  
         self.current_episode_num = episode_num
         self.current_step_count = 0  # Track step number within episode
-        
+        self._prev_ee_quat = {}
+
         # Initialize buffer for each environment
         for env_idx in range(self.num_envs):
             self.episode_buffers[env_idx] = {
@@ -213,23 +216,16 @@ class EpisodeDataRecorder:
         use_background_replacement = self.replace_background if replace_background is None else replace_background
 
         if use_background_replacement:
-            if self.save_original_images:
+            if self.save_original_images or self.save_depth_images:
                 sim_w, sim_h = self.sim_camera_resolution
                 self._save_original_images(obs, actual_num_envs, image_height=sim_h, image_width=sim_w)
-
-            # 兼容新老两套 obs key 命名:
-            #   IK cfg / 统一后的 joint cfg:  "front"  / "wrist"
-            #   老 cfg (未重命名):             "external_cam_side" / "wrist_cam"
-            policy_keys = obs.get("policy", {}).keys() if isinstance(obs.get("policy"), dict) else obs["policy"].keys()
-            side_rgb_key = "front" if "front" in policy_keys else "external_cam_side"
-            wrist_rgb_key = "wrist" if "wrist" in policy_keys else "wrist_cam"
             if self.cam_side_background_image is not None:
-                obs = self._apply_background_replacement(obs, side_rgb_key, "semantic_segmentation_side", self.cam_side_background_image)
+                obs = self._apply_background_replacement(obs, "external_cam_side", "semantic_segmentation_side", self.cam_side_background_image)
             if self.cam_wrist_background_image is not None:
-                obs = self._apply_background_replacement(obs, wrist_rgb_key, "semantic_segmentation_wrist", self.cam_wrist_background_image)
+                obs = self._apply_background_replacement(obs, "wrist_cam", "semantic_segmentation_wrist", self.cam_wrist_background_image)
         else:
-            # Save original RGB images without background replacement
-            if self.save_original_images:
+            # Save original RGB/depth images without background replacement
+            if self.save_original_images or self.save_depth_images:
                 sim_w, sim_h = self.sim_camera_resolution
                 self._save_original_images(obs, actual_num_envs, image_height=sim_h, image_width=sim_w)
         
@@ -263,7 +259,23 @@ class EpisodeDataRecorder:
             
             # Convert observation to numpy
             obs_data = self._convert_obs_to_numpy(obs_env)
-            
+
+            # Fix quaternion sign discontinuity in arm_ee_pose.
+            # obs_data may be nested (e.g. obs_data["policy"]["arm_ee_pose"]),
+            # so search one level deep.
+            ee_pose = None
+            if "arm_ee_pose" in obs_data:
+                ee_pose = obs_data["arm_ee_pose"]
+            elif isinstance(obs_data.get("policy"), dict) and "arm_ee_pose" in obs_data["policy"]:
+                ee_pose = obs_data["policy"]["arm_ee_pose"]
+            if ee_pose is not None and isinstance(ee_pose, np.ndarray) and ee_pose.shape[-1] >= 7:
+                quat = ee_pose[3:7].copy()
+                if env_idx in self._prev_ee_quat:
+                    if np.dot(quat, self._prev_ee_quat[env_idx]) < 0:
+                        quat = -quat
+                        ee_pose[3:7] = quat
+                self._prev_ee_quat[env_idx] = quat.copy()
+
             # Add to buffer
             self.episode_buffers[env_idx]["observations"].append(obs_data)
             self.episode_buffers[env_idx]["actions"].append(action_env)
@@ -443,12 +455,6 @@ class EpisodeDataRecorder:
             raw_joint_actions = np.array(episode_buffer['actions'])  # Shape: [T, 8] - 7 joints + 1 gripper
             ee_delta_gripper_action = raw_joint_actions[:-1, -1:]
             ee_delta_action = np.concatenate([ee_delta_joint_action, ee_delta_gripper_action], axis=-1)  # Add gripper delta if needed
-
-            # Compute joint delta: commanded_target - current_qpos
-            # This ensures qpos[t] + delta[t] == joint_actions[t] (the original command)
-            arm_joint_pos = obs_dict_full['obs_policy_qpos']  # Shape: [T, 7]
-            joint_delta = raw_joint_actions[:-1, :7] - arm_joint_pos[:-1]  # Shape: [T-1, 7]
-            joint_delta_action = np.concatenate([joint_delta, raw_joint_actions[:-1, -1:]], axis=-1)  # [T-1, 8] - 7 joint deltas + gripper
             # actions will be aligned with observations after data alignment below
             actions = ee_delta_action
             last_actions = np.concatenate([np.zeros((self.num_envs, ee_delta_action.shape[1])), ee_delta_action], axis=0)
@@ -477,7 +483,6 @@ class EpisodeDataRecorder:
                 episode_buffer['terminations'] = [t for t, keep in zip(episode_buffer['terminations'], active_mask) if keep]
                 episode_buffer['truncations'] = [t for t, keep in zip(episode_buffer['truncations'], active_mask) if keep]
                 raw_joint_actions = raw_joint_actions[active_mask]
-                joint_delta_action = joint_delta_action[active_mask]
                 last_actions = np.concatenate([np.zeros((self.num_envs, actions_arr.shape[1])), episode_buffer['actions']], axis=0)
                 print(f"  Env {env_idx} - Removed {num_idle} idle steps (EE delta == 0)")
             
@@ -495,17 +500,16 @@ class EpisodeDataRecorder:
             obs_dict = self._flatten_observations_for_env(episode_buffer)
             obs_dict['obs_policy_lastactions'] = last_actions[:-1]
             obs_dict['obs_policy_joint_actions'] = raw_joint_actions  # Shape: [T, 8] - 7 joints + 1 gripper
-            obs_dict['obs_policy_joint_delta_actions'] = joint_delta_action  # Shape: [T, 8] - 7 joint deltas + gripper
             
             # Save camera images to separate folders (these are composite images with background replaced)
             if self.save_camera_images:
                 self._save_camera_images(obs_dict, env_idx)
-
-            # Save depth images declared in env cfg (obs keys ending with "_depth")
-            if self.save_depth_images:
-                self._save_depth_images(obs_dict, env_idx)
             
             for key, value in obs_dict.items():
+                # Temporarily keep image observations out of episode npy files.
+                if isinstance(value, np.ndarray) and (len(value.shape) >= 3 or self._is_image_key(str(key))):
+                    print(f"  Env {env_idx} - skip image in npy: {str(key)} shape={value.shape}, dtype={value.dtype}")
+                    continue
                 save_dict[str(key)] = value
                 print(f"  Env {env_idx} - {str(key)}: shape={value.shape}, dtype={value.dtype}")
             
@@ -933,6 +937,10 @@ class EpisodeDataRecorder:
         for img_key in camera_keys:
             img_data = obs['policy'][img_key]
             is_depth = 'depth' in img_key.lower() or 'distance' in img_key.lower()
+            if is_depth and not self.save_depth_images:
+                continue
+            if not is_depth and not self.save_original_images:
+                continue
             
             for env_idx in range(num_envs):
                 # Convert to numpy
@@ -941,16 +949,17 @@ class EpisodeDataRecorder:
                 else:
                     img_np = img_data[env_idx]
                 
-                # Create directory
-                original_dir = self.save_dir / "original_images" / img_key / f"env{env_idx}_ep{self.current_episode_num}"
-                original_dir.mkdir(parents=True, exist_ok=True)
-                filename = original_dir / f"step_{self.current_step_count:04d}"
-                
                 if is_depth:
+                    depth_dir = self.save_dir / "depth_images" / img_key / f"env{env_idx}_ep{self.current_episode_num}"
+                    depth_dir.mkdir(parents=True, exist_ok=True)
+                    filename = depth_dir / f"step_{self.current_step_count:04d}"
                     depth_img = img_np.reshape(image_height, image_width)  # 深度图通常是单通道
                     depth_mm = (depth_img * 1000).astype(np.uint16)
                     cv2.imwrite(str(filename) + '.png', depth_mm)
                 else:
+                    original_dir = self.save_dir / "original_images" / img_key / f"env{env_idx}_ep{self.current_episode_num}"
+                    original_dir.mkdir(parents=True, exist_ok=True)
+                    filename = original_dir / f"step_{self.current_step_count:04d}"
                     # RGB：保存 png
                     img_to_save = img_np.reshape(3, image_height, image_width).transpose(1, 2, 0)
                     if img_to_save.max() <= 1.0:
@@ -991,10 +1000,8 @@ class EpisodeDataRecorder:
             obs_dict: Flattened observation dictionary containing image data
             env_idx: Environment index
         """
-        # Camera keys to save (兼容新 front/wrist 与老 external_cam_side/wrist_cam 两套命名)
+        # Camera keys to save
         camera_keys = {
-            'obs_policy_front': 'front',
-            'obs_policy_wrist': 'wrist',
             'obs_policy_external_cam_side': 'external_cam_side',
             'obs_policy_wrist_cam': 'wrist_cam',
             'obs_policy_external_cam_front': 'external_cam_front',
@@ -1046,70 +1053,6 @@ class EpisodeDataRecorder:
             
             print(f"  ✓ Saved {len(images)} {camera_name} images to {camera_dir.relative_to(self.save_dir)}")
 
-    def _save_depth_images(
-        self,
-        obs_dict: Dict[str, np.ndarray],
-        env_idx: int,
-    ) -> None:
-        """Save depth observations declared in env cfg (obs keys ending with '_depth').
-
-        - 原始 float32 depth (米) 存成 `.npy`, 完全无损
-        - 同时存一张 16-bit 灰度 `.png` (毫米, 最大 65.535 m) 方便肉眼看
-        """
-        # Auto-detect all "*_depth" obs keys in flattened obs_dict.
-        # Flatten 后 key 形如 'obs_policy_front_depth' / 'obs_policy_wrist_depth'.
-        depth_keys = [k for k in obs_dict.keys() if k.endswith("_depth")]
-        if not depth_keys:
-            return
-
-        for obs_key in depth_keys:
-            # 去掉 'obs_policy_' 前缀, 剩下 'front_depth' / 'wrist_depth' 作为相机目录名
-            camera_name = obs_key
-            for prefix in ("obs_policy_", "obs_", "policy_"):
-                if camera_name.startswith(prefix):
-                    camera_name = camera_name[len(prefix):]
-                    break
-
-            depth_seq = obs_dict[obs_key]  # (T, ...)
-            depth_dir = self.save_dir / "depth_images" / camera_name / f"env{env_idx}_ep{self.current_episode_num}"
-            depth_dir.mkdir(parents=True, exist_ok=True)
-
-            for step_idx, depth_data in enumerate(depth_seq):
-                try:
-                    # 转 numpy
-                    if isinstance(depth_data, torch.Tensor):
-                        depth_np = depth_data.cpu().numpy()
-                    else:
-                        depth_np = np.asarray(depth_data)
-
-                    depth_np = depth_np.astype(np.float32)
-
-                    # 处理各种维度: (H, W), (1, H, W), (H, W, 1), (N,) flattened
-                    if depth_np.ndim == 3:
-                        if depth_np.shape[0] == 1:            # (1, H, W)
-                            depth_np = depth_np[0]
-                        elif depth_np.shape[-1] == 1:         # (H, W, 1)
-                            depth_np = depth_np[..., 0]
-                    elif depth_np.ndim == 1:
-                        # 假设是 (H*W,), 按 sim_camera_resolution 还原
-                        cam_w, cam_h = self.sim_camera_resolution
-                        if depth_np.size == cam_w * cam_h:
-                            depth_np = depth_np.reshape(cam_h, cam_w)
-
-                    # 原始 float 存 .npy (推荐后续训练/处理用它, 米)
-                    npy_path = depth_dir / f"step_{step_idx:04d}.npy"
-                    np.save(str(npy_path), depth_np)
-
-                    # 可视化 png: 16-bit 灰度, 单位毫米 (上限 ~65.5 m)
-                    depth_mm = np.clip(depth_np * 1000.0, 0, 65535).astype(np.uint16)
-                    png_path = depth_dir / f"step_{step_idx:04d}.png"
-                    cv2.imwrite(str(png_path), depth_mm)
-
-                except Exception as e:
-                    print(f"⚠️ Failed to save depth for '{camera_name}' step {step_idx}: {e}")
-
-            print(f"  ✓ Saved {len(depth_seq)} {camera_name} depth frames to {depth_dir.relative_to(self.save_dir)}")
-
     def _reshape_flat_rgb_image(self, img_np: np.ndarray) -> np.ndarray:
         """Reshape a flattened RGB image using configured resolutions.
 
@@ -1138,4 +1081,3 @@ class EpisodeDataRecorder:
             f"Tried background_image_size={self.background_image_size} and "
             f"sim_camera_resolution={self.sim_camera_resolution}."
         )
-

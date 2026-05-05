@@ -3,12 +3,23 @@ from typing import Any, Dict, Optional
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 
-from ..success.constants import OPEN_SUCCESS_JOINT_NAME, OPEN_SUCCESS_MIN_ANGLE_RAD
+from ..success.constants import OPEN_SUCCESS_MIN_ANGLE_RAD
 from ..success.evaluators import _evaluate_open_success_with_metrics
 from ..tools.pose_utils import normalize_ee_orientation_wxyz, parse_facing_axis_local
-from .utils import compute_target_availability_mask, log_target_missing_envs, primitive_compute_grasp_pose
+from .utils import (
+    FAILURE_REASON_TARGET_MISSING,
+    commit_plan_failures,
+    commit_task_failures,
+    compute_target_availability_mask,
+    get_prev_alive_mask,
+    init_local_active_mask,
+    log_target_missing_envs,
+    mark_local_inactive_with_reason,
+    merge_segment_into_local_active,
+    primitive_compute_grasp_pose,
+)
 
-FIXED_GRIPPER_STEPS = 10
+FIXED_GRIPPER_STEPS = 3
 FINAL_RETRACT_DISTANCE = 0.15
 FINAL_NORMAL_OFFSET = 0.10
 FINAL_RETRACT_INTERP_STEPS = 5
@@ -49,9 +60,27 @@ def primitive_execute_open(collector, params: Dict[str, Any], context: Dict[str,
     align_above_interp_steps = int(params.get("align_above_interpolation_steps", 10))
     door_tangent_move_distance = float(params.get("door_tangent_move_distance", 0.20))
     tangent_move_interp_steps = int(params.get("tangent_move_interpolation_steps", 10))
-    prev_success_mask = list(context.get("env_alive_mask", [True] * collector.num_envs))
+    n = collector.num_envs
+    prev_alive = get_prev_alive_mask(context, n)
+    local_active = init_local_active_mask(context, n)
     target_available_mask = list(context.get("grasp_pose", {}).get("target_available_mask", compute_target_availability_mask(collector, target_label)))
-    log_target_missing_envs("open", target_label, target_available_mask, prev_success_mask)
+    log_target_missing_envs("open", target_label, target_available_mask, prev_alive)
+    for env_idx in range(n):
+        if prev_alive[env_idx] and not target_available_mask[env_idx]:
+            mark_local_inactive_with_reason(
+                context, local_active, env_idx, FAILURE_REASON_TARGET_MISSING
+            )
+    success_eval_enabled = bool(params.get("success_eval", False))
+    success_joint_name = params.get("success_joint_name")
+    if success_eval_enabled and not success_joint_name:
+        print("[ERROR] Primitive 'open' with success_eval=true requires `params.success_joint_name` in YAML.")
+        for i in range(n):
+            local_active[i] = False
+        commit_plan_failures(context, prev_alive, local_active)
+        commit_task_failures(context, prev_alive, list(local_active), [False] * n)
+        context["post_open_success_mask"] = [False] * n
+        context["env_alive_mask"] = [False] * n
+        return False
 
     all_pick_pos = np.array(context["all_pick_pos"], dtype=np.float64)
     all_pick_quat = np.array(context["all_pick_quat"], dtype=np.float64)
@@ -78,7 +107,7 @@ def primitive_execute_open(collector, params: Dict[str, Any], context: Dict[str,
     door_normal_local = np.asarray(door_normal_local, dtype=np.float64)
 
     all_door_normals = []
-    for env_idx in range(collector.num_envs):
+    for env_idx in range(n):
         obj_pos, obj_quat = collector._get_object_pose_global(target_label, env_idx)
         if obj_pos is None:
             all_door_normals.append(np.array([0.0, -1.0, 0.0], dtype=np.float64))
@@ -91,82 +120,50 @@ def primitive_execute_open(collector, params: Dict[str, Any], context: Dict[str,
         all_door_normals.append(door_normal_world)
 
     all_pre_pick_pos = []
-    for env_idx in range(collector.num_envs):
+    for env_idx in range(n):
         all_pre_pick_pos.append(all_pick_pos[env_idx] + pre_pick_offset * all_door_normals[env_idx])
 
     print(f"  🚪 [Primitive] Planning open pre-grasp for '{target_label}'")
     pre_pick_plans, pre_pick_plan_successes = collector.motion_planner.plan_to_pose_batch(
-        collector.robot.data.joint_pos[: collector.num_envs].cpu().numpy(),
-        collector.robot.data.joint_vel[: collector.num_envs].cpu().numpy(),
+        collector.robot.data.joint_pos[:n].cpu().numpy(),
+        collector.robot.data.joint_vel[:n].cpu().numpy(),
         collector.robot.joint_names,
         np.array(all_pre_pick_pos, dtype=np.float64),
         all_pick_quat,
         target_prim_path=collector.target_prim_path,
     )
-    pre_pick_successes = [prev and available and cur for prev, available, cur in zip(prev_success_mask, target_available_mask, pre_pick_plan_successes)]
+    pre_segment = [local_active[i] and bool(pre_pick_plan_successes[i]) for i in range(n)]
+    merge_segment_into_local_active(local_active, pre_segment)
     collector.execute_trajectory_batch(
         pre_pick_plans,
-        [1.0 if s else 0.0 for s in pre_pick_successes],
+        [1.0 if s else 0.0 for s in local_active],
         desc="Primitive Open-Microwave Pre-Grasp",
-        active_mask=pre_pick_successes,
+        active_mask=list(local_active),
     )
-
-    if not any(pre_pick_successes):
-        step_failure_reason_mask = [
-            "inactive"
-            if not prev_success_mask[env_idx]
-            else "target_missing"
-            if not target_available_mask[env_idx]
-            else "planning_failed"
-            for env_idx in range(collector.num_envs)
-        ]
-        context["post_open_success_mask"] = [False] * collector.num_envs
-        context["step_failure_reason_mask"] = step_failure_reason_mask
-        context["env_alive_mask"] = [False] * collector.num_envs
-        return False
 
     _, pick_env_successes = collector.execute_ik_motion(
         target_positions=all_pick_pos,
         target_quaternions=all_pick_quat,
-        gripper_states=[1.0 if s else 0.0 for s in pre_pick_successes],
+        gripper_states=[1.0 if s else 0.0 for s in local_active],
         interpolation_steps=pick_interp_steps,
         desc="Primitive Grasp Microwave Handle",
-        active_mask=pre_pick_successes,
+        active_mask=list(local_active),
     )
-    pick_successes = [a and b for a, b in zip(pre_pick_successes, pick_env_successes)]
+    merge_segment_into_local_active(local_active, pick_env_successes)
     collector.control_gripper_batch(
-        [-1.0 if s else 0.0 for s in pick_successes],
+        [-1.0 if s else 0.0 for s in local_active],
         steps=FIXED_GRIPPER_STEPS,
-        active_mask=pick_successes,
+        active_mask=list(local_active),
     )
-    if not any(pick_successes):
-        print("  [ABORT] All envs failed at handle grasp.")
-        context["post_open_success_mask"] = [False] * collector.num_envs
-        context["step_failure_reason_mask"] = [
-            "inactive"
-            if not prev_success_mask[env_idx]
-            else "target_missing"
-            if not target_available_mask[env_idx]
-            else "planning_failed"
-            for env_idx in range(collector.num_envs)
-        ]
-        context["env_alive_mask"] = [False] * collector.num_envs
-        return False
-    active_successes = list(pick_successes)
 
     object_key = collector._find_object_in_scene(target_label)
     if object_key is None or object_key not in collector.scene.articulations:
-        step_failure_reason_mask = [
-            "inactive"
-            if not prev_success_mask[env_idx]
-            else "target_missing"
-            if not target_available_mask[env_idx]
-            else "planning_failed"
-            for env_idx in range(collector.num_envs)
-        ]
-        context["post_open_success_mask"] = [False] * collector.num_envs
-        context["step_failure_reason_mask"] = step_failure_reason_mask
-        context["env_alive_mask"] = [False] * collector.num_envs
+        print(f"[ERROR] Articulation '{target_label}' not found in scene.")
+        for i in range(n):
+            local_active[i] = False
+        commit_plan_failures(context, prev_alive, local_active)
+        context["post_open_success_mask"] = [False] * n
+        context["env_alive_mask"] = [False] * n
         return False
 
     microwave = collector.scene.articulations[object_key]
@@ -177,7 +174,7 @@ def primitive_execute_open(collector, params: Dict[str, Any], context: Dict[str,
 
     door_normals_world = []
     grasp_quat_targets = []
-    for env_idx in range(collector.num_envs):
+    for env_idx in range(n):
         root_quat_wxyz = microwave.data.root_quat_w[env_idx].cpu().numpy()
         root_rot = R.from_quat([root_quat_wxyz[1], root_quat_wxyz[2], root_quat_wxyz[3], root_quat_wxyz[0]]).as_matrix()
 
@@ -191,8 +188,8 @@ def primitive_execute_open(collector, params: Dict[str, Any], context: Dict[str,
 
     stage2_targets = []
     stage2_quats = []
-    for env_idx in range(collector.num_envs):
-        if not pick_successes[env_idx]:
+    for env_idx in range(n):
+        if not local_active[env_idx]:
             stage2_targets.append(all_pick_pos[env_idx])
             stage2_quats.append(all_pick_quat[env_idx])
             continue
@@ -207,18 +204,18 @@ def primitive_execute_open(collector, params: Dict[str, Any], context: Dict[str,
     _, stage2_successes = collector.execute_ik_motion(
         target_positions=stage2_targets,
         target_quaternions=stage2_quats,
-        gripper_states=[-1.0 if s else 0.0 for s in active_successes],
+        gripper_states=[-1.0 if s else 0.0 for s in local_active],
         interpolation_steps=fast_pull_interp_steps,
         desc="Primitive Fast Pull Microwave",
-        active_mask=active_successes,
+        active_mask=list(local_active),
     )
-    active_successes = [ok and cur for ok, cur in zip(active_successes, stage2_successes)]
+    merge_segment_into_local_active(local_active, stage2_successes)
 
     print("  🚪 [Primitive] Re-grasping inside articulation gap...")
     collector.control_gripper_batch(
-        [1.0 if s else 0.0 for s in active_successes],
+        [1.0 if s else 0.0 for s in local_active],
         steps=FIXED_GRIPPER_STEPS,
-        active_mask=active_successes,
+        active_mask=list(local_active),
     )
 
     ee_pos_cur, ee_quat_cur = collector.get_current_ee_pose()
@@ -226,8 +223,8 @@ def primitive_execute_open(collector, params: Dict[str, Any], context: Dict[str,
     ee_quat_cur = np.atleast_2d(ee_quat_cur)
     lift_targets = []
     lift_quats = []
-    for env_idx in range(collector.num_envs):
-        if not active_successes[env_idx]:
+    for env_idx in range(n):
+        if not local_active[env_idx]:
             lift_targets.append(ee_pos_cur[env_idx])
             lift_quats.append(ee_quat_cur[env_idx])
             continue
@@ -239,12 +236,12 @@ def primitive_execute_open(collector, params: Dict[str, Any], context: Dict[str,
     _, lift_successes = collector.execute_ik_motion(
         target_positions=lift_targets,
         target_quaternions=lift_quats,
-        gripper_states=[1.0 if s else 0.0 for s in active_successes],
+        gripper_states=[1.0 if s else 0.0 for s in local_active],
         interpolation_steps=lift_interp_steps,
         desc="Primitive Lift Before Gap Insert",
-        active_mask=active_successes,
+        active_mask=list(local_active),
     )
-    active_successes = [ok and cur for ok, cur in zip(active_successes, lift_successes)]
+    merge_segment_into_local_active(local_active, lift_successes)
     ee_pos_after_lift, ee_quat_after_lift = collector.get_current_ee_pose()
     ee_pos_after_lift = np.atleast_2d(ee_pos_after_lift)
     ee_quat_after_lift = np.atleast_2d(ee_quat_after_lift)
@@ -253,8 +250,8 @@ def primitive_execute_open(collector, params: Dict[str, Any], context: Dict[str,
     align_above_targets = []
     tangent_targets = []
     align_quats = []
-    for env_idx in range(collector.num_envs):
-        if not active_successes[env_idx]:
+    for env_idx in range(n):
+        if not local_active[env_idx]:
             align_targets.append(ee_pos_after_lift[env_idx])
             align_above_targets.append(ee_pos_after_lift[env_idx])
             tangent_targets.append(ee_pos_after_lift[env_idx])
@@ -295,36 +292,36 @@ def primitive_execute_open(collector, params: Dict[str, Any], context: Dict[str,
     _, align_above_successes = collector.execute_ik_motion(
         target_positions=np.array(align_above_targets),
         target_quaternions=np.array(align_quats),
-        gripper_states=[1.0 if s else 0.0 for s in active_successes],
+        gripper_states=[1.0 if s else 0.0 for s in local_active],
         interpolation_steps=align_above_interp_steps,
         desc="Primitive IK To Align-Above",
-        active_mask=active_successes,
+        active_mask=list(local_active),
     )
-    active_successes = [ok and cur for ok, cur in zip(active_successes, align_above_successes)]
+    merge_segment_into_local_active(local_active, align_above_successes)
 
     _, align_successes = collector.execute_ik_motion(
         target_positions=np.array(align_targets),
         target_quaternions=np.array(align_quats),
-        gripper_states=[1.0 if s else 0.0 for s in active_successes],
+        gripper_states=[1.0 if s else 0.0 for s in local_active],
         interpolation_steps=lift_interp_steps,
         desc="Primitive IK To Align",
-        active_mask=active_successes,
+        active_mask=list(local_active),
     )
-    active_successes = [ok and cur for ok, cur in zip(active_successes, align_successes)]
+    merge_segment_into_local_active(local_active, align_successes)
 
     _, tangent_move_successes = collector.execute_ik_motion(
         target_positions=np.array(tangent_targets),
         target_quaternions=np.array(align_quats),
-        gripper_states=[1.0 if s else 0.0 for s in active_successes],
+        gripper_states=[1.0 if s else 0.0 for s in local_active],
         interpolation_steps=tangent_move_interp_steps,
         desc="Primitive Slide Along Door Tangent",
-        active_mask=active_successes,
+        active_mask=list(local_active),
     )
-    active_successes = [ok and cur for ok, cur in zip(active_successes, tangent_move_successes)]
+    merge_segment_into_local_active(local_active, tangent_move_successes)
 
     retract_targets = []
-    for env_idx in range(collector.num_envs):
-        if not active_successes[env_idx]:
+    for env_idx in range(n):
+        if not local_active[env_idx]:
             retract_targets.append(tangent_targets[env_idx])
             continue
 
@@ -347,52 +344,30 @@ def primitive_execute_open(collector, params: Dict[str, Any], context: Dict[str,
     _, retract_successes = collector.execute_ik_motion(
         target_positions=np.array(retract_targets, dtype=np.float64),
         target_quaternions=np.array(align_quats),
-        gripper_states=[1.0 if s else 0.0 for s in active_successes],
+        gripper_states=[1.0 if s else 0.0 for s in local_active],
         interpolation_steps=FINAL_RETRACT_INTERP_STEPS,
         desc="Primitive Retract Opposite Door Opening",
-        active_mask=active_successes,
+        active_mask=list(local_active),
     )
-    final_successes = [ok and cur for ok, cur in zip(active_successes, retract_successes)]
+    merge_segment_into_local_active(local_active, retract_successes)
+    plan_active_after = list(local_active)
 
-    step_failure_reason_mask = [
-        "inactive"
-        if not prev_success_mask[env_idx]
-        else "target_missing"
-        if not target_available_mask[env_idx]
-        else "planning_failed"
-        if not final_successes[env_idx]
-        else "none"
-        for env_idx in range(collector.num_envs)
-    ]
-
-    success_eval_enabled = bool(params.get("success_eval", False))
     if success_eval_enabled:
         min_angle = float(OPEN_SUCCESS_MIN_ANGLE_RAD)
         state_successes = []
         state_metrics = []
-        for env_idx in range(collector.num_envs):
+        for env_idx in range(n):
             env_success, env_metrics = _evaluate_open_success_with_metrics(
                 scene=collector.scene,
                 target_label=target_label,
-                joint_name=OPEN_SUCCESS_JOINT_NAME,
+                joint_name=success_joint_name,
                 min_angle_rad=min_angle,
                 env_idx=env_idx,
             )
             state_successes.append(env_success)
             state_metrics.append(env_metrics)
 
-        final_successes = [motion_ok and state_ok for motion_ok, state_ok in zip(final_successes, state_successes)]
-        for env_idx in range(collector.num_envs):
-            if not prev_success_mask[env_idx]:
-                continue
-            if final_successes[env_idx]:
-                step_failure_reason_mask[env_idx] = "none"
-            elif step_failure_reason_mask[env_idx] in {"planning_failed", "target_missing"}:
-                continue
-            else:
-                step_failure_reason_mask[env_idx] = "success_eval_failed"
-
-        context["task_success_mask"] = list(final_successes)
+        commit_task_failures(context, prev_alive, plan_active_after, list(state_successes))
         context["task_success_metrics"] = list(state_metrics)
         for env_idx, metrics in enumerate(state_metrics):
             joint_val = metrics["joint_pos_rad"]
@@ -406,16 +381,22 @@ def primitive_execute_open(collector, params: Dict[str, Any], context: Dict[str,
             )
         print(
             f"  ✅ [Primitive] Task success (open): "
-            f"{sum(final_successes)}/{collector.num_envs} "
+            f"{sum(1 for i in range(n) if plan_active_after[i] and state_successes[i])}/{n} "
             f"(joint_pos>={min_angle:.3f} rad)"
         )
 
-    context["post_open_success_mask"] = list(final_successes)
-    context["step_failure_reason_mask"] = list(step_failure_reason_mask)
-    context["env_alive_mask"] = list(final_successes)
-    context["current_gripper_state"] = "open"
-    context["open_completed"] = any(final_successes)
-    context["primitive_executed_motion"] = True
+    commit_plan_failures(context, prev_alive, local_active)
 
-    print(f"  ✅ [Primitive] Open success: {sum(final_successes)}/{collector.num_envs}")
-    return any(final_successes)
+    plan_mask_final = list(context.get("plan_success_mask", [True] * n))
+    task_mask_final = list(context.get("task_success_mask", [True] * n))
+    final_alive = [
+        bool(prev_alive[i] and plan_mask_final[i] and task_mask_final[i])
+        for i in range(n)
+    ]
+    context["post_open_success_mask"] = list(final_alive)
+    context["env_alive_mask"] = list(final_alive)
+    context["current_gripper_state"] = "open"
+    context["open_completed"] = any(final_alive)
+    context["primitive_executed_motion"] = True
+    print(f"  ✅ [Primitive] Open success (alive): {sum(final_alive)}/{n}")
+    return any(final_alive)

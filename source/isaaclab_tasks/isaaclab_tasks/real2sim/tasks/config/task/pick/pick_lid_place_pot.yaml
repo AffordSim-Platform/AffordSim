@@ -7,11 +7,11 @@ scene:
   num_envs: 1
   env_spacing: 10
 task:
-  name: interactive task
+  name: pick_lid_place_pot
   description: pick the lid from the table and place it on the pot
 runtime:
   headless: false
-  episodes: 3
+  episodes: 1
   save_npy: false
   save_camera_images: false
   save_composite_images: false
@@ -40,12 +40,6 @@ objects:
     init_pos: [0.65, -0.10, 0.10]
     init_rot: [1.0, 0.0, 0.0, 0.0]
     height: 0.08
-    position_range:
-      x: [0.65, 0.75]
-      y: [-0.20, -0.10]
-      z: [0.10, 0.10]
-    orientation_range:
-      yaw: [-0.2618, 0.2618]
   lid:
     usd_path: models/all_object/lid.usd
     semantic_tags:
@@ -54,12 +48,22 @@ objects:
     init_pos: [0.55, 0.18, 0.075]
     init_rot: [1.0, 0.0, 0.0, 0.0]
     height: 0.03
-    position_range:
-      x: [0.55, 0.65]
-      y: [0.18, 0.28]
-      z: [0.075, 0.075]
-    orientation_range:
-      yaw: [-0.2618, 0.2618]
+  yellow_banana:
+    usd_path: models/all_object/yellow_banana.usd
+    semantic_tags:
+      -   - class
+          - yellow_banana
+    init_pos: [0.75, -0.38, 0.12]
+    init_rot: [0.3994, 0.0, 0.0, 0.9168]
+    height: 0.036
+  wood_cuttingboard:
+    usd_path: models/all_object/wood_cuttingboard.usd
+    semantic_tags:
+      -   - class
+          - wood_cuttingboard
+    init_pos: [0.80, -0.38, 0.08]
+    init_rot: [1.0, 0.0, 0.0, 0.0]
+    height: 0.08
 primitives:
   - type: pick
     mode: gt
@@ -86,12 +90,12 @@ primitives:
 enable_random_lights: false
 image_noise_std: 0
 image_speckle_noise_std: 0
-enable_objects_randomization: true
+enable_objects_randomization: false
 enable_objects_randomization_curriculum: false
 texture_randomization:
   enabled: false
-  texture_dir: models/random_pic
+  texture_dir: models/random_pic/table
   targets:
     table:
       prim_path: /World/envs/env_{i}/table/Xform_01/Xform/leg/node_/Cube
-      texture_dir: models/random_pic
+      texture_dir: models/random_pic/table

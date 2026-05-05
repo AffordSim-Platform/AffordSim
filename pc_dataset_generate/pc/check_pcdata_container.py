@@ -14,8 +14,8 @@ from unit_threshold_helper import (
 )
 
 
-PT_CANDIDATE_NAMES = ("label_result.pt", "labeled_result.pt", "lable_result.pt")
-NPZ_CANDIDATE_NAMES = ("label_result.npz", "labeled_result.npz", "lable_result.npz")
+PT_CANDIDATE_NAMES = ("labeled_result.pt",)
+NPZ_CANDIDATE_NAMES = ("labeled_result.npz",)
 
 
 # ============================================================================

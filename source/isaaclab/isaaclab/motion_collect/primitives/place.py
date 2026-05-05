@@ -3,8 +3,12 @@ from typing import Any, Dict, Optional
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 
-from ..success.constants import PLACE_SUCCESS_XY_THRESHOLD
-from ..success.evaluators import _evaluate_place_pose_success_with_metrics, _evaluate_place_success_with_metrics
+from ..success.constants import PLACE_SUCCESS_GRIPPER_OPEN_THRESHOLD, PLACE_SUCCESS_XY_THRESHOLD
+from ..success.evaluators import (
+    _evaluate_place_pose_success_with_metrics,
+    _evaluate_place_success_with_metrics,
+    _merge_gripper_release_metrics,
+)
 from ..tools.affordance_resolver import resolve_affordance_path
 from ..tools.pose_utils import (
     _quat_wxyz_to_matrix,
@@ -13,13 +17,45 @@ from ..tools.pose_utils import (
     parse_facing_axis_local,
 )
 from .utils import (
+    FAILURE_REASON_TARGET_MISSING,
+    commit_plan_failures,
+    commit_task_failures,
+    get_prev_alive_mask,
+    init_local_active_mask,
     load_affordance_centroid,
+    mark_local_inactive_with_reason,
+    merge_segment_into_local_active,
     normalize_primitive_mode,
     parse_position_offset,
     resolve_scene_entry_height,
 )
 
-FIXED_GRIPPER_STEPS = 10
+FIXED_GRIPPER_STEPS = 3
+
+
+def _parse_bool_param(value: Any, default: bool) -> bool:
+    if value is None:
+        return default
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, (int, float)):
+        return bool(value)
+    if isinstance(value, str):
+        return value.strip().lower() not in {"0", "false", "no", "off", "n"}
+    return bool(value)
+
+
+def _format_gripper_release_metric(metrics: dict) -> str:
+    if float(metrics.get("gripper_release_required", 0.0) or 0.0) <= 0.5:
+        return ""
+    released = bool(float(metrics.get("gripper_released", 0.0) or 0.0) > 0.5)
+    finger_pos = float(metrics.get("gripper_finger_pos", float("nan")))
+    direction = metrics.get("gripper_open_direction", "auto")
+    threshold = float(metrics.get("gripper_open_threshold", PLACE_SUCCESS_GRIPPER_OPEN_THRESHOLD))
+    return (
+        f", gripper_released={'OK' if released else 'FAIL'} "
+        f"(pos={finger_pos:.4f}, {direction}, threshold={threshold:.4f})"
+    )
 
 
 def _get_task_object_scale(collector, object_label: str) -> np.ndarray:
@@ -58,15 +94,26 @@ def _evaluate_place_affordance_success_with_metrics(
     target_affordance_local: np.ndarray,
     env_idx: int = 0,
     distance_threshold: float = PLACE_SUCCESS_XY_THRESHOLD,
+    require_gripper_release: bool = True,
+    gripper_open_threshold: float = PLACE_SUCCESS_GRIPPER_OPEN_THRESHOLD,
+    gripper_joint_name_substr: str = "finger,drive",
+    gripper_open_direction: str = "auto",
 ) -> tuple[bool, dict[str, float]]:
     """Evaluate affordance-mode placement by affordance-centroid distance only."""
     pick_pos_world, pick_quat_world = collector._get_object_pose_global(pick_target, env_idx)
     place_pos_world, place_quat_world = collector._get_object_pose_global(place_target, env_idx)
 
     if pick_pos_world is None or pick_quat_world is None or place_pos_world is None or place_quat_world is None:
-        return False, {
-            "pick_place_affordance_dist": float("inf"),
-        }
+        _, metrics = _merge_gripper_release_metrics(
+            {"pick_place_affordance_dist": float("inf")},
+            collector.scene,
+            env_idx,
+            require_gripper_release,
+            gripper_open_threshold,
+            gripper_joint_name_substr,
+            gripper_open_direction,
+        )
+        return False, metrics
 
     pick_affordance_world = (
         _quat_wxyz_to_matrix(np.asarray(pick_quat_world, dtype=np.float64))
@@ -80,9 +127,16 @@ def _evaluate_place_affordance_success_with_metrics(
     )
 
     affordance_dist = float(np.linalg.norm(pick_affordance_world - target_affordance_world))
-    return affordance_dist <= float(distance_threshold), {
-        "pick_place_affordance_dist": affordance_dist,
-    }
+    gripper_ok, metrics = _merge_gripper_release_metrics(
+        {"pick_place_affordance_dist": affordance_dist},
+        collector.scene,
+        env_idx,
+        require_gripper_release,
+        gripper_open_threshold,
+        gripper_joint_name_substr,
+        gripper_open_direction,
+    )
+    return affordance_dist <= float(distance_threshold) and gripper_ok, metrics
 
 
 def _find_enclosing_semi_enclosed_container_xy(collector, env_idx: int, point_xy_env: np.ndarray):
@@ -625,15 +679,17 @@ def primitive_execute_place(collector, params: Dict[str, Any], context: Dict[str
         print("[ERROR] Primitive 'execute_place' requires place poses first.")
         return False
 
-    prev_success_mask = list(
-        context.get(
-            "env_alive_mask",
-            context.get("post_pick_success_mask", [True] * collector.num_envs),
-        )
-    )
+    n = collector.num_envs
+    prev_alive = get_prev_alive_mask(context, n)
+    local_active = init_local_active_mask(context, n)
     ik_interpolation_steps = int(params.get("ik_interpolation_steps", 30))
-    target_available_mask = list(place_pose.get("target_available_mask", [True] * collector.num_envs))
-    execution_modes = list(place_pose.get("execution_modes", ["normal"] * collector.num_envs))
+    target_available_mask = list(place_pose.get("target_available_mask", [True] * n))
+    for env_idx in range(n):
+        if prev_alive[env_idx] and not target_available_mask[env_idx]:
+            mark_local_inactive_with_reason(
+                context, local_active, env_idx, FAILURE_REASON_TARGET_MISSING
+            )
+    execution_modes = list(place_pose.get("execution_modes", ["normal"] * n))
     pre_place_positions = np.array(place_pose.get("pre_positions", place_pose["positions"]), dtype=float)
     pre_place_quaternions = np.array(place_pose.get("pre_orientations", place_pose["orientations"]), dtype=float)
     place_positions = np.array(place_pose["positions"], dtype=float)
@@ -641,20 +697,19 @@ def primitive_execute_place(collector, params: Dict[str, Any], context: Dict[str
 
     two_step_modes = {"semi_enclosed", "affordance"}
     two_step_active_mask = [
-        prev and target_available_mask[env_idx] and execution_modes[env_idx] in two_step_modes
-        for env_idx, prev in enumerate(prev_success_mask)
+        local_active[env_idx] and execution_modes[env_idx] in two_step_modes
+        for env_idx in range(n)
     ]
     normal_active_mask = [
-        prev and target_available_mask[env_idx] and execution_modes[env_idx] not in two_step_modes
-        for env_idx, prev in enumerate(prev_success_mask)
+        local_active[env_idx] and execution_modes[env_idx] not in two_step_modes
+        for env_idx in range(n)
     ]
-    final_success_mask = [False] * collector.num_envs
 
     if any(two_step_active_mask):
         two_step_mode_names = sorted({execution_modes[env_idx] for env_idx, active in enumerate(two_step_active_mask) if active})
         print(
             f"  🚀 [Primitive] Executing two-step PLACE ({','.join(two_step_mode_names)}) "
-            f"for {sum(two_step_active_mask)}/{collector.num_envs} envs"
+            f"for {sum(two_step_active_mask)}/{n} envs"
         )
         two_step_indices = [env_idx for env_idx, active in enumerate(two_step_active_mask) if active]
         subset_pre_place_plans, subset_pre_place_successes = collector.motion_planner.plan_to_pose_batch(
@@ -667,35 +722,40 @@ def primitive_execute_place(collector, params: Dict[str, Any], context: Dict[str
             target_prim_path=collector.target_prim_path,
         )
         pre_place_plans, pre_place_successes = _scatter_subset_plans(
-            collector.num_envs,
+            n,
             two_step_indices,
             subset_pre_place_plans,
             subset_pre_place_successes,
         )
-        combined_two_step_successes = [
-            active and cur for active, cur in zip(two_step_active_mask, pre_place_successes)
+        # Only fold pre-place planning failures for envs that took the two-step branch.
+        two_step_pre_segment = [
+            (not two_step_active_mask[i]) or bool(pre_place_successes[i]) for i in range(n)
         ]
+        merge_segment_into_local_active(local_active, two_step_pre_segment)
+        active_for_pre = [two_step_active_mask[i] and local_active[i] for i in range(n)]
         collector.execute_trajectory_batch(
             pre_place_plans,
-            [-1.0 if success else 0.0 for success in combined_two_step_successes],
+            [-1.0 if s else 0.0 for s in active_for_pre],
             desc="Primitive Pre-Place",
-            active_mask=combined_two_step_successes,
+            active_mask=active_for_pre,
         )
 
+        active_for_descend = [two_step_active_mask[i] and local_active[i] for i in range(n)]
         _, two_step_place_successes = collector.execute_ik_motion(
             target_positions=place_positions,
             target_quaternions=place_quaternions,
-            gripper_states=[-1.0 if success else 0.0 for success in combined_two_step_successes],
+            gripper_states=[-1.0 if s else 0.0 for s in active_for_descend],
             interpolation_steps=ik_interpolation_steps,
             desc="Primitive Place IK Descend",
-            active_mask=combined_two_step_successes,
+            active_mask=active_for_descend,
         )
-        for env_idx in range(collector.num_envs):
-            if two_step_active_mask[env_idx]:
-                final_success_mask[env_idx] = combined_two_step_successes[env_idx] and two_step_place_successes[env_idx]
+        two_step_descend_segment = [
+            (not two_step_active_mask[i]) or bool(two_step_place_successes[i]) for i in range(n)
+        ]
+        merge_segment_into_local_active(local_active, two_step_descend_segment)
 
     if any(normal_active_mask):
-        print(f"  🚀 [Primitive] Executing normal PLACE for {sum(normal_active_mask)}/{collector.num_envs} envs")
+        print(f"  🚀 [Primitive] Executing normal PLACE for {sum(normal_active_mask)}/{n} envs")
         normal_indices = [env_idx for env_idx, active in enumerate(normal_active_mask) if active]
         subset_place_plans, subset_place_successes = collector.motion_planner.plan_to_pose_batch(
             collector.robot.data.joint_pos[normal_indices].cpu().numpy(),
@@ -707,26 +767,27 @@ def primitive_execute_place(collector, params: Dict[str, Any], context: Dict[str
             target_prim_path=collector.target_prim_path,
         )
         place_plans, place_successes = _scatter_subset_plans(
-            collector.num_envs,
+            n,
             normal_indices,
             subset_place_plans,
             subset_place_successes,
         )
-        combined_normal_successes = [active and cur for active, cur in zip(normal_active_mask, place_successes)]
+        normal_segment = [
+            (not normal_active_mask[i]) or bool(place_successes[i]) for i in range(n)
+        ]
+        merge_segment_into_local_active(local_active, normal_segment)
+        active_for_normal = [normal_active_mask[i] and local_active[i] for i in range(n)]
         collector.execute_trajectory_batch(
             place_plans,
-            [-1.0 if success else 0.0 for success in combined_normal_successes],
+            [-1.0 if s else 0.0 for s in active_for_normal],
             desc="Primitive Placing",
-            active_mask=combined_normal_successes,
+            active_mask=active_for_normal,
         )
-        for env_idx in range(collector.num_envs):
-            if normal_active_mask[env_idx]:
-                final_success_mask[env_idx] = combined_normal_successes[env_idx]
 
     collector.control_gripper_batch(
-        [1.0 if success else 0.0 for success in final_success_mask],
+        [1.0 if s else 0.0 for s in local_active],
         steps=FIXED_GRIPPER_STEPS,
-        active_mask=final_success_mask,
+        active_mask=list(local_active),
     )
 
     success_eval_enabled = bool(params.get("success_eval", False))
@@ -736,7 +797,7 @@ def primitive_execute_place(collector, params: Dict[str, Any], context: Dict[str
     retreat_to_pre_place_count = 0
     vertical_retreat_count = 0
     retreat_modes = {"semi_enclosed", "affordance"}
-    for env_idx in range(collector.num_envs):
+    for env_idx in range(n):
         if execution_modes[env_idx] in retreat_modes:
             post_release_retreat_positions[env_idx] = np.array(pre_place_positions[env_idx], dtype=float)
             post_release_retreat_quaternions[env_idx] = np.array(pre_place_quaternions[env_idx], dtype=float)
@@ -745,44 +806,42 @@ def primitive_execute_place(collector, params: Dict[str, Any], context: Dict[str
             post_release_retreat_positions[env_idx] += post_release_lift_offset
             vertical_retreat_count += 1
 
-    if any(final_success_mask):
+    if any(local_active):
         print(
             "  🚀 [Primitive] Post-release retreat: "
-            f"pre_place={retreat_to_pre_place_count}/{collector.num_envs}, "
-            f"vertical={vertical_retreat_count}/{collector.num_envs}"
+            f"pre_place={retreat_to_pre_place_count}/{n}, "
+            f"vertical={vertical_retreat_count}/{n}"
         )
         _, post_release_retreat_successes = collector.execute_ik_motion(
             target_positions=post_release_retreat_positions,
             target_quaternions=post_release_retreat_quaternions,
-            gripper_states=[1.0 if success else 0.0 for success in final_success_mask],
+            gripper_states=[1.0 if s else 0.0 for s in local_active],
             interpolation_steps=int(params.get("post_release_lift_steps", 10)),
             desc="Primitive Post-Release Retreat",
-            active_mask=final_success_mask,
+            active_mask=list(local_active),
         )
-        final_success_mask = [prev and cur for prev, cur in zip(final_success_mask, post_release_retreat_successes)]
+        merge_segment_into_local_active(local_active, post_release_retreat_successes)
 
-    step_failure_reason_mask = ["none"] * collector.num_envs
-    for env_idx in range(collector.num_envs):
-        if not prev_success_mask[env_idx]:
-            step_failure_reason_mask[env_idx] = "inactive"
-        elif not target_available_mask[env_idx]:
-            step_failure_reason_mask[env_idx] = "target_missing"
-        elif not final_success_mask[env_idx]:
-            step_failure_reason_mask[env_idx] = "planning_failed"
+    # ``local_active`` now reflects the cumulative planning chain for this primitive.
+    plan_active_after = list(local_active)
+    final_success_mask = list(local_active)
 
     if success_eval_enabled:
         pick_target = context.get("pick_target_label")
         place_target = place_pose.get("target_label")
         place_mode = str(place_pose.get("mode", "")).lower()
+        require_gripper_release = _parse_bool_param(params.get("require_gripper_release"), True)
+        gripper_open_threshold = float(
+            params.get("gripper_open_threshold", PLACE_SUCCESS_GRIPPER_OPEN_THRESHOLD)
+        )
+        gripper_joint_name_substr = str(params.get("gripper_joint_name_substr", "finger,drive"))
+        gripper_open_direction = str(params.get("gripper_open_direction", "auto"))
         if not pick_target:
             print("[ERROR] Place success_eval requires pick target.")
-            context["post_place_success_mask"] = [False] * collector.num_envs
-            context["task_success_mask"] = [False] * collector.num_envs
-            context["env_alive_mask"] = [False] * collector.num_envs
-            context["step_failure_reason_mask"] = [
-                "inactive" if not prev_success_mask[env_idx] else "success_eval_failed"
-                for env_idx in range(collector.num_envs)
-            ]
+            commit_plan_failures(context, prev_alive, local_active)
+            commit_task_failures(context, prev_alive, plan_active_after, [False] * n)
+            context["post_place_success_mask"] = [False] * n
+            context["env_alive_mask"] = [False] * n
             return False
 
         state_successes = []
@@ -813,28 +872,22 @@ def primitive_execute_place(collector, params: Dict[str, Any], context: Dict[str
 
             if affordance_pick_local is None or affordance_target_local is None:
                 print("[ERROR] Place affordance success_eval requires valid affordance centroids.")
-                context["post_place_success_mask"] = [False] * collector.num_envs
-                context["task_success_mask"] = [False] * collector.num_envs
-                context["env_alive_mask"] = [False] * collector.num_envs
-                context["step_failure_reason_mask"] = [
-                    "inactive" if not prev_success_mask[idx] else "success_eval_failed"
-                    for idx in range(collector.num_envs)
-                ]
+                commit_plan_failures(context, prev_alive, local_active)
+                commit_task_failures(context, prev_alive, plan_active_after, [False] * n)
+                context["post_place_success_mask"] = [False] * n
+                context["env_alive_mask"] = [False] * n
                 return False
 
-        execution_modes_list = place_pose.get("execution_modes", ["normal"] * collector.num_envs)
+        execution_modes_list = place_pose.get("execution_modes", ["normal"] * n)
         if place_mode not in ("pose", "affordance") and not place_target:
             print("[ERROR] Place success_eval requires place target when mode is not 'pose'.")
-            context["post_place_success_mask"] = [False] * collector.num_envs
-            context["task_success_mask"] = [False] * collector.num_envs
-            context["env_alive_mask"] = [False] * collector.num_envs
-            context["step_failure_reason_mask"] = [
-                "inactive" if not prev_success_mask[idx] else "success_eval_failed"
-                for idx in range(collector.num_envs)
-            ]
+            commit_plan_failures(context, prev_alive, local_active)
+            commit_task_failures(context, prev_alive, plan_active_after, [False] * n)
+            context["post_place_success_mask"] = [False] * n
+            context["env_alive_mask"] = [False] * n
             return False
 
-        for env_idx in range(collector.num_envs):
+        for env_idx in range(n):
             if place_mode == "pose":
                 env_success, env_metrics = _evaluate_place_pose_success_with_metrics(
                     scene=collector.scene,
@@ -843,6 +896,10 @@ def primitive_execute_place(collector, params: Dict[str, Any], context: Dict[str
                     target_quat_wxyz=np.array(place_pose["orientations"][env_idx], dtype=float),
                     pick_target_offset_in_ee=held_object_offset_in_ee[env_idx],
                     env_idx=env_idx,
+                    require_gripper_release=require_gripper_release,
+                    gripper_open_threshold=gripper_open_threshold,
+                    gripper_joint_name_substr=gripper_joint_name_substr,
+                    gripper_open_direction=gripper_open_direction,
                 )
             elif place_mode == "affordance":
                 env_success, env_metrics = _evaluate_place_affordance_success_with_metrics(
@@ -852,6 +909,10 @@ def primitive_execute_place(collector, params: Dict[str, Any], context: Dict[str
                     pick_affordance_local=affordance_pick_local,
                     target_affordance_local=affordance_target_local,
                     env_idx=env_idx,
+                    require_gripper_release=require_gripper_release,
+                    gripper_open_threshold=gripper_open_threshold,
+                    gripper_joint_name_substr=gripper_joint_name_substr,
+                    gripper_open_direction=gripper_open_direction,
                 )
             else:
                 env_execution_mode = execution_modes_list[env_idx]
@@ -866,6 +927,10 @@ def primitive_execute_place(collector, params: Dict[str, Any], context: Dict[str
                         target_quat_wxyz=env_target_quat,
                         pick_target_offset_in_ee=env_offset_in_ee,
                         env_idx=env_idx,
+                        require_gripper_release=require_gripper_release,
+                        gripper_open_threshold=gripper_open_threshold,
+                        gripper_joint_name_substr=gripper_joint_name_substr,
+                        gripper_open_direction=gripper_open_direction,
                     )
                 else:
                     env_success, env_metrics = _evaluate_place_success_with_metrics(
@@ -875,24 +940,22 @@ def primitive_execute_place(collector, params: Dict[str, Any], context: Dict[str
                         env_idx=env_idx,
                         ee_target_quat_wxyz=env_target_quat,
                         pick_target_offset_in_ee=env_offset_in_ee,
+                        require_gripper_release=require_gripper_release,
+                        gripper_open_threshold=gripper_open_threshold,
+                        gripper_joint_name_substr=gripper_joint_name_substr,
+                        gripper_open_direction=gripper_open_direction,
                     )
             state_successes.append(env_success)
             state_metrics.append(env_metrics)
 
-        final_success_mask = [motion_ok and state_ok for motion_ok, state_ok in zip(final_success_mask, state_successes)]
-        for env_idx in range(collector.num_envs):
-            if not prev_success_mask[env_idx]:
-                continue
-            if final_success_mask[env_idx]:
-                step_failure_reason_mask[env_idx] = "none"
-            elif step_failure_reason_mask[env_idx] in {"planning_failed", "target_missing"}:
-                continue
-            else:
-                step_failure_reason_mask[env_idx] = "success_eval_failed"
-
-        context["task_success_mask"] = list(final_success_mask)
+        # Task line: only judges envs that survived the planning chain.
+        commit_task_failures(context, prev_alive, plan_active_after, list(state_successes))
+        final_success_mask = [
+            bool(plan_active_after[i] and state_successes[i]) for i in range(n)
+        ]
         context["task_success_metrics"] = list(state_metrics)
         for env_idx, metrics in enumerate(state_metrics):
+            gripper_metric = _format_gripper_release_metric(metrics)
             if place_mode == "pose":
                 dist_ok = metrics["pick_pose_xy_dist"] <= float(PLACE_SUCCESS_XY_THRESHOLD)
                 compensated = bool(metrics.get("pose_offset_compensated", 0.0) > 0.5)
@@ -900,6 +963,7 @@ def primitive_execute_place(collector, params: Dict[str, Any], context: Dict[str
                     f"    [TaskCheck][env {env_idx}] "
                     f"pick_pose_xy_dist={metrics['pick_pose_xy_dist']:.4f}m ({'OK' if dist_ok else 'FAIL'}), "
                     f"offset_compensated={'OK' if compensated else 'NO'}"
+                    f"{gripper_metric}"
                 )
             elif place_mode == "affordance":
                 dist_ok = metrics["pick_place_affordance_dist"] <= float(PLACE_SUCCESS_XY_THRESHOLD)
@@ -907,6 +971,7 @@ def primitive_execute_place(collector, params: Dict[str, Any], context: Dict[str
                     f"    [TaskCheck][env {env_idx}] "
                     f"pick_place_affordance_dist={metrics['pick_place_affordance_dist']:.4f}m "
                     f"({'OK' if dist_ok else 'FAIL'})"
+                    f"{gripper_metric}"
                 )
             else:
                 env_execution_mode = execution_modes_list[env_idx]
@@ -918,6 +983,7 @@ def primitive_execute_place(collector, params: Dict[str, Any], context: Dict[str
                         f"    [TaskCheck][env {env_idx}] "
                         f"pick_place_xy_dist(semi_enclosed,{comp_tag})="
                         f"{metrics['pick_pose_xy_dist']:.4f}m ({'OK' if dist_ok else 'FAIL'})"
+                        f"{gripper_metric}"
                     )
                 else:
                     target_pos, _ = collector._get_object_pose_global(pick_target, env_idx)
@@ -935,32 +1001,42 @@ def primitive_execute_place(collector, params: Dict[str, Any], context: Dict[str
                         f"pick_place_xy_dist({comp_tag})={metrics['pick_place_xy_dist']:.4f}m "
                         f"({'OK' if dist_ok else 'FAIL'}), "
                         f"pick_z={target_z:.4f}, place_z={container_z:.4f} ({'OK' if z_ok else 'FAIL'})"
+                        f"{gripper_metric}"
                     )
+        gripper_criterion = ", gripper_released" if require_gripper_release else ""
         if place_mode == "pose":
             print(
                 "  ✅ [Primitive] Task success (place/pose): "
-                f"{sum(final_success_mask)}/{collector.num_envs} "
-                f"(pick_pose_xy_dist<={PLACE_SUCCESS_XY_THRESHOLD:.3f})"
+                f"{sum(final_success_mask)}/{n} "
+                f"(pick_pose_xy_dist<={PLACE_SUCCESS_XY_THRESHOLD:.3f}{gripper_criterion})"
             )
         elif place_mode == "affordance":
             print(
                 "  ✅ [Primitive] Task success (place/affordance): "
-                f"{sum(final_success_mask)}/{collector.num_envs} "
-                f"(pick_place_affordance_dist<={PLACE_SUCCESS_XY_THRESHOLD:.3f})"
+                f"{sum(final_success_mask)}/{n} "
+                f"(pick_place_affordance_dist<={PLACE_SUCCESS_XY_THRESHOLD:.3f}{gripper_criterion})"
             )
         else:
             print(
                 "  ✅ [Primitive] Task success (place): "
-                f"{sum(final_success_mask)}/{collector.num_envs} "
-                f"(place_target_in_range, pick_place_xy_dist<={PLACE_SUCCESS_XY_THRESHOLD:.3f}, pick_z>=place_z)"
+                f"{sum(final_success_mask)}/{n} "
+                f"(place_target_in_range, pick_place_xy_dist<={PLACE_SUCCESS_XY_THRESHOLD:.3f}, "
+                f"pick_z>=place_z{gripper_criterion})"
             )
 
-    context["post_place_success_mask"] = list(final_success_mask)
-    context["step_failure_reason_mask"] = list(step_failure_reason_mask)
-    context["env_alive_mask"] = list(final_success_mask)
+    commit_plan_failures(context, prev_alive, local_active)
+
+    plan_mask_final = list(context.get("plan_success_mask", [True] * n))
+    task_mask_final = list(context.get("task_success_mask", [True] * n))
+    final_alive = [
+        bool(prev_alive[i] and plan_mask_final[i] and task_mask_final[i])
+        for i in range(n)
+    ]
+    context["post_place_success_mask"] = list(final_alive)
+    context["env_alive_mask"] = list(final_alive)
     context["current_gripper_state"] = "open"
-    context["place_completed"] = any(final_success_mask)
+    context["place_completed"] = any(final_alive)
     context["primitive_executed_motion"] = True
 
-    print(f"  ✅ [Primitive] Place success: {sum(final_success_mask)}/{collector.num_envs}")
-    return any(final_success_mask)
+    print(f"  ✅ [Primitive] Place success (alive): {sum(final_alive)}/{n}")
+    return any(final_alive)

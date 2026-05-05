@@ -7,11 +7,11 @@ scene:
   num_envs: 1
   env_spacing: 10
 task:
-  name: interactive task
+  name: open_microwave
   description: grasp the microwave handle
 runtime:
   headless: false
-  episodes: 3
+  episodes: 5
   save_npy: false
   save_camera_images: false
   save_composite_images: false
@@ -77,8 +77,8 @@ enable_objects_randomization: true
 enable_objects_randomization_curriculum: false
 texture_randomization:
   enabled: false
-  texture_dir: models/random_pic
+  texture_dir: models/random_pic/table
   targets:
     table:
       prim_path: "/World/envs/env_{i}/table/Xform_01/Xform/leg/node_/Cube"
-      texture_dir: models/random_pic
+      texture_dir: models/random_pic/table

@@ -22,6 +22,8 @@ EE_OFFSET_Z = 0.220              # fr3_hand → ee_frame 偏移
 # 固定抓取参数
 # ============================================================================
 TILT_ANGLE_DEG = 90.0             # 90° = 竖直向下抓取
+POINT_CLOUD_GRAY = np.array([0.58, 0.58, 0.58])
+AFFORDANCE_RED = np.array([1.0, 0.22, 0.22])
 
 
 # ============================================================================
@@ -528,21 +530,21 @@ def create_grasp_visualization(grasp_result):
         geometries.append(finger)
 
     # Grip axis 线 (品红)
-    grip_line_len = GRIPPER_MAX_OPENING + 2 * ft + 0.01
-    grip_cyl = o3d.geometry.TriangleMesh.create_cylinder(radius=0.0008, height=grip_line_len)
-    grip_cyl.translate([0, 0, -grip_line_len / 2])
-    R_grip = rotation_from_z_to_dir(grip)
-    grip_cyl.rotate(R_grip, center=[0, 0, 0])
-    grip_cyl.translate(center)
-    grip_cyl.paint_uniform_color([1.0, 0.0, 1.0])
-    grip_cyl.compute_vertex_normals()
-    geometries.append(grip_cyl)
+    # grip_line_len = GRIPPER_MAX_OPENING + 2 * ft + 0.01
+    # grip_cyl = o3d.geometry.TriangleMesh.create_cylinder(radius=0.0008, height=grip_line_len)
+    # grip_cyl.translate([0, 0, -grip_line_len / 2])
+    # R_grip = rotation_from_z_to_dir(grip)
+    # grip_cyl.rotate(R_grip, center=[0, 0, 0])
+    # grip_cyl.translate(center)
+    # grip_cyl.paint_uniform_color([1.0, 0.0, 1.0])
+    # grip_cyl.compute_vertex_normals()
+    # geometries.append(grip_cyl)
 
     # 抓取坐标系
-    grasp_frame = o3d.geometry.TriangleMesh.create_coordinate_frame(size=0.025)
-    grasp_frame.rotate(R_local, center=[0, 0, 0])
-    grasp_frame.translate(center)
-    geometries.append(grasp_frame)
+    # grasp_frame = o3d.geometry.TriangleMesh.create_coordinate_frame(size=0.025)
+    # grasp_frame.rotate(R_local, center=[0, 0, 0])
+    # grasp_frame.translate(center)
+    # geometries.append(grasp_frame)
 
     # ★ 新增: 画一条虚拟桌面参考线 (帮助观察倾斜角度)
     elevation = np.degrees(np.arcsin(np.clip(-approach[2], -1, 1)))
@@ -555,18 +557,10 @@ def create_grasp_visualization(grasp_result):
 # 数据加载与批处理
 # ============================================================================
 def find_pt_path(type_path):
-    pt_files = sorted(
-        file_name for file_name in os.listdir(type_path)
-        if file_name.endswith("_hang.pt") and os.path.isfile(os.path.join(type_path, file_name))
-    )
-
-    if not pt_files:
-        raise FileNotFoundError(f"{type_path} 中未找到 *_hang.pt 文件")
-
-    if len(pt_files) > 1:
-        print(f"[WARN] {type_path} 中找到多个 *_hang.pt 文件, 使用第一个: {pt_files[0]}")
-
-    return os.path.join(type_path, pt_files[0])
+    pt_path = os.path.join(type_path, "labeled_result_hang.pt")
+    if not os.path.isfile(pt_path):
+        raise FileNotFoundError(f"{type_path} 中未找到 labeled_result_hang.pt")
+    return pt_path
 
 
 def load_points_and_labels(pt_path):
@@ -589,15 +583,14 @@ def process_type_path(type_path, visualize=True, default_threshold=DEFAULT_UNIT_
         print(f"[INFO] 总点数: {len(points)}, label=0: {(labels==0).sum()}, label=1: {(labels==1).sum()}")
         print(f"[INFO] 固定抓取姿态: 竖直向下, 不偏转角度")
 
-        colors = np.zeros((len(labels), 3))
-        colors[labels == 0] = [0.0, 1.0, 0.0]
-        colors[labels == 1] = [1.0, 0.0, 0.0]
+        colors = np.tile(POINT_CLOUD_GRAY, (len(labels), 1))
+        colors[labels == 1] = AFFORDANCE_RED
 
         pcd = o3d.geometry.PointCloud()
         pcd.points = o3d.utility.Vector3dVector(points)
         pcd.colors = o3d.utility.Vector3dVector(colors)
 
-        coord_frame = o3d.geometry.TriangleMesh.create_coordinate_frame(size=0.05, origin=[0, 0, 0])
+        # coord_frame = o3d.geometry.TriangleMesh.create_coordinate_frame(size=0.05, origin=[0, 0, 0])
         grasp_result = compute_best_grasp(points, labels)
 
         print(f"\n{'='*60}")
@@ -620,7 +613,8 @@ def process_type_path(type_path, visualize=True, default_threshold=DEFAULT_UNIT_
 
         if visualize:
             grasp_geometries = create_grasp_visualization(grasp_result)
-            all_geometries = [pcd, coord_frame] + grasp_geometries
+            # all_geometries = [pcd, coord_frame] + grasp_geometries
+            all_geometries = [pcd] + grasp_geometries
             return attach_visualization(
                 {"grasp_result": grasp_result, "ee_pos": ee_pos},
                 all_geometries,
@@ -656,11 +650,7 @@ def find_pick_dirs(script_dir):
         for entry in os.listdir(script_dir)
         if entry.endswith("_pick")
         and os.path.isdir(os.path.join(script_dir, entry))
-        and any(
-            file_name.endswith("_hang.pt")
-            and os.path.isfile(os.path.join(script_dir, entry, file_name))
-            for file_name in os.listdir(os.path.join(script_dir, entry))
-        )
+        and os.path.isfile(os.path.join(script_dir, entry, "labeled_result_hang.pt"))
     )
 
 
@@ -672,10 +662,10 @@ if __name__ == '__main__':
     type_paths = find_pick_dirs(script_dir)
 
     if not type_paths:
-        raise FileNotFoundError(f"{script_dir} 下未找到任何包含 *_hang.pt 的 *_pick 文件夹")
+        raise FileNotFoundError(f"{script_dir} 下未找到任何包含 labeled_result_hang.pt 的 *_pick 文件夹")
 
     if len(type_paths) > 1:
-        print(f"[INFO] 检测到 {len(type_paths)} 个包含 *_hang.pt 的 *_pick 文件夹, 将逐个可视化。请在 Open3D 窗口内按 Y/Enter 保存，U/D 调阈值，Q/Esc/X 退出。")
+        print(f"[INFO] 检测到 {len(type_paths)} 个包含 labeled_result_hang.pt 的 *_pick 文件夹, 将逐个可视化。请在 Open3D 窗口内按 Y/Enter 保存，U/D 调阈值，Q/Esc/X 退出。")
 
     for index, type_path in enumerate(type_paths, start=1):
         folder_name = os.path.basename(type_path)

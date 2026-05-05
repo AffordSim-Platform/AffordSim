@@ -38,15 +38,15 @@ def get_object_pose(env, object_name: str):
         print(f"Warning: Object '{object_name}' not found at {scene_path}")
         return None, None
     
-    # 获取世界坐标系下的变换
+    # Get transform in world frame
     xform = UsdGeom.Xformable(prim)
     world_transform = xform.ComputeLocalToWorldTransform(0)
     
-    # 提取位置（世界坐标系）
+    # Extract position (world frame)
     translation = world_transform.ExtractTranslation()
     position = np.array([translation[0], translation[1], translation[2]])
     
-    # 提取四元数（世界坐标系）
+    # Extract quaternion (world frame)
     rotation = world_transform.ExtractRotationQuat()
     quaternion = np.array([
         rotation.GetReal(),           # w
@@ -69,11 +69,11 @@ def compute_pick_pose(object_pos, object_quat, grasp_offset: np.ndarray = np.arr
     Returns:
         pick_position, pick_quaternion
     """
-    # 简单方式：在物体上方一定距离，夹爪朝下
+    # Simple approach: position above the object at a certain distance, gripper pointing down
     pick_position = object_pos.copy()
-    pick_position[2] += grasp_offset[2]  # 上方偏移
+    pick_position[2] += grasp_offset[2]  # Offset above
     
-    # 夹爪朝下的四元数 (gripper pointing down)
+    # Quaternion for gripper pointing down
     pick_quaternion = np.array([0, 1, 0, 0])  # [w, x, y, z]
     
     return pick_position, pick_quaternion
@@ -92,9 +92,9 @@ def compute_place_pose(container_pos, container_quat, place_offset: np.ndarray =
         place_position, place_quaternion
     """
     place_position = container_pos.copy()
-    place_position[2] += place_offset[2]  # 在容器上方
-    
-    # 夹爪朝下
+    place_position[2] += place_offset[2]  # Above the container
+
+    # Gripper pointing down
     place_quaternion = np.array([0, 1, 0, 0])  # [w, x, y, z]
     
     return place_position, place_quaternion
@@ -268,8 +268,8 @@ def main(
     scene_objects = {
         1: {"object": "_10_potted_meat_can", 
             "container": "_25_mug",
-            "grasp_offset": np.array([0, 0, 0.1]),  # 抓取点偏移
-            "place_offset": np.array([0, 0, 0.2]),  # 放置点偏移
+            "grasp_offset": np.array([0, 0, 0.1]),  # Grasp point offset
+            "place_offset": np.array([0, 0, 0.2]),  # Place point offset
             },
         2: {"object": "_10_potted_meat_can",
             "container": "_37_bowl",

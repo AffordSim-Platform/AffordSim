@@ -1,0 +1,96 @@
+simulation:
+  decimation: 30
+  dt: 0.00833333
+  render_interval: 5
+  episode_length_s: 100
+scene:
+  num_envs: 1
+  env_spacing: 10
+task:
+  name: pick_green_bellpepper_place_pan
+  description: grasp the green bell pepper and put it on the pan
+runtime:
+  headless: false
+  episodes: 1
+  save_npy: false
+  save_camera_images: false
+  save_composite_images: false
+  save_mask_images: false
+  save_original_images: true
+  enable_motion_planning: true
+  sim_camera_resolution: [640, 480]
+  background_image_size: [640, 480]
+  use_background_replace: true
+  cam_side_background: backgrounds/1123_background.png
+  cam_wrist_background: backgrounds/wristbackground_realworld1.png
+  data_dir: data/r2s2r_data/pick_green_bellpepper_place_pan
+  task_name: FrankaFr3-OurGripper-Joint-VisPick-v0
+robot:
+  cfg_name: franka_fr3_our.yml
+  type: franka_fr3_default
+offsets:
+  grasp: [0, 0, 0.0]
+  place: [0, 0, 0.0]
+objects:
+  green_bellpepper:
+    usd_path: models/all_object/green_bellpepper.usd
+    semantic_tags:
+      -   - class
+          - green_bellpepper
+    scale: [0.7, 0.7, 0.7]
+    init_pos: [0.55, 0.15, 0.075]
+    init_rot: [1.0, 0.0, 0.0, 0.0]
+    height: 0.14
+  white_pan:
+    usd_path: models/all_object/white_pan.usd
+    semantic_tags:
+      -   - class
+          - white_pan
+    init_pos: [0.71, -0.15, 0.1]
+    init_rot: [0.0436, 0.0, 0.0, 0.999]
+    height: 0.05
+  orange_carrot:
+    usd_path: models/all_object/orange_carrot.usd
+    semantic_tags:
+      -   - class
+          - orange_carrot
+    init_pos: [0.45, -0.38, 0.035]
+    init_rot: [0.3994, 0.0, 0.0, 0.9168]
+    height: 0.04
+  green_leek:
+    usd_path: models/all_object/green_leek.usd
+    semantic_tags:
+      -   - class
+          - green_leek
+    init_pos: [0.80, -0.38, 0.08]
+    init_rot: [1.0, 0.0, 0.0, 0.0]
+    height: 0.08
+primitives:
+  - type: pick
+    mode: affordance
+    params:
+      target: green_bellpepper
+      pre_pick_offset: [0.0, 0.0, 0.10]
+      pick_interpolation_steps: 10
+      lift_interpolation_steps: 10
+  - type: place
+    mode: on
+    params:
+      target: white_pan
+      success_eval: true
+      on_height_margin: 0.04
+  - type: return_home
+    params:
+      post_settle_steps: 20
+enable_random_lights: false
+image_noise_std: 0
+image_speckle_noise_std: 0
+enable_objects_randomization: false
+enable_objects_randomization_curriculum: false
+texture_randomization:
+  enabled: false
+  texture_dir: models/random_pic/table
+  targets:
+    table:
+      prim_path: /World/envs/env_{i}/table/Xform_01/Xform/leg/node_/Cube
+      texture_dir: models/random_pic/table

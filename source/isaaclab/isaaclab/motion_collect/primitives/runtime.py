@@ -23,6 +23,8 @@ def build_primitive_context(
     return {
         "episode_num": episode_num,
         "task_name": collector.task_name,
+        "plan_success_mask": [True] * collector.num_envs,
+        "task_success_mask": [True] * collector.num_envs,
         "env_alive_mask": [True] * collector.num_envs,
         "env_failure_reasons": ["none"] * collector.num_envs,
         "step_failure_reason_mask": None,

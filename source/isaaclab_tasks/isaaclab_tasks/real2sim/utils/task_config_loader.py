@@ -8,7 +8,7 @@ Each task corresponds to an independent YAML configuration file.
 import yaml
 import numpy as np
 from pathlib import Path
-from typing import Dict, Optional, Any, Tuple, List
+from typing import Dict, Optional, Any, Tuple, List, Union
 from dataclasses import dataclass, field
 
 @dataclass
@@ -70,14 +70,32 @@ class SimulationConfig:
 @dataclass
 class SceneConfig:
     """Scene configuration."""
-    env_spacing: float
+    env_spacing: Union[float, Tuple[float, float]]
     num_envs: int
+    name: str
+    usd_path: str
+    prim_path: str
+    table_bounds: Dict[str, Any]
     
     @classmethod
     def from_dict(cls, data: Dict) -> "SceneConfig":
+        env_spacing = data.get("env_spacing", 4.0)
+        if isinstance(env_spacing, dict):
+            default = env_spacing.get("xy", 4.0)
+            env_spacing = (float(env_spacing.get("x", default)), float(env_spacing.get("y", default)))
+        elif isinstance(env_spacing, (list, tuple)):
+            if len(env_spacing) != 2:
+                raise ValueError("scene.env_spacing list/tuple must contain exactly two values: [x, y].")
+            env_spacing = (float(env_spacing[0]), float(env_spacing[1]))
+        else:
+            env_spacing = float(env_spacing)
         return cls(
-            env_spacing=data.get("env_spacing", 4.0),
-            num_envs=data.get("num_envs", 1)
+            env_spacing=env_spacing,
+            num_envs=data.get("num_envs", 1),
+            name=data.get("name", "table"),
+            usd_path=data.get("usd_path", "models/table.usd"),
+            prim_path=data.get("prim_path", "{ENV_REGEX_NS}/table"),
+            table_bounds=data.get("table_bounds", {}) or {},
         )
     
 @dataclass
@@ -107,6 +125,7 @@ class RuntimeConfig:
     save_composite_images: bool
     save_mask_images: bool
     save_original_images: bool
+    save_depth_images: bool
     enable_motion_planning: bool
     data_dir: str
     task_name: str
@@ -152,6 +171,7 @@ class RuntimeConfig:
             save_composite_images=data.get("save_composite_images", False),
             save_mask_images=data.get("save_mask_images", False),
             save_original_images=data.get("save_original_images", False),
+            save_depth_images=data.get("save_depth_images", False),
             enable_motion_planning=data.get("enable_motion_planning", True),
             data_dir=data_dir,
             task_name=data.get("task_name", ""),
@@ -610,6 +630,7 @@ class TaskConfig:
             "save_composite_images": self.runtime.save_composite_images,
             "save_mask_images": self.runtime.save_mask_images,
             "save_original_images": self.runtime.save_original_images,
+            "save_depth_images": self.runtime.save_depth_images,
             "episodes": self.runtime.episodes,
             "num_envs": self.scene.num_envs,
             "task_name": self.runtime.task_name,
