@@ -1,0 +1,1817 @@
+{
+    "version": "1.0",
+    "file_records": [
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/white_kettle11.usd",
+            "source_hash": "c61f4201a853803220a1c04f3835eb38c732057c",
+            "target_url": "./white_kettle11.usd",
+            "target_hash": "04bed7274d7f6d2d673080844718628a177b3674"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/kettle/102786/configuration/materials/textures/texture_0.jpg",
+            "source_hash": "37731aad9ea91f1d00594468b9a60b353354cd84",
+            "target_url": "./converted_usd_safe/kettle/102786/configuration/materials/textures/texture_0.jpg",
+            "target_hash": "490ee9b491188ede0a370ac2fb72ffd02443814a"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/white_kettle12.usd",
+            "source_hash": "43cd2a46f9cc800e5f658436edb9781f3a018ff8",
+            "target_url": "./white_kettle12.usd",
+            "target_hash": "0766f2071eef993720eddada16716e1c33ce6d64"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/white_kettle13.usd",
+            "source_hash": "3993f12bf2e041af823801433adca3b2b2656697",
+            "target_url": "./white_kettle13.usd",
+            "target_hash": "eba43e678df92da394f5860a72b5833150a6066e"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/white_kettle14.usd",
+            "source_hash": "b90627a2e9ef2f36a81c3242267906d342c476f3",
+            "target_url": "./white_kettle14.usd",
+            "target_hash": "4528208ca1651a06965f7420798b9084c8bd30bb"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/kettle/103208/configuration/materials/textures/texture_0.jpg",
+            "source_hash": "bc3bbadda91b255414f94a374f9dff490f1f8527",
+            "target_url": "./converted_usd_safe/kettle/103208/configuration/materials/textures/texture_0.jpg",
+            "target_hash": "a2a4918fb329929f796c090ad1163e7ede81963a"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/kettle/103208/configuration/materials/textures/texture_1.jpg",
+            "source_hash": "32f93163854b9111f4ad64e152048390a57f2eef",
+            "target_url": "./converted_usd_safe/kettle/103208/configuration/materials/textures/texture_1.jpg",
+            "target_hash": "138cbd32ceb8e7ff0a1d587cc519a881d4225863"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/white_kettle15.usd",
+            "source_hash": "5997f8772dc17dd16f9ef7c1d73bb78f581626c4",
+            "target_url": "./white_kettle15.usd",
+            "target_hash": "6b127c959535a8a5d5d847ad372a429292deb65e"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/kettle/103222/configuration/materials/textures/texture_0.png",
+            "source_hash": "585016beb5b641be4a5be873420899c5c21f2035",
+            "target_url": "./converted_usd_safe/kettle/103222/configuration/materials/textures/texture_0.png",
+            "target_hash": "faaa27bad9f8e9edf3c1d6a4648b0ef7dccfad6c"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/kettle/103222/configuration/materials/textures/texture_1.png",
+            "source_hash": "585016beb5b641be4a5be873420899c5c21f2035",
+            "target_url": "./converted_usd_safe/kettle/103222/configuration/materials/textures/texture_1.png",
+            "target_hash": "c025ba7ea7f1c1fae6051effec2e413c4b718065"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/white_kettle2.usd",
+            "source_hash": "474fc4169b710771a395c57a013aac31589401af",
+            "target_url": "./white_kettle2.usd",
+            "target_hash": "119415e5bd451ab73e723da359930e7cb8f1c731"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/white_kettle3.usd",
+            "source_hash": "894fd65987bd31790410078c777421b514555be8",
+            "target_url": "./white_kettle3.usd",
+            "target_hash": "64c5095e0323505fbd82da143e022e4b31a5201f"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/white_kettle4.usd",
+            "source_hash": "713df5256fcd44f622d8e755bedc271baecd097c",
+            "target_url": "./white_kettle4.usd",
+            "target_hash": "df441889beba0cade00f412a3e3bef09f9478fe0"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/white_kettle5.usd",
+            "source_hash": "5d53b41ffee96608122f1669ee074175f123e120",
+            "target_url": "./white_kettle5.usd",
+            "target_hash": "ea0a6f0f2f5d6e13e4ec90f0999e32e20276cb5e"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/kettle/102730/configuration/materials/textures/texture_0.jpg",
+            "source_hash": "3999d0a72bda0b74991956f81526682c777990f7",
+            "target_url": "./converted_usd_safe/kettle/102730/configuration/materials/textures/texture_0.jpg",
+            "target_hash": "5d4b1c86f559dab34a380fa62bae868e341fb879"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/kettle/102730/configuration/materials/textures/texture_1.jpg",
+            "source_hash": "cfce61b3832f3f7bf4123b15807dffb7ef673862",
+            "target_url": "./converted_usd_safe/kettle/102730/configuration/materials/textures/texture_1.jpg",
+            "target_hash": "a47baed73b5226b1a9c44fcdaa31e1163c58c274"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/kettle/102730/configuration/materials/textures/texture_2.jpg",
+            "source_hash": "b9ae55ba8730cc00b2e59a5ba110667b49f498cc",
+            "target_url": "./converted_usd_safe/kettle/102730/configuration/materials/textures/texture_2.jpg",
+            "target_hash": "46d11f6e4e7bdd330e39e993189c6717da8ff451"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/white_kettle6.usd",
+            "source_hash": "c57e550feeaaff79c30355751231164dc24bbd5c",
+            "target_url": "./white_kettle6.usd",
+            "target_hash": "fe45ecafde7b8133c55dc5d7aa58a1f7778ee8a7"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/kettle/102736/configuration/materials/textures/texture_0.jpg",
+            "source_hash": "d72dc6edbacdc2725dd232d17af3d51310c9534a",
+            "target_url": "./converted_usd_safe/kettle/102736/configuration/materials/textures/texture_0.jpg",
+            "target_hash": "b33d4bd9369ab486988429a9ad7e83b881809391"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/white_kettle7.usd",
+            "source_hash": "e70962cdb6e59f28b8afe3e735e04633af34941f",
+            "target_url": "./white_kettle7.usd",
+            "target_hash": "4a34ee7427abb28d250a7bad966a02a31b7943bb"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/random_pic/Bamboo_BaseColor.png",
+            "source_hash": "757b9f5caa6f604099abb2e4bc270533a5cb6bf3",
+            "target_url": "./random_pic/Bamboo_BaseColor.png",
+            "target_hash": "29633632d6f577289fbc6df643398196714f9639"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/white_kettle8.usd",
+            "source_hash": "4c37e2a8e0a272502ce3c2db32d6d126a3a34293",
+            "target_url": "./white_kettle8.usd",
+            "target_hash": "039f824506b75a208a1f125c9154bddf6c7ad5d6"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/kettle/102756/configuration/materials/textures/texture_0.jpg",
+            "source_hash": "4fba13b0597fb48018a3d8c82bf7dede1d8c24eb",
+            "target_url": "./converted_usd_safe/kettle/102756/configuration/materials/textures/texture_0.jpg",
+            "target_hash": "ac31946c133935716e50b1bb147837bd455cb25d"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/kettle/102756/configuration/materials/textures/texture_1.jpg",
+            "source_hash": "92796c7098e7f365c47576c7d9321ed5fd710967",
+            "target_url": "./converted_usd_safe/kettle/102756/configuration/materials/textures/texture_1.jpg",
+            "target_hash": "ae306b4d99707ecc979b4fc73a75a89d6a674247"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/white_kettle9.usd",
+            "source_hash": "27e7db530b25ee730220d2d95a4fe9e0dba1a3e7",
+            "target_url": "./white_kettle9.usd",
+            "target_hash": "f5cbed10e7995f8372cccca2dc4b68817f53c449"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/white_pan.usd",
+            "source_hash": "5490314cf1e387eb6053f5ac751fce4a90181ad3",
+            "target_url": "./white_pan.usd",
+            "target_hash": "11ac374f4b2a69bc0fe6d19d3d2d058f3d43e593"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/obj/pan.png",
+            "source_hash": "8256a79dd7a22b4a391c7b4d843d2edaa2cecbb0",
+            "target_url": "./obj/pan.png",
+            "target_hash": "09bc7f3449f1b4c6e9b47b771896fe08cd027717"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/blue_coffeecan.usd",
+            "source_hash": "09c8cf149f376ddea0bfde8b49147dada4d1d5fa",
+            "target_url": "./blue_coffeecan.usd",
+            "target_hash": "0a3149d9136c959e20caba1c1cf266e033b73497"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/Materials/Textures/002_master_chef_can_COLOR.png",
+            "source_hash": "6014addd16f3826006292bf72d074d18dea9e259",
+            "target_url": "./Materials/Textures/002_master_chef_can_COLOR.png",
+            "target_hash": "e20c50563d08f2888cd96336a856ae379add8e08"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/white_papercup1.usd",
+            "source_hash": "37bdaa63dab07578307f22341ff6278aca90d69a",
+            "target_url": "./white_papercup1.usd",
+            "target_hash": "7d738a3ad91f4a46c703b4d208ee77143c847c3d"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/blue_cube.usd",
+            "source_hash": "dfd0a9bb005872fde40a4aadaf49e83cfffbc2f9",
+            "target_url": "./blue_cube.usd",
+            "target_hash": "019ecfd6757382d8a469e25d494925f08595a12b"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/white_papercup2.usd",
+            "source_hash": "e5d517c964af172f5a116b959e3a171298988fda",
+            "target_url": "./white_papercup2.usd",
+            "target_hash": "91845b5f530dde9f83c4be9e5b26f6918e3170e1"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/blue_kettle.usd",
+            "source_hash": "05ada84ad2c9cdf7458dff07fc90b583220d541d",
+            "target_url": "./blue_kettle.usd",
+            "target_hash": "b604eff82b6e7d07ad777f0355c603dba606b52d"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/Materials/Textures/019_pitcher_base_COLOR.png",
+            "source_hash": "23296dcfc95e767354836dff98018eedabd74290",
+            "target_url": "./Materials/Textures/019_pitcher_base_COLOR.png",
+            "target_hash": "4b7e9b34e61831306b7eaf10ee3679206f42ad1e"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/white_papercup3.usd",
+            "source_hash": "e51548858869de719820debf9444c8971639fb19",
+            "target_url": "./white_papercup3.usd",
+            "target_hash": "cd439a0b4549213224d67888972c50462841824c"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/blue_spamcan.usd",
+            "source_hash": "9dc6ae12117fab228f9ce511473d4f442781c9db",
+            "target_url": "./blue_spamcan.usd",
+            "target_hash": "ffb8781bb770d24f8bb5c2905c276f6aae3e2955"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/Materials/Textures/010_potted_meat_can_COLOR.png",
+            "source_hash": "5e701bd2f013e974165b98e8e4b49f56df19cd88",
+            "target_url": "./Materials/Textures/010_potted_meat_can_COLOR.png",
+            "target_hash": "c2e06cca25b0e38129c7366dcba9a93714b2b8db"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/white_plate.usd",
+            "source_hash": "f659a8315e2299877ac344d883940ae2f2034b3d",
+            "target_url": "./white_plate.usd",
+            "target_hash": "f3a58927479c76310cc4ed70c8720a8e505aa1d7"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/blue_tunacan.usd",
+            "source_hash": "06a39ffadb8c8d15c39e4df93b9f7b5b21b91b7b",
+            "target_url": "./blue_tunacan.usd",
+            "target_hash": "6c9eb9d00fc5a7bd9fb43aa8bc28ef97045b7693"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/Materials/Textures/007_tuna_fish_can_COLOR.png",
+            "source_hash": "555b155516ac4e8f281250d0da8ca4131f8be5f7",
+            "target_url": "./Materials/Textures/007_tuna_fish_can_COLOR.png",
+            "target_hash": "95985799895fdfa177ca3412031879dbb6564a2a"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/white_scrubbottle.usd",
+            "source_hash": "0933187003d9edd1ee645a97fa546f81474bf060",
+            "target_url": "./white_scrubbottle.usd",
+            "target_hash": "8cfaf0b3e920540dc0136317c1c1ad77eda9d83b"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/Materials/Textures/021_bleach_cleanser_COLOR.png",
+            "source_hash": "3270a62452b4fcb805e2a66fb14902d4d112e260",
+            "target_url": "./Materials/Textures/021_bleach_cleanser_COLOR.png",
+            "target_hash": "f0109443abd16995159b657e4b015df671f58d3d"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/box.usd",
+            "source_hash": "df9a7fc0406921f6135aee8a12b85253ba3d487c",
+            "target_url": "./box.usd",
+            "target_hash": "480f41656ded0b3ac7725a5fe39a23a25f1e7a16"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/wood_cuttingboard.usd",
+            "source_hash": "d7aee952d9b19871c05a702f98153fb56b9d3a0c",
+            "target_url": "./wood_cuttingboard.usd",
+            "target_hash": "c35453bcae79fff07f38c395af3c1cbad0a29af2"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/brown_chocolatebox.usd",
+            "source_hash": "b3a3f93e47d4fe1017d707f7267f4b11768b7a26",
+            "target_url": "./brown_chocolatebox.usd",
+            "target_hash": "c09226c877d1dc666f7156ebb297f2fe3669abbb"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/Materials/Textures/008_pudding_box_COLOR.png",
+            "source_hash": "fe108a0adb07b998948fbe97af0713867ab450ed",
+            "target_url": "./Materials/Textures/008_pudding_box_COLOR.png",
+            "target_hash": "4d0896900a0757530a243f108cef94a0bc33ab3a"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/wood_rack.usd",
+            "source_hash": "efc7dbe39325a6bb4cfa2a1b93ecbd7e8608be0a",
+            "target_url": "./wood_rack.usd",
+            "target_hash": "956e8accd7ba0abeec1fdd1631a6fca7c893d7d8"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/brown_woodshelf.usd",
+            "source_hash": "d0d2ab0dec551dfa258f75694b5652f51d3bd47d",
+            "target_url": "./brown_woodshelf.usd",
+            "target_hash": "bace81930fb7e4a22a3743fb4ded8bc940236d23"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/wood_spacerblock.usd",
+            "source_hash": "299ddf78f9ee71db859f419058494fca5621c691",
+            "target_url": "./wood_spacerblock.usd",
+            "target_hash": "8a0ff6c0b368232a265872a08e9c50b00b085289"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/random_pic/Cherry_BaseColor.png",
+            "source_hash": "8946607d5bb27900a70e9943e697dcd82ad05055",
+            "target_url": "./random_pic/Cherry_BaseColor.png",
+            "target_hash": "30a980870c5766f7f417dc41fa98877d34b1c01c"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/cabinet1.usd",
+            "source_hash": "a1a5c47ac18a277887f6a06a392cdfb6e5d86489",
+            "target_url": "./cabinet1.usd",
+            "target_hash": "3366aed49129915490478023fc418fd4ce113967"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/44817/configuration/materials/textures/texture_0.jpg",
+            "source_hash": "663ad2b45e365c206197afca484a8a2f6f49a8be",
+            "target_url": "./converted_usd_safe/storagefurniture/44817/configuration/materials/textures/texture_0.jpg",
+            "target_hash": "4ff873bd6eb62aec6c9f4779f2b0294877bd60ab"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/44817/configuration/materials/textures/texture_1.jpg",
+            "source_hash": "f4d97ce7045edd2e5e80dcf3d58be5f4ce87e4ed",
+            "target_url": "./converted_usd_safe/storagefurniture/44817/configuration/materials/textures/texture_1.jpg",
+            "target_hash": "5ee34f6d7a7b149007fb5e5ca155cdf33e9fd3a5"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/44817/configuration/materials/textures/texture_2.png",
+            "source_hash": "e8c5661514a3f452d27fdf74e4d4a34d2c94856f",
+            "target_url": "./converted_usd_safe/storagefurniture/44817/configuration/materials/textures/texture_2.png",
+            "target_hash": "a615722c1fa78db0bb0c112ebf8f05acabf10c7a"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/44817/configuration/materials/textures/texture_3.jpg",
+            "source_hash": "fd3a0c823e0f9bbcb7ee16e7811318cc7fea29bf",
+            "target_url": "./converted_usd_safe/storagefurniture/44817/configuration/materials/textures/texture_3.jpg",
+            "target_hash": "13febf4404a441db3be7df635720d456b86378a0"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/44817/configuration/materials/textures/texture_4.png",
+            "source_hash": "e8c5661514a3f452d27fdf74e4d4a34d2c94856f",
+            "target_url": "./converted_usd_safe/storagefurniture/44817/configuration/materials/textures/texture_4.png",
+            "target_hash": "a615722c1fa78db0bb0c112ebf8f05acabf10c7a"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/yellow_banana.usd",
+            "source_hash": "f5bb2b060414cfd308600f1f02d7989afd164cdc",
+            "target_url": "./yellow_banana.usd",
+            "target_hash": "cc67f71f3fc9ef236e2789677456334e87c49851"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/Materials/Textures/011_banana_COLOR.png",
+            "source_hash": "cf1d95ea75ec26eadc2b9d7f768dff1346340b30",
+            "target_url": "./Materials/Textures/011_banana_COLOR.png",
+            "target_hash": "f3abc214fbf4c686ae1042c01c8ae5f56150005e"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/cabinet10.usd",
+            "source_hash": "7117dfaeede1e7897462a84fbdf72e6ade1e146c",
+            "target_url": "./cabinet10.usd",
+            "target_hash": "0f582f4b5a3b1cd11a365c0c7a707d24962514c1"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/45427/configuration/materials/textures/texture_0.jpg",
+            "source_hash": "eb674eebac572b5d82e62175a2b6afbc20a9a8ca",
+            "target_url": "./converted_usd_safe/storagefurniture/45427/configuration/materials/textures/texture_0.jpg",
+            "target_hash": "6166d979594da9b89685b1e66ebfd7e1803254de"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/45427/configuration/materials/textures/texture_1.jpg",
+            "source_hash": "a1134d70a3449b7722c0ff113acbd3355378f47d",
+            "target_url": "./converted_usd_safe/storagefurniture/45427/configuration/materials/textures/texture_1.jpg",
+            "target_hash": "9144856b7d28255897f10bff9fb000cdb2727246"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/45427/configuration/materials/textures/texture_2.png",
+            "source_hash": "eb2f5e3ef462b1ec7f8e9ec0eceeecfeb315479e",
+            "target_url": "./converted_usd_safe/storagefurniture/45427/configuration/materials/textures/texture_2.png",
+            "target_hash": "71bf593f383368f7f7115c61993748c4d740d795"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/45427/configuration/materials/textures/texture_3.jpg",
+            "source_hash": "30954e8beef4bdee2669a5d7e1e2afde97821aa0",
+            "target_url": "./converted_usd_safe/storagefurniture/45427/configuration/materials/textures/texture_3.jpg",
+            "target_hash": "aaaf5bc03381c79b10245738ecdf57c602c83466"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/yellow_bigbowl.usd",
+            "source_hash": "097a666eeb4d99980d8417fc63f81447d6f4ac9d",
+            "target_url": "./yellow_bigbowl.usd",
+            "target_hash": "36d6e23c205973cc7b0ca1de914daef631a0c4c5"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/Materials/Textures/yellowbowl.png",
+            "source_hash": "4e4b21124b73e82d6fbf2fc09f2192779b648948",
+            "target_url": "./Materials/Textures/yellowbowl.png",
+            "target_hash": "a43e16e90947c4792f45b29b28fb90f35e360e4e"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/cabinet11.usd",
+            "source_hash": "1bbdef74df6bb0861cf3c6657160e4ce58cdcc88",
+            "target_url": "./cabinet11.usd",
+            "target_hash": "f0a9fa0b97beb321e99a20011995cc0dc6252b65"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/45677/configuration/materials/textures/texture_0.jpg",
+            "source_hash": "98a9eb5120b9dde7d07fa7f72907ace8f7c35c0a",
+            "target_url": "./converted_usd_safe/storagefurniture/45677/configuration/materials/textures/texture_0.jpg",
+            "target_hash": "0768e54cda1b45953f74f47e0cd55643457f1514"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/45677/configuration/materials/textures/texture_1.jpg",
+            "source_hash": "cf49db2e60cb19a9a5d7cdf3156bcf8c1106a677",
+            "target_url": "./converted_usd_safe/storagefurniture/45677/configuration/materials/textures/texture_1.jpg",
+            "target_hash": "65dd6609d7b40d89e0d4efa936adf516982cbf3a"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/45677/configuration/materials/textures/texture_2.png",
+            "source_hash": "68cb72dc0976a370df99e9b92cfc7c96755f230a",
+            "target_url": "./converted_usd_safe/storagefurniture/45677/configuration/materials/textures/texture_2.png",
+            "target_hash": "1362edfef29703707b86735873d8d8d52acdcfc9"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/45677/configuration/materials/textures/texture_3.jpg",
+            "source_hash": "09d4bb7f1894bd5da33148822223fc520936e480",
+            "target_url": "./converted_usd_safe/storagefurniture/45677/configuration/materials/textures/texture_3.jpg",
+            "target_hash": "0e75c4185c289bff6b6b9614cf2bdec073aabf3b"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/45677/configuration/materials/textures/texture_4.jpg",
+            "source_hash": "88ee59a7b43d82920c3dcdea61d84ef7f2d2ac6d",
+            "target_url": "./converted_usd_safe/storagefurniture/45677/configuration/materials/textures/texture_4.jpg",
+            "target_hash": "3a3a3eb303b68aa1a5fa53049edb4246cb83c160"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/45677/configuration/materials/textures/texture_5.png",
+            "source_hash": "68cb72dc0976a370df99e9b92cfc7c96755f230a",
+            "target_url": "./converted_usd_safe/storagefurniture/45677/configuration/materials/textures/texture_5.png",
+            "target_hash": "3e0f2219275c719fdf9a38b00b4f26b491e2b347"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/yellow_bowl.usd",
+            "source_hash": "347f845ebf9996a891e81a28ebfaf563a76e8f36",
+            "target_url": "./yellow_bowl.usd",
+            "target_hash": "c2ff95730eb1386f135b75ca93bbf26f3e188e55"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/cabinet12.usd",
+            "source_hash": "165b1c7d549dc994b1c86e235af281dfdc45f191",
+            "target_url": "./cabinet12.usd",
+            "target_hash": "052bf52f47f08b8bad2bc3a12ea5c6751735f38a"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/45710/configuration/materials/textures/texture_0.jpg",
+            "source_hash": "71fee3edd205a1d786765fef1b9cc29da277b9d2",
+            "target_url": "./converted_usd_safe/storagefurniture/45710/configuration/materials/textures/texture_0.jpg",
+            "target_hash": "7a2772b19a3ae041c784d0a2b536a1690db0f1b1"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/45710/configuration/materials/textures/texture_1.jpg",
+            "source_hash": "99e185b92cd50e0301faf574df748a97e3153c98",
+            "target_url": "./converted_usd_safe/storagefurniture/45710/configuration/materials/textures/texture_1.jpg",
+            "target_hash": "4a53caa417ec94fd05cf179f5a42c3cf314a2149"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/45710/configuration/materials/textures/texture_2.png",
+            "source_hash": "b808dbf8e24bf099594bf70026603cf3765833ab",
+            "target_url": "./converted_usd_safe/storagefurniture/45710/configuration/materials/textures/texture_2.png",
+            "target_hash": "bbac73ff81f2d029291418929d2fe20a41d409ab"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/45710/configuration/materials/textures/texture_3.jpg",
+            "source_hash": "024a9db986f45ee7ea7ccd29ffa9427f429ea454",
+            "target_url": "./converted_usd_safe/storagefurniture/45710/configuration/materials/textures/texture_3.jpg",
+            "target_hash": "91282061e9712c15d086e6448ae25639bed9fdad"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/45710/configuration/materials/textures/texture_4.jpg",
+            "source_hash": "11e4e3d628f7688ee7e0c5ccbb762575d901605f",
+            "target_url": "./converted_usd_safe/storagefurniture/45710/configuration/materials/textures/texture_4.jpg",
+            "target_hash": "59cf9720a7f296e940c1d0f6707616acff7be4cd"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/45710/configuration/materials/textures/texture_5.png",
+            "source_hash": "9b5f409b35380f8a606e2b19525e3580a705c5ce",
+            "target_url": "./converted_usd_safe/storagefurniture/45710/configuration/materials/textures/texture_5.png",
+            "target_hash": "bbac73ff81f2d029291418929d2fe20a41d409ab"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/yellow_mustardbottle.usd",
+            "source_hash": "19dc81a90c4239c54fb7d8bc79effbf2ad0f135e",
+            "target_url": "./yellow_mustardbottle.usd",
+            "target_hash": "95bf70f0a297a6c4fd6567bb8c4d7d1ae1c4bf62"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/Materials/Textures/006_mustard_bottle_COLOR.png",
+            "source_hash": "746c08318bc9811c4b10500f6396b41b4ecca85b",
+            "target_url": "./Materials/Textures/006_mustard_bottle_COLOR.png",
+            "target_hash": "fd371ec8c1f416456f326bc4ad7d9cca4089016a"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/cabinet13.usd",
+            "source_hash": "b22402bcdd2ec7f193cb9b086ae6ed32d86448bc",
+            "target_url": "./cabinet13.usd",
+            "target_hash": "db9fd643d2d8fd1df8c89579486af4c02f61fef7"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/45801/configuration/materials/textures/texture_0.jpg",
+            "source_hash": "0d5ba52132ec3fcfb7bc52be17e39a6b9af2ae9b",
+            "target_url": "./converted_usd_safe/storagefurniture/45801/configuration/materials/textures/texture_0.jpg",
+            "target_hash": "36df409c271a7d601f8442fd9106152135b8d98e"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/45801/configuration/materials/textures/texture_1.jpg",
+            "source_hash": "401336139040b22da052b87cf2ea8cdd7e1d85d7",
+            "target_url": "./converted_usd_safe/storagefurniture/45801/configuration/materials/textures/texture_1.jpg",
+            "target_hash": "d9cf0a546fa143e1d50e252ee14ae19b4a756c7a"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/45801/configuration/materials/textures/texture_2.png",
+            "source_hash": "e5c916c8a93e5ac79721623a69740dc03d3b5271",
+            "target_url": "./converted_usd_safe/storagefurniture/45801/configuration/materials/textures/texture_2.png",
+            "target_hash": "467b9a166348ca01e9208129a9be2a00e064ff0e"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/45801/configuration/materials/textures/texture_3.jpg",
+            "source_hash": "c2cd869ceb7124092c2c6368f0c8eb1a63bf59d0",
+            "target_url": "./converted_usd_safe/storagefurniture/45801/configuration/materials/textures/texture_3.jpg",
+            "target_hash": "2d5c2b51ca0e02350994c343ffce40c5f59089ea"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/45801/configuration/materials/textures/texture_4.png",
+            "source_hash": "e5c916c8a93e5ac79721623a69740dc03d3b5271",
+            "target_url": "./converted_usd_safe/storagefurniture/45801/configuration/materials/textures/texture_4.png",
+            "target_hash": "99a2952b2fe13c538d0828d0255aea78111c4c36"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/yellow_pumpkin.usd",
+            "source_hash": "f9ab531bfe028b446e5448cb781041a5711b41ae",
+            "target_url": "./yellow_pumpkin.usd",
+            "target_hash": "61ebe0628d364630f45b7c4fd63340b02c6d4667"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/kitchen_obj/T_ButternutPumpkin_C.png",
+            "source_hash": "a3467893cbfbec1aa4c41572e81b1410519e49c0",
+            "target_url": "./kitchen_obj/T_ButternutPumpkin_C.png",
+            "target_hash": "6e32650446d51a3396f550f89e8787c33605a31f"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/cabinet14.usd",
+            "source_hash": "7cb2d9dffcdf91ddbdfaf5f51d30fc15b1d521ca",
+            "target_url": "./cabinet14.usd",
+            "target_hash": "b3f98a39bef448c0d6eed666ba39f4d5da22caf3"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/45841/configuration/materials/textures/texture_0.jpg",
+            "source_hash": "57347742593e47ccb0c9fa6e6926c3974a3b15be",
+            "target_url": "./converted_usd_safe/storagefurniture/45841/configuration/materials/textures/texture_0.jpg",
+            "target_hash": "f836291a516560c66c51e0808d00eefacd7942a1"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/yellow_sugarbox.usd",
+            "source_hash": "2186587121ff1ecf322254d24fb2abf2da1b5c03",
+            "target_url": "./yellow_sugarbox.usd",
+            "target_hash": "24ab47867444c69f5543286db4c45439d59af656"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/Materials/Textures/004_sugar_box_COLOR.png",
+            "source_hash": "541a0b412f7bf47506fc1c15841c8aad943ee1a7",
+            "target_url": "./Materials/Textures/004_sugar_box_COLOR.png",
+            "target_hash": "45791b6c6c87114e65b35dca376635b6c17b3374"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/cabinet15.usd",
+            "source_hash": "8a80dcea23febd25980a2677cd09541bbcea6eb3",
+            "target_url": "./cabinet15.usd",
+            "target_hash": "01fb67c58ff752abd802db7fa67d1d50b836e2cf"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/45936/configuration/materials/textures/texture_0.jpg",
+            "source_hash": "72271bb7e43f972f8cdc9b61812ee16e5b3cfd47",
+            "target_url": "./converted_usd_safe/storagefurniture/45936/configuration/materials/textures/texture_0.jpg",
+            "target_hash": "c7ec0142a257dcd2b9e178352537df96d166a1db"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/45936/configuration/materials/textures/texture_1.jpg",
+            "source_hash": "99d74502979ac72f7ff978c86943a98f3cc8aabb",
+            "target_url": "./converted_usd_safe/storagefurniture/45936/configuration/materials/textures/texture_1.jpg",
+            "target_hash": "496ff16b5af515c789bbdec78dbcc4cfc4161946"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/45936/configuration/materials/textures/texture_2.jpg",
+            "source_hash": "67414253f52f23348cfdc8b04defc3d0b4e55619",
+            "target_url": "./converted_usd_safe/storagefurniture/45936/configuration/materials/textures/texture_2.jpg",
+            "target_hash": "f7ac0e3ff5be80c0fb1c727b3c9567d7af90e3dc"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/45936/configuration/materials/textures/texture_3.jpg",
+            "source_hash": "b6a121191751856c742fe7df60c96f3abaa3a6ca",
+            "target_url": "./converted_usd_safe/storagefurniture/45936/configuration/materials/textures/texture_3.jpg",
+            "target_hash": "7985bc5db5956448b4248a27a694f6e8fc398314"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/45936/configuration/materials/textures/texture_4.png",
+            "source_hash": "185c2d34966834f5492fb90dba0d599b36e0529d",
+            "target_url": "./converted_usd_safe/storagefurniture/45936/configuration/materials/textures/texture_4.png",
+            "target_hash": "c3c6b39f1468c1d02e1d5d928416577c6f936da5"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/cabinet16.usd",
+            "source_hash": "fc577ef059188147a6adb4993f6aea278e8ccaa1",
+            "target_url": "./cabinet16.usd",
+            "target_hash": "41c4fb4517b96ed0827d7491e56e63618e46b567"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/46014/configuration/materials/textures/texture_0.jpg",
+            "source_hash": "3a815bc8a788c7d456a4a9914c928e05838a1ccc",
+            "target_url": "./converted_usd_safe/storagefurniture/46014/configuration/materials/textures/texture_0.jpg",
+            "target_hash": "64f6eb23a96399c330259fe773a591ecc9878f6e"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/cabinet17.usd",
+            "source_hash": "94552f2a39106b8ad446f05064bd6f8ba320e67d",
+            "target_url": "./cabinet17.usd",
+            "target_hash": "cfe99b820135c2270ce9a2a617ea3b47c95c66c8"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/46060/configuration/materials/textures/texture_0.jpg",
+            "source_hash": "0e1f583047eabbf7da4e2cdd9bfffa06d577a9e3",
+            "target_url": "./converted_usd_safe/storagefurniture/46060/configuration/materials/textures/texture_0.jpg",
+            "target_hash": "2064d569dc64061e5dad8303cb01ac843e2b6a58"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/46060/configuration/materials/textures/texture_1.jpg",
+            "source_hash": "5b127ae8528e557b3c3ece16b9d8773cf5d30822",
+            "target_url": "./converted_usd_safe/storagefurniture/46060/configuration/materials/textures/texture_1.jpg",
+            "target_hash": "3621625d608c610671feb91bc9a97b1999bf0b4c"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/46060/configuration/materials/textures/texture_2.png",
+            "source_hash": "75e0f5fd7feebe7f3cb99a2947d8b6062f7fa95f",
+            "target_url": "./converted_usd_safe/storagefurniture/46060/configuration/materials/textures/texture_2.png",
+            "target_hash": "bd4ec523ff37635a3fe0a6f5f3926c73d90c0a70"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/46060/configuration/materials/textures/texture_3.jpg",
+            "source_hash": "3c27b12bab7fa92bb72800d9244ebef7fbb0b7d0",
+            "target_url": "./converted_usd_safe/storagefurniture/46060/configuration/materials/textures/texture_3.jpg",
+            "target_hash": "a143f6e3290714d709a5b89cee7b3e00cfe3e5f2"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/46060/configuration/materials/textures/texture_4.png",
+            "source_hash": "6e72ddc84ccc7f1776c9f8fc1530d9d9de547e21",
+            "target_url": "./converted_usd_safe/storagefurniture/46060/configuration/materials/textures/texture_4.png",
+            "target_hash": "bd4ec523ff37635a3fe0a6f5f3926c73d90c0a70"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/cabinet18.usd",
+            "source_hash": "276e6ef5433c2d7d10a6917e75674639eb382798",
+            "target_url": "./cabinet18.usd",
+            "target_hash": "240e838c82378212dfbd5918400015035e03e891"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/46123/configuration/materials/textures/texture_0.jpg",
+            "source_hash": "27877a595c94b28f15e8c4046a314ed6df51541e",
+            "target_url": "./converted_usd_safe/storagefurniture/46123/configuration/materials/textures/texture_0.jpg",
+            "target_hash": "a11703fa9f699fbdf8a966ae04b4e71cba98d390"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/46123/configuration/materials/textures/texture_1.jpg",
+            "source_hash": "956554c1c10b37885b79af72dafc4d1823af4383",
+            "target_url": "./converted_usd_safe/storagefurniture/46123/configuration/materials/textures/texture_1.jpg",
+            "target_hash": "2a74f703698c4e01ea78b031896f4496a730407b"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/46123/configuration/materials/textures/texture_2.png",
+            "source_hash": "0c4dff848c13bbeed59961d39279aafe1271fe9a",
+            "target_url": "./converted_usd_safe/storagefurniture/46123/configuration/materials/textures/texture_2.png",
+            "target_hash": "218effe4cc1b7344196266164bb6dd4be8f2f78f"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/46123/configuration/materials/textures/texture_3.jpg",
+            "source_hash": "b26508f250e2290a730097a31870ff7b07f8b83c",
+            "target_url": "./converted_usd_safe/storagefurniture/46123/configuration/materials/textures/texture_3.jpg",
+            "target_hash": "649298d691de5260d4679d925d51a82fef3bd01c"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/46123/configuration/materials/textures/texture_4.jpg",
+            "source_hash": "84192df507f257d3abac10aee2b4181ee6fbc519",
+            "target_url": "./converted_usd_safe/storagefurniture/46123/configuration/materials/textures/texture_4.jpg",
+            "target_hash": "5bd4f075253236823ec4534e056af32f9764bace"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/46123/configuration/materials/textures/texture_5.png",
+            "source_hash": "a7673f31785c18939ed39aa0c48d130fddbd74e0",
+            "target_url": "./converted_usd_safe/storagefurniture/46123/configuration/materials/textures/texture_5.png",
+            "target_hash": "7ab8d0afc9e5fe06721f36642fb5283d907be49a"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/cabinet19.usd",
+            "source_hash": "0ee11f108fd42736603594e04f400e9e82c62ac9",
+            "target_url": "./cabinet19.usd",
+            "target_hash": "a1ec90e6e08ca8c1626626f732edba0065c43bdb"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/46230/configuration/materials/textures/texture_0.jpg",
+            "source_hash": "361c5c16414192e1bbdf88730ef3b66bd8bfbc26",
+            "target_url": "./converted_usd_safe/storagefurniture/46230/configuration/materials/textures/texture_0.jpg",
+            "target_hash": "16b2a4d6df861d02b1e79b19a4c658b57f927aff"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/46230/configuration/materials/textures/texture_1.jpg",
+            "source_hash": "cc9749fa7a2e48929fbcc071fa5852ea8d7d8178",
+            "target_url": "./converted_usd_safe/storagefurniture/46230/configuration/materials/textures/texture_1.jpg",
+            "target_hash": "4fe3ee9b38c1f1dd6c5c2e60145077918efc3860"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/46230/configuration/materials/textures/texture_2.png",
+            "source_hash": "fada530029e68b65fb1b7a0a1b557067f096f688",
+            "target_url": "./converted_usd_safe/storagefurniture/46230/configuration/materials/textures/texture_2.png",
+            "target_hash": "63958d02efe15e55a903d00e97a97a2f8a1f3a4f"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/46230/configuration/materials/textures/texture_3.jpg",
+            "source_hash": "b0744f21c78dbabbcf4b6746d10d1f356a4454d8",
+            "target_url": "./converted_usd_safe/storagefurniture/46230/configuration/materials/textures/texture_3.jpg",
+            "target_hash": "194779bddc7534b967a731c53ad4349e78b4e2d2"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/cabinet2.usd",
+            "source_hash": "1e34c73b73d8bc9942afb3a76cc3b926127eee5b",
+            "target_url": "./cabinet2.usd",
+            "target_hash": "92040dc19f0926e82b75244f2a14ae250af13c81"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/44853/configuration/materials/textures/texture_0.jpg",
+            "source_hash": "e9528b9bb0b8fb658bb08791a44afd0dd498c7f4",
+            "target_url": "./converted_usd_safe/storagefurniture/44853/configuration/materials/textures/texture_0.jpg",
+            "target_hash": "3d6c2c0dde1c3213df233a7035292898abf80a74"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/44853/configuration/materials/textures/texture_1.jpg",
+            "source_hash": "1e3b5df019109004855d26641a9e8aa03d301cc1",
+            "target_url": "./converted_usd_safe/storagefurniture/44853/configuration/materials/textures/texture_1.jpg",
+            "target_hash": "b0f5534a9443dc6b156ac4d310eb1b92817fb896"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/44853/configuration/materials/textures/texture_2.png",
+            "source_hash": "0873c3c08da1816e9a88f138e3affc65e2858a3b",
+            "target_url": "./converted_usd_safe/storagefurniture/44853/configuration/materials/textures/texture_2.png",
+            "target_hash": "6c8d594d5507ce7450064946bfc27a9a05ea151f"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/44853/configuration/materials/textures/texture_3.jpg",
+            "source_hash": "9dc305460450bfd73dd6bab35f7a880a9225fbbd",
+            "target_url": "./converted_usd_safe/storagefurniture/44853/configuration/materials/textures/texture_3.jpg",
+            "target_hash": "81974ddd97c6e829affc65f38bc4a3c31e3e64f9"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/44853/configuration/materials/textures/texture_4.png",
+            "source_hash": "0873c3c08da1816e9a88f138e3affc65e2858a3b",
+            "target_url": "./converted_usd_safe/storagefurniture/44853/configuration/materials/textures/texture_4.png",
+            "target_hash": "160d606ed4fb400eefb4bcdfb149c3ff8716a840"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/cabinet20.usd",
+            "source_hash": "2b0082be42a92ed218a8d19eca175f26112a4a0f",
+            "target_url": "./cabinet20.usd",
+            "target_hash": "7872f20ad2520dd076d469de24a46185d941af9f"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/46334/configuration/materials/textures/texture_0.jpg",
+            "source_hash": "a56d021602c46ff5bdd1998f724bdc452be68e04",
+            "target_url": "./converted_usd_safe/storagefurniture/46334/configuration/materials/textures/texture_0.jpg",
+            "target_hash": "a49b349525fb47868c39609c73d0436f216ace69"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/46334/configuration/materials/textures/texture_1.jpg",
+            "source_hash": "772f39802c55816bc4ad3fd336ec083e284602f9",
+            "target_url": "./converted_usd_safe/storagefurniture/46334/configuration/materials/textures/texture_1.jpg",
+            "target_hash": "c30fe86531ae781495ba3a7e89b7c268c9c48189"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/46334/configuration/materials/textures/texture_2.png",
+            "source_hash": "273f0de854e15e5374d2a99d7952879448736bee",
+            "target_url": "./converted_usd_safe/storagefurniture/46334/configuration/materials/textures/texture_2.png",
+            "target_hash": "c3442610b26a58a3a84e7bfb8de1132a34eb597a"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/46334/configuration/materials/textures/texture_3.jpg",
+            "source_hash": "9601077a2816503e88b7427f431295c21cb1617e",
+            "target_url": "./converted_usd_safe/storagefurniture/46334/configuration/materials/textures/texture_3.jpg",
+            "target_hash": "084e8ecad73ce77253cd81c97139a033c8d02ac8"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/46334/configuration/materials/textures/texture_4.jpg",
+            "source_hash": "64fc99239d62190376b32494dbf315dd9c2b9f04",
+            "target_url": "./converted_usd_safe/storagefurniture/46334/configuration/materials/textures/texture_4.jpg",
+            "target_hash": "6ab14ecefb8fd5983e25c0129de3284a137479fa"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/46334/configuration/materials/textures/texture_5.png",
+            "source_hash": "c0eece802414db324be3e53007b31dd131657436",
+            "target_url": "./converted_usd_safe/storagefurniture/46334/configuration/materials/textures/texture_5.png",
+            "target_hash": "f019a7d98a6cdeca9bb22a7936390cb2f338a400"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/cabinet21.usd",
+            "source_hash": "dc1cb710150a2014ec4ef30cd997fc429d81a3fe",
+            "target_url": "./cabinet21.usd",
+            "target_hash": "4a9babbcc759f6557e28b7361393f716c3c04935"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/46440/configuration/materials/textures/texture_0.jpg",
+            "source_hash": "a3c693cba9f36444d626542fdc23a2884ce92e84",
+            "target_url": "./converted_usd_safe/storagefurniture/46440/configuration/materials/textures/texture_0.jpg",
+            "target_hash": "2c6484a1dd9247710b7ddb9199308a2e4c20d904"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/46440/configuration/materials/textures/texture_1.jpg",
+            "source_hash": "19f9627a04c777d57e120d10e8ef820d20cd461c",
+            "target_url": "./converted_usd_safe/storagefurniture/46440/configuration/materials/textures/texture_1.jpg",
+            "target_hash": "51500ccdf4a7effcb1260a55c53d2b25d964bf87"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/46440/configuration/materials/textures/texture_2.png",
+            "source_hash": "2a9eb5fc2053988aeea14a0c2b47b3a99f5a0ec9",
+            "target_url": "./converted_usd_safe/storagefurniture/46440/configuration/materials/textures/texture_2.png",
+            "target_hash": "6ae834440ed799d3a81684b69085b4d0e553e7ac"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/46440/configuration/materials/textures/texture_3.jpg",
+            "source_hash": "c6c277726ef069137df89e8ef6dc1e5beb2a564f",
+            "target_url": "./converted_usd_safe/storagefurniture/46440/configuration/materials/textures/texture_3.jpg",
+            "target_hash": "1d46e7e116390ad07bf9baf26c39eeb00a4703cf"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/46440/configuration/materials/textures/texture_4.jpg",
+            "source_hash": "0120593543ed7eb275a4db9f5903ddeb01d2834c",
+            "target_url": "./converted_usd_safe/storagefurniture/46440/configuration/materials/textures/texture_4.jpg",
+            "target_hash": "99dae9d2c24aa93184f3e06e85bbd1223e265b71"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/46440/configuration/materials/textures/texture_5.png",
+            "source_hash": "2a9eb5fc2053988aeea14a0c2b47b3a99f5a0ec9",
+            "target_url": "./converted_usd_safe/storagefurniture/46440/configuration/materials/textures/texture_5.png",
+            "target_hash": "293497cf93b008169de0abaa4eba3b0331b0be77"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/cabinet22.usd",
+            "source_hash": "5b497f37037060a55bafd330bba7ed3ba8802e6f",
+            "target_url": "./cabinet22.usd",
+            "target_hash": "78a5766673b21f0645a0a706e62cfd0d60028f8c"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/46443/configuration/materials/textures/texture_0.jpg",
+            "source_hash": "14e513b7a3d99475c75e9fe79444e2576b4668e7",
+            "target_url": "./converted_usd_safe/storagefurniture/46443/configuration/materials/textures/texture_0.jpg",
+            "target_hash": "a73302bc6de4e2c2098ee7fbac38249aab052467"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/46443/configuration/materials/textures/texture_1.jpg",
+            "source_hash": "fcd355caf0022542d507c49b1921b38da793f4f1",
+            "target_url": "./converted_usd_safe/storagefurniture/46443/configuration/materials/textures/texture_1.jpg",
+            "target_hash": "efb631f6163e67e86a4ec9f933b8373652c8c2cf"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/46443/configuration/materials/textures/texture_2.png",
+            "source_hash": "9548225156432b5123886278f6257fa392420d99",
+            "target_url": "./converted_usd_safe/storagefurniture/46443/configuration/materials/textures/texture_2.png",
+            "target_hash": "bf8e0d05278ce40876bcefa9648a9f687f88efe7"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/46443/configuration/materials/textures/texture_3.jpg",
+            "source_hash": "5332795502d001a8a78b8f2ee48dd140b89e1b1b",
+            "target_url": "./converted_usd_safe/storagefurniture/46443/configuration/materials/textures/texture_3.jpg",
+            "target_hash": "748f43348c5a81e1387b89d83a3cac8ffe342f7a"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/46443/configuration/materials/textures/texture_4.jpg",
+            "source_hash": "3c627fafa03ef7bd4debca9e4f1f2907fd89cdd2",
+            "target_url": "./converted_usd_safe/storagefurniture/46443/configuration/materials/textures/texture_4.jpg",
+            "target_hash": "3de3596403ca6bea2410d8343f9a1d97da582f00"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/46443/configuration/materials/textures/texture_5.png",
+            "source_hash": "9548225156432b5123886278f6257fa392420d99",
+            "target_url": "./converted_usd_safe/storagefurniture/46443/configuration/materials/textures/texture_5.png",
+            "target_hash": "bddf9d8bb64b83f51ae47299e1c89bea004a0baf"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/cabinet23.usd",
+            "source_hash": "150fe09d2ca1ff168723f4592d5d54923afb1da3",
+            "target_url": "./cabinet23.usd",
+            "target_hash": "97b9aef32e0b2145d8ec30e76e8232546aa7cdf6"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/46462/configuration/materials/textures/texture_0.jpg",
+            "source_hash": "a7a7962288b48e334e09c39975fe7445d8301d13",
+            "target_url": "./converted_usd_safe/storagefurniture/46462/configuration/materials/textures/texture_0.jpg",
+            "target_hash": "38adbca14cdcf7bc239b2cd5ca39b476a6b42faa"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/46462/configuration/materials/textures/texture_1.jpg",
+            "source_hash": "f60a27f887243d310824944a68642140e0b46bfe",
+            "target_url": "./converted_usd_safe/storagefurniture/46462/configuration/materials/textures/texture_1.jpg",
+            "target_hash": "90f37ab6e07c8d5547b1f20e0aa798fb80766eef"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/46462/configuration/materials/textures/texture_2.png",
+            "source_hash": "96b8d364f27f4bcec6fd9db41a65fb64bec1a42d",
+            "target_url": "./converted_usd_safe/storagefurniture/46462/configuration/materials/textures/texture_2.png",
+            "target_hash": "63a3fa5c22d28e501d0a2b23b58112feb7463207"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/46462/configuration/materials/textures/texture_3.jpg",
+            "source_hash": "d1963ae5be91b114b08aeebc5e0b87ae487782a1",
+            "target_url": "./converted_usd_safe/storagefurniture/46462/configuration/materials/textures/texture_3.jpg",
+            "target_hash": "8d545210fae3830f3063d448313cabe99257d308"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/46462/configuration/materials/textures/texture_4.png",
+            "source_hash": "81eaebec4321064ccb650ab85fd9aaf23b593e17",
+            "target_url": "./converted_usd_safe/storagefurniture/46462/configuration/materials/textures/texture_4.png",
+            "target_hash": "adec636d2ea483efe26303c5c341c0aca0c70184"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/cabinet24.usd",
+            "source_hash": "d05128b893cd9e5721a2e1179fe8c9ea2def378b",
+            "target_url": "./cabinet24.usd",
+            "target_hash": "19e3cd7991339cba97cbd6e86550132a187b38e9"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/46466/configuration/materials/textures/texture_0.jpg",
+            "source_hash": "5fd331262794c5c7157dae405b0a25c1de137431",
+            "target_url": "./converted_usd_safe/storagefurniture/46466/configuration/materials/textures/texture_0.jpg",
+            "target_hash": "687b55cdfbb56a84708008f36c98efc2b8b4cd9f"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/46466/configuration/materials/textures/texture_1.jpg",
+            "source_hash": "367dee29df8d77da7397ab6e502ba2ada5df55f0",
+            "target_url": "./converted_usd_safe/storagefurniture/46466/configuration/materials/textures/texture_1.jpg",
+            "target_hash": "00aa24d6473437ded5e25cf300ef77424f7b5ab1"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/46466/configuration/materials/textures/texture_2.png",
+            "source_hash": "ac3efb0412fc455ab3dc9265d8e67a980feccbdd",
+            "target_url": "./converted_usd_safe/storagefurniture/46466/configuration/materials/textures/texture_2.png",
+            "target_hash": "37c2c7821c955403cecfd4586a09ec8e6f805ac4"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/46466/configuration/materials/textures/texture_3.jpg",
+            "source_hash": "8b8202164b30324085a1bd7f75ebc2172b78186b",
+            "target_url": "./converted_usd_safe/storagefurniture/46466/configuration/materials/textures/texture_3.jpg",
+            "target_hash": "15a8641f0ea1da45d797c7903bf0d255de52bacd"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/46466/configuration/materials/textures/texture_4.jpg",
+            "source_hash": "5b6ccc35ca4a5996f12506b79f05e4aabc0ff710",
+            "target_url": "./converted_usd_safe/storagefurniture/46466/configuration/materials/textures/texture_4.jpg",
+            "target_hash": "c51c3a0ebf69b2e5d9afc5fe6bc7c7a3a83d75eb"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/46466/configuration/materials/textures/texture_5.png",
+            "source_hash": "374ccca76d39f2e5970664eb28f0c00407a3bdf7",
+            "target_url": "./converted_usd_safe/storagefurniture/46466/configuration/materials/textures/texture_5.png",
+            "target_hash": "f6e1a6a81ed4f730a4dabfd88911cd4aef3dd3e6"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/cabinet25.usd",
+            "source_hash": "00100c32d72a47fe8ddf19fc8fb05f0ba2d5656a",
+            "target_url": "./cabinet25.usd",
+            "target_hash": "68e1c07bfbceeb32470d66e1c77e50927bc5b08a"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/46544/configuration/materials/textures/texture_0.jpg",
+            "source_hash": "29e97b9536e38d238a0fcdaa41469b6855148f6d",
+            "target_url": "./converted_usd_safe/storagefurniture/46544/configuration/materials/textures/texture_0.jpg",
+            "target_hash": "b84eca71ee5050dbc55e397e1a7173cd01c8fdc4"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/46544/configuration/materials/textures/texture_1.jpg",
+            "source_hash": "ed9062c7ba8e76929994901b4efc2209372cb1d4",
+            "target_url": "./converted_usd_safe/storagefurniture/46544/configuration/materials/textures/texture_1.jpg",
+            "target_hash": "af2bd1d5e65cc7228390d0392082ab70df7c4bd5"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/46544/configuration/materials/textures/texture_2.png",
+            "source_hash": "6e2ce936d7cc57ae8ef0c75a6e04a6efe9dcf866",
+            "target_url": "./converted_usd_safe/storagefurniture/46544/configuration/materials/textures/texture_2.png",
+            "target_hash": "6d286275bbc9531f4e7b22dede80b156c2e3e14c"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/46544/configuration/materials/textures/texture_3.jpg",
+            "source_hash": "dc1ab547b55de497ea888f9e1259be023e43f1c3",
+            "target_url": "./converted_usd_safe/storagefurniture/46544/configuration/materials/textures/texture_3.jpg",
+            "target_hash": "aedeabc636d7385c6fd9f08109bcc3b2b2ff53df"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/46544/configuration/materials/textures/texture_4.png",
+            "source_hash": "066da8430f08c1e49165547dd3c5fbc951e2cda6",
+            "target_url": "./converted_usd_safe/storagefurniture/46544/configuration/materials/textures/texture_4.png",
+            "target_hash": "bf0e6b223bd947a135ec1004d3965d5db0b967fb"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/cabinet26.usd",
+            "source_hash": "6e8591aff98b1c1058c7be4f605a2cfde4b87747",
+            "target_url": "./cabinet26.usd",
+            "target_hash": "08893ec7542a91bc5b43b87400b7c2bfa5bff666"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/46549/configuration/materials/textures/texture_0.jpg",
+            "source_hash": "ab09e52187f89bb57593be05e324346c95fc565c",
+            "target_url": "./converted_usd_safe/storagefurniture/46549/configuration/materials/textures/texture_0.jpg",
+            "target_hash": "07944332d04ce0c485181ca7b42a30581df0cb6e"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/46549/configuration/materials/textures/texture_1.jpg",
+            "source_hash": "2c8ae3fe6c737a0e320475b91ba796ea4375851c",
+            "target_url": "./converted_usd_safe/storagefurniture/46549/configuration/materials/textures/texture_1.jpg",
+            "target_hash": "42aad188ac3607e8650e6d8ba734eb7afb9006da"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/46549/configuration/materials/textures/texture_2.png",
+            "source_hash": "e0e2777d3317358c8b654560481e22cb5696f04f",
+            "target_url": "./converted_usd_safe/storagefurniture/46549/configuration/materials/textures/texture_2.png",
+            "target_hash": "2d39310597e05260336390306b75933b49a1abcc"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/46549/configuration/materials/textures/texture_3.jpg",
+            "source_hash": "553382052ba91c779c8f0869c1fc55d2fdcae610",
+            "target_url": "./converted_usd_safe/storagefurniture/46549/configuration/materials/textures/texture_3.jpg",
+            "target_hash": "12cd93a09d61fb285321cf7d94d4d1b72c629438"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/46549/configuration/materials/textures/texture_4.png",
+            "source_hash": "f5f780b27e23e1628d13168de6c98717182593a2",
+            "target_url": "./converted_usd_safe/storagefurniture/46549/configuration/materials/textures/texture_4.png",
+            "target_hash": "2d39310597e05260336390306b75933b49a1abcc"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/cabinet27.usd",
+            "source_hash": "fea495b4527f8c4471b8eb170a205912d27fd301",
+            "target_url": "./cabinet27.usd",
+            "target_hash": "db7f28a450e1cfb686e2558fcfec6aa18b9f9ec5"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/46641/configuration/materials/textures/texture_0.jpg",
+            "source_hash": "45c70c1285c3e70e35bdeda534dd93a0e8dbdd3e",
+            "target_url": "./converted_usd_safe/storagefurniture/46641/configuration/materials/textures/texture_0.jpg",
+            "target_hash": "bed2816121cf86288a5577c05c645eb0f0cc0e12"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/46641/configuration/materials/textures/texture_1.jpg",
+            "source_hash": "acd65eec47f19cf9f413e332ee6576c1aeb3bff9",
+            "target_url": "./converted_usd_safe/storagefurniture/46641/configuration/materials/textures/texture_1.jpg",
+            "target_hash": "9f48efd884b14d1c0541f23efc1db9f634fa4f03"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/46641/configuration/materials/textures/texture_2.png",
+            "source_hash": "6c6b61af94808c4706b58198b331e0d643645b9b",
+            "target_url": "./converted_usd_safe/storagefurniture/46641/configuration/materials/textures/texture_2.png",
+            "target_hash": "597b577eec5eb6b95ffbb6d6ae36de9e6f6447e2"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/46641/configuration/materials/textures/texture_3.jpg",
+            "source_hash": "dafeee860465779b886cd31f7a7a53b5b4bd6b96",
+            "target_url": "./converted_usd_safe/storagefurniture/46641/configuration/materials/textures/texture_3.jpg",
+            "target_hash": "a4b673a07534eb5d88af7e4597c4e907c1957b91"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/46641/configuration/materials/textures/texture_4.png",
+            "source_hash": "6c6b61af94808c4706b58198b331e0d643645b9b",
+            "target_url": "./converted_usd_safe/storagefurniture/46641/configuration/materials/textures/texture_4.png",
+            "target_hash": "cabbf064580babec0beb96028797698343c21b3f"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/cabinet28.usd",
+            "source_hash": "1c0c1db8ccf686623d6bb4157b6871173625e4f4",
+            "target_url": "./cabinet28.usd",
+            "target_hash": "c1d11527f19f59cbe227a5f8425f77a0d61c6627"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/46762/configuration/materials/textures/texture_0.jpg",
+            "source_hash": "c65db38b22d2334bc27ba6e4f3fa876cf02c746e",
+            "target_url": "./converted_usd_safe/storagefurniture/46762/configuration/materials/textures/texture_0.jpg",
+            "target_hash": "8c7a6d1a1219c4200070f1f29213c3594db0f802"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/46762/configuration/materials/textures/texture_1.png",
+            "source_hash": "71786943ab549406689c663d6349f5fd5456d7ea",
+            "target_url": "./converted_usd_safe/storagefurniture/46762/configuration/materials/textures/texture_1.png",
+            "target_hash": "b0eeb874654b3c067d3efbe311ae5ae129996c3f"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/46762/configuration/materials/textures/texture_2.jpg",
+            "source_hash": "9714f1b09ad7bc4e492661483b30ce3d0eac4671",
+            "target_url": "./converted_usd_safe/storagefurniture/46762/configuration/materials/textures/texture_2.jpg",
+            "target_hash": "d14d2fd673f084cf1fe5b2b94740472b50c2e4c4"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/46762/configuration/materials/textures/texture_3.png",
+            "source_hash": "93b5e291160c009a4abf5d7748fb17804f4a8e70",
+            "target_url": "./converted_usd_safe/storagefurniture/46762/configuration/materials/textures/texture_3.png",
+            "target_hash": "b0eeb874654b3c067d3efbe311ae5ae129996c3f"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/cabinet29.usd",
+            "source_hash": "59388697c7e0a2af0a0cc465950646e0b5864bfa",
+            "target_url": "./cabinet29.usd",
+            "target_hash": "5f883e9a049dc31238c3a7830077a643616e9f97"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/46893/configuration/materials/textures/texture_0.jpg",
+            "source_hash": "32afe5b6116136e7fafbfd767d5a4ee1db3664a8",
+            "target_url": "./converted_usd_safe/storagefurniture/46893/configuration/materials/textures/texture_0.jpg",
+            "target_hash": "8fd87391fbcd932c055230ff51d7a4f570f80520"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/46893/configuration/materials/textures/texture_1.jpg",
+            "source_hash": "db5f6eb93592269b8dd2ac8930e9edd7739242ef",
+            "target_url": "./converted_usd_safe/storagefurniture/46893/configuration/materials/textures/texture_1.jpg",
+            "target_hash": "606daa64d79842d3d8e671ae043ac1c966546be5"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/46893/configuration/materials/textures/texture_2.png",
+            "source_hash": "1ed0073d6e10c6c3587f62ec2187ddce7af288d9",
+            "target_url": "./converted_usd_safe/storagefurniture/46893/configuration/materials/textures/texture_2.png",
+            "target_hash": "325bf1eeb6da38ac6a2ea6c6d418898ba89cbc05"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/46893/configuration/materials/textures/texture_3.jpg",
+            "source_hash": "1818b9d524b2e65be44ad945f550ba9a4f23c611",
+            "target_url": "./converted_usd_safe/storagefurniture/46893/configuration/materials/textures/texture_3.jpg",
+            "target_hash": "4a7526c550bc963dc6c2f27dd2578f68a735ed25"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/46893/configuration/materials/textures/texture_4.jpg",
+            "source_hash": "30829db1965726985384d502743b983dd1b013b9",
+            "target_url": "./converted_usd_safe/storagefurniture/46893/configuration/materials/textures/texture_4.jpg",
+            "target_hash": "be8875802c8a5cc6b6859eb4938d4d591a1af749"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/46893/configuration/materials/textures/texture_5.png",
+            "source_hash": "a87277be3e864c49b45a04100e4bb32581e0b6cf",
+            "target_url": "./converted_usd_safe/storagefurniture/46893/configuration/materials/textures/texture_5.png",
+            "target_hash": "231bf5a174baf2165a1bdd124126226db60b7338"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/cabinet3.usd",
+            "source_hash": "3ee4ffed64468ba67efa1483123459fa00c8fa73",
+            "target_url": "./cabinet3.usd",
+            "target_hash": "0ce9dd25fa8fa3aea72574224a2e4f6c9ed00a00"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/44962/configuration/materials/textures/texture_0.jpg",
+            "source_hash": "7dc7c34c9008a47eecb77747b294baf2bdf4ff00",
+            "target_url": "./converted_usd_safe/storagefurniture/44962/configuration/materials/textures/texture_0.jpg",
+            "target_hash": "534ddffde5d83457edad2c6f12ac6c49f94bbc44"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/44962/configuration/materials/textures/texture_1.jpg",
+            "source_hash": "71f3410abf83888a65d91619ef7f1d9f00731273",
+            "target_url": "./converted_usd_safe/storagefurniture/44962/configuration/materials/textures/texture_1.jpg",
+            "target_hash": "f447e70567c4ecb2997df447e30df73f88287566"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/44962/configuration/materials/textures/texture_2.png",
+            "source_hash": "fcecca5ceba6893a6efafcde94dddae64f3a93af",
+            "target_url": "./converted_usd_safe/storagefurniture/44962/configuration/materials/textures/texture_2.png",
+            "target_hash": "99485d50e7d5c348b67c59494dd805a86498cdd1"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/44962/configuration/materials/textures/texture_3.jpg",
+            "source_hash": "71f3410abf83888a65d91619ef7f1d9f00731273",
+            "target_url": "./converted_usd_safe/storagefurniture/44962/configuration/materials/textures/texture_3.jpg",
+            "target_hash": "f3ae43ea00a1316e94760e8ec12d35666cd67e5e"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/44962/configuration/materials/textures/texture_4.jpg",
+            "source_hash": "a9101813b78c2617f2024ad8a05eb4851d623bee",
+            "target_url": "./converted_usd_safe/storagefurniture/44962/configuration/materials/textures/texture_4.jpg",
+            "target_hash": "8465fa85be3214c68dc5553690c033b724226745"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/44962/configuration/materials/textures/texture_5.png",
+            "source_hash": "20f610eb2c0a31e972da42af76dc84807ad071da",
+            "target_url": "./converted_usd_safe/storagefurniture/44962/configuration/materials/textures/texture_5.png",
+            "target_hash": "b455dbdef45b23d3cd279ace7cb2fcef47cfb298"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/cabinet30.usd",
+            "source_hash": "205f7b31dfcc32253a7f8f4be918dbc41014a9f7",
+            "target_url": "./cabinet30.usd",
+            "target_hash": "558dec6e044be387705fe0ce9144dba9fcfe8ab2"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/47089/configuration/materials/textures/texture_0.jpg",
+            "source_hash": "9a264d9fc8f04b7cb37156de513f9047298e2be8",
+            "target_url": "./converted_usd_safe/storagefurniture/47089/configuration/materials/textures/texture_0.jpg",
+            "target_hash": "1e8bcf93b76c2502d430ed46e920443bf2b7fe96"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/47089/configuration/materials/textures/texture_1.jpg",
+            "source_hash": "c4e6ff5b1967853af2b4345c91ce99ea9fae2d4c",
+            "target_url": "./converted_usd_safe/storagefurniture/47089/configuration/materials/textures/texture_1.jpg",
+            "target_hash": "7f79a9f3c12ecbd6b021a429e3d0480a278eb72f"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/47089/configuration/materials/textures/texture_2.png",
+            "source_hash": "1d19dc54fcd02ffa4cf6e098204a8f83145fddda",
+            "target_url": "./converted_usd_safe/storagefurniture/47089/configuration/materials/textures/texture_2.png",
+            "target_hash": "f007f70eb56b5996b1219a34dae224d8eeafe6a3"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/47089/configuration/materials/textures/texture_3.jpg",
+            "source_hash": "69143f0ff6da7700d8c3303388b549f5f8131b3c",
+            "target_url": "./converted_usd_safe/storagefurniture/47089/configuration/materials/textures/texture_3.jpg",
+            "target_hash": "a460c0e7e3baa75c36149d7af4821d5ca6a18a2b"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/47089/configuration/materials/textures/texture_4.png",
+            "source_hash": "a57348eedb6ed474e6fdb22b5e286c0299bd1cee",
+            "target_url": "./converted_usd_safe/storagefurniture/47089/configuration/materials/textures/texture_4.png",
+            "target_hash": "7a914bd540b7a863afd7f32f4035d9fb1e15e8b7"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/cabinet4.usd",
+            "source_hash": "9ae18b9e994cebd3eb87d11b53c30fc0d88d0148",
+            "target_url": "./cabinet4.usd",
+            "target_hash": "b912cc054723e5a1ca4ed4c9664400cf91ad91f8"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/45092/configuration/materials/textures/texture_0.jpg",
+            "source_hash": "fa946d230c2957c5c7980b0bb4229a03cf1d91d9",
+            "target_url": "./converted_usd_safe/storagefurniture/45092/configuration/materials/textures/texture_0.jpg",
+            "target_hash": "caae6f76a4b987bc3d3d0e6fc0ee57ae5f2c7cd8"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/45092/configuration/materials/textures/texture_1.jpg",
+            "source_hash": "861d72d4273be2ab912c67dc257d4981750bacf9",
+            "target_url": "./converted_usd_safe/storagefurniture/45092/configuration/materials/textures/texture_1.jpg",
+            "target_hash": "b16f96414501a31d6d906c2fe59ea763b9ca5e14"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/45092/configuration/materials/textures/texture_2.png",
+            "source_hash": "8773e5ce7098a066957abb0be546869bf6712ca5",
+            "target_url": "./converted_usd_safe/storagefurniture/45092/configuration/materials/textures/texture_2.png",
+            "target_hash": "c7fb4eb7e0397b8cc1bd0643f9bc1b9e23a1a48c"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/45092/configuration/materials/textures/texture_3.jpg",
+            "source_hash": "b2df801d50cf9aca90cd38120763763ef50248ba",
+            "target_url": "./converted_usd_safe/storagefurniture/45092/configuration/materials/textures/texture_3.jpg",
+            "target_hash": "9a83a3feef7c6ea0d7be0d596cdac14225e22027"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/45092/configuration/materials/textures/texture_4.png",
+            "source_hash": "306aa176a079caadf1baa53875115533d64fe157",
+            "target_url": "./converted_usd_safe/storagefurniture/45092/configuration/materials/textures/texture_4.png",
+            "target_hash": "8ed689a57f126d0f9d4258c730419a4067536277"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/cabinet5.usd",
+            "source_hash": "9d58cf99aa41745d78509e80d37456047226b417",
+            "target_url": "./cabinet5.usd",
+            "target_hash": "233b08a6ab1c05c4f37a9145cf004c816ccdce16"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/45135/configuration/materials/textures/texture_0.jpg",
+            "source_hash": "571f56b97e147c67f168a0e7f2627c4d749a6fd2",
+            "target_url": "./converted_usd_safe/storagefurniture/45135/configuration/materials/textures/texture_0.jpg",
+            "target_hash": "b18c85ddc370ce5d395c67b6c546f7a122c40914"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/45135/configuration/materials/textures/texture_1.jpg",
+            "source_hash": "0c4d74375a15411b0a9a628a88eb5abe393d8c7b",
+            "target_url": "./converted_usd_safe/storagefurniture/45135/configuration/materials/textures/texture_1.jpg",
+            "target_hash": "c038ac8341757e5a5bd72d088649058955e5e8e8"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/45135/configuration/materials/textures/texture_2.png",
+            "source_hash": "605b0193be4d4048f961d3c6b1da001a91c58cb3",
+            "target_url": "./converted_usd_safe/storagefurniture/45135/configuration/materials/textures/texture_2.png",
+            "target_hash": "a04ddf1c382b674039bf7d9387c2adc7c2aad243"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/45135/configuration/materials/textures/texture_3.jpg",
+            "source_hash": "8030c6a50fef42d4494a20e4a7d0bd8bd97031e3",
+            "target_url": "./converted_usd_safe/storagefurniture/45135/configuration/materials/textures/texture_3.jpg",
+            "target_hash": "f3fcbc4e7162c961e3220a42e0ea70643a3e41a9"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/45135/configuration/materials/textures/texture_4.jpg",
+            "source_hash": "3b0e95f32c120b8f1dab357d84ae5f7c8a2f9276",
+            "target_url": "./converted_usd_safe/storagefurniture/45135/configuration/materials/textures/texture_4.jpg",
+            "target_hash": "31c6e0a0bb54650cb660bc2755a089e57d20a811"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/45135/configuration/materials/textures/texture_5.png",
+            "source_hash": "e43c22455acc4d8429bf8fbe238337a8f8fdce87",
+            "target_url": "./converted_usd_safe/storagefurniture/45135/configuration/materials/textures/texture_5.png",
+            "target_hash": "a04ddf1c382b674039bf7d9387c2adc7c2aad243"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/cabinet6.usd",
+            "source_hash": "d566990bca1ea89a93bddccbcb3b4b2b85cfbc84",
+            "target_url": "./cabinet6.usd",
+            "target_hash": "50badd71c85045074c0e506cfa8d05943241911f"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/45243/configuration/materials/textures/texture_0.jpg",
+            "source_hash": "c288fc406ff1609b6d06991fd80c7aca9c7633da",
+            "target_url": "./converted_usd_safe/storagefurniture/45243/configuration/materials/textures/texture_0.jpg",
+            "target_hash": "c2299d7552596a2ad77df3210592550664ca7a5c"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/45243/configuration/materials/textures/texture_1.jpg",
+            "source_hash": "88c6e654c2e8c4fb47e6bd194b5c93005718aa74",
+            "target_url": "./converted_usd_safe/storagefurniture/45243/configuration/materials/textures/texture_1.jpg",
+            "target_hash": "d1644f5be6f8f603ed7f8e3b80f588dcf5010127"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/45243/configuration/materials/textures/texture_2.png",
+            "source_hash": "94817080f57e5bd5d1c2fd4c3750920dc77372f9",
+            "target_url": "./converted_usd_safe/storagefurniture/45243/configuration/materials/textures/texture_2.png",
+            "target_hash": "cd51c29e34cf91f1d1df82e91a186032810f2e8e"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/45243/configuration/materials/textures/texture_3.jpg",
+            "source_hash": "227f2a4973a6c70935282803a0c8f75e6e6b34d8",
+            "target_url": "./converted_usd_safe/storagefurniture/45243/configuration/materials/textures/texture_3.jpg",
+            "target_hash": "5ebf699afb3d6e85e61c91e7ab88a74ed4e5d1d8"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/45243/configuration/materials/textures/texture_4.jpg",
+            "source_hash": "081cc7ae3afa8cf5f78df3c8afb74533d9ce0991",
+            "target_url": "./converted_usd_safe/storagefurniture/45243/configuration/materials/textures/texture_4.jpg",
+            "target_hash": "e7c679de6852c1f09d55342497db1537f786b297"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/45243/configuration/materials/textures/texture_5.png",
+            "source_hash": "94817080f57e5bd5d1c2fd4c3750920dc77372f9",
+            "target_url": "./converted_usd_safe/storagefurniture/45243/configuration/materials/textures/texture_5.png",
+            "target_hash": "029439b4e3715c2949878b7e4ff10e83d3c20b3f"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/cabinet7.usd",
+            "source_hash": "f0fa9d9ab360d70190d4f763b0cb97f8b55209c1",
+            "target_url": "./cabinet7.usd",
+            "target_hash": "421ceb3ef6b2c52825eda168f8cda489431d3a9e"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/45261/configuration/materials/textures/texture_0.jpg",
+            "source_hash": "3752f0a9c3556ef7f132d5091e846c30e810170c",
+            "target_url": "./converted_usd_safe/storagefurniture/45261/configuration/materials/textures/texture_0.jpg",
+            "target_hash": "050a968fe9b2d700c04d0bcb44a87bec49497ad7"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/cabinet8.usd",
+            "source_hash": "d18873a91742521c483a673f348aff8dfc3b8541",
+            "target_url": "./cabinet8.usd",
+            "target_hash": "fa98596d2d9670e656d8ab4c21c784fb848f7541"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/45290/configuration/materials/textures/texture_0.jpg",
+            "source_hash": "a6a44e23af0ac4b20a71cf75657ca98b436da9d8",
+            "target_url": "./converted_usd_safe/storagefurniture/45290/configuration/materials/textures/texture_0.jpg",
+            "target_hash": "3857421e026e7c3d4c303f971f2eb136d42becb6"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/45290/configuration/materials/textures/texture_1.jpg",
+            "source_hash": "13728e0f35028b64ab09b5542d395df486cbb9a7",
+            "target_url": "./converted_usd_safe/storagefurniture/45290/configuration/materials/textures/texture_1.jpg",
+            "target_hash": "6bee79b6e3c48a5835768a83a71efe4d982e1490"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/45290/configuration/materials/textures/texture_2.png",
+            "source_hash": "e2daf91a943a9eb4b9c421a14eb59570c302855e",
+            "target_url": "./converted_usd_safe/storagefurniture/45290/configuration/materials/textures/texture_2.png",
+            "target_hash": "5d98c32a5fbf76f51cfdc2aef19a932c961ebc3d"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/45290/configuration/materials/textures/texture_3.jpg",
+            "source_hash": "4d3f3e1da41c9d21810da2bac6604785634af08d",
+            "target_url": "./converted_usd_safe/storagefurniture/45290/configuration/materials/textures/texture_3.jpg",
+            "target_hash": "5b1d4e6075264d9d3d0afb640dd9212f24c67b07"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/45290/configuration/materials/textures/texture_4.jpg",
+            "source_hash": "5b725e22be34058b96102010dfb447a623bc8317",
+            "target_url": "./converted_usd_safe/storagefurniture/45290/configuration/materials/textures/texture_4.jpg",
+            "target_hash": "949ee3915047116ef26f07ca291cfa1ceb2d3649"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/45290/configuration/materials/textures/texture_5.png",
+            "source_hash": "e2daf91a943a9eb4b9c421a14eb59570c302855e",
+            "target_url": "./converted_usd_safe/storagefurniture/45290/configuration/materials/textures/texture_5.png",
+            "target_hash": "5fb236b84435cb8503e71209fd02fa779fa13d8a"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/cabinet9.usd",
+            "source_hash": "d0fba664ec37d2b5a0e366dbd8091eb7da692400",
+            "target_url": "./cabinet9.usd",
+            "target_hash": "71ded55ec32610eafb4bdd395078f06e7697d4a2"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/45374/configuration/materials/textures/texture_0.jpg",
+            "source_hash": "66c88f0843792ff29afbc726a6eea968517fc05f",
+            "target_url": "./converted_usd_safe/storagefurniture/45374/configuration/materials/textures/texture_0.jpg",
+            "target_hash": "83515de71f6b6f75f213c7b2344240a09212be72"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/45374/configuration/materials/textures/texture_1.jpg",
+            "source_hash": "44653d387af795f88db484d5301515c4230a4de2",
+            "target_url": "./converted_usd_safe/storagefurniture/45374/configuration/materials/textures/texture_1.jpg",
+            "target_hash": "ebcee3340b898c90b960079c0623a1929009220f"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/45374/configuration/materials/textures/texture_2.png",
+            "source_hash": "369eb59160df93cedbca42f621e9e106333c4462",
+            "target_url": "./converted_usd_safe/storagefurniture/45374/configuration/materials/textures/texture_2.png",
+            "target_hash": "39c80f03093598297bfd3ab55ef3b92140c929e5"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/45374/configuration/materials/textures/texture_3.jpg",
+            "source_hash": "8d10b7300e5c55c628dd8c252ba4f75b7c68c0d9",
+            "target_url": "./converted_usd_safe/storagefurniture/45374/configuration/materials/textures/texture_3.jpg",
+            "target_hash": "f4d7ec93802db71c53733c6fc031a363d622c872"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/storagefurniture/45374/configuration/materials/textures/texture_4.png",
+            "source_hash": "6642e980559a5313f0e77759a87f3198d5cec5a7",
+            "target_url": "./converted_usd_safe/storagefurniture/45374/configuration/materials/textures/texture_4.png",
+            "target_hash": "31f3db37c612dd5e6af468bbf43412e5eac3167b"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/coffeemachine1.usd",
+            "source_hash": "4ed85791db54860eaf24f402802e35e6a949b98e",
+            "target_url": "./coffeemachine1.usd",
+            "target_hash": "96d1e5a346f4352c22afda7a58b816aa853c7a12"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/coffeemachine/103046/configuration/materials/textures/texture_0.jpg",
+            "source_hash": "4b8c55a713c9d8966c8c5a0a86f0769462184690",
+            "target_url": "./converted_usd_safe/coffeemachine/103046/configuration/materials/textures/texture_0.jpg",
+            "target_hash": "18884ac4b400f44124c9a47fec473902463d8228"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/coffeemachine/103046/configuration/materials/textures/texture_1.jpg",
+            "source_hash": "bfa0a4be4d342437d4ead89cb80925598f62586c",
+            "target_url": "./converted_usd_safe/coffeemachine/103046/configuration/materials/textures/texture_1.jpg",
+            "target_hash": "17e00665037423d0643b1161b71e14352724c059"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/coffeemachine2.usd",
+            "source_hash": "94f8a6e189ee45db6a35bd8263c4059f4ecf151b",
+            "target_url": "./coffeemachine2.usd",
+            "target_hash": "b5bc8a27b0390375d55cfee6e2671971086170af"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/coffeemachine/103009/configuration/materials/textures/texture_0.png",
+            "source_hash": "398cf56aacf171ab33f698d28074c55d3da12c45",
+            "target_url": "./converted_usd_safe/coffeemachine/103009/configuration/materials/textures/texture_0.png",
+            "target_hash": "a63f047e4888bd43cd15ed987b9073ff0937dae1"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/coffeemachine/103009/configuration/materials/textures/texture_1.png",
+            "source_hash": "88ebe827b7317517f1191e3647318f794c99a9cf",
+            "target_url": "./converted_usd_safe/coffeemachine/103009/configuration/materials/textures/texture_1.png",
+            "target_hash": "a613688743d75b237ada8894c171ffe6069d5a85"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/coffeemachine3.usd",
+            "source_hash": "0ce325ea2ffecc876b1ccf0d8ac5a67e691fd970",
+            "target_url": "./coffeemachine3.usd",
+            "target_hash": "728249783564246678c36536870887b2a97d1104"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/doraemoncup.usd",
+            "source_hash": "aa6b74afaf08c8ac648cf922de2a436ee517bd6d",
+            "target_url": "./doraemoncup.usd",
+            "target_hash": "ac305993caef558972a3cfcf8696531bf94a0e54"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/Materials/Textures/doraemoncup.png",
+            "source_hash": "7df0f00fff4840eba31cc51c58cd47cffb77f5dc",
+            "target_url": "./Materials/Textures/doraemoncup.png",
+            "target_hash": "1e3934b35b847bc4e7137ae467ba51b02ad06d88"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/green_bellpepper.usd",
+            "source_hash": "4417b9cc3b9e990a9618003475951bfec66310a3",
+            "target_url": "./green_bellpepper.usd",
+            "target_hash": "319f8363b280fc04d947951aa2409ef1cba47122"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/kitchen_obj/T_BellPepperGreen_C.png",
+            "source_hash": "8c6ddcb16e2e579be75d86aded0ef9fdb866fd43",
+            "target_url": "./kitchen_obj/T_BellPepperGreen_C.png",
+            "target_hash": "496e8f43f1d1bd52e9f3a86eb9307eb806c86618"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/green_cabbage.usd",
+            "source_hash": "105bb25a499ab1b7097471272964a22924432883",
+            "target_url": "./green_cabbage.usd",
+            "target_hash": "9280134797a14dcc23662afb6f4dcfb2fb0b69fd"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/kitchen_obj/T_CabbageGreen_C.png",
+            "source_hash": "f6e2a444280da05a1016fc842625d2e00cb125b9",
+            "target_url": "./kitchen_obj/T_CabbageGreen_C.png",
+            "target_hash": "e68b26f3a8e30c5729daa21fb5788bab0cabc919"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/green_cube.usd",
+            "source_hash": "41de2bc9717e71812eb5fba60660a3c540bfd9f8",
+            "target_url": "./green_cube.usd",
+            "target_hash": "e00e0f92ace96efd377a8ce09feae730f2c847b5"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/green_leek.usd",
+            "source_hash": "00964a3fca02ce319773b7403d2abdee0f818d40",
+            "target_url": "./green_leek.usd",
+            "target_hash": "aa0ecb8557184f78fdf74e3e70ee9fabd80ce47b"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/kitchen_obj/T_Leek_C.png",
+            "source_hash": "60754782f0101f23774818585093073a28146179",
+            "target_url": "./kitchen_obj/T_Leek_C.png",
+            "target_hash": "11d7842fd9b5218add30a50b3ef950fc780c8951"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/microwave1.usd",
+            "source_hash": "36fd2b1fa9673014b9e359d6a9e2baaa6eeb4742",
+            "target_url": "./microwave1.usd",
+            "target_hash": "97e1811e191eda012df51fd0e6c97ff0d34bbd4c"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/microwave2.usd",
+            "source_hash": "aa1c11c95e21bd099ee377b916699961514bb2e7",
+            "target_url": "./microwave2.usd",
+            "target_hash": "9f28eba01e3b7ca557b208699d99c5f61bf7c6a3"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/microwave/7167/configuration/materials/textures/texture_0.jpg",
+            "source_hash": "c7cc0b0216d1c55d26fabc9e03b205effc9398d8",
+            "target_url": "./converted_usd_safe/microwave/7167/configuration/materials/textures/texture_0.jpg",
+            "target_hash": "423f7688efb1028385ad34e847ded22ae43f15dd"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/microwave/7167/configuration/materials/textures/texture_1.jpg",
+            "source_hash": "31dc91e723818e94fc7801a9ee46726f51b80cc0",
+            "target_url": "./converted_usd_safe/microwave/7167/configuration/materials/textures/texture_1.jpg",
+            "target_hash": "bc11abc6becf60a10cdc0e6f70b825a635ef0d92"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/microwave3.usd",
+            "source_hash": "e79918a86b32cedea49789ee961f8c03404681b9",
+            "target_url": "./microwave3.usd",
+            "target_hash": "0665ad29144b934ed5286c5380482d2a7822439e"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/microwave/7221/configuration/materials/textures/texture_0.jpg",
+            "source_hash": "c6e5732d626e6d93d9dac92951f8c85518556eea",
+            "target_url": "./converted_usd_safe/microwave/7221/configuration/materials/textures/texture_0.jpg",
+            "target_hash": "3fd854c2849e42cbf1d99347e88ae57265f0c8fe"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/microwave/7221/configuration/materials/textures/texture_1.jpg",
+            "source_hash": "486aeb091caef4ecde5173d901c4f54cbd6c7e93",
+            "target_url": "./converted_usd_safe/microwave/7221/configuration/materials/textures/texture_1.jpg",
+            "target_hash": "980813ea1529aa706798b2b89af9e73fcf1f1722"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/microwave/7221/configuration/materials/textures/texture_2.jpg",
+            "source_hash": "c6e5732d626e6d93d9dac92951f8c85518556eea",
+            "target_url": "./converted_usd_safe/microwave/7221/configuration/materials/textures/texture_2.jpg",
+            "target_hash": "987e8dfa50c55c1e8384c19a7371f7b75f5501e9"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/microwave4.usd",
+            "source_hash": "601fa2789160b78afe5ab03b7f3d5d9eccd65a73",
+            "target_url": "./microwave4.usd",
+            "target_hash": "b054a7162e4fed76b2d499a790a28444658eab8d"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/microwave5.usd",
+            "source_hash": "6a24f98e5f6c5f39bc2e3624dc7a187818808d06",
+            "target_url": "./microwave5.usd",
+            "target_hash": "17a69d6aa298da7cf5004b27aacca4ba5155d5fa"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/microwave/7310/configuration/materials/textures/texture_0.jpg",
+            "source_hash": "ad61a2d595121ec634504739028b4edfceff0ff7",
+            "target_url": "./converted_usd_safe/microwave/7310/configuration/materials/textures/texture_0.jpg",
+            "target_hash": "d55eaa8196d77ba24d8e54685c08960fe98ebb5b"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/microwave/7310/configuration/materials/textures/texture_1.jpg",
+            "source_hash": "ad61a2d595121ec634504739028b4edfceff0ff7",
+            "target_url": "./converted_usd_safe/microwave/7310/configuration/materials/textures/texture_1.jpg",
+            "target_hash": "6bc5bf979aab5a7978607f08fe5891f34e498807"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/microwave6.usd",
+            "source_hash": "a16a54e3a6f9a08cb01243d90f6aa852f252dc59",
+            "target_url": "./microwave6.usd",
+            "target_hash": "70772592362090ffa29f452d7ac010f619ee609c"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/microwave/7320/configuration/materials/textures/texture_0.jpg",
+            "source_hash": "a4dc8688b2b0b4046c881793f13f59e9e034b38d",
+            "target_url": "./converted_usd_safe/microwave/7320/configuration/materials/textures/texture_0.jpg",
+            "target_hash": "7efd43fb5eaa98b5717ba07ad0de13b959ecf672"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/microwave/7320/configuration/materials/textures/texture_1.jpg",
+            "source_hash": "f4c1fd2f9747e4774498b6b78da56161e8a71767",
+            "target_url": "./converted_usd_safe/microwave/7320/configuration/materials/textures/texture_1.jpg",
+            "target_hash": "691d0bcb499b569a9e86813312fcc43c416999fc"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/converted_usd_safe/microwave/7320/configuration/materials/textures/texture_2.jpg",
+            "source_hash": "a4dc8688b2b0b4046c881793f13f59e9e034b38d",
+            "target_url": "./converted_usd_safe/microwave/7320/configuration/materials/textures/texture_2.jpg",
+            "target_hash": "b26a9b75e72e8af6fc204c9acefdcd304d05aa60"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/orange_carrot.usd",
+            "source_hash": "e7f4ea8ccc07d7d60a3a34b2c8e1ea0cec429571",
+            "target_url": "./orange_carrot.usd",
+            "target_hash": "42a8bd6355edc318206d549241fb77f4a29e881e"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/kitchen_obj/T_Carrot_C.png",
+            "source_hash": "aa3e80c27f11463217c2acf88853aa7d0b4569e2",
+            "target_url": "./kitchen_obj/T_Carrot_C.png",
+            "target_hash": "bf5492d1d551e4ab483791b944da15b19de7a385"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/pink_basket.usd",
+            "source_hash": "4435f3aa7f2bcb0f861b0c1b33bd3f1e5670029d",
+            "target_url": "./pink_basket.usd",
+            "target_hash": "dff9ad99478a267585bdb442ff5afbd52d00f3ca"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/obj/pinkbasket.png",
+            "source_hash": "e6895f26a33e8180c0ad7200878e27095c84d96d",
+            "target_url": "./obj/pinkbasket.png",
+            "target_hash": "be39193d18788a9e50675bf7a025add84af6e5ac"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/pink_cup.usd",
+            "source_hash": "79a5856c41b3650be8687a62c60f0b51874a0134",
+            "target_url": "./pink_cup.usd",
+            "target_hash": "43c0d13ac0669401a231a16ce5470755538deddf"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/red_apple.usd",
+            "source_hash": "44164dbdc93ada7399498b10e0bdf06ed1af9553",
+            "target_url": "./red_apple.usd",
+            "target_hash": "f5b30a316ef80caea4730139229710c195789402"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/red_bottle.usd",
+            "source_hash": "524d7681a34a5cec94d3da061e29b06f42289d47",
+            "target_url": "./red_bottle.usd",
+            "target_hash": "1b26c7184294e5610b17caa562a91e0997fa6a22"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/red_cheezbox.usd",
+            "source_hash": "5d6069400ba45b981a19d6f9c65cf62249b80dcc",
+            "target_url": "./red_cheezbox.usd",
+            "target_hash": "4d6f38792da4143ffe732401ef103dccc49a213f"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/Materials/Textures/003_cracker_box_COLOR.png",
+            "source_hash": "efdf3797111eb92e55422f1955d22c54c65ec43c",
+            "target_url": "./Materials/Textures/003_cracker_box_COLOR.png",
+            "target_hash": "0a9f783a1bd78f223b8364f8a3bd45d01c50b4e9"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/red_cube.usd",
+            "source_hash": "bc1a1556e9670c8aa2f736e5beda7e484b46a558",
+            "target_url": "./red_cube.usd",
+            "target_hash": "dc5133c75c5311f32333842314cb94a566461100"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/red_mugcup.usd",
+            "source_hash": "24a1ed88c19b0e5437d6d59fc2fd627b8f20e2c0",
+            "target_url": "./red_mugcup.usd",
+            "target_hash": "9556694f5450509e25c506779a3ff53bd91ac976"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/Materials/Textures/025_mug_COLOR.png",
+            "source_hash": "1c6ead8f86276b472d86f5ade3c06179ef627dad",
+            "target_url": "./Materials/Textures/025_mug_COLOR.png",
+            "target_hash": "d4be989cb3d6e5262ac2452a2aa1ea33679dbb0d"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/red_soupcan.usd",
+            "source_hash": "3ccf75e0a1a69724fac019ed05dec6c651d121e8",
+            "target_url": "./red_soupcan.usd",
+            "target_hash": "0a14befd24bec6be0e0caca7b95511439c62cace"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/Materials/Textures/005_tomato_soup_can_COLOR.png",
+            "source_hash": "f9b77f02a580a2d02de1bb3d4f22c07dac8c854d",
+            "target_url": "./Materials/Textures/005_tomato_soup_can_COLOR.png",
+            "target_hash": "1a6b49950d5dca27b141221ef6172a185e86b3f8"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/starbuckscup.usd",
+            "source_hash": "7c4653968d91fd7219edc253bce3b7336e4f4738",
+            "target_url": "./starbuckscup.usd",
+            "target_hash": "346574015c30d204ad5c1533e63ad7764a00f0cd"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/Materials/Textures/starbuckscup.png",
+            "source_hash": "1a66dc6b394266c79d07d34ecd5b1167d940b98c",
+            "target_url": "./Materials/Textures/starbuckscup.png",
+            "target_hash": "af989e397c22b9d1b65985f30270a23cf8600e56"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/steamcolorcup.usd",
+            "source_hash": "382bafae905ff1db6912a319ef57638971a679f2",
+            "target_url": "./steamcolorcup.usd",
+            "target_hash": "e3cb039dbd5b0dfc51fdd662a80d88ffe3292d43"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/Materials/Textures/steamcolorcup.png",
+            "source_hash": "b8af650b0ea3771f1c82e1c033cfcebec9dbf82b",
+            "target_url": "./Materials/Textures/steamcolorcup.png",
+            "target_hash": "ed07677d58cbeae8281f676f156d31134b9e3848"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/toy.usd",
+            "source_hash": "dc12397ad9386e9a2dc390fddc224f4d22e9a3b5",
+            "target_url": "./toy.usd",
+            "target_hash": "ff8f794afc50e66fffec4330bf08222e262c2e8e"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/Materials/Textures/toy.png",
+            "source_hash": "cca561907a4f5a6a5882053705a21e392b6f9bab",
+            "target_url": "./Materials/Textures/toy.png",
+            "target_hash": "89906c22954a720fa7aa2c82d596516084c2867e"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/white_100mmcup.usd",
+            "source_hash": "494e0221574c7a1572c81b60eb75e9cbbf5e7fe1",
+            "target_url": "./white_100mmcup.usd",
+            "target_hash": "99ac86b18492859e0761d11cd31c9d086f6592c0"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/Materials/Textures/100mm.png",
+            "source_hash": "f5ad1995be01b0682e53181a0ca882ec7d19ba6a",
+            "target_url": "./Materials/Textures/100mm.png",
+            "target_hash": "f2b15eb462a832a3f117f9076376521ce44b8287"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/white_75mmcup.usd",
+            "source_hash": "aa16a9834e9575a3174dc3dbb625d22b1f751be8",
+            "target_url": "./white_75mmcup.usd",
+            "target_hash": "30a14aa58a29919d7d261059b3a6e7959c88654c"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/Materials/Textures/75mm.png",
+            "source_hash": "e7dff067a8f893b42b21fca2b78f28a75130c51d",
+            "target_url": "./Materials/Textures/75mm.png",
+            "target_hash": "054738a9050152d1aea410042dfc0ef12345b5e4"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/white_80mmcup.usd",
+            "source_hash": "6c109a6e8ff32d3f381477fa2000100dd89ae441",
+            "target_url": "./white_80mmcup.usd",
+            "target_hash": "2bf285bbf944faf146380a1c3fd6fe64912f7954"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/Materials/Textures/80mm.png",
+            "source_hash": "46228f6995cec1bcafb841f819c8a626f32fc6d1",
+            "target_url": "./Materials/Textures/80mm.png",
+            "target_hash": "dfc5bc598f68339985be8a7334c074421e00406a"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/white_95mmcup.usd",
+            "source_hash": "746295fd198cf9b18a565726f3be8427f9dd7ffa",
+            "target_url": "./white_95mmcup.usd",
+            "target_hash": "632bcb8117fc660dc127d9a50ecfe1d57fe64920"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/Materials/Textures/95mm.png",
+            "source_hash": "6da82ca561b26d11068c7e3bedaba81490ff866c",
+            "target_url": "./Materials/Textures/95mm.png",
+            "target_hash": "eb3be633fe68289a21d1f2a7b8b56ec3c5405a65"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/white_cup.usd",
+            "source_hash": "5fd5b280d77d2116bc3aa379a340938dd2373661",
+            "target_url": "./white_cup.usd",
+            "target_hash": "a015d4a6ae2827fe6b1e58dd916104a8ddf919c1"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/Materials/Textures/clovercup.png",
+            "source_hash": "01a98275aabe7b2ce05afed2d1814a777ab56a0c",
+            "target_url": "./Materials/Textures/clovercup.png",
+            "target_hash": "2e4c9d7f7efb63a11f3f5c9f9ce3d5ebf1133fbd"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/white_kettle1.usd",
+            "source_hash": "8a531f664e6e6e0f78b612d384984b6f9a82ef53",
+            "target_url": "./white_kettle1.usd",
+            "target_hash": "b5db03f73219c4b505295096348c465954f86ac9"
+        },
+        {
+            "source_url": "/home/hk/xuhaofan/Real2Sim2Real-Pipeline-auto_task_aff/models/all_object/white_kettle10.usd",
+            "source_hash": "c457031004caebd0d4859f4249bb7ba580e1e035",
+            "target_url": "./white_kettle10.usd",
+            "target_hash": "0194b053c1896d089e2cb02d02c8ca041b998161"
+        }
+    ]
+}
