@@ -225,7 +225,7 @@ class FrankaFr3OurGripperJointVisPickEnvCfg(EnvCfg):
                     prim_path="{ENV_REGEX_NS}/fr3/urdf_01/fr3_hand",
                     # prim_path="{ENV_REGEX_NS}/fr3/fr3_hand",
                     name="end_effector",
-                    offset=OffsetCfg(pos=[0.0, 0.0, 0.205]),
+                    offset=OffsetCfg(pos=[0.0, 0.0, 0.19]),
                 ),
             ],
         )
