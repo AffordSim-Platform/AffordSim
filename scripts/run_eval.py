@@ -39,7 +39,7 @@ def main(
  
     if task_config is None:
  
-        task_config = Path("/home/hk/limingyang/code/IsaacLab/source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/pour/config/sceneconfig/pour_beans.yaml")
+        task_config = Path("code/IsaacLab/source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/pour/config/sceneconfig/pour_beans.yaml")
     else:
         task_config = Path(task_config)
     
@@ -155,7 +155,7 @@ def main(
 ])
     
   
-    demo_path = Path("/data/limingyang_data/r2s2r_data/pick up cube/20251225_223314/episode_0000.npy")
+    # demo_path = Path("/r2s2r_data/pick up cube/20251225_223314/episode_0000.npy")
     demo_path = None
     
     if demo_path is not None and demo_path.exists():
@@ -174,7 +174,7 @@ def main(
     video_dir.mkdir(parents=True, exist_ok=True)
     print(f"[INFO] Saving results to: {video_dir}")
  
-    background_path = Path("/home/hk/limingyang/code/IsaacLab/runs/2025-12-16/00-07-39/background_realworld.jpg")
+    background_path = Path("code/IsaacLab/runs/2025-12-16/00-07-39/background_realworld.jpg")
     if background_path.exists():
         background_img = cv2.imread(str(background_path))
         background_img = cv2.cvtColor(background_img, cv2.COLOR_BGR2RGB)

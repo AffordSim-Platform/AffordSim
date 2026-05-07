@@ -10,7 +10,7 @@
 import argparse
 import sys
 from pathlib import Path
-sys.path.append("/home/hk/limingyang/code/IsaacLab")
+sys.path.append("code/IsaacLab")
 from isaaclab.app import AppLauncher
 from scripts.tools.terminal_log import Logger
 # local imports
@@ -24,8 +24,8 @@ parser.add_argument("--video_interval", type=int, default=2000, help="Interval b
 parser.add_argument("--num_envs", type=int, default=None, help="Number of environments to simulate.")
 parser.add_argument("--task", type=str, default=None, help="Name of the task.")
 
-# path_Pick_cube = Path("/home/hk/limingyang/code/IsaacLab/source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/pick/config/sceneconfig/pick_up_cube.yaml")
-path_Pour_bean = Path("/home/hk/limingyang/code/IsaacLab/source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/pour/config/sceneconfig/pour_beans.yaml")
+# path_Pick_cube = Path("code/IsaacLab/source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/pick/config/sceneconfig/pick_up_cube.yaml")
+path_Pour_bean = Path("code/IsaacLab/source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/pour/config/sceneconfig/pour_beans.yaml")
 parser.add_argument(
     "--task_config", 
     type=str, 

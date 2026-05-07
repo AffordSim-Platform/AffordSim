@@ -26,7 +26,7 @@ parser.add_argument(
 parser.add_argument("--num_envs", type=int, default=None, help="Number of environments to simulate.")
 parser.add_argument("--task", type=str, default=None, help="Name of the task.")
 
-path_Pour_bean = Path("/home/hk/limingyang/code/IsaacLab/source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/pour/config/sceneconfig/pour_beans.yaml")
+path_Pour_bean = Path("code/IsaacLab/source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/pour/config/sceneconfig/pour_beans.yaml")
 parser.add_argument(
     "--task_config", 
     type=str, 
@@ -120,12 +120,12 @@ def replace_observation_background(obs: TensorDict, log_dir: str = None) -> Tens
         
         # Load background images if not already loaded
         if _bg_side_image is None:
-            bg_side_path = "/home/hk/limingyang/code/IsaacLab/backgrounds/rightsidebackground_realworld_128x128.png"
+            bg_side_path = "code/IsaacLab/backgrounds/rightsidebackground_realworld_128x128.png"
             bg_img = cv2.imread(bg_side_path)
             _bg_side_image = cv2.cvtColor(bg_img, cv2.COLOR_BGR2RGB)
             
         if _bg_wrist_image is None:
-            bg_wrist_path = "/home/hk/limingyang/code/IsaacLab/backgrounds/wristbackground_realworld.jpg"
+            bg_wrist_path = "code/IsaacLab/backgrounds/wristbackground_realworld.jpg"
             bg_img = cv2.imread(bg_wrist_path)
             _bg_wrist_image = cv2.cvtColor(bg_img, cv2.COLOR_BGR2RGB)
 

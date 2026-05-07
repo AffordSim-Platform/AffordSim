@@ -7,8 +7,8 @@ def minmax_denormalize(data, dmin, dmax):
     drange = dmax - dmin
     return (data + 1.0) / 2.0 * drange + dmin
 
-demo_path = "/home/lmy/code/Real2Sim2Real-Pipeline-auto_task/dataset/r2s2r_data/task_gen/pick_place/pick_banana_and_place_on_plate/hdf5/merged_trajectories_robomimic_guass.hdf5"
-stat_path = "/home/lmy/code/Real2Sim2Real-Pipeline-auto_task/dataset/r2s2r_data/task_gen/pick_place/pick_banana_and_place_on_plate/hdf5/dataset_stat_guass.json"
+demo_path = "/code/Real2Sim2Real-Pipeline-auto_task/dataset/r2s2r_data/task_gen/pick_place/pick_banana_and_place_on_plate/hdf5/merged_trajectories_robomimic_guass.hdf5"
+stat_path = "/code/Real2Sim2Real-Pipeline-auto_task/dataset/r2s2r_data/task_gen/pick_place/pick_banana_and_place_on_plate/hdf5/dataset_stat_guass.json"
 
 with open(stat_path) as f:
     stat = json.load(f)

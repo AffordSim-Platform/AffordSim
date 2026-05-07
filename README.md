@@ -13,14 +13,14 @@
 
 ## Introduction
 
-**AffordSim** is the first simulation framework that integrates open-vocabulary 3D affordance prediction into the robotic manipulation data generation pipeline. Existing simulation platforms do not incorporate object affordance information into trajectory generation, making it impossible to automatically generate semantically correct trajectories for tasks that require precise interaction with specific functional regions - such as grasping a mug by its handle, pouring from a cup's rim, or hanging a mug on a hook.
+**AffordSim** is the first simulation framework that integrates open-vocabulary 3D affordance prediction into the robotic manipulation data generation pipeline. Existing simulation platforms do not explicitly incorporate object affordance information into trajectory generation, making it impossible to automatically generate semantically correct trajectories for tasks that require precise interaction with specific functional regions - such as grasping a mug by its handle, pouring from a cup's rim, or hanging a mug on a hook.
 
 AffordSim addresses this by using **VoxAfford**, an open-vocabulary 3D affordance detector that enhances MLLM output tokens with multi-scale geometric features, to predict affordance maps on object point clouds and guide grasp pose estimation toward task-relevant functional regions. Built on NVIDIA Isaac Sim, AffordSim features:
 
 - **Affordance-aware trajectory generation.** VoxAfford predicts 3D affordance heatmaps on object point clouds, guiding grasp pose selection toward task-relevant functional regions.
-- **Automated task-scene generation.** A VLM-powered pipeline converts natural language task descriptions into simulation scenes, supporting 4 robot embodiments (Franka FR3, Panda, UR5e, Kinova) without task-specific engineering.
+- **Automated task-scene generation.** A VLM-powered pipeline converts natural language task descriptions into simulation scenes, supporting 5 robot embodiments (Franka FR3, UR5e, Kinova, sawyer, Xarm7) without task-specific engineering.
 - **Photorealistic domain randomization.** Five randomization axes - including DA3-based 3D Gaussian reconstruction from real photographs - reduce the visual domain gap for sim-to-real transfer.
-- **A 50-task benchmark** across 7 manipulation categories (grasping, placing, stacking, pushing/pulling, pouring, mug hanging, long-horizon composite) with evaluations of 5 imitation learning baselines (BC, Diffusion Policy, ACT, VLA-Adapter, Pi 0.5).
+- **A 50-task benchmark** across 7 manipulation skills (pick \& place, open/close, hang, pushing/pour, stack, hang, long-horizon composite) with evaluations of 5 imitation learning baselines (BC, Diffusion Policy, ACT, VLA-Adapter, Pi 0.5).
 
 <p align="center">
   <img src="logs/figure2_v4.bmp" alt="Affordance-guided Grasp Planning" width="100%">
@@ -404,18 +404,11 @@ python scripts/imitation_learning/ACT/play_act.py \
 
 ## Cross-Embodiment Support
 
-AffordSim supports 4 robot embodiments with automatic kinematic adaptation - no task-specific tuning required:
+AffordSim supports 5 robot embodiments with automatic kinematic adaptation - no task-specific tuning required:
 
 <p align="center">
   <img src="logs/figure_cross_embodiment.png" alt="Cross-Embodiment Support" width="100%">
 </p>
-
-| Robot | Trajectory Generation Success Rate |
-|---|---|
-| Franka FR3 | 94% |
-| Franka Panda | 92% |
-| UR5e | 83% |
-| Kinova | 95% |
 
 ## Domain Randomization
 
@@ -437,38 +430,41 @@ Each task is trained on 300 demonstrations with object pose randomization applie
 
 <table>
 <thead>
-<tr><th>Category</th><th>Task</th><th align="center">BC</th><th align="center">DP</th><th align="center">ACT</th><th align="center">VLA-Adapter</th><th align="center">Pi 0.5</th></tr>
+<tr><th>Tier</th><th>Task</th><th align="center">BC</th><th align="center">DP</th><th align="center">ACT</th><th align="center">VLA-Adapter</th><th align="center">Pi 0.5</th></tr>
 </thead>
 <tbody>
-<tr><td rowspan="4">Pick &amp; Place</td><td>pick_banana_place_plate</td><td align="center">40</td><td align="center">87</td><td align="center">47</td><td align="center">87</td><td align="center"><b>93</b></td></tr>
-<tr><td>pick_cup_place_shelf</td><td align="center">7</td><td align="center">28</td><td align="center">26</td><td align="center">55</td><td align="center"><b>61</b></td></tr>
+<tr><td rowspan="4">Easy</td><td>pick_banana_place_plate</td><td align="center">40</td><td align="center">82</td><td align="center">47</td><td align="center">87</td><td align="center"><b>93</b></td></tr>
+<tr><td>pick_leek_place_cuttingboard</td><td align="center">33</td><td align="center">70</td><td align="center">68</td><td align="center">84</td><td align="center"><b>86</b></td></tr>
+<tr><td>pick_chocolatebox_place_sugarbox</td><td align="center">43</td><td align="center">76</td><td align="center">79</td><td align="center">88</td><td align="center"><b>89</b></td></tr>
+<tr><td><b>Tier average (3 tasks)</b></td><td align="center"><b>39</b></td><td align="center"><b>76</b></td><td align="center"><b>65</b></td><td align="center"><b>86</b></td><td align="center"><b>89</b></td></tr>
+<tr><td rowspan="13">Medium</td><td>pick_cup_place_shelf</td><td align="center">7</td><td align="center">28</td><td align="center">26</td><td align="center">55</td><td align="center"><b>61</b></td></tr>
 <tr><td>pick_mug_place_coffee_machine</td><td align="center">10</td><td align="center">33</td><td align="center">27</td><td align="center">51</td><td align="center"><b>53</b></td></tr>
 <tr><td>pick_lid_place_pot</td><td align="center">13</td><td align="center">37</td><td align="center">17</td><td align="center"><b>53</b></td><td align="center">50</td></tr>
-<tr><td rowspan="5">Pour</td><td>pour_scoop_into_bowl</td><td align="center">13</td><td align="center">35</td><td align="center">31</td><td align="center">62</td><td align="center"><b>67</b></td></tr>
-<tr><td>pour_pan_into_bowl</td><td align="center">10</td><td align="center">46</td><td align="center">33</td><td align="center"><b>75</b></td><td align="center">74</td></tr>
-<tr><td>pour_red_mug_into_bowl</td><td align="center">3</td><td align="center">24</td><td align="center">13</td><td align="center">62</td><td align="center"><b>68</b></td></tr>
-<tr><td>pour_cup_without_handle_into_cup</td><td align="center">0</td><td align="center">12</td><td align="center">8</td><td align="center">31</td><td align="center"><b>36</b></td></tr>
-<tr><td>pick_kettle_pour_place</td><td align="center">3</td><td align="center">33</td><td align="center">26</td><td align="center"><b>56</b></td><td align="center">53</td></tr>
-<tr><td rowspan="2">Hang</td><td>hang_white_cup_on_rack</td><td align="center">4</td><td align="center">23</td><td align="center">10</td><td align="center"><b>47</b></td><td align="center">42</td></tr>
-<tr><td>hang_red_mug_on_rack</td><td align="center">3</td><td align="center">23</td><td align="center">21</td><td align="center"><b>46</b></td><td align="center">44</td></tr>
-<tr><td rowspan="2">Pull/Push</td><td>push_can_to_target</td><td align="center">27</td><td align="center">57</td><td align="center">53</td><td align="center">70</td><td align="center"><b>73</b></td></tr>
+<tr><td>pick_soupcan_place_microwave</td><td align="center">21</td><td align="center">45</td><td align="center">41</td><td align="center">67</td><td align="center"><b>69</b></td></tr>
+<tr><td>pour_scoop_into_bowl</td><td align="center">13</td><td align="center">35</td><td align="center">31</td><td align="center">62</td><td align="center"><b>67</b></td></tr>
+<tr><td>pour_red_mug_into_bowl</td><td align="center">3</td><td align="center">37</td><td align="center">30</td><td align="center">62</td><td align="center"><b>68</b></td></tr>
+<tr><td>pour_kettle_into_bowl</td><td align="center">3</td><td align="center">33</td><td align="center">26</td><td align="center"><b>56</b></td><td align="center">53</td></tr>
+<tr><td>stack_three_cubes</td><td align="center">4</td><td align="center">38</td><td align="center">36</td><td align="center">57</td><td align="center"><b>59</b></td></tr>
+<tr><td>hang_white_cup_on_rack</td><td align="center">4</td><td align="center">23</td><td align="center">10</td><td align="center"><b>47</b></td><td align="center">42</td></tr>
+<tr><td>push_can_to_target</td><td align="center">27</td><td align="center">57</td><td align="center">53</td><td align="center">70</td><td align="center"><b>73</b></td></tr>
 <tr><td>pull_cabinet_open</td><td align="center">24</td><td align="center">60</td><td align="center">57</td><td align="center"><b>74</b></td><td align="center">71</td></tr>
-<tr><td rowspan="2">Open/Close</td><td>open_microwave</td><td align="center">20</td><td align="center">38</td><td align="center">40</td><td align="center"><b>60</b></td><td align="center">57</td></tr>
-<tr><td>close_microwave</td><td align="center">22</td><td align="center">46</td><td align="center">42</td><td align="center"><b>76</b></td><td align="center">71</td></tr>
-<tr><td rowspan="5">Long-Horizon</td><td>pour_kettle_and_teapot</td><td align="center">0</td><td align="center">4</td><td align="center">2</td><td align="center">18</td><td align="center"><b>21</b></td></tr>
-<tr><td>open_microwave_and_pick_can</td><td align="center">0</td><td align="center">4</td><td align="center">0</td><td align="center"><b>15</b></td><td align="center">13</td></tr>
+<tr><td>open_microwave</td><td align="center">20</td><td align="center">38</td><td align="center">40</td><td align="center"><b>60</b></td><td align="center">57</td></tr>
+<tr><td><b>Tier average (12 tasks)</b></td><td align="center"><b>12</b></td><td align="center"><b>39</b></td><td align="center"><b>33</b></td><td align="center"><b>60</b></td><td align="center"><b>60</b></td></tr>
+<tr><td rowspan="6">Hard</td><td>hang_red_mug_on_rack</td><td align="center">3</td><td align="center">23</td><td align="center">21</td><td align="center"><b>36</b></td><td align="center">34</td></tr>
+<tr><td>pour_kettle_and_teapot</td><td align="center">0</td><td align="center">4</td><td align="center">2</td><td align="center">18</td><td align="center"><b>21</b></td></tr>
 <tr><td>store_cups_on_plates</td><td align="center">0</td><td align="center">4</td><td align="center">0</td><td align="center">10</td><td align="center"><b>12</b></td></tr>
 <tr><td>pour_sugar_pick_mug_into_coffeemachine</td><td align="center">0</td><td align="center">4</td><td align="center">4</td><td align="center">18</td><td align="center"><b>20</b></td></tr>
 <tr><td>organize_the_clutter_into_baskets</td><td align="center">0</td><td align="center">15</td><td align="center">9</td><td align="center">32</td><td align="center"><b>35</b></td></tr>
-<tr><td colspan="2"><b>Average (20 tasks)</b></td><td align="center"><b>10</b></td><td align="center"><b>31</b></td><td align="center"><b>23</b></td><td align="center"><b>50</b></td><td align="center"><b>51</b></td></tr>
+<tr><td><b>Tier average (5 tasks)</b></td><td align="center"><b>1</b></td><td align="center"><b>10</b></td><td align="center"><b>7</b></td><td align="center"><b>23</b></td><td align="center"><b>24</b></td></tr>
+<tr><td colspan="2"><b>Overall (20 tasks)</b></td><td align="center"><b>13</b></td><td align="center"><b>37</b></td><td align="center"><b>31</b></td><td align="center"><b>54</b></td><td align="center"><b>56</b></td></tr>
 </tbody>
 </table>
 
 **Key findings:**
-- **Pi 0.5** achieves the highest average success rate (51%), with **VLA-Adapter** close behind (50%). Both substantially outperform DP (31%), ACT (23%), and BC (10%), indicating that VLM-conditioned policies are markedly more effective on affordance-aware manipulation than purely visuomotor baselines.
-- **Placing** tasks span a wide range (7-93%): simple placements like banana-on-plate are largely solved, while precision-constrained placements like cup-on-shelf remain hard for non-VLM baselines.
-- **Affordance-demanding** tasks expose a clear capability gap: pouring with a wide receptacle (pan-into-bowl, scoop-into-bowl) reaches 67-75%, but pouring a handle-less cup into another cup drops to 0-36%. Mug hanging caps at ~47% even for the best baseline - fine-grained functional-region interaction remains the main bottleneck.
-- **Long-horizon composite** tasks are the hardest: BC fails entirely (0% on all 5), DP/ACT collapse to <=15%, and even the best baselines top out at 12-35%, highlighting the difficulty of multi-stage task chaining under affordance constraints.
+- **Pi 0.5** achieves the best overall average (56%), with **VLA-Adapter** a close second (54%). Both substantially outperform DP (37%), ACT (31%), and BC (13%) — VLM-conditioned policies are markedly more effective on affordance-aware manipulation than purely visuomotor baselines.
+- **Easy tier** (simple pick-and-place with permissive containers) is largely solved by VLM-based policies (86–89% average) and even BC reaches 39%, indicating ceiling effects that don't discriminate between methods.
+- **Medium tier** is where the capability gap opens: VLA-Adapter and Pi 0.5 tie at 60% while DP/ACT collapse to 33–39%, exposing the difficulty of fine-grained functional-region interaction (mug hanging, narrow placements, articulated objects) for non-VLM baselines.
+- **Hard tier** (long-horizon composite tasks and tight-tolerance hanging) remains broadly unsolved: BC fails entirely (1% average), DP/ACT score 7–10%, and even the best baselines plateau at 23–24% — multi-stage chaining under affordance constraints is the dominant failure mode.
 
 ## Project Structure
 

@@ -98,8 +98,8 @@ class LiftCubeCNNPPOBCRunnerCfg(RslRlBCOnPolicyRunnerCfg):
     max_iterations = 50000
     save_interval = 100
     experiment_name = ""  # same as task name
-    # bc_data_path = "/data/limingyang_data/r2s2r_data/pick up cube/20251217_020343"
-    bc_data_path = "/data/limingyang_data/r2s2r_data/pick up cube/20251223_221241" #20251225_233403 20251223_221241
+    # bc_data_path = "r2s2r_data/pick up cube/20251217_020343"
+    bc_data_path = "r2s2r_data/pick up cube/20251223_221241" #20251225_233403 20251223_221241
     policy = CNNRslRlPpoActorCriticCfg(
         init_noise_std=1.0, #0.6
         actor_hidden_dims=[1024,512,256],

@@ -7,7 +7,7 @@ def print_hdf5_structure(name, obj):
     else:
         print(f"  {name}/")
 
-path = sys.argv[1] if len(sys.argv) > 1 else "/home/lmy/code/Real2Sim2Real-Pipeline-auto_task/dataset/r2s2r_data/task_gen/pick_place/pick_banana_and_place_on_plate_new/hdf5merged_trajectories_1.hdf5"
+path = sys.argv[1] if len(sys.argv) > 1 else "/code/Real2Sim2Real-Pipeline-auto_task/dataset/r2s2r_data/task_gen/pick_place/pick_banana_and_place_on_plate_new/hdf5merged_trajectories_1.hdf5"
 
 with h5py.File(path, "r") as f:
     print("Top-level keys:", list(f.keys()))

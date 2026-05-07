@@ -659,12 +659,12 @@ class OnPolicyRunnerViTBC:
         
         # Load background images if not already loaded
         if not hasattr(self, '_bg_side_image'):
-            bg_side_path = "/home/hk/limingyang/code/IsaacLab/backgrounds/rightsidebackground_realworld_128x128.png"
+            bg_side_path = "code/IsaacLab/backgrounds/rightsidebackground_realworld_128x128.png"
             bg_img = cv2.imread(bg_side_path)
             self._bg_side_image = cv2.cvtColor(bg_img, cv2.COLOR_BGR2RGB)
             
         if not hasattr(self, '_bg_wrist_image'):
-            bg_wrist_path = "/home/hk/limingyang/code/IsaacLab/backgrounds/wristbackground_realworld.jpg"
+            bg_wrist_path = "code/IsaacLab/backgrounds/wristbackground_realworld.jpg"
             bg_img = cv2.imread(bg_wrist_path)
             bg_img = cv2.cvtColor(bg_img, cv2.COLOR_BGR2RGB)
             

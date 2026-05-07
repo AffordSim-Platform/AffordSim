@@ -81,8 +81,8 @@ class NatureCNN(nn.Module):
         # dict_obs["state"] =  observations[:, : -2 * (self.img_flattened_size + self.img_segmentation_size)] if USE_BACKGROUND_REPLACE else observations[:, : -(2 * self.img_flattened_size)]        
         # print(f"NatureCNN forward: observations shape {observations.shape}, wrist_cam shape {dict_obs['wrist_cam'].shape}, external_cam_front shape {dict_obs['external_cam_front'].shape}, state shape {dict_obs['state'].shape}")
         # if self.counter % 100 == 0:
-        #     Image.fromarray((dict_obs["wrist_cam"][0] * 255).reshape(*self.rgb_shape).cpu().numpy().transpose(1, 2, 0).astype('uint8')).save(f'/home/hk/limingyang/code/IsaacLab/logs/debug/wrist/debug_obs_{self.counter}.png')
-        #     Image.fromarray((dict_obs["external_cam_side"][0] * 255).reshape(*self.rgb_shape).cpu().numpy().transpose(1, 2, 0).astype('uint8')).save(f'/home/hk/limingyang/code/IsaacLab/logs/debug/font/debug_obs_{self.counter}.png')
+        #     Image.fromarray((dict_obs["wrist_cam"][0] * 255).reshape(*self.rgb_shape).cpu().numpy().transpose(1, 2, 0).astype('uint8')).save(f'code/IsaacLab/logs/debug/wrist/debug_obs_{self.counter}.png')
+        #     Image.fromarray((dict_obs["external_cam_side"][0] * 255).reshape(*self.rgb_shape).cpu().numpy().transpose(1, 2, 0).astype('uint8')).save(f'code/IsaacLab/logs/debug/font/debug_obs_{self.counter}.png')
         self.counter += 1
         
         state_lat = self.extractors["state"](dict_obs["state"])

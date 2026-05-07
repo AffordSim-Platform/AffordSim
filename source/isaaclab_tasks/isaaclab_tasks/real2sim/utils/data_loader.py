@@ -318,7 +318,7 @@ if __name__ == "__main__":
 
         camera_keys = ['obs_policy_external_cam','obs_policy_wrist_cam','obs_policy_external_cam_front']
         for camera_key in camera_keys:
-            output_dir = Path(f'/home/lmy/IsaacLab/scripts/real2sim-v0/dataset/pictures/pick up cube/20251121_205523/{camera_key}')
+            output_dir = Path(f'{REAL2SIM_ROOT_DIR}/scripts/real2sim-v0/dataset/pictures/pick up cube/20251121_205523/{camera_key}')
             view_episode_images(
                 episode,
                 camera_key=camera_key,

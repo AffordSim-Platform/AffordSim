@@ -230,7 +230,7 @@ def rollout(policy, env, success_term, horizon, device, norm_params=None, bg_ima
 
         # Save model input images for first 3 frames only (debug)
         if i <= 3:
-            debug_dir = "/home/lmy/code/Real2Sim2Real-Pipeline-auto_task/debug_images"
+            debug_dir = "/code/Real2Sim2Real-Pipeline-auto_task/debug_images"
             os.makedirs(debug_dir, exist_ok=True)
             for image_name in rgb_keys:
                 if image_name in obs:
