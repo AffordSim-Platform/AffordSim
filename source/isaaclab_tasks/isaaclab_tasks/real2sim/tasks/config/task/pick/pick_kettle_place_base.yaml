@@ -11,11 +11,11 @@ task:
   description: grasp the red mugcup and place it into coffeemachine1 with affordance
 runtime:
   headless: false
-  episodes: 1
-  save_npy: true
-  save_camera_images: true
-  save_composite_images: true
-  save_mask_images: true
+  episodes: 5
+  save_npy: false
+  save_camera_images: false
+  save_composite_images: false
+  save_mask_images: false
   save_original_images: true
   enable_motion_planning: true
   sim_camera_resolution: [640, 480]
@@ -25,6 +25,7 @@ runtime:
   cam_wrist_background: backgrounds/wristbackground_realworld1.png
   data_dir: data/r2s2r_data/pick_kettle_place_base
   task_name: FrankaFr3-OurGripper-Joint-VisPick-v0
+  save_depth_images: false
 robot:
   cfg_name: franka_fr3_our.yml
   type: franka_fr3_default
@@ -32,33 +33,33 @@ offsets:
   grasp: [0, 0, 0.0]
   place: [0, 0, 0.0]
 objects:
-  red_mugcup:
-    usd_path: models/all_object/red_mugcup.usd
-    semantic_tags:
-      -   - class
-          - red_mugcup
-    init_pos: [0.52, -0.15, 0.09]
-    init_rot: [0.3173, 0.0, 0.0, 0.9483]
-    position_range:
-      x: [0.48, 0.52]
-      y: [-0.15, 0]
-      z: [0.09, 0.09]
-    orientation_range:
-      yaw: [-0.2618, 0.2618]
-  white_75mmcup:
-    usd_path: models/all_object/white_75mmcup.usd
-    semantic_tags:
-      -   - class
-          - white_75mmcup
-    init_pos: [0.68, -0.25, 0.08]
-    init_rot: [1.0, 0.0, 0.0, 0.0]
-    height: 0.08
-    position_range:
-      x: [0.68, 0.78]
-      y: [-0.15, 0]
-      z: [0.08, 0.08]
-    orientation_range:
-      yaw: [-0.2618, 0.2618]
+#   red_mugcup:
+#     usd_path: models/all_object/red_mugcup.usd
+#     semantic_tags:
+#       -   - class
+#           - red_mugcup
+#     init_pos: [0.52, -0.15, 0.09]
+#     init_rot: [0.3173, 0.0, 0.0, 0.9483]
+#     position_range:
+#       x: [0.48, 0.52]
+#       y: [-0.15, 0]
+#       z: [0.09, 0.09]
+#     orientation_range:
+#       yaw: [-0.2618, 0.2618]
+#   white_75mmcup:
+#     usd_path: models/all_object/white_75mmcup.usd
+#     semantic_tags:
+#       -   - class
+#           - white_75mmcup
+#     init_pos: [0.68, -0.25, 0.08]
+#     init_rot: [1.0, 0.0, 0.0, 0.0]
+#     height: 0.08
+#     position_range:
+#       x: [0.68, 0.78]
+#       y: [-0.15, 0]
+#       z: [0.08, 0.08]
+#     orientation_range:
+#       yaw: [-0.2618, 0.2618]
   white_kettle7:
     usd_path: models/all_object/white_kettle7.usd
     semantic_tags:
@@ -67,14 +68,22 @@ objects:
     scale: [0.15, 0.15, 0.15]
     disable_gravity: false
     enabled_self_collisions: true
-    init_pos: [0.65, 0.2, 0.23]
+    init_pos: [0.55, -0.25, 0.23]
     init_rot: [0.0, 0.0, 0.0, 1.0]
     position_range:
-      x: [0.55, 0.75]
-      y: [0.1, 0.2]
-      z: [0.23, 0.23]
+      x:
+        - 0.45
+        - 0.70
+      y:
+        - -0.40
+        - -0.05
+      z:
+        - 0.23
+        - 0.23
     orientation_range:
-      yaw: [-0.2618, 0.2618]
+      yaw:
+        - -0.5236
+        - 0.5236
   base:
     usd_path: models/all_object/base.usd
     scale: [0.5, 0.5, 0.5]
@@ -83,14 +92,22 @@ objects:
           - base
     disable_gravity: false
     enabled_self_collisions: true
-    init_pos: [0.55, -0.35, 0.08]
+    init_pos: [0.55, 0.25, 0.08]
     init_rot: [0.999, 0.0, 0.0, -0.0436]
     position_range:
-      x: [0.48, 0.65]
-      y: [-0.45, -0.35]
-      z: [0.08, 0.08]
+      x:
+        - 0.45
+        - 0.70
+      y:
+        - 0.05
+        - 0.40
+      z:
+        - 0.08
+        - 0.08
     orientation_range:
-      yaw: [-0.2618, 0.2618]
+      yaw:
+        - -3.1416
+        - 3.1416
 primitives:
   - type: pick
     mode: affordance
@@ -107,7 +124,7 @@ primitives:
 enable_random_lights: false
 image_noise_std: 0
 image_speckle_noise_std: 0
-enable_objects_randomization: false
+enable_objects_randomization: true
 enable_objects_randomization_curriculum: false
 texture_randomization:
   enabled: false

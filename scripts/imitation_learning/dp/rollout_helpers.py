@@ -1,8 +1,8 @@
 """
-Rollout helpers shared by dp_rss/play.py 和 dp_rss/eval_rollout.py.
+Rollout helpers shared by dp_rss/play.py  dp_rss/eval_rollout.py.
 
-所有 isaaclab.* / isaaclab_tasks.* 的 import 都放在函数里做 lazy import,
-这样这个模块本身可以在 AppLauncher 启动之前被 import (没有副作用).
+ isaaclab.* / isaaclab_tasks.*  import  lazy import,
+ AppLauncher  import ().
 """
 
 from __future__ import annotations
@@ -16,7 +16,7 @@ import torch
 
 
 # ===========================================================================
-# dataset_stat 归一化 (与 dataset 预处理一致)
+# dataset_stat  ( dataset )
 # ===========================================================================
 
 def load_norm_params(stat_path: str) -> dict:
@@ -44,7 +44,7 @@ def minmax_denormalize(data, dmin, dmax):
 
 
 # ===========================================================================
-# 背景替换 + 图像预处理
+#  + 
 # ===========================================================================
 
 def load_background_images(task_config_path: str) -> dict:
@@ -74,11 +74,11 @@ def load_background_images(task_config_path: str) -> dict:
 
 
 def process_image(image_tensor: torch.Tensor, seg_tensor=None, bg_image=None, target_size: int = 256):
-    """RGB (C,H,W) -> 背景替换 -> center crop to square -> resize to target_size.
+    """RGB (C,H,W)  to    to  center crop to square  to  resize to target_size.
 
-    与训练数据预处理 (tools/np2hdf5.py) 完全一致:
-        center crop -> uint8 -> cv2.resize(INTER_AREA) -> /255 float.
-    返回 (3, target_size, target_size) in [0,1].
+     (tools/np2hdf5.py) :
+        center crop  to  uint8  to  cv2.resize(INTER_AREA)  to  /255 float.
+     (3, target_size, target_size) in [0,1].
     """
     import cv2
     from isaaclab_tasks.real2sim.utils.EpisodeBuffer import replace_background_with_segmentation
@@ -96,8 +96,8 @@ def process_image(image_tensor: torch.Tensor, seg_tensor=None, bg_image=None, ta
     x0 = (W - crop) // 2
     image = image[:, y0:y0 + crop, x0:x0 + crop]
     if crop != target_size:
-        # 对齐 np2hdf5: 先转 uint8 HWC -> cv2.INTER_AREA -> 再转回 float [0,1] CHW.
-        # 关键是 INTER_AREA (面积平均) 在缩小时比 bilinear 更准, 而且和训练数据 byte-identical.
+        #  np2hdf5:  uint8 HWC  to  cv2.INTER_AREA  to   float [0,1] CHW.
+        #  INTER_AREA ()  bilinear ,  byte-identical.
         img_hwc = image.cpu().numpy().transpose(1, 2, 0)  # float [0,1] HWC
         img_u8 = (img_hwc * 255.0).round().clip(0, 255).astype(np.uint8)
         resized_u8 = cv2.resize(img_u8, (target_size, target_size), interpolation=cv2.INTER_AREA)
@@ -107,7 +107,7 @@ def process_image(image_tensor: torch.Tensor, seg_tensor=None, bg_image=None, ta
 
 
 # ===========================================================================
-# task yaml -> 评估阶段
+# task yaml  to  
 # ===========================================================================
 
 def load_eval_stages(task_config_path: str) -> list[dict]:
@@ -160,7 +160,7 @@ def evaluate_stages_at_episode_end(
     min_pour_tilt_z: Optional[float] = None,
     pull_peak_displacement: Optional[float] = None,
 ) -> dict:
-    """单 env 阶段评估 (env_idx=0). Lazy-import 所有 isaaclab 依赖."""
+    """ env  (env_idx=0). Lazy-import  isaaclab ."""
     from isaaclab.motion_collect.success.evaluators import (
         _evaluate_pick_success_with_metrics,
         _evaluate_place_pose_success_with_metrics,
@@ -329,7 +329,7 @@ def frames_to_gif(frames: list, save_path: str, target_frames: int = 30, target_
 
 
 # ===========================================================================
-# Warmup action (delta 模式用 zero, 绝对关节模式用 hold)
+# Warmup action (delta  zero,  hold)
 # ===========================================================================
 
 def build_warmup_action(mode: str, env, obs_dict, device):
@@ -345,7 +345,7 @@ def build_warmup_action(mode: str, env, obs_dict, device):
 
 
 # ===========================================================================
-# Pick peak / pour tilt / pull displacement 追踪
+# Pick peak / pour tilt / pull displacement 
 # ===========================================================================
 
 def _track_peaks_and_pour(
@@ -355,7 +355,7 @@ def _track_peaks_and_pour(
     pull_target: Optional[str],
     state: dict,
 ):
-    """就地更新 state['pick_peak_z', 'min_pour_tilt_z', 'pull_peak_displacement']."""
+    """ state['pick_peak_z', 'min_pour_tilt_z', 'pull_peak_displacement']."""
     from isaaclab.motion_collect.success.scene_helpers import (
         _get_articulation_joint_pos,
         _get_object_pose_world_from_scene,
@@ -392,7 +392,7 @@ def _track_peaks_and_pour(
 
 
 # ===========================================================================
-# Rollout 主循环 (基于 policy.predict_action)
+# Rollout  ( policy.predict_action)
 # ===========================================================================
 
 def _build_obs_window(
@@ -476,11 +476,11 @@ def rollout_until_horizon(
     print_action_tag: str = "",
     use_qvel: bool = True,
 ):
-    """跑满 horizon 或 env terminate. 不依赖 env success_term (可选支持).
+    """ horizon  env terminate.  env success_term ().
 
-    print_action_every: >0 时, 每 N 步打印一次下发给 env 的 action (debug 用); 0 关闭.
-    print_action_tag:   打印前缀 (例如 "trial0"), 多 trial 时方便区分.
-    use_qvel:           是否将 qvel 拼到 obs_lowdim, 必须与训练时一致.
+    print_action_every: >0 ,  N  env  action (debug ); 0 .
+    print_action_tag:    ( "trial0"),  trial .
+    use_qvel:            qvel  obs_lowdim, .
     """
     policy.eval()
 
@@ -495,8 +495,8 @@ def rollout_until_horizon(
 
     state = {"pick_peak_z": None, "min_pour_tilt_z": None, "pull_peak_displacement": None}
     front_frames: list = []
-    # joint_delta: 一次性记下首帧 arm qpos, 之后每个 delta 累加到它上面 (而不是当前 qpos),
-    # 即 arm_target(k) = arm_target(k-1) + delta(k).
+    # joint_delta:  arm qpos,  delta  ( qpos),
+    #  arm_target(k) = arm_target(k-1) + delta(k).
     accumulated_arm = None
 
     def _collect_front(obs_dict_):
@@ -533,7 +533,7 @@ def rollout_until_horizon(
     while step < horizon and not early_success:
         obs = obs_dict["policy"]
 
-        # warmup at step 0 (让渲染器先就绪)
+        # warmup at step 0 ()
         if step == 0:
             warm = build_warmup_action(warmup_action, env, obs_dict, device)
             obs_dict, _, _, _, _ = env.step(warm)
@@ -548,7 +548,7 @@ def rollout_until_horizon(
             use_qvel=use_qvel,
         )
 
-        # --- 新策略: diffusion policy 的 predict_action ---
+        # --- : diffusion policy  predict_action ---
         action_chunk = policy.predict_action(obs_images, obs_lowdim).squeeze(0).cpu().numpy()
 
         terminated = False
@@ -564,9 +564,9 @@ def rollout_until_horizon(
                 )
             action[-1] = 1.0 if action[-1] > 0.0 else -1.0
 
-            # joint_delta: env 用 JointPositionActionCfg 绝对模式. 两种展开方式 (--joint_delta_mode):
-            #   "current"   : arm_target(k) = cur_qpos(k) + delta(k), 偏差自我修正
-            #   "cumulative": arm_target(k) = arm_target(k-1) + delta(k), 初值=首帧 arm qpos
+            # joint_delta: env  JointPositionActionCfg .  (--joint_delta_mode):
+            #   "current"   : arm_target(k) = cur_qpos(k) + delta(k), 
+            #   "cumulative": arm_target(k) = arm_target(k-1) + delta(k), = arm qpos
             if action_type == "joint_delta":
                 if joint_delta_mode == "current":
                     cur_qpos = obs_dict["policy"]["qpos"].squeeze().detach().cpu().numpy().astype(action.dtype)
@@ -629,19 +629,19 @@ def rollout_until_horizon(
 
 
 # ===========================================================================
-# Checkpoint 加载: 优先用 EMA 权重
+# Checkpoint :  EMA 
 # ===========================================================================
 
 def load_policy_from_ckpt(ckpt_path: str, device, prefer_ema: bool = True):
-    """从 ckpt 里构造 DiffusionPolicy 并加载权重 (EMA 优先)."""
+    """ ckpt  DiffusionPolicy  (EMA )."""
     import sys
     _HERE = os.path.dirname(os.path.abspath(__file__))
     if _HERE not in sys.path:
         sys.path.insert(0, _HERE)
     from policy import DiffusionPolicy
 
-    # weights_only=False: PyTorch 2.6+ 默认 True 会拒绝 ckpt 里的 numpy scalars (epoch 等);
-    # 这是我们自己训出来的 ckpt, 安全.
+    # weights_only=False: PyTorch 2.6+  True  ckpt  numpy scalars (epoch );
+    #  ckpt, .
     ckpt = torch.load(ckpt_path, map_location=device, weights_only=False)
     args = ckpt.get("args", {})
 
@@ -655,7 +655,7 @@ def load_policy_from_ckpt(ckpt_path: str, device, prefer_ema: bool = True):
         resize_shape=tuple(args.get("resize_shape", [240, 240])),
         crop_shape=tuple(args.get("crop_shape", [216, 216])),
         num_views=args.get("num_views", 2),
-        pretrained_resnet=False,  # 推理加载 ckpt 不需要 ImageNet 权重
+        pretrained_resnet=False,  #  ckpt  ImageNet 
         use_group_norm=True,
         image_aug=args.get("image_aug", True),
         down_dims=tuple(args.get("down_dims", [256, 512, 1024])),

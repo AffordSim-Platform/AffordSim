@@ -215,7 +215,7 @@ def _compute_place_pose_affordance(
         return False
 
     print(
-        f"  🎯 [Primitive] Loading place affordances: "
+        f"   [Primitive] Loading place affordances: "
         f"pick='{pick_aff_path}', target='{target_aff_path}'"
     )
     pick_aff_local, _ = _load_scaled_place_affordance_centroid(
@@ -284,7 +284,7 @@ def _compute_place_pose_affordance(
         tgt_pos_w, tgt_quat_w = collector._get_object_pose_global(container_label, env_idx)
         if obj_pos_w is None or tgt_pos_w is None:
             print(
-                f"  ⚠️ Env {env_idx}: place affordance unavailable "
+                f"   Env {env_idx}: place affordance unavailable "
                 f"(pick_pose={obj_pos_w is not None}, target_pose={tgt_pos_w is not None}); "
                 "falling back."
             )
@@ -384,7 +384,7 @@ def _compute_place_pose_affordance(
     }
     aff_count = sum(mode_name == "affordance" for mode_name in execution_modes)
     print(
-        f"  🎯 [Primitive] Computed place pose for mode='affordance', "
+        f"   [Primitive] Computed place pose for mode='affordance', "
         f"pick='{pick_target_label}', target='{container_label}', "
         f"affordance_envs={aff_count}/{collector.num_envs}, "
         f"pre_place_distance={pre_place_distance:.3f}"
@@ -403,7 +403,7 @@ def _scatter_subset_plans(num_envs: int, active_indices, subset_plans, subset_su
 
 
 def primitive_place(collector, mode: Optional[str], params: Dict[str, Any], context: Dict[str, Any]) -> bool:
-    """Composite place primitive: compute place pose -> execute place."""
+    """Composite place primitive: compute place pose  to  execute place."""
     if not primitive_compute_place_pose(collector, mode, params, context):
         return False
     return primitive_execute_place(collector, params, context)
@@ -508,7 +508,7 @@ def primitive_compute_place_pose(collector, mode: Optional[str], params: Dict[st
         missing_count = sum(not available for available in target_available_mask)
         if missing_count > 0:
             print(
-                f"  ⚠️ [Primitive] Place target '{container_label}' missing in "
+                f"   [Primitive] Place target '{container_label}' missing in "
                 f"{missing_count}/{collector.num_envs} envs; those envs will fail this place step"
             )
 
@@ -667,7 +667,7 @@ def primitive_compute_place_pose(collector, mode: Optional[str], params: Dict[st
     }
     semi_count = sum(mode_name == "semi_enclosed" for mode_name in execution_modes)
     print(
-        f"  📦 [Primitive] Computed place pose for mode='{requested_mode.lower()}', target='{container_label}', "
+        f"   [Primitive] Computed place pose for mode='{requested_mode.lower()}', target='{container_label}', "
         f"semi_enclosed_envs={semi_count}/{collector.num_envs}"
     )
     return True
@@ -708,7 +708,7 @@ def primitive_execute_place(collector, params: Dict[str, Any], context: Dict[str
     if any(two_step_active_mask):
         two_step_mode_names = sorted({execution_modes[env_idx] for env_idx, active in enumerate(two_step_active_mask) if active})
         print(
-            f"  🚀 [Primitive] Executing two-step PLACE ({','.join(two_step_mode_names)}) "
+            f"   [Primitive] Executing two-step PLACE ({','.join(two_step_mode_names)}) "
             f"for {sum(two_step_active_mask)}/{n} envs"
         )
         two_step_indices = [env_idx for env_idx, active in enumerate(two_step_active_mask) if active]
@@ -755,7 +755,7 @@ def primitive_execute_place(collector, params: Dict[str, Any], context: Dict[str
         merge_segment_into_local_active(local_active, two_step_descend_segment)
 
     if any(normal_active_mask):
-        print(f"  🚀 [Primitive] Executing normal PLACE for {sum(normal_active_mask)}/{n} envs")
+        print(f"   [Primitive] Executing normal PLACE for {sum(normal_active_mask)}/{n} envs")
         normal_indices = [env_idx for env_idx, active in enumerate(normal_active_mask) if active]
         subset_place_plans, subset_place_successes = collector.motion_planner.plan_to_pose_batch(
             collector.robot.data.joint_pos[normal_indices].cpu().numpy(),
@@ -808,7 +808,7 @@ def primitive_execute_place(collector, params: Dict[str, Any], context: Dict[str
 
     if any(local_active):
         print(
-            "  🚀 [Primitive] Post-release retreat: "
+            "   [Primitive] Post-release retreat: "
             f"pre_place={retreat_to_pre_place_count}/{n}, "
             f"vertical={vertical_retreat_count}/{n}"
         )
@@ -959,32 +959,32 @@ def primitive_execute_place(collector, params: Dict[str, Any], context: Dict[str
             if place_mode == "pose":
                 dist_ok = metrics["pick_pose_xy_dist"] <= float(PLACE_SUCCESS_XY_THRESHOLD)
                 compensated = bool(metrics.get("pose_offset_compensated", 0.0) > 0.5)
-                print(
-                    f"    [TaskCheck][env {env_idx}] "
-                    f"pick_pose_xy_dist={metrics['pick_pose_xy_dist']:.4f}m ({'OK' if dist_ok else 'FAIL'}), "
-                    f"offset_compensated={'OK' if compensated else 'NO'}"
-                    f"{gripper_metric}"
-                )
+                # print(
+                #     f"    [TaskCheck][env {env_idx}] "
+                #     f"pick_pose_xy_dist={metrics['pick_pose_xy_dist']:.4f}m ({'OK' if dist_ok else 'FAIL'}), "
+                #     f"offset_compensated={'OK' if compensated else 'NO'}"
+                #     f"{gripper_metric}"
+                # )
             elif place_mode == "affordance":
                 dist_ok = metrics["pick_place_affordance_dist"] <= float(PLACE_SUCCESS_XY_THRESHOLD)
-                print(
-                    f"    [TaskCheck][env {env_idx}] "
-                    f"pick_place_affordance_dist={metrics['pick_place_affordance_dist']:.4f}m "
-                    f"({'OK' if dist_ok else 'FAIL'})"
-                    f"{gripper_metric}"
-                )
+                # print(
+                #     f"    [TaskCheck][env {env_idx}] "
+                #     f"pick_place_affordance_dist={metrics['pick_place_affordance_dist']:.4f}m "
+                #     f"({'OK' if dist_ok else 'FAIL'})"
+                #     f"{gripper_metric}"
+                # )
             else:
                 env_execution_mode = execution_modes_list[env_idx]
                 if env_execution_mode == "semi_enclosed":
                     dist_ok = metrics["pick_pose_xy_dist"] <= float(PLACE_SUCCESS_XY_THRESHOLD)
                     compensated = bool(metrics.get("pose_offset_compensated", 0.0) > 0.5)
                     comp_tag = "compensated" if compensated else "raw"
-                    print(
-                        f"    [TaskCheck][env {env_idx}] "
-                        f"pick_place_xy_dist(semi_enclosed,{comp_tag})="
-                        f"{metrics['pick_pose_xy_dist']:.4f}m ({'OK' if dist_ok else 'FAIL'})"
-                        f"{gripper_metric}"
-                    )
+                    # print(
+                    #     f"    [TaskCheck][env {env_idx}] "
+                    #     f"pick_place_xy_dist(semi_enclosed,{comp_tag})="
+                    #     f"{metrics['pick_pose_xy_dist']:.4f}m ({'OK' if dist_ok else 'FAIL'})"
+                    #     f"{gripper_metric}"
+                    # )
                 else:
                     target_pos, _ = collector._get_object_pose_global(pick_target, env_idx)
                     container_pos, _ = collector._get_object_pose_global(place_target, env_idx)
@@ -995,30 +995,30 @@ def primitive_execute_place(collector, params: Dict[str, Any], context: Dict[str
                     z_ok = bool(metrics["pick_higher_than_place"] > 0.5)
                     compensated = bool(metrics.get("place_target_offset_compensated", 0.0) > 0.5)
                     comp_tag = "compensated" if compensated else "raw"
-                    print(
-                        f"    [TaskCheck][env {env_idx}] "
-                        f"place_target_in_range={'OK' if place_ok else 'FAIL'}, "
-                        f"pick_place_xy_dist({comp_tag})={metrics['pick_place_xy_dist']:.4f}m "
-                        f"({'OK' if dist_ok else 'FAIL'}), "
-                        f"pick_z={target_z:.4f}, place_z={container_z:.4f} ({'OK' if z_ok else 'FAIL'})"
-                        f"{gripper_metric}"
-                    )
+                    # print(
+                    #     f"    [TaskCheck][env {env_idx}] "
+                    #     f"place_target_in_range={'OK' if place_ok else 'FAIL'}, "
+                    #     f"pick_place_xy_dist({comp_tag})={metrics['pick_place_xy_dist']:.4f}m "
+                    #     f"({'OK' if dist_ok else 'FAIL'}), "
+                    #     f"pick_z={target_z:.4f}, place_z={container_z:.4f} ({'OK' if z_ok else 'FAIL'})"
+                    #     f"{gripper_metric}"
+                    # )
         gripper_criterion = ", gripper_released" if require_gripper_release else ""
         if place_mode == "pose":
             print(
-                "  ✅ [Primitive] Task success (place/pose): "
+                "   [Primitive] Task success (place/pose): "
                 f"{sum(final_success_mask)}/{n} "
                 f"(pick_pose_xy_dist<={PLACE_SUCCESS_XY_THRESHOLD:.3f}{gripper_criterion})"
             )
         elif place_mode == "affordance":
             print(
-                "  ✅ [Primitive] Task success (place/affordance): "
+                "   [Primitive] Task success (place/affordance): "
                 f"{sum(final_success_mask)}/{n} "
                 f"(pick_place_affordance_dist<={PLACE_SUCCESS_XY_THRESHOLD:.3f}{gripper_criterion})"
             )
         else:
             print(
-                "  ✅ [Primitive] Task success (place): "
+                "   [Primitive] Task success (place): "
                 f"{sum(final_success_mask)}/{n} "
                 f"(place_target_in_range, pick_place_xy_dist<={PLACE_SUCCESS_XY_THRESHOLD:.3f}, "
                 f"pick_z>=place_z{gripper_criterion})"
@@ -1038,5 +1038,5 @@ def primitive_execute_place(collector, params: Dict[str, Any], context: Dict[str
     context["place_completed"] = any(final_alive)
     context["primitive_executed_motion"] = True
 
-    print(f"  ✅ [Primitive] Place success (alive): {sum(final_alive)}/{n}")
+    print(f"   [Primitive] Place success (alive): {sum(final_alive)}/{n}")
     return any(final_alive)

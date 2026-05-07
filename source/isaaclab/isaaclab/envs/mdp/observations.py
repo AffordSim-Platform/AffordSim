@@ -442,7 +442,7 @@ def image(
 
     # Resize images to 128x128
     # images = images.float()
-    images = images.permute(0, 3, 1, 2)  # [B, H, W, C] -> [B, C, H, W]
+    images = images.permute(0, 3, 1, 2)  # [B, H, W, C]  to  [B, C, H, W]
     # images = F.interpolate(images, size=(128, 128), mode='bilinear', align_corners=False)
     
     return images.clone().flatten(start_dim=1) # flatten for stack

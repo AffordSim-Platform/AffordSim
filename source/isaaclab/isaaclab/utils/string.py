@@ -85,7 +85,7 @@ def string_to_slice(s: str):
 
 
 """
-String <-> Callable operations.
+String < to  Callable operations.
 """
 
 

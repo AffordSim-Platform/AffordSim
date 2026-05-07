@@ -73,7 +73,7 @@ def primitive_hold(collector, mode: Optional[str], params: Dict[str, Any], conte
         target_quaternions = current_ee_quat.copy()
 
     print(
-        f"  🤲 [Primitive] HOLD: moving to target pose, then holding for {hold_steps} frames "
+        f"   [Primitive] HOLD: moving to target pose, then holding for {hold_steps} frames "
         f"(active envs: {sum(prev_alive)}/{n})"
     )
 
@@ -138,12 +138,12 @@ def primitive_hold(collector, mode: Optional[str], params: Dict[str, Any], conte
                 obj_z = metrics["held_object_z_env"]
                 z_ok = np.isfinite(obj_z) and (obj_z > HOLD_SUCCESS_MIN_Z)
                 z_text = f"{obj_z:.4f}" if np.isfinite(obj_z) else "nan"
-                print(
-                    f"    [TaskCheck][env {env_idx}] "
-                    f"held_z={z_text}m (>{HOLD_SUCCESS_MIN_Z:.2f}: {'OK' if z_ok else 'FAIL'})"
-                )
+                # print(
+                #     f"    [TaskCheck][env {env_idx}] "
+                #     f"held_z={z_text}m (>{HOLD_SUCCESS_MIN_Z:.2f}: {'OK' if z_ok else 'FAIL'})"
+                # )
             print(
-                f"  ✅ [Primitive] Task success (hold): "
+                f"   [Primitive] Task success (hold): "
                 f"{sum(1 for i in range(n) if plan_active_after[i] and state_successes[i])}/{n}"
             )
 
@@ -165,5 +165,5 @@ def primitive_hold(collector, mode: Optional[str], params: Dict[str, Any], conte
     context["current_gripper_state"] = "closed"
     context["primitive_executed_motion"] = True
 
-    print(f"  ✅ [Primitive] Hold success (alive): {sum(final_alive)}/{n}")
+    print(f"   [Primitive] Hold success (alive): {sum(final_alive)}/{n}")
     return any(final_alive)

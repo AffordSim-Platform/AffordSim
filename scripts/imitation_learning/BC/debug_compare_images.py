@@ -1,6 +1,6 @@
 """
-Debug: 保存训练数据中的图像 和 play时preprocess后的图像, 以便对比.
-用法:
+Debug:   playpreprocess, .
+:
   python scripts/imitation_learning/BC/debug_compare_images.py \
     --demo_path <path_to_hdf5> \
     --output_dir /tmp/bc_debug_images

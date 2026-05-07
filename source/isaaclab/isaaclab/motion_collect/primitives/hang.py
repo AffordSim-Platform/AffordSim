@@ -244,7 +244,7 @@ def _compute_hang_orientation_candidates(
 
 
 def primitive_hang(collector, mode: Optional[str], params: Dict[str, Any], context: Dict[str, Any]) -> bool:
-    """Composite hang primitive: compute hang pose -> execute hang."""
+    """Composite hang primitive: compute hang pose  to  execute hang."""
     if not primitive_compute_hang_pose(collector, mode, params, context):
         return False
     return primitive_execute_hang(collector, params, context)
@@ -332,7 +332,7 @@ def primitive_compute_hang_pose(collector, mode: Optional[str], params: Dict[str
         obj_pos_world, obj_quat_world = collector._get_object_pose_global(target_label, env_idx)
         cont_pos_world, cont_quat_world = collector._get_object_pose_global(container_label, env_idx)
         if obj_pos_world is None or cont_pos_world is None:
-            print(f"  ⚠️ Env {env_idx}: hang pose unavailable, using lift fallback.")
+            print(f"   Env {env_idx}: hang pose unavailable, using lift fallback.")
             all_pre_positions.append(fallback_pos)
             all_final_positions.append(fallback_pos)
             all_orientations.append(fallback_quat)
@@ -363,7 +363,7 @@ def primitive_compute_hang_pose(collector, mode: Optional[str], params: Dict[str
                 target_angle_deg=target_mount_angle_deg,
             )
         except ValueError as exc:
-            print(f"  ⚠️ Env {env_idx}: {exc}, using lift fallback.")
+            print(f"   Env {env_idx}: {exc}, using lift fallback.")
             all_pre_positions.append(fallback_pos)
             all_final_positions.append(fallback_pos)
             all_orientations.append(fallback_quat)
@@ -374,7 +374,7 @@ def primitive_compute_hang_pose(collector, mode: Optional[str], params: Dict[str
         try:
             candidate_quats = _compute_hang_orientation_candidates(inward_direction_unit, ee_quat_wxyz)
         except ValueError as exc:
-            print(f"  ⚠️ Env {env_idx}: {exc}, using lift fallback.")
+            print(f"   Env {env_idx}: {exc}, using lift fallback.")
             all_pre_positions.append(fallback_pos)
             all_final_positions.append(fallback_pos)
             all_orientations.append(fallback_quat)
@@ -450,7 +450,7 @@ def primitive_compute_hang_pose(collector, mode: Optional[str], params: Dict[str
         "container_mount_local": np.asarray(container_mount_local, dtype=np.float64),
         "meta": all_meta,
     }
-    print(f"  🪝 [Primitive] Computed hang poses for '{target_label}' -> '{container_label}'")
+    print(f"   [Primitive] Computed hang poses from '{target_label}' to '{container_label}'")
     return True
 
 
@@ -479,7 +479,7 @@ def primitive_execute_hang(collector, params: Dict[str, Any], context: Dict[str,
     container_label = hang_pose.get("target_label")
     extra_insert_distance = float(params.get("extra_insert_distance", 0.05))
 
-    print(f"  🚀 [Primitive] Executing HANG to '{hang_pose.get('target_label')}'")
+    print(f"   [Primitive] Executing HANG to '{hang_pose.get('target_label')}'")
 
     pre_plans, pre_plan_successes = collector.motion_planner.plan_to_pose_batch(
         collector.robot.data.joint_pos[:n].cpu().numpy(),
@@ -572,14 +572,14 @@ def primitive_execute_hang(collector, params: Dict[str, Any], context: Dict[str,
             range_ok = bool(metrics["container_in_range"] > 0.5)
             z_text = f"{obj_z:.4f}" if np.isfinite(obj_z) else "nan"
             dist_text = f"{mount_dist:.4f}" if np.isfinite(mount_dist) else "inf"
-            print(
-                f"    [TaskCheck][env {env_idx}] "
-                f"held_z={z_text}m (>{HANG_SUCCESS_MIN_Z:.2f}: {'OK' if z_ok else 'FAIL'}), "
-                f"mount_xy_dist={dist_text}m (<={HANG_SUCCESS_XY_THRESHOLD:.3f}: {'OK' if dist_ok else 'FAIL'}), "
-                f"container_in_range={'OK' if range_ok else 'FAIL'}"
-            )
+            # print(
+            #     f"    [TaskCheck][env {env_idx}] "
+            #     f"held_z={z_text}m (>{HANG_SUCCESS_MIN_Z:.2f}: {'OK' if z_ok else 'FAIL'}), "
+            #     f"mount_xy_dist={dist_text}m (<={HANG_SUCCESS_XY_THRESHOLD:.3f}: {'OK' if dist_ok else 'FAIL'}), "
+            #     f"container_in_range={'OK' if range_ok else 'FAIL'}"
+            # )
         print(
-            f"  ✅ [Primitive] Task success (hang): "
+            f"   [Primitive] Task success (hang): "
             f"{sum(1 for i in range(n) if plan_active_after[i] and state_successes[i])}/{n}"
         )
 
@@ -598,5 +598,5 @@ def primitive_execute_hang(collector, params: Dict[str, Any], context: Dict[str,
     context["primitive_executed_motion"] = True
     context["hang_completed"] = any(final_alive)
 
-    print(f"  ✅ [Primitive] Hang success (alive): {sum(final_alive)}/{n}")
+    print(f"   [Primitive] Hang success (alive): {sum(final_alive)}/{n}")
     return any(final_alive)

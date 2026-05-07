@@ -61,6 +61,6 @@ def primitive_return_home(collector, mode: Optional[str], params: Dict[str, Any]
     context["post_return_home_success_mask"] = list(final_alive)
     context["env_alive_mask"] = list(final_alive)
     context["primitive_executed_motion"] = True
-    print(f"  ✅ [Primitive] Return-home success (alive): {sum(final_alive)}/{n}")
+    print(f"   [Primitive] Return-home success (alive): {sum(final_alive)}/{n}")
 
     return any(final_alive)

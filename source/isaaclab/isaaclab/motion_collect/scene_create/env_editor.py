@@ -547,7 +547,7 @@ def main():
                         visual_config,
                     )
 
-                    print("\n✔ Done. Exiting...")
+                    print("\n Done. Exiting...")
                     print("Complete shutdown finished")
                     _set_active_runtime(None)
                     destroy_runtime(runtime)
@@ -623,7 +623,7 @@ def main():
                         print("\nCurrent objects:")
                         for idx, obj in enumerate(manager.current_scene):
                             cur_deg = _math.degrees(obj.get("_angle", 0.0))
-                            print(f"  {idx}: {obj.get('label', 'unknown')}  (yaw={cur_deg:.1f}°)")
+                            print(f"  {idx}: {obj.get('label', 'unknown')}  (yaw={cur_deg:.1f} deg)")
                         try:
                             sel = int(input("Select object index: ").strip())
                             if 0 <= sel < len(manager.current_scene):
@@ -632,8 +632,8 @@ def main():
                                 if ok:
                                     obj = manager.current_scene[sel]
                                     print(
-                                        f"[SUCCESS] Rotated '{obj.get('label', 'unknown')}' by {delta_deg:.1f}° "
-                                        f"-> yaw={_math.degrees(obj.get('_angle', 0.0)):.1f}°"
+                                        f"[SUCCESS] Rotated '{obj.get('label', 'unknown')}' by {delta_deg:.1f} deg "
+                                        f" to  yaw={_math.degrees(obj.get('_angle', 0.0)):.1f} deg"
                                     )
                                     sync_and_step_runtime(runtime)
                                 else:

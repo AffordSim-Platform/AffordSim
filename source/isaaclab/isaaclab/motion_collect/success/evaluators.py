@@ -381,9 +381,9 @@ def _evaluate_pour_process_with_metrics(
          of the container pour center.
       2) object local +z in world z (``z_axis_world_z``) is (near-)monotonically
          decreasing (slack allowed), so the pour is a continuous tilt rather
-         than a discontinuous flick. Total tilt magnitude is NOT checked here —
+         than a discontinuous flick. Total tilt magnitude is NOT checked here -
          the terminal check ``POUR_SUCCESS_TILT_THRESHOLD`` already enforces
-         that the final tilt angle is at least 90°.
+         that the final tilt angle is at least 90 deg.
     """
     nan = float("nan")
     metrics = {
@@ -505,12 +505,12 @@ def _evaluate_pull_success_with_metrics(
     range_tolerance: float = POSITION_RANGE_TOLERANCE,
     peak_displacement: float | None = None,
 ) -> tuple[bool, dict[str, float]]:
-    """pull 成功判定:
-    - 读取 `target_label` articulation 上 YAML 指定关节 `joint_name` 的位移 (prismatic, 单位米)
-    - 若给定 ``peak_displacement`` (rollout 过程中观察到的 |joint_pos| 峰值), 用峰值判定;
-      这样拉出后又被推回的情况下仍能正确识别 pull 成功. 否则回退到当前 scene 的 joint_pos.
-    - 位移绝对值 >= `min_displacement` 视为拉动到位
-    - articulation 本体仍在 position_range 内 (与 open/close 对称)
+    """pull :
+    -  `target_label` articulation  YAML  `joint_name`  (prismatic, )
+    -  ``peak_displacement`` (rollout  |joint_pos| ), ;
+       pull .  scene  joint_pos.
+    -  >= `min_displacement` 
+    - articulation  position_range  ( open/close )
     """
     if not joint_name:
         raise ValueError("pull success evaluation requires an explicit joint_name")
@@ -633,9 +633,9 @@ def _evaluate_pick_success_with_metrics(
 ) -> tuple[bool, dict[str, float]]:
     """Pick success.
 
-    若给定 ``peak_z_world`` (rollout 过程中观察到的物体世界 z 峰值), 则用峰值
-    判定: 这样在物体被抬起后又被放下 (place 阶段) 的情况下仍能正确识别 pick
-    成功. 否则回退到读取当前 scene 中的 z (老行为).
+     ``peak_z_world`` (rollout  z ), 
+    :  (place )  pick
+    .  scene  z ().
     """
     if peak_z_world is None:
         pick_pos_world, _ = _get_object_pose_world_from_scene(scene, pick_target, env_idx)

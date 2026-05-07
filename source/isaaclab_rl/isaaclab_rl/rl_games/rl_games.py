@@ -343,11 +343,11 @@ def make_concat_plan(shapes: list[tuple[int, ...]]) -> tuple[tuple[int, ...], Ca
       - a function that concatenates a list of batch tensors accordingly.
 
     Rules:
-      0) Empty -> (0,), No-op
-      1) All 1D -> concat features (dim=1).
+      0) Empty  to  (0,), No-op
+      1) All 1D  to  concat features (dim=1).
       2) Same rank > 1:
-         2a) If all s[:-1] equal -> concat along last dim (channels-last, dim=-1).
-         2b) If all s[1:] equal  -> concat along first dim (channels-first, dim=1).
+         2a) If all s[:-1] equal  to  concat along last dim (channels-last, dim=-1).
+         2b) If all s[1:] equal   to  concat along first dim (channels-first, dim=1).
     """
     if len(shapes) == 0:
         return (0,), lambda x: x
@@ -357,11 +357,11 @@ def make_concat_plan(shapes: list[tuple[int, ...]]) -> tuple[tuple[int, ...], Ca
     # case 2: same rank > 1
     rank = len(shapes[0])
     if all(len(s) == rank for s in shapes) and rank > 1:
-        # 2a: concat along last axis (…C)
+        # 2a: concat along last axis (...C)
         if all(s[:-1] == shapes[0][:-1] for s in shapes):
             out_shape = shapes[0][:-1] + (sum(s[-1] for s in shapes),)
             return out_shape, lambda x: torch.cat(x, dim=-1)
-        # 2b: concat along first axis (C…)
+        # 2b: concat along first axis (C...)
         if all(s[1:] == shapes[0][1:] for s in shapes):
             out_shape = (sum(s[0] for s in shapes),) + shapes[0][1:]
             return out_shape, lambda x: torch.cat(x, dim=1)

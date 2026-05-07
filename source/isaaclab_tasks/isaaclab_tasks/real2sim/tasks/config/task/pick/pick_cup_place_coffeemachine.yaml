@@ -11,7 +11,7 @@ task:
   description: grasp the red mugcup and place it into coffeemachine2 with affordance
 runtime:
   headless: false
-  episodes: 1
+  episodes: 5
   save_npy: false
   save_camera_images: false
   save_composite_images: false
@@ -25,6 +25,7 @@ runtime:
   cam_wrist_background: backgrounds/wristbackground_realworld1.png
   data_dir: data/r2s2r_data/pick_cup_place_coffeemachine
   task_name: FrankaFr3-OurGripper-Joint-VisPick-v0
+  save_depth_images: false
 robot:
   cfg_name: franka_fr3_our.yml
   type: franka_fr3_default
@@ -38,17 +39,23 @@ objects:
       -   - class
           - starbuckscup
     scale: [0.8, 0.8, 0.8]
-    init_pos: [0.52, -0.35, 0.10]
+    init_pos: [0.55, -0.25, 0.10]
     init_rot: [1.0, 0.0, 0.0, 0.0]
     height: 0.10
-  # white_75mmcup:
-  #   usd_path: models/all_object/white_75mmcup.usd
-  #   semantic_tags:
-  #     -   - class
-  #         - white_75mmcup
-  #   init_pos: [0.68, -0.45, 0.08]
-  #   init_rot: [1.0, 0.0, 0.0, 0.0]
-  #   height: 0.08
+    position_range:
+      x:
+        - 0.45
+        - 0.75
+      y:
+        - -0.25
+        - -0.05
+      z:
+        - 0.1
+        - 0.1
+    orientation_range:
+      yaw:
+        - -0.785
+        - 0.785
   coffeemachine2:
     usd_path: models/all_object/coffeemachine2.usd
     semantic_tags:
@@ -57,8 +64,22 @@ objects:
     scale: [0.3, 0.3, 0.3]
     disable_gravity: false
     enabled_self_collisions: true
-    init_pos: [0.9, -0.01, 0.23]
+    init_pos: [0.7, 0.25, 0.23]
     init_rot: [0.9537, 0.0, 0.0, 0.3007]
+    position_range:
+      x:
+        - 0.70
+        - 0.85
+      y:
+        - 0.15
+        - 0.35
+      z:
+        - 0.23
+        - 0.23
+    orientation_range:
+      yaw:
+        - -0.1745
+        - 0.1745
 primitives:
   - type: pick
     mode: affordance
@@ -78,7 +99,7 @@ primitives:
 enable_random_lights: false
 image_noise_std: 0
 image_speckle_noise_std: 0
-enable_objects_randomization: false
+enable_objects_randomization: true
 enable_objects_randomization_curriculum: false
 texture_randomization:
   enabled: false

@@ -1,11 +1,11 @@
 """
-RSS Diffusion Policy 的 Conditional 1D U-Net.
+RSS Diffusion Policy  Conditional 1D U-Net.
 
-严格对齐 diffusion_policy-main/diffusion_policy/model/diffusion/conditional_unet1d.py:
-- Residual block: block0 -> FiLM(scale, bias) -> block1 -> + residual_conv(x)
-- cond_predict_scale=True 时 out = scale * out + bias (无 +1)
-- Encoder 最深层无 Downsample (Identity)
-- Decoder 只有 len(in_out)-1 个 up 块, 最上层无 Upsample (Identity)
+ diffusion_policy-main/diffusion_policy/model/diffusion/conditional_unet1d.py:
+- Residual block: block0  to  FiLM(scale, bias)  to  block1  to  + residual_conv(x)
+- cond_predict_scale=True  out = scale * out + bias ( +1)
+- Encoder  Downsample (Identity)
+- Decoder  len(in_out)-1  up ,  Upsample (Identity)
 """
 
 from typing import Union
@@ -59,7 +59,7 @@ class Upsample1d(nn.Module):
 
 
 class Conv1dBlock(nn.Module):
-    """Conv1d -> GroupNorm -> Mish."""
+    """Conv1d  to  GroupNorm  to  Mish."""
 
     def __init__(self, in_ch: int, out_ch: int, kernel_size: int, n_groups: int = 8):
         super().__init__()
@@ -135,13 +135,13 @@ class ConditionalResidualBlock1D(nn.Module):
 # ---------------------------------------------------------------------------
 
 class ConditionalUnet1D(nn.Module):
-    """Conditional 1D U-Net (RSS 原版结构).
+    """Conditional 1D U-Net (RSS ).
 
-    输入:
+    :
         sample:      (B, T, input_dim)
-        timestep:    (B,) 或 scalar
-        global_cond: (B, global_cond_dim) 可选
-    输出:
+        timestep:    (B,)  scalar
+        global_cond: (B, global_cond_dim) 
+    :
         (B, T, input_dim)
     """
 
@@ -235,8 +235,8 @@ class ConditionalUnet1D(nn.Module):
         timestep: Union[torch.Tensor, float, int],
         global_cond: torch.Tensor = None,
     ) -> torch.Tensor:
-        """sample: (B, T, input_dim) -> (B, T, input_dim)."""
-        # (B, T, C) -> (B, C, T) for Conv1d
+        """sample: (B, T, input_dim)  to  (B, T, input_dim)."""
+        # (B, T, C)  to  (B, C, T) for Conv1d
         x = einops.rearrange(sample, "b t c -> b c t")
 
         # timestep to tensor of shape (B,)

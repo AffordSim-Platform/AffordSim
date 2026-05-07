@@ -201,7 +201,7 @@ def commit_task_failures(
 
 
 def compute_env_alive_mask(context: Dict[str, Any], num_envs: int) -> List[bool]:
-    """env_alive = plan_success ∧ task_success."""
+    """env_alive = plan_success and task_success."""
     plan_mask = _ensure_mask(context.get("plan_success_mask"), num_envs, True)
     task_mask = _ensure_mask(context.get("task_success_mask"), num_envs, True)
     return [bool(p and t) for p, t in zip(plan_mask, task_mask)]
@@ -226,7 +226,7 @@ def log_target_missing_envs(
     missing_count = sum(active_missing)
     if missing_count > 0:
         print(
-            f"  ⚠️ [Primitive] Target '{target_label}' missing for "
+            f"   [Primitive] Target '{target_label}' missing for "
             f"{missing_count}/{len(target_available_mask)} envs in {primitive_name}; "
             "those envs will fail with reason=target_missing"
         )
@@ -349,7 +349,7 @@ def store_pick_grasp_context(
     """Store grasp computation results into primitive context."""
     if not valid_env_indices:
         if any(target_available_mask):
-            print("  ❌ No valid grasp poses found.")
+            print("   No valid grasp poses found.")
             return False
 
     all_pick_pos_np = np.array(all_pick_pos)
@@ -486,7 +486,7 @@ def load_affordance_grasp_multidir(npz_path: str) -> List[dict]:
     return grasps
 
 
-DIRECTION_NAMES = ["Q0(0-90°)", "Q1(90-180°)", "Q2(180-270°)", "Q3(270-360°)", "Vertical(Z-)"]
+DIRECTION_NAMES = ["Q0(0-90 deg)", "Q1(90-180 deg)", "Q2(180-270 deg)", "Q3(270-360 deg)", "Vertical(Z-)"]
 
 
 def rotate_quat_wxyz_about_z(quat_wxyz: np.ndarray, angle_deg: float = 180.0) -> np.ndarray:
@@ -968,31 +968,33 @@ def search_best_pour_rotation(
 
 def _print_multidir_score_table(env_idx: int, selection_info: Dict[str, Any], top_k: int = 5) -> None:
     """Pretty-print multi-direction grasp scoring details."""
+    return
     candidates = list(selection_info.get("candidates", []))
     weights = selection_info.get("weights", {})
     if not candidates:
-        print(f"  [ScoreTable][env {env_idx}] No candidates.")
+        # print(f"  [ScoreTable][env {env_idx}] No candidates.")
         return
 
     top_k = max(1, min(int(top_k), len(candidates)))
-    print(
-        f"  [ScoreTable][env {env_idx}] "
-        f"weights(a/r/c)=({weights.get('affordance', 'N/A')}/{weights.get('reachability', 'N/A')}/{weights.get('collision', 'N/A')})"
-    )
-    print("    rank | dir | aff | reach | coll | pos_dist(m) | angle(deg) | plan | total")
+    # print(
+    #     f"  [ScoreTable][env {env_idx}] "
+    #     f"weights(a/r/c)=({weights.get('affordance', 'N/A')}/{weights.get('reachability', 'N/A')}/{weights.get('collision', 'N/A')})"
+    # )
+    # print("    rank | dir | aff | reach | coll | pos_dist(m) | angle(deg) | plan | total")
     for rank, cand in enumerate(candidates[:top_k], start=1):
-        print(
-            "    "
-            f"{rank:>4} | "
-            f"{cand.get('direction_name', 'N/A'):<10} | "
-            f"{cand.get('affordance_score', 0.0):>4.3f} | "
-            f"{cand.get('reachability_score', 0.0):>5.3f} | "
-            f"{cand.get('collision_score', 0.0):>4.1f} | "
-            f"{cand.get('pos_dist', 0.0):>10.4f} | "
-            f"{cand.get('angle_diff_deg', 0.0):>10.2f} | "
-            f"{'Y' if cand.get('plan_success', False) else 'N':>4} | "
-            f"{cand.get('total_score', 0.0):>5.3f}"
-        )
+        # print(
+        #     "    "
+        #     f"{rank:>4} | "
+        #     f"{cand.get('direction_name', 'N/A'):<10} | "
+        #     f"{cand.get('affordance_score', 0.0):>4.3f} | "
+        #     f"{cand.get('reachability_score', 0.0):>5.3f} | "
+        #     f"{cand.get('collision_score', 0.0):>4.1f} | "
+        #     f"{cand.get('pos_dist', 0.0):>10.4f} | "
+        #     f"{cand.get('angle_diff_deg', 0.0):>10.2f} | "
+        #     f"{'Y' if cand.get('plan_success', False) else 'N':>4} | "
+        #     f"{cand.get('total_score', 0.0):>5.3f}"
+        # )
+        pass
 
 
 def primitive_compute_grasp_pose(collector, mode: Optional[str], params: Dict[str, Any], context: Dict[str, Any]) -> bool:
@@ -1006,7 +1008,7 @@ def primitive_compute_grasp_pose(collector, mode: Optional[str], params: Dict[st
     target_height = resolve_scene_entry_height(target_entry, 0.05)
 
     if mode == "gt":
-        print("  📐 [Primitive] Computing grasp pose from GT pose...")
+        print("   [Primitive] Computing grasp pose from GT pose...")
         grasp_pos_offset, grasp_quat_default = collector._load_grasp_config()
         has_explicit_grasp_quat = "grasp_quat" in params
         if has_explicit_grasp_quat:
@@ -1025,7 +1027,7 @@ def primitive_compute_grasp_pose(collector, mode: Optional[str], params: Dict[st
             env_ee_quat = ee_quat_w[env_idx] if ee_quat_w.ndim > 1 else ee_quat_w
             if target_pos_global is None:
                 target_available_mask.append(False)
-                print(f"  ❌ Env {env_idx}: object '{target_label}' not found in scene.")
+                print(f"   Env {env_idx}: object '{target_label}' not found in scene.")
                 all_pick_pos.append(np.array([0.3, 0.0, 0.2]))
                 all_pick_quat.append(normalize_ee_orientation_wxyz(grasp_quat_default.copy(), env_ee_quat))
                 continue
@@ -1044,10 +1046,10 @@ def primitive_compute_grasp_pose(collector, mode: Optional[str], params: Dict[st
             all_pick_pos.append(pick_pos)
             all_pick_quat.append(aligned_quat)
             valid_env_indices.append(env_idx)
-            print(f"  ✅ Env {env_idx}: GT pick pos={pick_pos}, quat={aligned_quat}")
+            print(f"   Env {env_idx}: GT pick pos={pick_pos}, quat={aligned_quat}")
 
         all_hang_below = compute_pick_hang_below(collector, target_label, all_pick_pos, target_height)
-        print(f"  📏 Pre-computed hang_below: {all_hang_below}")
+        print(f"   Pre-computed hang_below: {all_hang_below}")
 
         return store_pick_grasp_context(
             context,
@@ -1066,7 +1068,7 @@ def primitive_compute_grasp_pose(collector, mode: Optional[str], params: Dict[st
         )
 
     if mode == "anygrasp":
-        print("  👁️ [Primitive] Executing AnyGrasp perception pipeline...")
+        print("   [Primitive] Executing AnyGrasp perception pipeline...")
         target_available_mask = compute_target_availability_mask(collector, target_label)
         log_target_missing_envs("pick(anygrasp)", target_label, target_available_mask)
         if not collector.capture_camera_data_batch():
@@ -1081,7 +1083,7 @@ def primitive_compute_grasp_pose(collector, mode: Optional[str], params: Dict[st
             collector.num_envs, collector.device, ee_quat_w=ee_quat_w
         )
         all_hang_below = compute_pick_hang_below(collector, target_label, all_pick_pos, target_height)
-        print(f"  📏 Pre-computed hang_below: {all_hang_below}")
+        print(f"   Pre-computed hang_below: {all_hang_below}")
 
         return store_pick_grasp_context(
             context,
@@ -1120,7 +1122,7 @@ def primitive_compute_grasp_pose(collector, mode: Optional[str], params: Dict[st
             )
             return False
 
-        print(f"  🤏 [Primitive] Loading affordance grasp from: {affordance_path}")
+        print(f"   [Primitive] Loading affordance grasp from: {affordance_path}")
         try:
             aff_grasp = load_affordance_grasp(affordance_path)
         except Exception as exc:
@@ -1147,7 +1149,7 @@ def primitive_compute_grasp_pose(collector, mode: Optional[str], params: Dict[st
             obj_pos, obj_quat = collector._get_object_pose_global(target_label, env_idx)
             if obj_pos is None:
                 target_available_mask.append(False)
-                print(f"  ❌ Env {env_idx}: target '{target_label}' not found in scene.")
+                print(f"   Env {env_idx}: target '{target_label}' not found in scene.")
                 all_pick_pos.append(np.array([0.5, 0.0, 0.5]))
                 all_pick_quat.append(np.array([0.0, 1.0, 0.0, 0.0]))
                 continue
@@ -1167,10 +1169,10 @@ def primitive_compute_grasp_pose(collector, mode: Optional[str], params: Dict[st
             all_pick_pos.append(grasp_pos)
             all_pick_quat.append(grasp_quat)
             valid_env_indices.append(env_idx)
-            print(f"  ✅ Env {env_idx}: affordance pick pos={grasp_pos}, quat={grasp_quat}")
+            print(f"   Env {env_idx}: affordance pick pos={grasp_pos}, quat={grasp_quat}")
 
         all_hang_below = compute_pick_hang_below(collector, target_label, all_pick_pos, target_height)
-        print(f"  📏 Pre-computed hang_below: {all_hang_below}")
+        print(f"   Pre-computed hang_below: {all_hang_below}")
 
         result = store_pick_grasp_context(
             context,
@@ -1213,7 +1215,7 @@ def primitive_compute_grasp_pose(collector, mode: Optional[str], params: Dict[st
         reachability_weight = 0.35
         collision_weight = 0.65
 
-        print(f"  🤏 [Primitive] Loading multi-direction affordance grasps from: {affordance_path}")
+        print(f"   [Primitive] Loading multi-direction affordance grasps from: {affordance_path}")
         try:
             all_grasps = load_affordance_grasp_multidir(affordance_path)
         except Exception as exc:
@@ -1239,7 +1241,7 @@ def primitive_compute_grasp_pose(collector, mode: Optional[str], params: Dict[st
             obj_pos, obj_quat = collector._get_object_pose_global(target_label, env_idx)
             if obj_pos is None:
                 target_available_mask.append(False)
-                print(f"  ❌ Env {env_idx}: target '{target_label}' not found in scene.")
+                print(f"   Env {env_idx}: target '{target_label}' not found in scene.")
                 all_pick_pos.append(np.array([0.5, 0.0, 0.5]))
                 all_pick_quat.append(np.array([0.0, 1.0, 0.0, 0.0]))
                 all_selection_info.append(None)
@@ -1270,8 +1272,8 @@ def primitive_compute_grasp_pose(collector, mode: Optional[str], params: Dict[st
                 collision_weight=collision_weight,
             )
             all_selection_info.append(selection_info)
-            if print_score_table:
-                _print_multidir_score_table(env_idx, selection_info, top_k=score_table_top_k)
+            # if print_score_table:
+            #     _print_multidir_score_table(env_idx, selection_info, top_k=score_table_top_k)
 
             if best_candidate is None:
                 all_pick_pos.append(np.array([0.5, 0.0, 0.5]))
@@ -1282,12 +1284,12 @@ def primitive_compute_grasp_pose(collector, mode: Optional[str], params: Dict[st
             all_pick_quat.append(best_candidate["grasp_quat"])
             valid_env_indices.append(env_idx)
             print(
-                f"  ✅ Env {env_idx}: multidir selected {best_candidate['direction_name']}, "
+                f"   Env {env_idx}: multidir selected {best_candidate['direction_name']}, "
                 f"pos={best_candidate['grasp_pos']}, quat={best_candidate['grasp_quat']}"
             )
 
         all_hang_below = compute_pick_hang_below(collector, target_label, all_pick_pos, target_height)
-        print(f"  📏 Pre-computed hang_below: {all_hang_below}")
+        print(f"   Pre-computed hang_below: {all_hang_below}")
         context["affordance_selection_info"] = all_selection_info
 
         result = store_pick_grasp_context(

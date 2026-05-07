@@ -15,7 +15,7 @@ num_episodes = int(_episodes_env) if _episodes_env else 51
 
 
 with h5py.File(output_file, 'w') as h5out:
-    for i in range(num_episodes):  # episode_0 到 episode_293
+    for i in range(num_episodes):  # episode_0  episode_293
         episode_file = os.path.join(data_dir, f"episode_{i}.hdf5")
         group_name = f"traj_{i}"
         with h5py.File(episode_file, 'r') as h5in:

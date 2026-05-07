@@ -216,10 +216,10 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
             
         else:
             raise ValueError(f"Unsupported task config path: {args_cli.task_config}")
-        # 根据任务名称获取环境配置类
+        # 
         env_cfg_class = get_env_cfg_class_by_name(args_cli.task)
         
-        # 从YAML创建环境配置
+        # YAML
         env_cfg = create_env_cfg_from_yaml(
             yaml_path=args_cli.task_config,
             env_cfg_class=env_cfg_class,

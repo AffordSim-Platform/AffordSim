@@ -94,7 +94,9 @@ class BaseSceneCfg(InteractiveSceneCfg):
     )
     ground = AssetBaseCfg(
         prim_path="/World/defaultGroundPlane",
-        spawn=sim_utils.GroundPlaneCfg(),
+        spawn=sim_utils.GroundPlaneCfg(
+            usd_path=f"{ASSET_PATH}/default_environment/default_environment.usd",
+        ),
         init_state=AssetBaseCfg.InitialStateCfg(pos=(0.0, 0.0, -0.8)),
     )
     table = AssetBaseCfg(

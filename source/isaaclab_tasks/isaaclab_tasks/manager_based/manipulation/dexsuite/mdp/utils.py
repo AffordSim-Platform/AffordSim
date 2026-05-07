@@ -16,8 +16,8 @@ from pxr import UsdGeom
 from isaaclab.sim.utils import get_all_matching_child_prims
 
 # ---- module-scope caches ----
-_PRIM_SAMPLE_CACHE: dict[tuple[str, int], np.ndarray] = {}  # (prim_hash, num_points) -> (N,3) in root frame
-_FINAL_SAMPLE_CACHE: dict[str, np.ndarray] = {}  # env_hash -> (num_points,3) in root frame
+_PRIM_SAMPLE_CACHE: dict[tuple[str, int], np.ndarray] = {}  # (prim_hash, num_points)  to  (N,3) in root frame
+_FINAL_SAMPLE_CACHE: dict[str, np.ndarray] = {}  # env_hash  to  (num_points,3) in root frame
 
 
 def clear_pointcloud_caches():
@@ -61,7 +61,7 @@ def sample_object_point_cloud(num_envs: int, num_points: int, prim_path: str, de
             prim_type = prim.GetTypeName()
             hasher = hashlib.sha256()
 
-            rel = world_root.GetInverse() * xform_cache.GetLocalToWorldTransform(prim)  # prim -> root
+            rel = world_root.GetInverse() * xform_cache.GetLocalToWorldTransform(prim)  # prim  to  root
             mat_np = np.array([[rel[r][c] for c in range(4)] for r in range(4)], dtype=np.float32)
             hasher.update(mat_np.tobytes())
 
@@ -133,7 +133,7 @@ def sample_object_point_cloud(num_envs: int, num_points: int, prim_path: str, de
                 prim_idxs = farthest_point_sampling(tensor_pts, num_points)
                 local_pts = tensor_pts[prim_idxs]
 
-                # prim -> root transform
+                # prim  to  root transform
                 rel = xform_cache.GetLocalToWorldTransform(prim) * world_root.GetInverse()
                 mat_np = np.array([[rel[r][c] for c in range(4)] for r in range(4)], dtype=np.float32)
                 mat_t = torch.from_numpy(mat_np).to(device)

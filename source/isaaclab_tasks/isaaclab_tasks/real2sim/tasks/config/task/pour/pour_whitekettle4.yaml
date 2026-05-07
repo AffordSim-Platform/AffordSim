@@ -11,7 +11,7 @@ task:
   description: grasp white_kettle4 and pour into the yellow bowl
 runtime:
   headless: false
-  episodes: 1
+  episodes: 5
   save_npy: false
   save_camera_images: false
   save_composite_images: false
@@ -25,6 +25,7 @@ runtime:
   cam_wrist_background: backgrounds/wristbackground_realworld1.png
   data_dir: data/r2s2r_data/pour_whitekettle4
   task_name: FrankaFr3-OurGripper-Joint-VisPick-v0
+  save_depth_images: false
 robot:
   cfg_name: franka_fr3_our.yml
   type: franka_fr3_default
@@ -38,17 +39,45 @@ objects:
       -   - class
           - white_kettle4
     scale: [0.15, 0.15, 0.15]
-    init_pos: [0.622, -0.252, 0.18]
+    init_pos: [0.55, -0.25, 0.18]
     init_rot: [0, 0, 0, 1]
     height: 0.242
+    position_range:
+      x:
+        - 0.45
+        - 0.65
+      y:
+        - -0.40
+        - -0.15
+      z:
+        - 0.18
+        - 0.18
+    orientation_range:
+      yaw:
+        - -0.5236
+        - 0.5236
   yellow_bowl:
     usd_path: models/all_object/yellow_bowl.usd
     semantic_tags:
       -   - class
           - yellow_bowl
-    init_pos: [0.65, -0.076, 0.077]
+    init_pos: [0.55, 0.0, 0.077]
     init_rot: [-0.3826834, 0, 0, 0.9238795]
     height: 0.054
+    position_range:
+      x:
+        - 0.45
+        - 0.55
+      y:
+        - 0.0
+        - 0.1
+      z:
+        - 0.077
+        - 0.077
+    orientation_range:
+      yaw:
+        - -3.1416
+        - 3.1416
 primitives:
   - type: pick
     mode: affordance
@@ -66,15 +95,10 @@ primitives:
       tilt_lift_height: 0.15
       tilt_horizontal_offset: 0.08
       success_eval: true
-  - type: place
-    mode: pose
-    params:
-      position: [0.626, -0.376, 0.15]
-      orientation: [-0.02622881, -0.92224633, 0.06492682, -0.38020811]
 enable_random_lights: false
 image_noise_std: 0
 image_speckle_noise_std: 0
-enable_objects_randomization: false
+enable_objects_randomization: true
 enable_objects_randomization_curriculum: false
 texture_randomization:
   enabled: false

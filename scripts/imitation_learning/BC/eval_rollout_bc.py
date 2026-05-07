@@ -1,9 +1,9 @@
 """
-BC 训练期评估子进程脚本.
+BC .
 
-由 train_bc.py 在每次 save_checkpoint 后用 subprocess.run 同步拉起.
-启动 Isaac Lab, 加载 BC Gaussian ckpt, 跑 N 次 rollout.
-结果以 JSON 写到 --output_json, 供 train_bc.py 读回写 tensorboard.
+ train_bc.py  save_checkpoint  subprocess.run .
+ Isaac Lab,  BC Gaussian ckpt,  N  rollout.
+ JSON  --output_json,  train_bc.py  tensorboard.
 """
 
 import argparse
@@ -18,20 +18,20 @@ parser = argparse.ArgumentParser(description="BC Eval Rollout (subprocess)")
 parser.add_argument("--task", type=str, required=True)
 parser.add_argument("--checkpoint", type=str, required=True)
 parser.add_argument("--task_config", type=str, required=True,
-                    help="task yaml; primitives 字段中的 type 作为评估阶段")
+                    help="task yaml; primitives  type ")
 parser.add_argument("--dataset_stat", type=str, default=None,
-                    help="dataset_stat.json (可选, 用于覆盖 norm_params)")
+                    help="dataset_stat.json (,  norm_params)")
 parser.add_argument("--horizon", type=int, default=300)
 parser.add_argument("--num_rollouts", type=int, default=5)
 parser.add_argument("--seed", type=int, default=0)
 parser.add_argument("--output_json", type=str, required=True)
 parser.add_argument("--env_cfg_class", type=str, default=None,
-                    help="完整模块路径, 例如 'pkg.mod:ClassName'.")
+                    help=",  'pkg.mod:ClassName'.")
 parser.add_argument("--pick_lift_threshold", type=float, default=0.05)
 parser.add_argument("--action_horizon", type=int, default=None,
-                    help="chunk 模式下实际执行步数; 不指定则全部执行")
+                    help="chunk ; ")
 parser.add_argument("--action_chunk_size", type=int, default=None,
-                    help="action chunk size; 若不指定则从 checkpoint 推断")
+                    help="action chunk size;  checkpoint ")
 
 AppLauncher.add_app_launcher_args(parser)
 args_cli = parser.parse_args()
@@ -42,7 +42,7 @@ args_cli.enable_cameras = True
 app_launcher = AppLauncher(args_cli)
 simulation_app = app_launcher.app
 
-# --- 仿真启动后才能 import ---
+# ---  import ---
 import copy
 import cv2
 import gymnasium as gym
@@ -53,7 +53,7 @@ import torch
 import torch.nn.functional as F
 import yaml
 
-import isaaclab_tasks.real2sim.tasks.pick  # noqa: F401
+import isaaclab_tasks.real2sim.tasks  # noqa: F401
 from isaaclab_tasks.real2sim.utils.EpisodeBuffer import replace_background_with_segmentation
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -137,7 +137,7 @@ def load_background_images(task_config_path):
             if os.path.isabs(bg_path):
                 full_path = bg_path
             else:
-                # 优先从 CWD (项目根目录) 查找
+                #  CWD () 
                 cwd_path = os.path.abspath(bg_path)
                 if os.path.exists(cwd_path):
                     full_path = cwd_path
@@ -146,9 +146,9 @@ def load_background_images(task_config_path):
             img = cv2.imread(full_path)
             if img is not None:
                 bg_images[key] = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-                print(f"[EVAL_BC] 加载背景图片 {key}: {full_path}")
+                print(f"[EVAL_BC]  {key}: {full_path}")
             else:
-                print(f"[EVAL_BC] 警告: 无法读取背景图片 {key}: {full_path}")
+                print(f"[EVAL_BC] :  {key}: {full_path}")
     return bg_images
 
 
@@ -176,7 +176,7 @@ def preprocess_image(image_tensor, seg_tensor=None, bg_image=None,
 
 
 def postprocess_action(action_np, norm_params):
-    """模型输出 → 环境 action."""
+    """  to   action."""
     result = action_np.copy()
     result[:6] = result[:6] / 100.0
     if norm_params is not None and "action_ee" in norm_params:
@@ -185,14 +185,14 @@ def postprocess_action(action_np, norm_params):
             np.array(norm_params["action_ee"]["min"], dtype=np.float32),
             np.array(norm_params["action_ee"]["max"], dtype=np.float32),
         )
-    # Gripper: continuous [0, 1] → env (-1=open, +1=close)
+    # Gripper: continuous [0, 1]  to  env (-1=open, +1=close)
     gripper_cont = result[6]
     result[6] = -1.0 if gripper_cont > 0.5 else 1.0
     return result
 
 
 # ============================================================================
-# Task yaml → 评估阶段
+# Task yaml  to  
 # ============================================================================
 
 def load_eval_stages(task_config_path):
@@ -394,7 +394,7 @@ def rollout_until_horizon(policy, env, horizon, device, norm_params, bg_images,
                 bg_image=bg_images.get("wrist") if bg_images else None,
             ).unsqueeze(0).to(device)
 
-            # get_action 返回 (1, C, 7) 均值
+            # get_action  (1, C, 7) 
             action = policy.get_action(front_img, wrist_img, state_tensor)
             action_raw = action.cpu().numpy().squeeze(0)  # (C, 7)
 
@@ -428,7 +428,7 @@ def rollout_until_horizon(policy, env, horizon, device, norm_params, bg_images,
 
 def _import_env_cfg_class(spec):
     if ":" not in spec:
-        raise ValueError(f"--env_cfg_class 必须是 'pkg.mod:ClassName' 形式, 收到: {spec}")
+        raise ValueError(f"--env_cfg_class  'pkg.mod:ClassName' , : {spec}")
     mod_path, cls_name = spec.split(":", 1)
     return getattr(importlib.import_module(mod_path), cls_name)
 
@@ -447,12 +447,12 @@ def main():
     if args_cli.env_cfg_class:
         env_cfg_cls = _import_env_cfg_class(args_cli.env_cfg_class)
     else:
-        from isaaclab_tasks.real2sim.tasks.pick.config.sceneconfig.franka_fr3.ourgripper.ik_rel_vis_env_cfg import (
+        from isaaclab_tasks.real2sim.tasks.config.franka_fr3.ourgripper.ik_rel_vis_env_cfg import (
             FrankaFr3OurGripperIKRelVisPickEnvCfg,
         )
         env_cfg_cls = FrankaFr3OurGripperIKRelVisPickEnvCfg
 
-    from isaaclab_tasks.real2sim.tasks.pick.pick_r2s_env_cfg import create_pick_env_cfg_from_yaml
+    from isaaclab_tasks.real2sim.tasks.pick_r2s_env_cfg import create_pick_env_cfg_from_yaml
     env_cfg = create_pick_env_cfg_from_yaml(
         yaml_path=args_cli.task_config,
         env_cfg_class=env_cfg_cls,
@@ -510,7 +510,7 @@ def main():
         saved = frames_to_gif(front_frames, gif_path, target_frames=30, target_size=256)
         if saved:
             gif_paths.append(saved)
-            print(f"[EVAL_BC] saved GIF: {saved} ({len(front_frames)} frames -> 30 sampled)")
+            print(f"[EVAL_BC] saved GIF: {saved} ({len(front_frames)} frames  to  30 sampled)")
 
         stage_results = evaluate_stages_at_episode_end(
             scene=env.scene, stages=stages,
@@ -532,7 +532,7 @@ def main():
                 metrics_str = ", ".join(f"{mk}={mv:.4f}" if isinstance(mv, float) else f"{mk}={mv}" for mk, mv in metrics.items())
                 print(f"  [{k}] success={v.get('success')}, {metrics_str}")
 
-    # 聚合
+    # 
     stage_keys = []
     for r in per_rollout_results:
         for k in r.keys():

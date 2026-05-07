@@ -182,7 +182,7 @@ def replace_observation_background(obs: TensorDict, log_dir: str = None) -> Tens
             
             composite_img = replace_background_with_segmentation(
                 rgb_img, seg_rgba, _bg_side_image
-            ) # TODO: 输出的图像已经乘以255
+            ) # TODO: 255
             new_ext_cam_list.append(torch.from_numpy(composite_img.transpose(2, 0, 1).flatten()).float())
             
             # Process wrist camera
@@ -296,10 +296,10 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
             
         else:
             raise ValueError(f"Unsupported task config path: {args_cli.task_config}")
-        # 根据任务名称获取环境配置类
+        # 
         env_cfg_class = get_env_cfg_class_by_name(args_cli.task)
         
-        # 从YAML创建环境配置
+        # YAML
         env_cfg = create_env_cfg_from_yaml(
             yaml_path=args_cli.task_config,
             env_cfg_class=env_cfg_class,

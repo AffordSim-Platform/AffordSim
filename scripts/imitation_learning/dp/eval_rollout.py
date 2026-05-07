@@ -1,11 +1,11 @@
 """
-训练期评估子进程 (由 dp_rss/train.py 在每次 save ckpt 后拉起).
+ ( dp_rss/train.py  save ckpt ).
 
-- 启动 Isaac Lab, 加载 ckpt (优先 EMA 权重), 跑 N 次 rollout
-- task yaml 的 primitives 作为评估阶段, 每个 episode 结束按阶段独立判成功
-- 结果写 JSON 给 train.py 读回写 tensorboard
+-  Isaac Lab,  ckpt ( EMA ),  N  rollout
+- task yaml  primitives ,  episode 
+-  JSON  train.py  tensorboard
 
-用法 (一般由 train.py 自动调用):
+ ( train.py ):
     python scripts/imitation_learning/dp_rss/eval_rollout.py \
         --checkpoint /path/to/model_epoch_100.pth \
         --stat /path/to/dataset_stat.json \
@@ -34,30 +34,30 @@ parser.add_argument("--num_rollouts", type=int, default=5)
 parser.add_argument("--seed", type=int, default=0)
 parser.add_argument("--output_json", type=str, required=True)
 parser.add_argument("--env_cfg_class", type=str, default=None,
-                    help="'pkg.mod:ClassName', 不传则从 gym registry 解析")
+                    help="'pkg.mod:ClassName',  gym registry ")
 parser.add_argument("--pick_lift_threshold", type=float, default=0.05)
 parser.add_argument(
     "--warmup_action", type=str, default=None, choices=["zero", "hold"],
-    help="reset 后预跑 10 步的动作模式. 不传则按 action_type 推断: "
-         "ee_delta→zero (delta=0 不动), joint_delta→hold (绝对模式下 zero 会飞向零位).",
+    help="reset  10 .  action_type : "
+         "ee_delta to zero (delta=0 ), joint_delta to hold ( zero ).",
 )
 parser.add_argument(
     "--joint_delta_mode", type=str, default="cumulative", choices=["current", "cumulative"],
     help=(
-        "joint_delta -> 绝对位置的展开方式. "
+        "joint_delta  to  . "
         "'current'=arm_target(k)=cur_qpos(k)+delta(k); "
-        "'cumulative'=arm_target(k)=arm_target(k-1)+delta(k), 初值=首帧 arm qpos."
+        "'cumulative'=arm_target(k)=arm_target(k-1)+delta(k), = arm qpos."
     ),
 )
 parser.add_argument("--use_main_weights", action="store_true",
-                    help="默认加载 EMA 权重; 传此 flag 用非 EMA 的 main 权重")
+                    help=" EMA ;  flag  EMA  main ")
 parser.add_argument(
     "--action_horizon", type=int, default=None,
-    help="开环执行步数; 不传则用 ckpt 里训练时的值. 调小可减少累积偏差但增加推理频率.",
+    help=";  ckpt . .",
 )
 parser.add_argument(
     "--print_action_every", type=int, default=0,
-    help="每 N 步打印一次下发给 env 的 action; 0 关闭 (评测默认关).",
+    help=" N  env  action; 0  ().",
 )
 
 AppLauncher.add_app_launcher_args(parser)
@@ -67,7 +67,7 @@ args_cli.headless = True
 app_launcher = AppLauncher(args_cli)
 simulation_app = app_launcher.app
 
-# --- 以下在 Isaac Sim 启动后 import ---
+# ---  Isaac Sim  import ---
 import gymnasium as gym
 import importlib
 import numpy as np
@@ -99,7 +99,7 @@ from isaaclab.motion_collect.success.success import capture_object_initial_z
 
 def _import_env_cfg_class(spec: str):
     if ":" not in spec:
-        raise ValueError(f"--env_cfg_class 必须是 'pkg.mod:ClassName', got: {spec}")
+        raise ValueError(f"--env_cfg_class  'pkg.mod:ClassName', got: {spec}")
     mod_path, cls_name = spec.split(":", 1)
     return getattr(importlib.import_module(mod_path), cls_name)
 
@@ -110,7 +110,7 @@ def main():
     print(f"[EVAL] device={device}, ckpt={args_cli.checkpoint}")
     print(f"[EVAL] output_json={args_cli.output_json}")
 
-    # --- 模型 ---
+    # ---  ---
     policy, model_args, _ = load_policy_from_ckpt(
         args_cli.checkpoint, device, prefer_ema=(not args_cli.use_main_weights),
     )
@@ -118,20 +118,20 @@ def main():
     action_horizon = args_cli.action_horizon if args_cli.action_horizon is not None else ckpt_action_horizon
     obs_horizon = model_args.get("obs_horizon", 2)
     action_type = model_args.get("action_type", "ee_delta")
-    # use_qvel: 必须和训练时一致, 直接从 ckpt 读. 缺该字段的旧 ckpt 默认 True (老行为).
+    # use_qvel: ,  ckpt .  ckpt  True ().
     use_qvel = bool(model_args.get("use_qvel", True))
     print(f"[EVAL] use_qvel={use_qvel}, lowdim_dim={model_args.get('lowdim_dim', '?')}")
 
-    # warmup_action 必须配 action_type, 否则 joint_delta 用 zero 会把机械臂命令到全零关节位形.
+    # warmup_action  action_type,  joint_delta  zero .
     _WARMUP_BY_TYPE = {"ee_delta": "zero", "joint_delta": "hold"}
     if args_cli.warmup_action is None:
         args_cli.warmup_action = _WARMUP_BY_TYPE.get(action_type, "zero")
-        print(f"[EVAL] warmup_action 自动推断为 '{args_cli.warmup_action}' (action_type={action_type})")
+        print(f"[EVAL] warmup_action  '{args_cli.warmup_action}' (action_type={action_type})")
     elif action_type == "joint_delta" and args_cli.warmup_action == "zero":
-        print(f"[EVAL] WARN: action_type={action_type} 但 warmup_action=zero, 起步会飞向零位关节; 推荐 'hold'")
+        print(f"[EVAL] WARN: action_type={action_type}  warmup_action=zero, ;  'hold'")
 
     if args_cli.action_horizon is not None and args_cli.action_horizon != ckpt_action_horizon:
-        print(f"[EVAL] action_horizon override: ckpt={ckpt_action_horizon} -> use {action_horizon}")
+        print(f"[EVAL] action_horizon override: ckpt={ckpt_action_horizon}  to  use {action_horizon}")
     print(f"[EVAL] obs_horizon={obs_horizon}, action_horizon={action_horizon}, action_type={action_type}")
 
     # --- env ---
@@ -140,7 +140,7 @@ def main():
     else:
         entry = gym.spec(args_cli.task).kwargs["env_cfg_entry_point"]
         env_cfg_cls = _import_env_cfg_class(entry)
-        print(f"[EVAL] task={args_cli.task} -> env_cfg_class={env_cfg_cls.__name__}")
+        print(f"[EVAL] task={args_cli.task}  to  env_cfg_class={env_cfg_cls.__name__}")
 
     from isaaclab_tasks.real2sim.tasks.pick_r2s_env_cfg import create_pick_env_cfg_from_yaml
     env_cfg = create_pick_env_cfg_from_yaml(

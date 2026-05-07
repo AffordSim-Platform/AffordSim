@@ -13,13 +13,13 @@
 
 ## Introduction
 
-**AffordSim** is the first simulation framework that integrates open-vocabulary 3D affordance prediction into the robotic manipulation data generation pipeline. Existing simulation platforms do not incorporate object affordance information into trajectory generation, making it impossible to automatically generate semantically correct trajectories for tasks that require precise interaction with specific functional regions — such as grasping a mug by its handle, pouring from a cup's rim, or hanging a mug on a hook.
+**AffordSim** is the first simulation framework that integrates open-vocabulary 3D affordance prediction into the robotic manipulation data generation pipeline. Existing simulation platforms do not incorporate object affordance information into trajectory generation, making it impossible to automatically generate semantically correct trajectories for tasks that require precise interaction with specific functional regions - such as grasping a mug by its handle, pouring from a cup's rim, or hanging a mug on a hook.
 
 AffordSim addresses this by using **VoxAfford**, an open-vocabulary 3D affordance detector that enhances MLLM output tokens with multi-scale geometric features, to predict affordance maps on object point clouds and guide grasp pose estimation toward task-relevant functional regions. Built on NVIDIA Isaac Sim, AffordSim features:
 
 - **Affordance-aware trajectory generation.** VoxAfford predicts 3D affordance heatmaps on object point clouds, guiding grasp pose selection toward task-relevant functional regions.
 - **Automated task-scene generation.** A VLM-powered pipeline converts natural language task descriptions into simulation scenes, supporting 4 robot embodiments (Franka FR3, Panda, UR5e, Kinova) without task-specific engineering.
-- **Photorealistic domain randomization.** Five randomization axes — including DA3-based 3D Gaussian reconstruction from real photographs — reduce the visual domain gap for sim-to-real transfer.
+- **Photorealistic domain randomization.** Five randomization axes - including DA3-based 3D Gaussian reconstruction from real photographs - reduce the visual domain gap for sim-to-real transfer.
 - **A 50-task benchmark** across 7 manipulation categories (grasping, placing, stacking, pushing/pulling, pouring, mug hanging, long-horizon composite) with evaluations of 5 imitation learning baselines (BC, Diffusion Policy, ACT, VLA-Adapter, Pi 0.5).
 
 <p align="center">
@@ -41,20 +41,21 @@ AffordSim addresses this by using **VoxAfford**, an open-vocabulary 3D affordanc
 ### Step 1: Clone the Repository
 
 ```bash
+git clone <repo_url> AffordSim
 cd AffordSim
 ```
 
 ### Step 2: Create Conda Environment
 
 ```bash
-conda create -n env_affodsim python=3.11
-conda activate env_affodsim
+conda create -n env_affordsim python=3.11
+conda activate env_affordsim
 ```
 
 ### Step 3: Install IsaacSim 5.1 and IsaacLab 2.3.1
 
 ```bash
-pip install isaaclab[isaacsim,all]==2.3.1 --extra-index-url https://pypi.nvidia.com
+pip install "isaaclab[isaacsim,all]==2.3.1" --extra-index-url https://pypi.nvidia.com
 ```
 
 ### Step 4: Install PyTorch
@@ -71,7 +72,11 @@ cd curobo
 python -m pip install -e .[isaacsim] --no-build-isolation
 ```
 
+> **Note:** Warnings about `packaging` / `wheel` version conflicts during cuRobo installation can usually be ignored if the install finishes successfully.
+
 ### Step 6: Install AnyGrasp SDK
+
+It is recommended to install AnyGrasp in a separate Conda environment to avoid version conflicts with the main `affordsim` environment.
 
 Follow the [AnyGrasp SDK](https://github.com/graspnet/anygrasp_sdk) installation guide:
 
@@ -99,43 +104,149 @@ cd ..
 
 > **Note:** AnyGrasp SDK requires a license. Please refer to the [license registration](https://github.com/graspnet/anygrasp_sdk#license-registration) section to obtain your license file.
 
-### Step 7: Download Assets
-
-Download the simulation models (robot URDFs/USDs, object meshes, textures, etc.) from HuggingFace:
+After the AnyGrasp environment is ready, set:
 
 ```bash
-# Download the assets
-huggingface-cli download yangml071/simulation-models --local-dir models --repo-type model
+export ANYGRASP_HOME=/path/to/anygrasp
+export ANYGRASP_CONDA_ENV=<your_anygrasp_conda_env>
+cp tools/anygrasp/grasp_detection/demo_pick.py "$ANYGRASP_HOME/grasp_detection/demo_pick.py"
 ```
 
-> **Note:** This is a private repository. You must be granted access before downloading. Please contact the authors to request access.
+### Step 7: Install Project Runtime Dependencies
+
+```bash
+python -m pip install ruamel.yaml
+python -m pip install openai
+python -m pip install diffusers einops
+```
+
+### Step 8: Configure Runtime Environment
+
+```bash
+ln -s $CONDA_PREFIX/lib/python3.11/site-packages/isaaclab/apps ./apps
+export PYTHONPATH=$PWD/source/isaaclab:$PWD/source/isaaclab_tasks:$PWD/source/isaaclab_assets:$PYTHONPATH
+```
+
+### First Launch
+
+On the first launch, Omniverse Kit will ask you to accept the NVIDIA Omniverse EULA:
+
+```text
+Do you accept the EULA? (Yes/No):
+```
+
+Type `Yes`. The first startup may take a while.
 
 
 ## Usage
 
-### Data Collection
+### Scene Editor
 
-Collect affordance-aware manipulation trajectories from natural language task descriptions:
+The scene editor is optional. This repository already includes 50 task YAML files under `source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/`, so you do not need the editor to run the provided benchmark tasks.
+
+Use the scene editor only if you want to create or modify your own tabletop scene and task configuration.
+
+If you want to generate a scene from natural language, the editor requires your own OpenAI-compatible LLM API configuration:
 
 ```bash
-python scripts/run_data_collect_imporve.py \
-    --task_type task_gen \
-    --config xxx.yaml \
+export DASHSCOPE_API_KEY=<your_api_key>
+export DASHSCOPE_BASE_URL=<your_openai_compatible_base_url>
+export DASHSCOPE_MODEL=<your_model_name>
+```
+
+For example, with DashScope:
+
+```bash
+export DASHSCOPE_API_KEY=<your_dashscope_api_key>
+export DASHSCOPE_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
+export DASHSCOPE_MODEL=qwen-vl-plus
+```
+
+If these variables are not set correctly, scene creation from text will fail when the editor tries to call the LLM.
+
+Launch it with:
+
+```bash
+python scripts/run_data_collect_improve.py
+```
+
+This starts the interactive editor and does not collect data. A typical workflow is:
+
+1. At the `SCENE GENERATION` prompt, choose how to initialize the scene:
+   - `1: Generate from text` lets the LLM create a tabletop scene from a natural-language description.
+   - `2: Load from YAML` loads an existing task YAML and continues editing from it.
+2. If you choose `1`, enter a scene description at `Scene description:`. Example:
+
+   ```text
+   a banana, a carrot, a plate, a cuttingboard and one random object. The carrot is on the cuttingboard, and the banana is beside the plate.
+   ```
+
+   The editor will generate the initial object layout and restart into edit mode.
+
+   If a name in the scene description matches multiple object labels, the editor will show the candidate labels and ask you to choose the intended one manually.
+3. In `EDIT MODE`, use the menu to refine the scene:
+   - `2: Add object`
+   - `3: Remove object`
+   - `5: Modify object position`
+   - `6: Modify object rotation`
+   - `4: Regenerate scene` if you want to start over
+4. When the scene is ready, choose `1: Save & Exit`.
+5. Enter a task description at `Task description:`. Example:
+
+   ```text
+   pick the banana and place it in the plate
+   ```
+
+   The editor will parse the task into primitives and then ask whether to enable:
+   - random lights,
+   - texture randomization,
+   - object pose randomization,
+   - image noise and speckle noise.
+
+   If a target name in the task description is ambiguous and matches multiple labels in the current scene, the editor will also ask you to select the correct object before export.
+6. After export, the editor prints `Complete shutdown finished` and exits.
+
+By default, the exported YAML is written to:
+
+```text
+source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/pick/scene_editor_output.yaml
+```
+
+You should then rename or move this file to a proper task name, for example:
+
+```text
+source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/pick/pick_banana_place_plate.yaml
+```
+
+After that, proceed to data collection using the new task name.
+
+### Data Collection
+
+To collect trajectories for an existing task YAML, run:
+
+```bash
+python scripts/run_data_collect_improve.py \
+    --enable_cameras \
+    --skip_editor \
     --num_envs 2 \
-    --bot franka_fr3 \
-    --task_name pick_banana_place_in_plate \
+    --robot franka_fr3 \
+    --task_name pick_banana_place_bowl \
     --headless
 ```
 
 Key arguments:
 | Argument | Description |
 |---|---|
-| `--task_type` | Task type (`task_gen` for generated tasks) |
-| `--config` | Path to the task configuration YAML file |
+| `--task_name` | Task name. The script resolves the YAML automatically from `source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/<category>/<task_name>.yaml`. |
+| `--robot` | Robot embodiment override. Supported values include `franka_fr3`, `ur5e`, `kinova_robotiq85`, `xarm7_ufactory`, and `sawyer_robotiq85`. |
 | `--num_envs` | Number of parallel environments |
-| `--bot` | Robot embodiment (`franka_fr3`, `franka_panda`, `ur5e`, `kinova`) |
-| `--task_name` | Name of the manipulation task |
+| `--episodes` | Override the number of collection episodes in the YAML |
 | `--headless` | Run without GUI (for large-scale collection) |
+
+Typical workflow:
+
+1. Run `python scripts/run_data_collect_improve.py` to create and export a task YAML.
+2. Run `python scripts/run_data_collect_improve.py --skip_editor ...` to collect trajectories for that task.
 
 ### Training Imitation Learning Policies
 
@@ -143,31 +254,52 @@ AffordSim supports multiple imitation learning backends.
 
 #### Data Preprocessing
 
-Before training, convert collected raw data into the HDF5 format required by the IL backends:
+Before training, convert collected raw data into the HDF5 format required by the IL backends.
+
+1. Convert `episode_*.npy` files to per-episode HDF5 files:
 
 ```bash
-# Step 1: Convert numpy trajectories to HDF5
-python tools/np2hdf5.py
+python tools/np2hdf5.py \
+    --npy_folder <path_to_npy_episode_dir> \
+    --ref data/reference.hdf5 \
+    --out <path_to_hdf5_episode_dir>
+```
 
-# Step 2: Combine multiple HDF5 files into a single training dataset
+2. Merge the per-episode HDF5 files into a single raw trajectory file:
+
+```bash
+COMBINE_DATA_DIR=<path_to_hdf5_episode_dir> \
+COMBINE_OUTPUT_FILE=<merged_trajectories.hdf5> \
+COMBINE_EPISODES=<num_episodes> \
 python tools/combine_hdf5.py
+```
 
-# Step 3: Convert to Robomimic-compatible format with dataset statistics
+3. Convert the merged file into robomimic format and generate `dataset_stat.json`:
+
+```bash
 python tools/convert_hdf5_for_robomimic.py \
-    --src <origin_hdf5_path> \
+    --src <merged_trajectories.hdf5> \
     --dst <target_hdf5_path> \
     --stat <dataset_stat.json>
 ```
+
+The resulting `<target_hdf5_path>` and `<dataset_stat.json>` can be used by BC, ACT, and DP.
 
 #### Training
 
 **Behavioral Cloning (BC):**
 ```bash
-python scripts/imitation_learning/robomimic/train.py \
+python scripts/imitation_learning/BC/train_bc.py \
     --dataset <target_hdf5_path> \
     --stat <dataset_stat.json> \
-    --epochs 1000 \
-    --save_every 50 \
+    --exp_name <experiment_name> \
+    --total_iters 1000 \
+    --batch_size 8 \
+    --save_freq 50 \
+    --log_freq 10 \
+    --action_chunk_size 8 \
+    --action_horizon 4 \
+    --no_remove_idle \
     --eval_task_config <path_to_task_yaml> \
     --eval_task <name_to_eval_task> \
     --eval_num_rollouts 5 \
@@ -176,11 +308,17 @@ python scripts/imitation_learning/robomimic/train.py \
 
 **Diffusion Policy:**
 ```bash
-python scripts/imitation_learning/diffusion_policy/train.py \
+python scripts/imitation_learning/dp/train.py \
     --dataset <target_hdf5_path> \
     --stat <dataset_stat.json> \
+    --output_dir logs/dp_run \
     --epochs 1000 \
     --save_every 50 \
+    --batch_size 8 \
+    --pred_horizon 16 \
+    --obs_horizon 2 \
+    --action_horizon 8 \
+    --action_type ee_delta \
     --eval_task_config <path_to_task_yaml> \
     --eval_task <name_to_eval_task> \
     --eval_num_rollouts 5 \
@@ -189,30 +327,35 @@ python scripts/imitation_learning/diffusion_policy/train.py \
 
 **ACT (Action Chunking Transformers):**
 ```bash
-python scripts/imitation_learning/act/train.py \
+python scripts/imitation_learning/ACT/train_act.py \
     --dataset <target_hdf5_path> \
     --stat <dataset_stat.json> \
-    --epochs 1000 \
-    --save_every 50 \
+    --exp_name <experiment_name> \
+    --total_iters 1000 \
+    --batch_size 8 \
+    --save_freq 50 \
+    --log_freq 10 \
+    --action_chunk_size 16 \
+    --action_horizon 8 \
+    --kl_weight 10.0 \
     --eval_task_config <path_to_task_yaml> \
     --eval_task <name_to_eval_task> \
     --eval_num_rollouts 5 \
     --eval_horizon 300
 ```
 
+To run pure training without rollout evaluation, remove:
+
+```bash
+--eval_task_config <path_to_task_yaml> \
+--eval_task <name_to_eval_task> \
+--eval_num_rollouts 5 \
+--eval_horizon 300
+```
+
 > **Note:**
 > - `<path_to_task_yaml>`: Task config files are located in `source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/` (subdirectories: `pick`, `pour`, `hang`, `stack`, `pull_push`, `open_close`, `composite`).
 > - `<name_to_eval_task>`: Registered task IDs can be found in [source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/\_\_init\_\_.py](source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/__init__.py) (e.g., `Pick_Place_banana-v0`, `Pick_cupwithhandle_Pour-v0`). To add a custom task, register it following the same pattern in this file.
-
-### Reinforcement Learning
-
-```bash
-python scripts/reinforcement_learning/rsl_rl/train.py \
-    --task FrankaFr3-OurGripper-IKRel-VisPick-v0 \
-    --num_envs 512 \
-    --enable_cameras \
-    --headless
-```
 
 ### Evaluation
 
@@ -220,37 +363,48 @@ Evaluate trained policies:
 
 **BC:**
 ```bash
-python scripts/imitation_learning/robomimic/play_bc.py \
+python scripts/imitation_learning/BC/play_bc.py \
     --checkpoint <checkpoint_path> \
-    --stat <dataset_stat.json> \
+    --dataset_stat <dataset_stat.json> \
     --task <name_to_eval_task> \
     --task_config <path_to_task_yaml> \
-    --horizon 250 --enable_cameras --save_img_interval 0 --num_rollouts 30 --headless
+    --horizon 250 \
+    --enable_cameras \
+    --save_img_interval 0 \
+    --num_rollouts 1 \
+    --headless
 ```
 
 **Diffusion Policy:**
 ```bash
-python scripts/imitation_learning/diffusion_policy/play_dp.py \
+python scripts/imitation_learning/dp/play.py \
     --checkpoint <checkpoint_path> \
     --stat <dataset_stat.json> \
     --task <name_to_eval_task> \
     --task_config <path_to_task_yaml> \
-    --horizon 250 --enable_cameras --save_img_interval 0 --num_rollouts 30 --headless
+    --horizon 250 \
+    --enable_cameras \
+    --num_rollouts 1 \
+    --headless
 ```
 
 **ACT:**
 ```bash
-python scripts/imitation_learning/act/play_act.py \
+python scripts/imitation_learning/ACT/play_act.py \
     --checkpoint <checkpoint_path> \
     --stat <dataset_stat.json> \
     --task <name_to_eval_task> \
     --task_config <path_to_task_yaml> \
-    --horizon 250 --enable_cameras --save_img_interval 0 --num_rollouts 30 --headless
+    --horizon 250 \
+    --enable_cameras \
+    --save_img_interval 0 \
+    --num_rollouts 1 \
+    --headless
 ```
 
 ## Cross-Embodiment Support
 
-AffordSim supports 4 robot embodiments with automatic kinematic adaptation — no task-specific tuning required:
+AffordSim supports 4 robot embodiments with automatic kinematic adaptation - no task-specific tuning required:
 
 <p align="center">
   <img src="logs/figure_cross_embodiment.png" alt="Cross-Embodiment Support" width="100%">
@@ -271,11 +425,11 @@ AffordSim applies domain randomization along five axes to enable zero-shot sim-t
   <img src="logs/figure4-Domain_Randomization.png" alt="Domain Randomization" width="100%">
 </p>
 
-1. **Background texture** — random textures on workspace and surrounding surfaces
-2. **Lighting** — randomized number, position, intensity, and color of light sources
-3. **Object texture** — PBR material property perturbation
-4. **Object pose** — small random perturbations to initial positions and orientations
-5. **DA3 Gaussian background** — photorealistic backgrounds from 3D Gaussian Splatting reconstruction of real scenes
+1. **Background texture** - random textures on workspace and surrounding surfaces
+2. **Lighting** - randomized number, position, intensity, and color of light sources
+3. **Object texture** - PBR material property perturbation
+4. **Object pose** - small random perturbations to initial positions and orientations
+5. **DA3 Gaussian background** - photorealistic backgrounds from 3D Gaussian Splatting reconstruction of real scenes
 
 ## Benchmark Evaluation
 
@@ -312,9 +466,9 @@ Each task is trained on 300 demonstrations with object pose randomization applie
 
 **Key findings:**
 - **Pi 0.5** achieves the highest average success rate (51%), with **VLA-Adapter** close behind (50%). Both substantially outperform DP (31%), ACT (23%), and BC (10%), indicating that VLM-conditioned policies are markedly more effective on affordance-aware manipulation than purely visuomotor baselines.
-- **Placing** tasks span a wide range (7–93%): simple placements like banana-on-plate are largely solved, while precision-constrained placements like cup-on-shelf remain hard for non-VLM baselines.
-- **Affordance-demanding** tasks expose a clear capability gap: pouring with a wide receptacle (pan-into-bowl, scoop-into-bowl) reaches 67–75%, but pouring a handle-less cup into another cup drops to 0–36%. Mug hanging caps at ~47% even for the best baseline — fine-grained functional-region interaction remains the main bottleneck.
-- **Long-horizon composite** tasks are the hardest: BC fails entirely (0% on all 5), DP/ACT collapse to ≤15%, and even the best baselines top out at 12–35%, highlighting the difficulty of multi-stage task chaining under affordance constraints.
+- **Placing** tasks span a wide range (7-93%): simple placements like banana-on-plate are largely solved, while precision-constrained placements like cup-on-shelf remain hard for non-VLM baselines.
+- **Affordance-demanding** tasks expose a clear capability gap: pouring with a wide receptacle (pan-into-bowl, scoop-into-bowl) reaches 67-75%, but pouring a handle-less cup into another cup drops to 0-36%. Mug hanging caps at ~47% even for the best baseline - fine-grained functional-region interaction remains the main bottleneck.
+- **Long-horizon composite** tasks are the hardest: BC fails entirely (0% on all 5), DP/ACT collapse to <=15%, and even the best baselines top out at 12-35%, highlighting the difficulty of multi-stage task chaining under affordance constraints.
 
 ## Project Structure
 
@@ -325,13 +479,11 @@ AffordSim/
 │   │   └── isaaclab/motion_collect/  # Affordance-aware motion collection module
 │   ├── isaaclab_tasks/           # 30+ task environment implementations
 │   ├── isaaclab_assets/          # Robot and sensor asset definitions
-│   ├── isaaclab_rl/              # Reinforcement learning utilities
 │   └── isaaclab_mimic/           # Imitation learning (cuRobo integration)
 ├── scripts/
-│   ├── run_data_collect.py       # Main data collection entry point
+│   ├── run_data_collect_improve.py   # Main data collection entry point
 │   ├── run_eval.py               # Evaluation script
-│   ├── reinforcement_learning/   # RL training scripts (RSL-RL, SKRL, RL Games, SB3)
-│   └── imitation_learning/       # IL training scripts (BC, Diffusion Policy, ACT, RDT)
+│   └── imitation_learning/       # IL training and rollout scripts (BC, ACT, DP, robomimic, Pi 0.5)
 ├── curobo/                       # GPU-accelerated motion planning library
 ├── backgrounds/                  # DA3 Gaussian background assets
 ├── isaaclab.sh                   # Build and execution interface

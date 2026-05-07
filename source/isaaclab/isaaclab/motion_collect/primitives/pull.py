@@ -145,7 +145,7 @@ def primitive_execute_pull(collector, params: Dict[str, Any], context: Dict[str,
         all_pre_grasp_pos.append(pre_pos)
 
     # --- Phase 1: CuRobo plan to pre-grasp ---
-    print(f"  🪝 [Primitive] Planning pull pre-grasp for '{target_label}'")
+    print(f"   [Primitive] Planning pull pre-grasp for '{target_label}'")
     pre_pick_plans, pre_pick_plan_successes = collector.motion_planner.plan_to_pose_batch(
         collector.robot.data.joint_pos[:n].cpu().numpy(),
         collector.robot.data.joint_vel[:n].cpu().numpy(),
@@ -164,7 +164,7 @@ def primitive_execute_pull(collector, params: Dict[str, Any], context: Dict[str,
     )
 
     # --- Phase 2: IK descend to grasp position ---
-    print("  🪝 [Primitive] Descending to grasp handle (IK)...")
+    print("   [Primitive] Descending to grasp handle (IK)...")
     _, pick_env_successes = collector.execute_ik_motion(
         target_positions=all_pick_pos,
         target_quaternions=all_pick_quat,
@@ -183,7 +183,7 @@ def primitive_execute_pull(collector, params: Dict[str, Any], context: Dict[str,
     )
 
     # --- Phase 4: IK pull along the pull direction ---
-    print(f"  🪝 [Primitive] Pulling drawer '{target_label}' (distance={pull_distance:.3f}m)...")
+    print(f"   [Primitive] Pulling drawer '{target_label}' (distance={pull_distance:.3f}m)...")
 
     # Read current EE pose as pull start point
     ee_pos_cur, ee_quat_cur = collector.get_current_ee_pose()
@@ -243,11 +243,11 @@ def primitive_execute_pull(collector, params: Dict[str, Any], context: Dict[str,
             disp_ok = np.isfinite(joint_val) and (abs(joint_val) >= min_displacement)
             range_ok = bool(metrics["articulation_in_range"] > 0.5)
             joint_text = f"{joint_val:.4f}" if np.isfinite(joint_val) else "nan"
-            print(
-                f"    [TaskCheck][env {env_idx}] "
-                f"joint_pos={joint_text} ({'OK' if disp_ok else 'FAIL'}), "
-                f"articulation_in_range={'OK' if range_ok else 'FAIL'}"
-            )
+            # print(
+            #     f"    [TaskCheck][env {env_idx}] "
+            #     f"joint_pos={joint_text} ({'OK' if disp_ok else 'FAIL'}), "
+            #     f"articulation_in_range={'OK' if range_ok else 'FAIL'}"
+            # )
         print(
             f"  [Primitive] Task success (pull): "
             f"{sum(1 for i in range(n) if plan_active_after[i] and state_successes[i])}/{n} "

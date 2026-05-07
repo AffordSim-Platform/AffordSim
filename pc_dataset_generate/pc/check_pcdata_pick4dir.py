@@ -1,10 +1,10 @@
 """
-5方向抓取位姿生成工具
+5
 
-将 approach 方向投影到 XY 平面，按与 X 轴夹角分为 4 个象限:
-  Q0: 0-90°, Q1: 90-180°, Q2: 180-270°, Q3: 270-360°
-每个象限各选出一个最优抓取位姿（保持 45° 倾斜约束）。
-另外增加第 5 个方向: 垂直于 Z 轴（从正上方竖直下压抓取）。
+ approach  XY  X  4 :
+  Q0: 0-90 deg, Q1: 90-180 deg, Q2: 180-270 deg, Q3: 270-360 deg
+ 45 deg 
+ 5 :  Z 
 """
 
 import numpy as np
@@ -17,7 +17,7 @@ try:
 except ImportError:
     torch = None
 
-# 复用 pick 抓取生成脚本中的核心函数
+#  pick 
 from check_pcdata_pick import (
     GRIPPER_MAX_OPENING, GRIPPER_FINGER_DEPTH,
     GRIPPER_FINGER_WIDTH, GRIPPER_FINGER_THICKNESS,
@@ -27,19 +27,19 @@ from check_pcdata_pick import (
     rotation_from_z_to_dir,
 )
 
-# 4 个象限 + 竖直方向的定义
-QUADRANT_NAMES = ["Q0(0-90°)", "Q1(90-180°)", "Q2(180-270°)", "Q3(270-360°)", "垂直(Z-)"]
+# 4  + 
+QUADRANT_NAMES = ["Q0(0-90 deg)", "Q1(90-180 deg)", "Q2(180-270 deg)", "Q3(270-360 deg)", "(Z-)"]
 QUADRANT_COLORS = [
-    [1.0, 0.0, 0.0],   # Q0: 红
-    [0.0, 0.0, 1.0],   # Q1: 蓝
-    [1.0, 0.5, 0.0],   # Q2: 橙
-    [0.5, 0.0, 1.0],   # Q3: 紫
-    [0.0, 0.8, 0.8],   # 垂直: 青
+    [1.0, 0.0, 0.0],   # Q0: 
+    [0.0, 0.0, 1.0],   # Q1: 
+    [1.0, 0.5, 0.0],   # Q2: 
+    [0.5, 0.0, 1.0],   # Q3: 
+    [0.0, 0.8, 0.8],   # : 
 ]
 
 
 def get_approach_azimuth(approach_dir):
-    """计算 approach 方向在 XY 平面投影与 X 轴的夹角 (0-360°)"""
+    """ approach  XY  X  (0-360 deg)"""
     angle = np.degrees(np.arctan2(approach_dir[1], approach_dir[0]))
     if angle < 0:
         angle += 360.0
@@ -47,12 +47,12 @@ def get_approach_azimuth(approach_dir):
 
 
 def get_quadrant(azimuth):
-    """根据方位角返回象限索引 0-3"""
+    """ 0-3"""
     return int(azimuth // 90) % 4
 
 
 def compute_4dir_grasps(points, labels):
-    """计算 4 个象限各自的最优抓取位姿。
+    """ 4 
 
     Returns:
         dict: {
@@ -64,7 +64,7 @@ def compute_4dir_grasps(points, labels):
     aff_points, global_centroid = cluster_affordance_points(points, labels)
     centers = sample_grasp_centers(aff_points)
 
-    # 收集所有候选并打分
+    # 
     all_results = []
     n_rotations = 12
 
@@ -91,44 +91,44 @@ def compute_4dir_grasps(points, labels):
                 info['grasp_center'] = center
                 info['source'] = f"{center_name}/{approach_name}@{int(np.degrees(angle))}"
 
-                # 计算方位角和象限
+                # 
                 azimuth = get_approach_azimuth(approach_dir)
                 info['azimuth'] = azimuth
                 info['quadrant'] = get_quadrant(azimuth)
 
                 all_results.append(info)
 
-    print(f"[INFO] 总计有效候选: {len(all_results)}")
+    print(f"[INFO] Total candidates: {len(all_results)}")
 
-    # 按象限分组，每组选最优
+    # 
     quadrant_results = [[] for _ in range(4)]
     for r in all_results:
         quadrant_results[r['quadrant']].append(r)
 
     for q in range(4):
-        # 象限中心角度
+        # 
         q_center = q * 90.0 + 45.0
-        # 综合排序: 原始得分 - 偏离象限中心的惩罚 (鼓励方位角靠近象限中心)
+        # :  -  ()
         def sort_key(r, qc=q_center):
             az = r['azimuth']
-            # 角度差 (考虑 0/360 边界)
+            #  ( 0/360 )
             diff = abs(az - qc)
             if diff > 180:
                 diff = 360 - diff
-            # 偏离 45° 中心越远，惩罚越大 (最大惩罚 0.3)
+            #  45 deg  ( 0.3)
             azimuth_penalty = (diff / 45.0) * 0.3
             return r['total_score'] - azimuth_penalty
         quadrant_results[q].sort(key=sort_key, reverse=True)
-        print(f"  {QUADRANT_NAMES[q]}: {len(quadrant_results[q])} 个候选")
+        print(f"  {QUADRANT_NAMES[q]}: {len(quadrant_results[q])} ")
 
-    # 每个象限取最优
+    # 
     grasps = []
     for q in range(4):
         q_center_azimuth = q * 90.0 + 45.0
 
         if not quadrant_results[q]:
-            # fallback: 用该象限中心方向生成
-            print(f"[WARN] {QUADRANT_NAMES[q]} 无有效候选, 使用 fallback")
+            # fallback: 
+            print(f"[WARN] {QUADRANT_NAMES[q]} ,  fallback")
             az_rad = np.radians(q_center_azimuth)
             tilt_rad = np.radians(TILT_ANGLE_DEG)
             approach = np.array([
@@ -142,20 +142,20 @@ def compute_4dir_grasps(points, labels):
             approach = best['approach_dir'].copy()
             approach /= np.linalg.norm(approach)
 
-        # ★ 统一规范 grip_axis: 用 Z 轴投影到与 approach 正交的平面
-        # 这样夹爪手指尽量保持竖直方向开合
+        #   grip_axis:  Z  approach 
+        # 
         z_up = np.array([0.0, 0.0, 1.0])
         grip_axis = z_up - np.dot(z_up, approach) * approach
         grip_norm = np.linalg.norm(grip_axis)
         if grip_norm < 1e-6:
-            # approach 接近竖直时 (不应该走到这里, 但做保护)
+            # approach  (, )
             grip_axis = np.array([0.0, 1.0, 0.0])
             grip_axis = grip_axis - np.dot(grip_axis, approach) * approach
             grip_axis /= np.linalg.norm(grip_axis)
         else:
             grip_axis /= grip_norm
 
-        binormal = np.cross(grip_axis, approach)  # 右手系: X = Y × Z
+        binormal = np.cross(grip_axis, approach)  # : X = Y x Z
         binormal /= np.linalg.norm(binormal)
 
         if not quadrant_results[q]:
@@ -185,27 +185,27 @@ def compute_4dir_grasps(points, labels):
                 'elevation': elevation,
             })
 
-    # ★ 第5个方向: 纯竖直下压 approach=[0,0,-1]
-    # grip 方向由 affordance 点的 PCA 决定 (取水平面内最窄方向, 方便夹爪夹住)
+    #  5:  approach=[0,0,-1]
+    # grip  affordance  PCA  (, )
     vertical_approach = np.array([0.0, 0.0, -1.0])
 
-    # 用 affordance 点的 XY 坐标做 2D PCA，找到把手在水平面内的延伸方向
+    #  affordance  XY  2D PCA
     aff_xy = aff_points[:, :2]
     aff_xy_centered = aff_xy - aff_xy.mean(axis=0)
     cov_2d = np.cov(aff_xy_centered.T)
     eigvals, eigvecs = np.linalg.eigh(cov_2d)
-    # eigvecs[:,1] 是最大特征值方向 = 把手在 XY 平面的延伸方向
-    # eigvecs[:,0] 是最小特征值方向 = 垂直于把手 = 夹爪开合方向
-    handle_dir_2d = eigvecs[:, 1]  # 把手方向
-    perp_dir_2d = eigvecs[:, 0]    # 垂直于把手
-    print(f"  [DEBUG] 2D PCA 特征值: {eigvals}")
-    print(f"  [DEBUG] 把手方向(XY): [{handle_dir_2d[0]:.4f}, {handle_dir_2d[1]:.4f}]")
-    print(f"  [DEBUG] 垂直方向(XY): [{perp_dir_2d[0]:.4f}, {perp_dir_2d[1]:.4f}]")
-    # grip_axis = 垂直于把手方向 (夹爪沿此方向开合以夹住把手)
-    # 当 PCA 方向接近坐标轴时，snap 到坐标轴以消除点云噪声引起的偏转
+    # eigvecs[:,1]  =  XY 
+    # eigvecs[:,0]  =  = 
+    handle_dir_2d = eigvecs[:, 1]  # 
+    perp_dir_2d = eigvecs[:, 0]    # 
+    print(f"  [DEBUG] 2D PCA : {eigvals}")
+    print(f"  [DEBUG] (XY): [{handle_dir_2d[0]:.4f}, {handle_dir_2d[1]:.4f}]")
+    print(f"  [DEBUG] (XY): [{perp_dir_2d[0]:.4f}, {perp_dir_2d[1]:.4f}]")
+    # grip_axis =  ()
+    #  PCA snap 
     grip_axis = np.array([perp_dir_2d[0], perp_dir_2d[1], 0.0])
     grip_axis /= np.linalg.norm(grip_axis)
-    # 如果与 X 或 Y 轴夹角 < 20°，snap 到该轴
+    #  X  Y  < 20 degsnap 
     SNAP_THRESHOLD = np.cos(np.radians(20.0))  # ~0.94
     axis_candidates = [np.array([1.0, 0.0, 0.0]), np.array([0.0, 1.0, 0.0])]
     for ax in axis_candidates:
@@ -213,13 +213,13 @@ def compute_4dir_grasps(points, labels):
             grip_axis = ax * np.sign(np.dot(grip_axis, ax))
             print(f"  [DEBUG] grip_axis snapped to [{grip_axis[0]:.1f}, {grip_axis[1]:.1f}, 0.0]")
             break
-    binormal = np.cross(grip_axis, vertical_approach)  # 右手系
+    binormal = np.cross(grip_axis, vertical_approach)  # 
     binormal /= np.linalg.norm(binormal)
 
     best_score = max((r['total_score'] for r in all_results), default=0.0)
 
-    print(f"  {QUADRANT_NAMES[4]}: 纯竖直下压 "
-          f"(grip沿PCA窄方向 [{grip_axis[0]:.3f}, {grip_axis[1]:.3f}])")
+    print(f"  {QUADRANT_NAMES[4]}:  "
+          f"(gripPCA [{grip_axis[0]:.3f}, {grip_axis[1]:.3f}])")
 
     grasps.append({
         'grasp_center': global_centroid,
@@ -234,15 +234,15 @@ def compute_4dir_grasps(points, labels):
         'elevation': 90.0,
     })
 
-    # 打印 5 个方向的结果
+    #  5 
     print(f"\n{'='*90}")
-    print(f"  {'方向':<20} {'方位角':>8} {'仰角':>8} {'得分':>8} {'来源':<40}")
+    print(f"  {'':<20} {'':>8} {'':>8} {'':>8} {'':<40}")
     print(f"  {'-'*84}")
     for g in grasps:
         elev = np.degrees(np.arcsin(np.clip(-g['approach_dir'][2], -1, 1)))
         print(f"  {QUADRANT_NAMES[g['quadrant']]:<20} "
-              f"{g['azimuth']:>7.1f}° "
-              f"{elev:>7.1f}° "
+              f"{g['azimuth']:>7.1f} deg "
+              f"{elev:>7.1f} deg "
               f"{g['score']:>8.4f} "
               f"{g['source']:<40}")
     print(f"{'='*90}")
@@ -255,16 +255,16 @@ def compute_4dir_grasps(points, labels):
 
 
 def create_4dir_visualization(grasps_result, show_gripper=True):
-    """为 4 个方向的抓取位姿创建可视化几何体。
+    """ 4 
 
     Args:
-        grasps_result: compute_4dir_grasps 的返回值
-        show_gripper: 是否显示夹爪模型 (默认 True)
+        grasps_result: compute_4dir_grasps 
+        show_gripper:  ( True)
     """
     geometries = []
 
     for i, grasp in enumerate(grasps_result['grasps']):
-        # 只可视化竖直方向 (第5个, index=4)
+        #  (5, index=4)
         # if grasp['quadrant'] != 4:
         #     continue
         center = grasp['grasp_center']
@@ -275,14 +275,14 @@ def create_4dir_visualization(grasps_result, show_gripper=True):
 
         R_local = np.column_stack([binormal, grip, approach])
 
-        # 抓取中心球
+        # 
         sphere = o3d.geometry.TriangleMesh.create_sphere(radius=0.004)
         sphere.translate(center)
         sphere.paint_uniform_color([1.0, 1.0, 0.0])
         sphere.compute_vertex_normals()
         geometries.append(sphere)
 
-        # Approach 箭头
+        # Approach 
         arrow_len = 0.07
         arrow_start = center - approach * arrow_len
         shaft = o3d.geometry.TriangleMesh.create_cylinder(radius=0.0015, height=arrow_len * 0.75)
@@ -302,7 +302,7 @@ def create_4dir_visualization(grasps_result, show_gripper=True):
         cone.compute_vertex_normals()
         geometries.append(cone)
 
-        # 夹爪模型 (可选)
+        #  ()
         if show_gripper:
             half_open = GRIPPER_MAX_OPENING / 2.0
             fd = GRIPPER_FINGER_DEPTH
@@ -318,7 +318,7 @@ def create_4dir_visualization(grasps_result, show_gripper=True):
                 finger.compute_vertex_normals()
                 geometries.append(finger)
 
-        # 象限标签 (用小坐标系表示)
+        #  ()
         frame = o3d.geometry.TriangleMesh.create_coordinate_frame(size=0.015)
         frame.rotate(R_local, center=[0, 0, 0])
         frame.translate(center)
@@ -328,23 +328,23 @@ def create_4dir_visualization(grasps_result, show_gripper=True):
 
 
 # ============================================================================
-# 数据加载与批处理
+# 
 # ============================================================================
 def find_pt_path(type_path):
     pt_path = os.path.join(type_path, "labeled_result.pt")
     if not os.path.isfile(pt_path):
-        raise FileNotFoundError(f"{type_path} 中未找到 labeled_result.pt")
+        raise FileNotFoundError(f"{type_path}  labeled_result.pt")
     return pt_path
 
 
 def load_points_and_labels(pt_path):
     if torch is None:
-        raise ImportError("未安装 torch, 无法加载 .pt 文件")
+        raise ImportError(" torch,  .pt ")
 
     data = torch.load(pt_path, map_location="cpu")
     points = data['points'].numpy()
     labels = data['labels'].numpy()
-    print(f"[INFO] 加载: {pt_path}")
+    print(f"[INFO] Loaded: {pt_path}")
     return points, labels
 
 
@@ -362,8 +362,8 @@ def process_type_path(type_path, show_gripper=True, default_threshold=DEFAULT_UN
     save_path = os.path.join(type_path, "grasp_result_4dir.npz")
 
     def preview_fn(points, threshold, converted, coord_range):
-        print(f"[INFO] 总点数: {len(points)}, label=0: {(labels==0).sum()}, label=1: {(labels==1).sum()}")
-        print(f"[INFO] 目标倾斜角: {TILT_ANGLE_DEG}° (从斜上方接近)")
+        print(f"[INFO] Points: {len(points)}, label=0: {(labels==0).sum()}, label=1: {(labels==1).sum()}")
+        print(f"[INFO] Tilt angle: {TILT_ANGLE_DEG} deg")
 
         colors = np.zeros((len(labels), 3))
         colors[labels == 0] = [0.0, 1.0, 0.0]
@@ -380,24 +380,24 @@ def process_type_path(type_path, show_gripper=True, default_threshold=DEFAULT_UN
             elev = np.degrees(np.arcsin(np.clip(-g['approach_dir'][2], -1, 1)))
             ee_pos = g['grasp_center'] - g['approach_dir'] * EE_OFFSET_Z
             print(f"\n  [{QUADRANT_NAMES[g['quadrant']]}]")
-            print(f"    中心点:   [{g['grasp_center'][0]:.5f}, {g['grasp_center'][1]:.5f}, {g['grasp_center'][2]:.5f}]")
+            print(f"    Center:   [{g['grasp_center'][0]:.5f}, {g['grasp_center'][1]:.5f}, {g['grasp_center'][2]:.5f}]")
             print(f"    Approach: [{g['approach_dir'][0]:.4f}, {g['approach_dir'][1]:.4f}, {g['approach_dir'][2]:.4f}]")
-            print(f"    方位角:   {g['azimuth']:.1f}°  仰角: {elev:.1f}°")
-            print(f"    得分:     {g['score']:.4f}")
-            print(f"    EE位置:   [{ee_pos[0]:.5f}, {ee_pos[1]:.5f}, {ee_pos[2]:.5f}]")
+            print(f"    Azimuth: {g['azimuth']:.1f} deg  elevation: {elev:.1f} deg")
+            print(f"    Score:    {g['score']:.4f}")
+            print(f"    EE:   [{ee_pos[0]:.5f}, {ee_pos[1]:.5f}, {ee_pos[2]:.5f}]")
 
         grasp_geometries = create_4dir_visualization(result_4dir, show_gripper=show_gripper)
         all_geometries = [pcd, coord_frame] + grasp_geometries
 
-        print("\n[VIS] 颜色说明:")
-        color_names = ['红', '蓝', '橙', '紫', '青']
+        print("\n[VIS] :")
+        color_names = ['', '', '', '', '']
         for i in range(len(result_4dir['grasps'])):
             print(f"  {QUADRANT_NAMES[i]}: {color_names[i]}")
 
         return attach_visualization(
             {"result_4dir": result_4dir},
             all_geometries,
-            window_name="5方向抓取位姿 (4象限+竖直)",
+            window_name="5 (4+)",
             width=1280,
             height=720,
         )
@@ -421,32 +421,32 @@ def process_type_path(type_path, show_gripper=True, default_threshold=DEFAULT_UN
         save_dict['unit_threshold'] = np.array(threshold)
         save_dict['unit_converted'] = np.array(int(converted))
         np.savez(save_path, **save_dict)
-        print(f"\n[INFO] {len(result_4dir['grasps'])}方向抓取结果已保存: {save_path}")
+        print(f"\n[INFO] {len(result_4dir['grasps'])}: {save_path}")
 
     return run_threshold_debug_loop(raw_points, os.path.basename(type_path), preview_fn, accept_fn, default_threshold)
 
 
 # ============================================================================
-# 主程序
+# 
 # ============================================================================
 if __name__ == '__main__':
     import argparse
-    parser = argparse.ArgumentParser(description="4方向抓取位姿生成")
-    parser.add_argument("--no-gripper", action="store_true", help="可视化时不显示夹爪模型")
+    parser = argparse.ArgumentParser(description="4")
+    parser.add_argument("--no-gripper", action="store_true", help="")
     args = parser.parse_args()
 
     script_dir = os.path.dirname(os.path.abspath(__file__))
     type_paths = find_pick_dirs(script_dir)
 
     if not type_paths:
-        raise FileNotFoundError(f"{script_dir} 下未找到任何 *_pick 文件夹")
+        raise FileNotFoundError(f"{script_dir}  *_pick ")
 
     if len(type_paths) > 1:
-        print(f"[INFO] 检测到 {len(type_paths)} 个 *_pick 文件夹, 将逐个可视化。请在 Open3D 窗口内按 Y/Enter 保存，U/D 调阈值，Q/Esc/X 退出。")
+        print(f"[INFO]  {len(type_paths)}  *_pick ,  Open3D  Y/Enter U/D Q/Esc/X ")
 
     for index, type_path in enumerate(type_paths, start=1):
         folder_name = os.path.basename(type_path)
-        print(f"\n[INFO] ({index}/{len(type_paths)}) 处理文件夹: {folder_name}")
+        print(f"\n[INFO] ({index}/{len(type_paths)}) : {folder_name}")
         if not process_type_path(type_path, show_gripper=not args.no_gripper):
-            print("[INFO] 用户中止批处理。")
+            print("[INFO] ")
             break

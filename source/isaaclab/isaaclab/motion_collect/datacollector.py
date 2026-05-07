@@ -216,7 +216,7 @@ class DataCollector(
         self.scene = self.env.env.scene
         self.robot_prim_path = str(self.robot.cfg.prim_path).replace(".*", "0")
         
-        print(f"✓ Environment initialized successfully")
+        print(f" Environment initialized successfully")
         print(f"  - Robot prim path: {self.robot_prim_path}")
         print(f"  - Number of environments: {self.num_envs}")
         print(f"{'='*60}\n")
@@ -290,7 +290,7 @@ class DataCollector(
         if primary_key is not None:
             mask_keys.append(primary_key)
 
-        # Fallback order: current alive state -> task-level mask -> other primitive masks.
+        # Fallback order: current alive state  to  task-level mask  to  other primitive masks.
         for key in (
             "env_alive_mask",
             "task_success_mask",
@@ -322,12 +322,12 @@ class DataCollector(
         """Execute primitive steps in order.
 
         Maintains two independent success lines on ``context``:
-          * ``plan_success_mask`` — always evaluated, AND'd across every plan/IK
+          * ``plan_success_mask`` - always evaluated, AND'd across every plan/IK
             segment of every primitive in the episode.
-          * ``task_success_mask`` — only updated by primitives whose YAML sets
+          * ``task_success_mask`` - only updated by primitives whose YAML sets
             ``success_eval: true``; otherwise stays True.
 
-        ``env_alive_mask`` is derived as ``plan ∧ task`` after each primitive;
+        ``env_alive_mask`` is derived as ``plan and task`` after each primitive;
         once an env dies it is excluded from all subsequent primitives.
         Failure reason for each dead env is recorded once with the first
         triggering category (``planning_failed`` / ``task_failed`` /
@@ -457,7 +457,7 @@ class DataCollector(
 
     def collect(self, save_video: bool = False) -> Dict:
         """
-        Main workflow: Load YAML -> Configure Task -> Collect Loop
+        Main workflow: Load YAML  to  Configure Task  to  Collect Loop
         """
         print("\n" + "="*80)
         print("STEP 1: LOADING SCENE CONFIGURATION")
@@ -575,7 +575,7 @@ class DataCollector(
                         task_desc=task_desc,
                     )
                     success = self._run_primitives(primitive_steps, primitive_context)
-                    # Treat the per-env final outcome as ``plan ∧ task`` (i.e.
+                    # Treat the per-env final outcome as ``plan and task`` (i.e.
                     # ``env_alive_mask`` after the last primitive). ``task_success_mask``
                     # alone is now the task-eval-only line and stays True for envs
                     # without ``success_eval``, so it is no longer a sufficient
@@ -606,11 +606,11 @@ class DataCollector(
                             total_env_other_failed += 1
 
                     if successful_env_count == self.num_envs:
-                        status_icon, status_label = "✓", "FULL"
+                        status_icon, status_label = "", "FULL"
                     elif successful_env_count > 0:
-                        status_icon, status_label = "◐", "PARTIAL"
+                        status_icon, status_label = "", "PARTIAL"
                     else:
-                        status_icon, status_label = "✗", "FAIL"
+                        status_icon, status_label = "", "FAIL"
 
                     reason_counter = Counter(
                         str(env_failure_reasons[i])
@@ -693,4 +693,4 @@ class DataCollector(
             del self.motion_planner
         if hasattr(self, 'env') and self.env:
             self.env.close()
-        print("✓ DataCollector closed")
+        print(" DataCollector closed")

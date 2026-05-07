@@ -106,7 +106,11 @@ class SceneCfg(InteractiveSceneCfg):
     plane = AssetBaseCfg(
         prim_path="/World/GroundPlane",
         init_state=AssetBaseCfg.InitialStateCfg(pos=[0, 0, -1.05]),
-        spawn=GroundPlaneCfg(color=(0.5, 0.5, 0.5), size=(1500, 1500)),
+        spawn=GroundPlaneCfg(
+            usd_path=str(_get_project_root() / "models/default_environment/default_environment.usd"),
+            color=(0.5, 0.5, 0.5),
+            size=(1500, 1500),
+        ),
     )
     
     external_cam_side: CameraCfg = MISSING

@@ -11,7 +11,7 @@ task:
   description: pull the cabinet drawer open
 runtime:
   headless: false
-  episodes: 1
+  episodes: 5
   save_npy: false
   save_camera_images: false
   save_composite_images: false
@@ -25,6 +25,7 @@ runtime:
   cam_wrist_background: backgrounds/wristbackground_realworld1.png
   data_dir: data/r2s2r_data/pull_cabinet7
   task_name: FrankaFr3-OurGripper-Joint-VisPick-v0
+  save_depth_images: false
 robot:
   cfg_name: franka_fr3_our.yml
   type: franka_fr3_default
@@ -41,6 +42,20 @@ articulations:
     enabled_self_collisions: true
     init_pos: [0.9, -0.2, 0.4]
     init_rot: [0.9239, 0.0, 0.0, -0.3827]
+    position_range:
+      x:
+        - 0.85
+        - 0.95
+      y:
+        - -0.25
+        - -0.15
+      z:
+        - 0.4
+        - 0.4
+    orientation_range:
+      yaw:
+        - -0.1745
+        - 0.1745
     joint_pos:
       joint_0: 0.0
       joint_1: 0.0
@@ -68,7 +83,7 @@ primitives:
 enable_random_lights: false
 image_noise_std: 0
 image_speckle_noise_std: 0
-enable_objects_randomization: false
+enable_objects_randomization: true
 enable_objects_randomization_curriculum: false
 texture_randomization:
   enabled: false

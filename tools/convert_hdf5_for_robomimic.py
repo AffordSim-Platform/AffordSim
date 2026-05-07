@@ -151,7 +151,7 @@ def convert(src_path: str, dst_path: str, stat_path: str, remove_idle: bool = Tr
         total_samples += n
 
         if (i + 1) % 50 == 0 or i == 0:
-            print(f"  [{i+1}/{len(traj_keys)}] {traj_key} -> {demo_name}, steps={n}")
+            print(f"  [{i+1}/{len(traj_keys)}] {traj_key}  to  {demo_name}, steps={n}")
 
     if num_skipped > 0:
         print(f"[INFO] Skipped {num_skipped} empty trajectories after idle removal")
@@ -182,7 +182,7 @@ def convert(src_path: str, dst_path: str, stat_path: str, remove_idle: bool = Tr
     print(f"[INFO] HDF5 : {dst_path}")
     print(f"[INFO] total: {total_samples}, train: {len(train_demos)}, valid: {len(valid_demos)}")
 
-    # ========== mean/std → dataset_stat.json ==========
+    # ========== mean/std  to  dataset_stat.json ==========
     all_norm_actions = np.concatenate(all_norm_actions, axis=0)
     all_norm_qpos = np.concatenate(all_norm_qpos, axis=0)
     all_norm_qvel = np.concatenate(all_norm_qvel, axis=0)
@@ -216,7 +216,7 @@ def convert(src_path: str, dst_path: str, stat_path: str, remove_idle: bool = Tr
 
     with open(stat_path, "w") as f:
         json.dump(dataset_stat, f, indent=2)
-    print(f"[INFO] dataset_stat.json 保存: {stat_path}")
+    print(f"[INFO] dataset_stat.json : {stat_path}")
 
 
 if __name__ == "__main__":

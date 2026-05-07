@@ -11,7 +11,7 @@ task:
   description: pick the lid from the table and place it on the pot
 runtime:
   headless: false
-  episodes: 1
+  episodes: 4
   save_npy: false
   save_camera_images: false
   save_composite_images: false
@@ -25,11 +25,12 @@ runtime:
   cam_wrist_background: backgrounds/wristbackground_realworld1.png
   data_dir: data/r2s2r_data/pick_lid_place_pot
   task_name: FrankaFr3-OurGripper-Joint-VisPick-v0
+  save_depth_images: false
 robot:
   cfg_name: franka_fr3_our.yml
   type: franka_fr3_default
 offsets:
-  grasp: [0, 0, 0.075]
+  grasp: [0, 0, 0.07]
   place: [0, 0, 0.0]
 objects:
   pot:
@@ -37,33 +38,45 @@ objects:
     semantic_tags:
       -   - class
           - pot
-    init_pos: [0.65, -0.10, 0.10]
+    init_pos: [0.55, 0.25, 0.10]
     init_rot: [1.0, 0.0, 0.0, 0.0]
     height: 0.08
+    position_range:
+      x:
+        - 0.45
+        - 0.70
+      y:
+        - 0.05
+        - 0.40
+      z:
+        - 0.1
+        - 0.1
+    orientation_range:
+      yaw:
+        - -3.1416
+        - 3.1416
   lid:
     usd_path: models/all_object/lid.usd
     semantic_tags:
       -   - class
           - lid
-    init_pos: [0.55, 0.18, 0.075]
+    init_pos: [0.55, -0.25, 0.075]
     init_rot: [1.0, 0.0, 0.0, 0.0]
     height: 0.03
-  yellow_banana:
-    usd_path: models/all_object/yellow_banana.usd
-    semantic_tags:
-      -   - class
-          - yellow_banana
-    init_pos: [0.75, -0.38, 0.12]
-    init_rot: [0.3994, 0.0, 0.0, 0.9168]
-    height: 0.036
-  wood_cuttingboard:
-    usd_path: models/all_object/wood_cuttingboard.usd
-    semantic_tags:
-      -   - class
-          - wood_cuttingboard
-    init_pos: [0.80, -0.38, 0.08]
-    init_rot: [1.0, 0.0, 0.0, 0.0]
-    height: 0.08
+    position_range:
+      x:
+        - 0.45
+        - 0.70
+      y:
+        - -0.40
+        - -0.05
+      z:
+        - 0.075
+        - 0.075
+    orientation_range:
+      yaw:
+        - -3.1416
+        - 3.1416
 primitives:
   - type: pick
     mode: gt
@@ -84,13 +97,10 @@ primitives:
       post_release_lift_offset: [0.0, 0.0, 0.10]
       post_release_lift_steps: 10
       success_eval: true
-  - type: return_home
-    params:
-      post_settle_steps: 20
 enable_random_lights: false
 image_noise_std: 0
 image_speckle_noise_std: 0
-enable_objects_randomization: false
+enable_objects_randomization: true
 enable_objects_randomization_curriculum: false
 texture_randomization:
   enabled: false

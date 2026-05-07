@@ -190,7 +190,7 @@ class NearestNeighborObjectStrategy(SelectionStrategy):
         # get angle (in axis-angle representation of delta rotation matrix) using the following formula
         # (see http://www.boris-belousov.net/2016/12/01/quat-dist/)
 
-        # batched matrix mult, [N, 3, 3] x [1, 3, 3] -> [N, 3, 3]
+        # batched matrix mult, [N, 3, 3] x [1, 3, 3]  to  [N, 3, 3]
         delta_R = torch.matmul(all_src_obj_rot, obj_rot_T)
         arc_cos_in = (torch.diagonal(delta_R, dim1=-2, dim2=-1).sum(dim=-1) - 1.0) / 2.0
         arc_cos_in = torch.clamp(arc_cos_in, -1.0, 1.0)  # clip for numerical stability
@@ -290,7 +290,7 @@ class NearestNeighborRobotDistanceStrategy(SelectionStrategy):
         # get angle (in axis-angle representation of delta rotation matrix) using the following formula
         # (see http://www.boris-belousov.net/2016/12/01/quat-dist/)
 
-        # batched matrix mult, [N, 3, 3] x [1, 3, 3] -> [N, 3, 3]
+        # batched matrix mult, [N, 3, 3] x [1, 3, 3]  to  [N, 3, 3]
         delta_R = torch.matmul(all_transformed_eef_rot, eef_rot_T)
         arc_cos_in = (torch.diagonal(delta_R, dim1=-2, dim2=-1).sum(dim=-1) - 1.0) / 2.0
         arc_cos_in = torch.clamp(arc_cos_in, -1.0, 1.0)  # clip for numerical stability

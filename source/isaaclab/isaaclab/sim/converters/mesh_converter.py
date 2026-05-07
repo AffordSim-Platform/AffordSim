@@ -137,7 +137,7 @@ class MeshConverter(AssetConverterBase):
                     )
         # Delete the old Xform and make the new Xform the default prim
         stage.SetDefaultPrim(xform_prim)
-        # Apply default Xform rotation to mesh -> enable to set rotation and scale
+        # Apply default Xform rotation to mesh  to  enable to set rotation and scale
         omni.kit.commands.execute(
             "CreateDefaultXformOnPrimCommand",
             prim_path=xform_prim.GetPath(),

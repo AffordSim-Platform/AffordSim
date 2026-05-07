@@ -42,7 +42,7 @@ parser.add_argument("--horizon", type=int, default=400, help="Max steps per roll
 parser.add_argument("--num_rollouts", type=int, default=5, help="Number of rollouts")
 parser.add_argument("--seed", type=int, default=None, help="Random seed")
 parser.add_argument("--action_horizon", type=int, default=8,
-                    help="How many actions to execute per server query (≤ server's NUM_ACTIONS_CHUNK).")
+                    help="How many actions to execute per server query (<= server's NUM_ACTIONS_CHUNK).")
 parser.add_argument(
     "--task_config", type=str,
     default="source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/task_gen/config/sceneconfig/generated_task_config.yaml",
@@ -54,31 +54,31 @@ parser.add_argument("--pick_lift_threshold", type=float, default=0.05)
 parser.add_argument(
     "--action_type", type=str, default=None, choices=["ee_delta", "joint_delta"],
     help=(
-        "Action semantics the policy server returns. ee_delta=6D EE delta+gripper (env 用 IK-rel, 直接下发); "
-        "joint_delta=7D joint delta+gripper (env 用 JointPosition 绝对, play 时按 --joint_delta_mode 展开). "
-        "未指定则按 task id 自动推断: 含 'joint' → joint_delta, 否则 ee_delta."
+        "Action semantics the policy server returns. ee_delta=6D EE delta+gripper (env  IK-rel, ); "
+        "joint_delta=7D joint delta+gripper (env  JointPosition , play  --joint_delta_mode ). "
+        " task id :  'joint'  to  joint_delta,  ee_delta."
     ),
 )
 parser.add_argument(
     "--joint_delta_mode", type=str, default="cumulative", choices=["current", "cumulative"],
     help=(
-        "joint_delta -> 绝对位置的展开方式 (仅 action_type=joint_delta 时生效). "
-        "'current'   : arm_target(k) = cur_qpos(k) + delta(k), 偏差自我修正; "
-        "'cumulative': arm_target(k) = arm_target(k-1) + delta(k), 与训练一阶差分语义一致."
+        "joint_delta  to   ( action_type=joint_delta ). "
+        "'current'   : arm_target(k) = cur_qpos(k) + delta(k), ; "
+        "'cumulative': arm_target(k) = arm_target(k-1) + delta(k), ."
     ),
 )
 parser.add_argument(
     "--warmup_action", type=str, default=None, choices=["zero", "hold"],
     help=(
-        "rollout 前的 warmup 模式. 'zero' 适合 delta 模式; 'hold' (arm=当前 qpos, gripper=-1/open) 适合 "
-        "JointPosition 绝对模式. 未指定则按 --action_type 推断."
+        "rollout  warmup . 'zero'  delta ; 'hold' (arm= qpos, gripper=-1/open)  "
+        "JointPosition .  --action_type ."
     ),
 )
 parser.add_argument(
     "--gripper_postprocess", type=str, default="binary_pm1", choices=["raw01", "binary_pm1"],
     help=(
-        "VLA-Adapter 训练时 gripper 是 {0,1}. 'raw01' 直接下发到 env; "
-        "'binary_pm1' 转成 {-1, +1} (匹配 IsaacLab IK-rel/JointPosition 末端的 gripper 维约定, 与 openpi/play.py 一致)."
+        "VLA-Adapter  gripper  {0,1}. 'raw01'  env; "
+        "'binary_pm1'  {-1, +1} ( IsaacLab IK-rel/JointPosition  gripper ,  openpi/play.py )."
     ),
 )
 
@@ -88,10 +88,10 @@ args_cli = parser.parse_args()
 # Auto-infer action_type / warmup_action from task id if not given.
 if args_cli.action_type is None:
     args_cli.action_type = "joint_delta" if "joint" in args_cli.task.lower() else "ee_delta"
-    print(f"[EVAL] --action_type 未指定, 按 task='{args_cli.task}' 推断为 '{args_cli.action_type}'")
+    print(f"[EVAL] --action_type ,  task='{args_cli.task}'  '{args_cli.action_type}'")
 if args_cli.warmup_action is None:
     args_cli.warmup_action = "hold" if args_cli.action_type == "joint_delta" else "zero"
-    print(f"[EVAL] --warmup_action 未指定, 按 action_type='{args_cli.action_type}' 推断为 '{args_cli.warmup_action}'")
+    print(f"[EVAL] --warmup_action ,  action_type='{args_cli.action_type}'  '{args_cli.warmup_action}'")
 
 app_launcher = AppLauncher(args_cli)
 simulation_app = app_launcher.app
@@ -121,7 +121,7 @@ class _MsgpackNumpy:
         if isinstance(obj, np.ndarray):
             kind = obj.dtype.kind
             if kind == "V":
-                # structured array — fall back to default
+                # structured array - fall back to default
                 return obj if chain is None else chain(obj)
             return {
                 b"nd": True,
@@ -221,7 +221,7 @@ class VLAAdapterClient:
         self.session.mount("http://", adapter)
         self.session.mount("https://", adapter)
         self.session.headers.update({"Content-Type": "application/msgpack"})
-        print(f"[CLIENT] VLA-Adapter MsgPack HTTP client → {self.act_url}")
+        print(f"[CLIENT] VLA-Adapter MsgPack HTTP client  to  {self.act_url}")
 
     def get_meta(self) -> Dict[str, Any]:
         r = self.session.get(self.meta_url, timeout=self.timeout)
@@ -262,7 +262,7 @@ def load_background_images(task_config_path):
             img = cv2.imread(full_path)
             if img is not None:
                 bg_images[key] = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-                print(f"[INFO] Loaded background image {key}: {full_path} -> {img.shape}")
+                print(f"[INFO] Loaded background image {key}: {full_path}  to  {img.shape}")
             else:
                 print(f"[WARN] Failed to load background image {key}: {full_path}")
     return bg_images
@@ -298,7 +298,7 @@ def _apply_speckle_noise_u8(img_u8: np.ndarray, std: float) -> np.ndarray:
 
 
 # ============================================================================
-# Task YAML -> eval stages (unchanged from openpi/play.py)
+# Task YAML  to  eval stages (unchanged from openpi/play.py)
 # ============================================================================
 
 def _get_object_scale_from_cfg(cfg: dict, object_name: str) -> np.ndarray:
@@ -388,7 +388,7 @@ def evaluate_stages_at_episode_end(
     scene, stages, pick_initial_z, pick_lift_threshold,
     pick_peak_z=None, pull_peak_displacement=None, pour_min_tilt_z=None,
 ):
-    # 兼容: 旧签名传 float (单 pick_target). 新签名传 dict[target -> z], 支持 stack 多 pick.
+    # :  float ( pick_target).  dict[target  to  z],  stack  pick.
     if not isinstance(pick_initial_z, dict):
         legacy_target = resolve_pick_target(stages)
         pick_initial_z = {legacy_target: pick_initial_z} if legacy_target else {}
@@ -397,7 +397,7 @@ def evaluate_stages_at_episode_end(
         pick_peak_z = {legacy_target: pick_peak_z} if (legacy_target and pick_peak_z is not None) else {}
 
     results = {}
-    held_target = None  # 最近一次 pick 抓的物体, place/pour/hang 用它
+    held_target = None  #  pick , place/pour/hang 
 
     for idx, stage in enumerate(stages):
         ptype = stage["type"]
@@ -602,8 +602,8 @@ def _build_warmup_action(mode, env, obs_dict, device):
 def _maybe_postprocess_gripper(action_vec: np.ndarray, mode: str) -> np.ndarray:
     """VLA-Adapter outputs gripper in {0,1}; some IsaacLab actions want {-1,+1}.
 
-    'raw01'      -> pass through (server already returns 0/1)
-    'binary_pm1' -> 0 -> -1, 1 -> +1, threshold at 0.5
+    'raw01'       to  pass through (server already returns 0/1)
+    'binary_pm1'  to  0  to  -1, 1  to  +1, threshold at 0.5
     """
     if mode == "raw01":
         return action_vec
@@ -628,8 +628,8 @@ def rollout(
 ):
     """Run one episode with VLA-Adapter remote policy.
 
-    pick_targets: 全部 pick 物体名 (stack 任务有多个), 用于 per-target 追踪 peak_z.
-    primary_pick_target: 倾倒类任务里用来判断「靠近 pour_target」的主物体, 默认取首个 pick.
+    pick_targets:  pick  (stack ),  per-target  peak_z.
+    primary_pick_target:  pour_target,  pick.
     """
     debug_dir = f"debug_images/vla_adapter_trial_{trial_id}"
     os.makedirs(debug_dir, exist_ok=True)
@@ -671,7 +671,7 @@ def rollout(
             cur = pick_peak_z.get(tgt)
             if cur is None or z > cur:
                 pick_peak_z[tgt] = z
-            # 倾倒判定: 仅对 primary pick (壶/容器) 跟踪倾斜.
+            # :  primary pick (/) .
             if tgt == primary_pick_target and pour_target and quat_w is not None:
                 pour_pos_w, _ = _get_object_pose_world_from_scene(env.scene, pour_target, 0)
                 if pour_pos_w is not None:
@@ -748,7 +748,7 @@ def rollout(
         qpos = obs["qpos"].squeeze().cpu().numpy().astype(np.float32)
         vla_obs = {
             "full_image": front_img,            # (H, W, 3) uint8
-            "wrist_image": wrist_img,           # (H, W, 3) uint8 — key contains "wrist"
+            "wrist_image": wrist_img,           # (H, W, 3) uint8 - key contains "wrist"
             "state": qpos,                      # (PROPRIO_DIM,) float32
             "instruction": prompt,
             "unnorm_key": unnorm_key,
@@ -768,7 +768,7 @@ def rollout(
             # 1) gripper postprocess: VLA-Adapter outputs {0,1}; env expects {-1,+1} by default
             action = _maybe_postprocess_gripper(action, gripper_postprocess)
 
-            # 2) joint_delta -> absolute (only when env wants absolute joint position)
+            # 2) joint_delta  to  absolute (only when env wants absolute joint position)
             if action_type == "joint_delta":
                 if joint_delta_mode == "current":
                     cur_qpos = obs_dict["policy"]["qpos"].squeeze().detach().cpu().numpy().astype(action.dtype)
@@ -845,7 +845,7 @@ def main():
     _entry = gym.spec(args_cli.task).kwargs["env_cfg_entry_point"]
     _mod_name, _cls_name = _entry.split(":")
     env_cfg_class = getattr(importlib.import_module(_mod_name), _cls_name)
-    print(f"[EVAL] task={args_cli.task} -> env_cfg_class={_cls_name}")
+    print(f"[EVAL] task={args_cli.task}  to  env_cfg_class={_cls_name}")
 
     env_cfg = create_pick_env_cfg_from_yaml(
         yaml_path=args_cli.task_config, env_cfg_class=env_cfg_class,
@@ -869,7 +869,7 @@ def main():
     print(f"[EVAL] image_speckle_noise_std = {image_speckle_noise_std}")
 
     stages = load_eval_stages(args_cli.task_config)
-    pick_targets = resolve_unique_pick_targets(stages)  # stack 任务有多个 pick
+    pick_targets = resolve_unique_pick_targets(stages)  # stack  pick
     primary_pick_target = pick_targets[0] if pick_targets else None
     pull_target = next((s.get("pull_target") for s in stages if s["type"] == "pull"), None)
     pour_target = next((s.get("pour_target") for s in stages if s["type"] == "pour"), None)
@@ -895,7 +895,7 @@ def main():
         for _ in range(10):
             warmup = _build_warmup_action(args_cli.warmup_action, env, initial_obs_dict, device)
             initial_obs_dict, _, _, _, _ = env.step(warmup)
-        # Per-target initial_z (stack 任务里每个 block 都要单独记).
+        # Per-target initial_z (stack  block ).
         pick_initial_z = {
             tgt: capture_object_initial_z(env.scene, tgt, env_idx=0)
             for tgt in pick_targets
@@ -923,7 +923,7 @@ def main():
         saved = frames_to_gif(front_frames, gif_path, target_frames=30, target_size=256)
         if saved:
             gif_paths.append(saved)
-            print(f"[EVAL] saved GIF: {saved} ({len(front_frames)} frames -> 30 sampled)")
+            print(f"[EVAL] saved GIF: {saved} ({len(front_frames)} frames  to  30 sampled)")
 
         stage_results = evaluate_stages_at_episode_end(
             scene=env.scene, stages=stages,

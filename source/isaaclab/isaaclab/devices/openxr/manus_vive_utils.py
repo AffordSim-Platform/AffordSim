@@ -74,8 +74,8 @@ class ManusViveIntegration:
         self.scene_T_lighthouse_static = None
         self._vive_left_id = None
         self._vive_right_id = None
-        self._pairA_candidates = []  # Pair A: WM0->Left, WM1->Right
-        self._pairB_candidates = []  # Pair B: WM1->Left, WM0->Right
+        self._pairA_candidates = []  # Pair A: WM0 to Left, WM1 to Right
+        self._pairB_candidates = []  # Pair B: WM1 to Left, WM0 to Right
         self._pairA_trans_errs = []
         self._pairA_rot_errs = []
         self._pairB_trans_errs = []
@@ -243,8 +243,8 @@ class ManusViveIntegration:
                     averaged = average_transforms(cluster)
                     self.scene_T_lighthouse_static = averaged
                     print(
-                        f"Wrist calibration computed. Resolved mapping: {self._vive_left_id}->Left,"
-                        f" {self._vive_right_id}->Right"
+                        f"Wrist calibration computed. Resolved mapping: {self._vive_left_id} to Left,"
+                        f" {self._vive_right_id} to Right"
                     )
 
         except Exception as e:

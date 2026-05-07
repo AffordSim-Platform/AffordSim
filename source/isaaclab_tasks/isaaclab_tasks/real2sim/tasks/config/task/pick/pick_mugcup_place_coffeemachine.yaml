@@ -12,10 +12,10 @@ task:
 runtime:
   headless: false
   episodes: 5
-  save_npy: true
-  save_camera_images: true
-  save_composite_images: true
-  save_mask_images: true
+  save_npy: false
+  save_camera_images: false
+  save_composite_images: false
+  save_mask_images: false
   save_original_images: true
   enable_motion_planning: true
   sim_camera_resolution: [640, 480]
@@ -25,6 +25,7 @@ runtime:
   cam_wrist_background: backgrounds/wristbackground_realworld1.png
   data_dir: data/r2s2r_data/pick_mugcup_place_coffeemachine
   task_name: FrankaFr3-OurGripper-Joint-VisPick-v0
+  save_depth_images: false
 robot:
   cfg_name: franka_fr3_our.yml
   type: franka_fr3_default
@@ -37,14 +38,22 @@ objects:
     semantic_tags:
       -   - class
           - red_mugcup
-    init_pos: [0.55, 0.2, 0.09]
-    init_rot: [0.3173, 0.0, 0.0, 0.9483]
+    init_pos: [0.55, 0.25, 0.09]
+    init_rot: [-0.38268343, 0.0, 0.0, 0.92387953]
     position_range:
-      x: [0.5, 0.7]
-      y: [0.15, 0.25]
-      z: [0.09, 0.09]
+      x:
+        - 0.45
+        - 0.75
+      y:
+        - 0.05
+        - 0.35
+      z:
+        - 0.09
+        - 0.09
     orientation_range:
-      yaw: [-0.785398, 0.785398]
+      yaw:
+        - -0.3489
+        - 0.3489
   coffeemachine1:
     usd_path: models/all_object/coffeemachine1.usd
     semantic_tags:
@@ -53,24 +62,22 @@ objects:
     scale: [0.3, 0.3, 0.3]
     disable_gravity: false
     enabled_self_collisions: true
-    init_pos: [0.9, -0.25, 0.23]
+    init_pos: [0.7, -0.25, 0.23]
     init_rot: [0.999, 0.0, 0.0, -0.0436]
     position_range:
-      x: [0.85, 0.9]
-      y: [-0.27, -0.23]
-      z: [0.23, 0.23]
+      x:
+        - 0.70
+        - 0.85
+      y:
+        - -0.35
+        - -0.15
+      z:
+        - 0.23
+        - 0.23
     orientation_range:
-      yaw: [-0.1745, 0.1745]
-  # white_kettle1:
-  #   usd_path: models/all_object/white_kettle1.usd
-  #   semantic_tags:
-  #     -   - class
-  #         - white_kettle1
-  #   scale: [0.15, 0.15, 0.15]
-  #   disable_gravity: false
-  #   enabled_self_collisions: true
-  #   init_pos: [0.85, 0.1, 0.23]
-  #   init_rot: [0.9962, 0.0, 0.0, 0.0872]
+      yaw:
+        - -0.1745
+        - 0.1745
 primitives:
   - type: pick
     mode: affordance

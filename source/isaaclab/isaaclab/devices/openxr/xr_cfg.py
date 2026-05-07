@@ -75,8 +75,8 @@ class XrCfg:
 
     This time constant is applied using wall-clock delta time between frames (not physics dt).
     Smaller values (e.g., 0.1) result in faster/snappier response but less smoothing.
-    Larger values (e.g., 0.75–2.0) result in slower/smoother response but more lag.
-    Typical useful range: 0.3 – 1.5 seconds depending on runtime frame-rate and comfort.
+    Larger values (e.g., 0.75-2.0) result in slower/smoother response but more lag.
+    Typical useful range: 0.3 - 1.5 seconds depending on runtime frame-rate and comfort.
     """
 
     anchor_rotation_custom_func: Callable[[np.ndarray, np.ndarray], np.ndarray] = lambda headpose, primpose: np.array(

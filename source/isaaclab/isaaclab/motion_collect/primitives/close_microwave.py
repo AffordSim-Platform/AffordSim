@@ -172,7 +172,7 @@ def primitive_execute_close(collector, params: Dict[str, Any], context: Dict[str
         active_mask=list(local_active),
     )
 
-    print(f"  🚪 [Primitive] Planning microwave pre-close pose for '{target_label}'")
+    print(f"   [Primitive] Planning microwave pre-close pose for '{target_label}'")
     pre_close_plans, pre_close_plan_successes = collector.motion_planner.plan_to_pose_batch(
         collector.robot.data.joint_pos[:n].cpu().numpy(),
         collector.robot.data.joint_vel[:n].cpu().numpy(),
@@ -223,13 +223,13 @@ def primitive_execute_close(collector, params: Dict[str, Any], context: Dict[str
             angle_ok = np.isfinite(joint_val) and (abs(joint_val) <= max_angle)
             range_ok = bool(metrics["articulation_in_range"] > 0.5)
             joint_text = f"{joint_val:.4f}" if np.isfinite(joint_val) else "nan"
-            print(
-                f"    [TaskCheck][env {env_idx}] "
-                f"joint_pos={joint_text} rad (|val|<={max_angle:.4f}: {'OK' if angle_ok else 'FAIL'}), "
-                f"articulation_in_range={'OK' if range_ok else 'FAIL'}"
-            )
+            # print(
+            #     f"    [TaskCheck][env {env_idx}] "
+            #     f"joint_pos={joint_text} rad (|val|<={max_angle:.4f}: {'OK' if angle_ok else 'FAIL'}), "
+            #     f"articulation_in_range={'OK' if range_ok else 'FAIL'}"
+            # )
         print(
-            f"  ✅ [Primitive] Task success (close): "
+            f"   [Primitive] Task success (close): "
             f"{sum(1 for i in range(n) if plan_active_after[i] and state_successes[i])}/{n} "
             f"(joint_pos<={max_angle:.3f} rad)"
         )
@@ -248,5 +248,5 @@ def primitive_execute_close(collector, params: Dict[str, Any], context: Dict[str
     context["close_completed"] = any(final_alive)
     context["primitive_executed_motion"] = True
 
-    print(f"  ✅ [Primitive] Close success (alive): {sum(final_alive)}/{n}")
+    print(f"   [Primitive] Close success (alive): {sum(final_alive)}/{n}")
     return any(final_alive)

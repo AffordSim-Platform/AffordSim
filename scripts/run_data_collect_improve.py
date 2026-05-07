@@ -13,6 +13,11 @@ ENV_EDITOR_PATH = str(
      / "source/isaaclab/isaaclab/motion_collect/scene_create/env_editor.py")
 )
 
+
+def _normalize_pipeline_args(argv):
+    """Allow both '--skip_editor' and the legacy bare 'skip_editor' token."""
+    return ["--skip_editor" if arg == "skip_editor" else arg for arg in argv]
+
 def _infer_task_category(task_name: str) -> str:
     """Infer task category folder name from task_name prefix."""
     name = task_name.lower()
@@ -134,21 +139,31 @@ def run_scene_editor():
         return False
 def main():
     # 1. Parse command-line arguments
-    parser = argparse.ArgumentParser(description="Interactive data collection pipeline.")
+    parser = argparse.ArgumentParser(
+        description=(
+            "Scene editing and data collection entry point. By default this script "
+            "runs only the scene editor and exits. Use --skip_editor to run data "
+            "collection directly from an existing YAML."
+        )
+    )
 
     # Pipeline arguments
     parser.add_argument("--task_name", type=str, default="pick",
                         help=(
                             "Task name. Resolves to sceneconfig/task/<category>/<task_name>.yaml by prefix: "
-                            "pick_**->pick, pour_**->pour, hang_**->hang, stack_**->stack, "
-                            "push_**/pull_**->pull_push, open_**/close_**->open_close, others->composite. "
+                            "pick_** to pick, pour_** to pour, hang_** to hang, stack_** to stack, "
+                            "push_**/pull_** to pull_push, open_**/close_** to open_close, others to composite. "
                             "Only the new directory structure is supported; legacy sceneconfig/<task_name>.yaml is no longer used."
                         ))
 
     parser.add_argument("--robot", type=str, default=None, choices=["franka_fr3", "ur5e", "kinova_robotiq85", "xarm7_ufactory", "sawyer_robotiq85"],
                         help="Robot type, overrides the robot config in YAML. Options: franka_fr3, ur5e, kinova_robotiq85, xarm7_ufactory, or sawyer_robotiq85")
 
-    parser.add_argument("--skip_editor", action="store_true", help="Skip the editor stage and run collection directly using existing YAML")
+    parser.add_argument(
+        "--skip_editor",
+        action="store_true",
+        help="Skip scene editing and run data collection directly using an existing YAML.",
+    )
 
     # Override arguments
     parser.add_argument("--num_envs", type=int, default=None, help="Override number of environments")
@@ -158,21 +173,20 @@ def main():
 
     # Isaac Lab standard arguments (headless, device, etc.)
     AppLauncher.add_app_launcher_args(parser)
-    args_cli, _ = parser.parse_known_args()
+    args_cli, _ = parser.parse_known_args(_normalize_pipeline_args(sys.argv[1:]))
 
-    # --- Stage 1: Run scene editor (subprocess) ---
+    # --- Scene editor mode (default): run editor only, then exit ---
     if not args_cli.skip_editor:
         success = run_scene_editor()
         if not success:
             print("[ERROR] Editor stage failed or was cancelled. Exiting.")
             sys.exit(1)
-    else:
-        # print("[INFO] Skipping editor stage (--skip_editor), starting collection directly.")
-        pass
+        print("[INFO] Scene editor completed. Exiting without data collection.")
+        sys.exit(0)
 
-    # --- Stage 2: Run data collection (main process) ---
+    # --- Data collection mode: only reached with --skip_editor ---
     # print(f"\n{'='*80}")
-    # print(f"STAGE 2: Automated data collection")
+    # print(f"Automated data collection")
     # print(f"{'='*80}")
 
     # Initialize the simulation app for the current process (resource-intensive; must run after editor closes)

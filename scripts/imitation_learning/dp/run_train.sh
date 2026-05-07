@@ -1,8 +1,8 @@
 #!/bin/bash
-# dp_rss 训练启动脚本. 依赖: isaacsim5 conda env (torch/torchvision/h5py/diffusers/einops).
+# dp_rss . : isaacsim5 conda env (torch/torchvision/h5py/diffusers/einops).
 
 set -e
-echo "开始运行 dp_rss (RSS-faithful Diffusion Policy) 训练..."
+echo " dp_rss (RSS-faithful Diffusion Policy) ..."
 
 # pick_banana_and_place_on_plate_final
 # python scripts/imitation_learning/dp_rss/train.py \
@@ -99,4 +99,4 @@ CUDA_VISIBLE_DEVICES=7 python scripts/imitation_learning/dp_rss/train.py \
     --eval_num_rollouts 5 --eval_horizon 400 \
     --eval_joint_delta_mode cumulative --action_type ee_delta
 
-echo "训练结束"
+echo ""

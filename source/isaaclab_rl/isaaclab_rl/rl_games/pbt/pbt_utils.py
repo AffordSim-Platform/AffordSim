@@ -96,7 +96,7 @@ def dump_env_sizes():
 
     print(f"[ENV MONITOR] vars={n}, total_bytes={total}")
     for k, v in biggest:
-        print(f"    {k!r} length={len(v)} → {v[:60]}{'…' if len(v) > 60 else ''}")
+        print(f"    {k!r} length={len(v)}  to  {v[:60]}{'...' if len(v) > 60 else ''}")
 
     try:
         argmax = os.sysconf("SC_ARG_MAX")
@@ -167,8 +167,8 @@ def save_pbt_checkpoint(workspace_dir, curr_policy_score, curr_iter, algo, param
 
 def load_pbt_ckpts(workspace_dir, cur_policy_id, num_policies, pbt_iteration) -> dict | None:
     """
-    Load the latest available PBT checkpoint for each policy (≤ current iteration).
-    Returns a dict mapping policy_idx → checkpoint dict or None. (rank 0 only)
+    Load the latest available PBT checkpoint for each policy (<= current iteration).
+    Returns a dict mapping policy_idx  to  checkpoint dict or None. (rank 0 only)
     """
     if int(os.environ.get("RANK", "0")) != 0:
         return None
@@ -247,7 +247,7 @@ class PbtTablePrinter:
     def short(self, s: str) -> str:
         s = str(s)
         L = self.path_maxlen
-        return s if len(s) <= L else s[: L // 2 - 1] + "…" + s[-L // 2 :]
+        return s if len(s) <= L else s[: L // 2 - 1] + "..." + s[-L // 2 :]
 
     # tables
     def print_params_table(self, params: dict, header: str = "Parameters"):
@@ -272,7 +272,7 @@ class PbtTablePrinter:
         for p in sorted(sumry.keys()):
             c = sumry[p]
             if c is None:
-                t.add_row([p, "—", "", "", "", "", "", ""])
+                t.add_row([p, "-", "", "", "", "", "", ""])
             else:
                 t.add_row([
                     p,

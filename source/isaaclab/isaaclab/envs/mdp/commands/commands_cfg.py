@@ -100,7 +100,7 @@ class NormalVelocityCommandCfg(UniformVelocityCommandCfg):
     """Configuration for the normal velocity command generator."""
 
     class_type: type = NormalVelocityCommand
-    heading_command: bool = False  # --> we don't use heading command for normal velocity command.
+    heading_command: bool = False  # - to  we don't use heading command for normal velocity command.
 
     @configclass
     class Ranges:

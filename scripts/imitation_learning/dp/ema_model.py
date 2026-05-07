@@ -1,7 +1,7 @@
 """
-Exponential Moving Average (EMA) — 从 diffusion_policy 原版搬过来.
+Exponential Moving Average (EMA) -  diffusion_policy .
 
-推理/保存时用 EMA 权重; 训练时每个 optimization step 调 step(model).
+/ EMA ;  optimization step  step(model).
 """
 
 import torch
@@ -10,9 +10,9 @@ from torch.nn.modules.batchnorm import _BatchNorm
 
 class EMAModel:
     """
-    EMA warmup 使用 Karras 调度:
+    EMA warmup  Karras :
         decay = 1 - (1 + step/inv_gamma)^(-power)
-    gamma=1, power=2/3 对应 reaches 0.999 at 31.6K steps, 0.9999 at 1M steps.
+    gamma=1, power=2/3  reaches 0.999 at 31.6K steps, 0.9999 at 1M steps.
     """
 
     def __init__(

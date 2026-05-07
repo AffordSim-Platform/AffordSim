@@ -12,7 +12,8 @@ import glob
 import os
 from pathlib import Path
 
-ASSET_PATH = "/home/xhf/AffordSim/models"
+_CUR_DIR = os.path.dirname(os.path.abspath(__file__))
+ASSET_PATH = os.path.abspath(os.path.join(_CUR_DIR, "../../../../..", "models"))
 ALL_OBJECT_DIR = os.path.join(ASSET_PATH, "all_object")
 OUTPUT_PATH = os.path.join(ALL_OBJECT_DIR, "label.json")
 
@@ -27,9 +28,9 @@ def compute_bbox(usd_path):
     min_pt = aligned.GetMin()
     max_pt = aligned.GetMax()
 
-    length = max_pt[0] - min_pt[0]  # X -> length
-    width = max_pt[1] - min_pt[1]   # Y -> width
-    height = max_pt[2] - min_pt[2]  # Z -> height
+    length = max_pt[0] - min_pt[0]  # X  to  length
+    width = max_pt[1] - min_pt[1]   # Y  to  width
+    height = max_pt[2] - min_pt[2]  # Z  to  height
 
     # bottom_offset = distance from origin to object bottom = -min_z
     bottom_offset = -min_pt[2] if min_pt[2] < 0 else 0.0

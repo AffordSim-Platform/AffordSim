@@ -105,7 +105,7 @@ def apply_haply_to_robot_mapping(
 
     haply_delta = haply_pos - haply_initial_pos
 
-    # Coordinate system mapping: Haply (X, Y, Z) -> Robot (-Y, X, Z-offset)
+    # Coordinate system mapping: Haply (X, Y, Z)  to  Robot (-Y, X, Z-offset)
     robot_offset = np.array([-haply_delta[1], haply_delta[0], haply_delta[2] - HAPLY_Z_OFFSET])
     robot_pos = robot_initial_pos + robot_offset
 
@@ -239,7 +239,7 @@ def run_simulator(
 
     print("\n[INFO] Teleoperation ready!")
     print("  Move handler: Control pose of the end-effector")
-    print("  Button A: Open | Button B: Close | Button C: Rotate EE (60°)\n")
+    print("  Button A: Open | Button B: Close | Button C: Rotate EE (60 deg)\n")
 
     while simulation_app.is_running():
         if count % 10000 == 0:

@@ -13,7 +13,7 @@ except ImportError:
 DEFAULT_UNIT_THRESHOLD = 100.0
 _VISUALIZATION_KEY = "_open3d_visualization"
 
-# GLFW 键码 (供 Open3D VisualizerWithKeyCallback.register_key_callback 使用)
+# GLFW  ( Open3D VisualizerWithKeyCallback.register_key_callback )
 _KEY_ENTER = 257
 _KEY_NUMPAD_ENTER = 335
 _KEY_ESCAPE = 256
@@ -22,7 +22,7 @@ _KEY_ARROW_DOWN = 264
 
 
 # ============================================================================
-# 阈值缩放
+# 
 # ============================================================================
 def scale_points_with_threshold(raw_points, threshold):
     coord_range = raw_points.ptp(axis=0).max()
@@ -32,18 +32,18 @@ def scale_points_with_threshold(raw_points, threshold):
 
 
 def print_unit_status(item_name, coord_range, threshold, converted):
-    action = "按毫米转米" if converted else "保持原坐标"
+    action = "" if converted else ""
     print(
         f"[INFO] {item_name}: coord_range={coord_range:.6f}, "
-        f"当前阈值={threshold:g}, {action}"
+        f"={threshold:g}, {action}"
     )
 
 
 # ============================================================================
-# 按键 -> 决策 分类
+#   to   
 # ============================================================================
 def _classify_key(raw):
-    """把一段原始按键输入(可能是多字节 escape 序列)映射成决策, 不认识返回 None。"""
+    """( escape ),  None"""
     if raw is None or raw == "":
         return None
     if raw in ("\r", "\n"):
@@ -67,18 +67,18 @@ def _classify_key(raw):
 
 
 def _read_key_event_nonblock():
-    """在 cbreak 模式下非阻塞地读一次按键事件, 返回 raw 字符串或 None。
+    """ cbreak ,  raw  None
 
-    处理 ESC 开头的转义序列 (方向键 \x1b[A / \x1b[B) 与单独的 ESC。
+     ESC  ( \x1b[A / \x1b[B)  ESC
     """
     if not select.select([sys.stdin], [], [], 0)[0]:
         return None
     ch = sys.stdin.read(1)
     if ch != "\x1b":
         return ch
-    # 继续尝试读转义序列的剩余字节, 给 20ms 缓冲
+    # ,  20ms 
     if not select.select([sys.stdin], [], [], 0.02)[0]:
-        return ch  # 单独的 ESC
+        return ch  #  ESC
     ch2 = sys.stdin.read(1)
     if ch2 != "[":
         return ch + ch2
@@ -89,7 +89,7 @@ def _read_key_event_nonblock():
 
 
 def _drain_stdin():
-    """清空 stdin 中之前残留的按键 (避免上一轮窗口里按下的键溢出到下一轮)。"""
+    """ stdin  ()"""
     try:
         while select.select([sys.stdin], [], [], 0)[0]:
             sys.stdin.read(1)
@@ -98,30 +98,30 @@ def _drain_stdin():
 
 
 # ============================================================================
-# 终端提示
+# 
 # ============================================================================
 def _instructions(threshold):
     return (
-        "[INPUT] 按键: "
-        "Enter/Y=确认保存 | "
-        f"↑/U=阈值×10 → {threshold * 10:g} | "
-        f"↓/D=阈值÷10 → {threshold / 10:g} | "
-        "Q/Esc/X=退出当前批处理"
+        "[INPUT] : "
+        "Enter/Y= | "
+        f"Up/U=x10  to  {threshold * 10:g} | "
+        f"Down/D=/10  to  {threshold / 10:g} | "
+        "Q/Esc/X="
     )
 
 
 def prompt_threshold_decision(threshold):
-    """纯终端路径 (无可视化), 阻塞等待按键。"""
+    """ (), """
     print(_instructions(threshold))
 
     if not sys.stdin.isatty():
-        # 没 tty 时降级到 input(): 用户需要按完键再回车
+        #  tty  input(): 
         while True:
             raw = input("> ").strip()
             decision = _classify_key(raw[:1] if raw else "\n")
             if decision is not None:
                 return decision
-            print("  [WARN] 未识别输入, 请重试 (Y / U / D / Q 任一字符, 或直接回车)")
+            print("  [WARN] ,  (Y / U / D / Q , )")
 
     fd = sys.stdin.fileno()
     old_settings = termios.tcgetattr(fd)
@@ -141,11 +141,11 @@ def prompt_threshold_decision(threshold):
 
 
 # ============================================================================
-# 可视化 payload 打包 / 拆包
+#  payload  / 
 # ============================================================================
 def attach_visualization(payload, geometries, window_name, width=1280, height=720):
     if not isinstance(payload, dict):
-        raise TypeError("payload 必须是 dict")
+        raise TypeError("payload  dict")
 
     payload = dict(payload)
     payload[_VISUALIZATION_KEY] = {
@@ -167,16 +167,16 @@ def _split_visualization_payload(payload):
 
 
 # ============================================================================
-# 可视化 + 交互决策
+#  + 
 #
-# 关键设计: 同时支持 "在 Open3D 窗口内按键" 和 "切到终端按键" 两种输入。
-# 做法是自己手动 poll_events() 驱动渲染, 每帧顺便非阻塞地读一次 stdin。
-# 这样即便某些 Linux 环境下 Open3D 的 key callback 不触发, 用户也能
-# 切焦点到终端完成操作。
+# :  " Open3D "  "" 
+#  poll_events() ,  stdin
+#  Linux  Open3D  key callback , 
+# 
 # ============================================================================
 def prompt_visual_decision(threshold, visualization):
     if o3d is None:
-        raise ImportError("未安装 open3d, 无法打开交互式确认窗口")
+        raise ImportError(" open3d, ")
 
     state = {"decision": None}
 
@@ -189,7 +189,7 @@ def prompt_visual_decision(threshold, visualization):
 
     vis = o3d.visualization.VisualizerWithKeyCallback()
     vis.create_window(
-        window_name=f"{visualization['window_name']} | 键位: Y=存 ↑↓=调阈值 Q=退出",
+        window_name=f"{visualization['window_name']} | : Y= UpDown= Q=",
         width=visualization["width"],
         height=visualization["height"],
     )
@@ -211,7 +211,7 @@ def prompt_visual_decision(threshold, visualization):
         vis.register_key_callback(key, quit_cb)
 
     print(_instructions(threshold))
-    print("[INFO] 可以在 Open3D 窗口内按键; 若窗口不响应, 请切到终端窗口按键")
+    print("[INFO]  Open3D ; , ")
 
     fd = None
     old_settings = None
@@ -228,10 +228,10 @@ def prompt_visual_decision(threshold, visualization):
 
     try:
         while state["decision"] is None:
-            # 驱动 Open3D 渲染 + 派发 key callback
+            #  Open3D  +  key callback
             window_alive = vis.poll_events()
             if not window_alive:
-                # 用户直接关了窗口, 视为退出
+                # , 
                 state["decision"] = "quit"
                 break
             vis.update_renderer()
@@ -244,8 +244,8 @@ def prompt_visual_decision(threshold, visualization):
                         state["decision"] = decision
                         break
 
-            # 不设 sleep 会空转 CPU; Open3D 自身 poll_events 已经有一点 wait,
-            # 但加个极短 sleep 更保险
+            #  sleep  CPU; Open3D  poll_events  wait,
+            #  sleep 
             time.sleep(0.005)
     finally:
         if stdin_is_tty and old_settings is not None:
@@ -253,18 +253,18 @@ def prompt_visual_decision(threshold, visualization):
         vis.destroy_window()
 
     if state["decision"] is None:
-        print("[INFO] 未检测到有效操作, 当前条目不保存, 停止后续处理。")
+        print("[INFO] , , ")
         return "quit"
     return state["decision"]
 
 
 # ============================================================================
-# 主循环
+# 
 # ============================================================================
 def run_threshold_debug_loop(raw_points, item_name, preview_fn, accept_fn, default_threshold=DEFAULT_UNIT_THRESHOLD):
     threshold = float(default_threshold)
     if threshold <= 0:
-        raise ValueError(f"threshold 必须为正数, 当前: {threshold}")
+        raise ValueError(f"threshold , : {threshold}")
 
     while True:
         points, coord_range, converted = scale_points_with_threshold(raw_points, threshold)

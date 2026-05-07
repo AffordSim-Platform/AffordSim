@@ -8,10 +8,10 @@ scene:
   env_spacing: 10
 task:
   name: pick_soupcan_place_microwave
-  description: grasp the soup and put it in the microwave
+  description: grasp the soup and put it in the microwave1
 runtime:
   headless: false
-  episodes: 1
+  episodes: 5
   save_npy: false
   save_camera_images: false
   save_composite_images: false
@@ -25,6 +25,7 @@ runtime:
   cam_wrist_background: backgrounds/wristbackground_realworld1.png
   data_dir: data/r2s2r_data/pick_soupcan_place_microwave
   task_name: FrankaFr3-OurGripper-Joint-VisPick-v0
+  save_depth_images: false
 robot:
   cfg_name: franka_fr3_our.yml
   type: franka_fr3_default
@@ -37,27 +38,48 @@ objects:
     semantic_tags:
       -   - class
           - red_soupcan
-    init_pos: [0.65, 0.12, 0.15]
+    init_pos: [0.75, 0.15, 0.15]
     init_rot: [1, 0, 0, 0]
     height: 0.10
-  # tuna:
-  #   usd_path: models/all_object/blue_tunacan.usd
-  #   semantic_tags:
-  #     - [class, tuna]
-  #   init_pos: [0.506, -0.383, 0.1]
-  #   init_rot: [0.3196, 0.0, 0.0, 0.9476]
-  #   height: 0.03
+    position_range:
+      x:
+        - 0.65
+        - 0.75
+      y:
+        - 0.15
+        - 0.35
+      z:
+        - 0.15
+        - 0.15
+    orientation_range:
+      yaw:
+        - -0.785
+        - 0.785
 articulations:
-  microwave:
+  microwave1:
     usd_path: models/all_object/microwave1.usd
     semantic_tags:
       -   - class
-          - microwave
+          - microwave1
     scale: [0.7, 0.6, 0.7]
     disable_gravity: false
     enabled_self_collisions: true
     init_pos: [0.8, -0.2, 0.25]
     init_rot: [-0.3826834, 0, 0, 0.9238795]
+    position_range:
+      x:
+        - 0.8
+        - 0.8
+      y:
+        - -0.2
+        - -0.2
+      z:
+        - 0.25
+        - 0.25
+    orientation_range:
+      yaw:
+        - 0.0
+        - 0.0
     joint_pos:
       microjoint: -2.355
     actuators:
@@ -79,13 +101,13 @@ primitives:
   - type: place
     mode: in
     params:
-      target: microwave
+      target: microwave1
       ik_interpolation_steps: 30
       success_eval: true
 enable_random_lights: false
 image_noise_std: 0
 image_speckle_noise_std: 0
-enable_objects_randomization: false
+enable_objects_randomization: true
 enable_objects_randomization_curriculum: false
 texture_randomization:
   enabled: false

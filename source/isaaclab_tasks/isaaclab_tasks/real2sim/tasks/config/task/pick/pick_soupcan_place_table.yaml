@@ -11,7 +11,7 @@ task:
   description: take the soup out of the microwave and place it back on the table
 runtime:
   headless: false
-  episodes: 1
+  episodes: 4
   save_npy: false
   save_camera_images: false
   save_composite_images: false
@@ -37,20 +37,48 @@ objects:
     semantic_tags:
       -   - class
           - red_soupcan
-    init_pos: [0.75, -0.12, 0.16]
+    init_pos: [0.75, -0.2, 0.16]
     init_rot: [0.6452, 0.0, 0.0, 0.764]
     height: 0.10
+    position_range:
+      x:
+        - 0.73
+        - 0.75
+      y:
+        - -0.23
+        - -0.17
+      z:
+        - 0.16
+        - 0.16
+    orientation_range:
+      yaw:
+        - 0.0
+        - 0.0
 articulations:
-  microwave:
+  microwave1:
     usd_path: models/all_object/microwave1.usd
     semantic_tags:
       -   - class
-          - microwave
+          - microwave1
     scale: [0.7, 0.6, 0.7]
     disable_gravity: false
     enabled_self_collisions: true
     init_pos: [0.8, -0.2, 0.16]
-    init_rot: [-0.3826834, 0, 0, 0.9238795]
+    init_rot: [0.7071, 0, 0, -0.7071]
+    position_range:
+      x:
+        - 0.8
+        - 0.8
+      y:
+        - -0.2
+        - -0.2
+      z:
+        - 0.16
+        - 0.16
+    orientation_range:
+      yaw:
+        - 0.0
+        - 0.0
     joint_pos:
       microjoint: -2.355
     actuators:
@@ -65,7 +93,7 @@ primitives:
     mode: gt
     params:
       target: red_soupcan
-      grasp_quat: [-0.1464, -0.8536, 0.3536, -0.3536]
+      grasp_quat: [0, -0.9238795, 0, -0.3826834]
       pre_pick_offset: 0.1
       pick_interpolation_steps: 10
       lift_interpolation_steps: 10
@@ -73,14 +101,14 @@ primitives:
   - type: place
     mode: pose
     params:
-      position: [0.65, 0.15, 0.15]
+      position: [0.5, -0.2, 0.15]
       orientation: [0, -0.9238795, 0, -0.3826834]
       ik_interpolation_steps: 30
       success_eval: true
 enable_random_lights: false
 image_noise_std: 0
 image_speckle_noise_std: 0
-enable_objects_randomization: false
+enable_objects_randomization: true
 enable_objects_randomization_curriculum: false
 texture_randomization:
   enabled: false

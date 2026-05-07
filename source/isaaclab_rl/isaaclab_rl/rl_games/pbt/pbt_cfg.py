@@ -41,10 +41,10 @@ class PbtCfg:
     """Environment steps between PBT iterations (save, compare, replace/mutate)."""
 
     threshold_std: float = 0.10
-    """Std-based margin k in max(mean ± k·std, mean ± threshold_abs) for leader/underperformer cuts."""
+    """Std-based margin k in max(mean +/- k·std, mean +/- threshold_abs) for leader/underperformer cuts."""
 
     threshold_abs: float = 0.05
-    """Absolute margin A in max(mean ± threshold_std·std, mean ± A) for leader/underperformer cuts."""
+    """Absolute margin A in max(mean +/- threshold_std·std, mean +/- A) for leader/underperformer cuts."""
 
     mutation_rate: float = 0.25
     """Per-parameter probability of mutation when a policy is replaced."""

@@ -72,7 +72,7 @@ class FrankaCubeVisLiftEnvCfg(LiftEnvCfg):
                 vertical_aperture=2.2275995208,
             ),
             offset=TiledCameraCfg.OffsetCfg(
-                pos=(0.052403921920994606, -0.025288774164821535, 0.02318101451993968),        # 相对于panda_link7的位置
+                pos=(0.052403921920994606, -0.025288774164821535, 0.02318101451993968),        # panda_link7
                 rot=(0.7147057398350619,0.0016792927953349934,-0.006422381974516167,0.6993937649366757), convention="ros"
             ),
         )

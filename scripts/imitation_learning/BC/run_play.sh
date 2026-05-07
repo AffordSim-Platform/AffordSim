@@ -1,6 +1,6 @@
 set -e
 
-echo "开始运行 BC 测试脚本..."
+echo " BC ..."
 
 # python scripts/imitation_learning/BC/play_bc.py \
 #     --checkpoint logs/bc_rnn_seq10_chunk8_horizon4_merged_trajectories_robo.hdf5_Pick_Place_banana-v0_1775850763/checkpoints/iter_20000.pt \
@@ -16,4 +16,4 @@ CUDA_VISIBLE_DEVICES=7 python scripts/imitation_learning/BC/play_bc.py \
     --task_config source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/pick/config/sceneconfig/task/pick/pick_banana_fix.yaml \
     --horizon 250 --enable_cameras --save_img_interval 0 --num_rollouts 30 --action_horizon 4 --headless
 
-echo "训练运行结束！"
+echo ""

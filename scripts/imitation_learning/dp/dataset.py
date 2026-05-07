@@ -1,15 +1,15 @@
 """
-Diffusion Policy Dataset (同现有 diffusion_policy/dataset.py 的输出契约).
+Diffusion Policy Dataset ( diffusion_policy/dataset.py ).
 
-从 robomimic HDF5 加载:
-  data/demo_X/actions        (N, D_act)  已在离线 min-max 归一化到 [-1, 1]
-  data/demo_X/obs/qpos       (N, 7)      已归一化到 [-1, 1]
-  data/demo_X/obs/qvel       (N, 7)      已归一化到 [-1, 1]
+ robomimic HDF5 :
+  data/demo_X/actions        (N, D_act)   min-max  [-1, 1]
+  data/demo_X/obs/qpos       (N, 7)       [-1, 1]
+  data/demo_X/obs/qvel       (N, 7)       [-1, 1]
   data/demo_X/obs/front      (N, H, W, 3) uint8
   data/demo_X/obs/wrist      (N, H, W, 3) uint8
-  mask/train, mask/valid     demo 名字列表
+  mask/train, mask/valid     demo 
 
-每个样本:
+:
   obs_images: (T_o, 2, 3, H, W) [0,1]
   obs_lowdim: (T_o, 14)         [-1,1]
   actions:    (T_a, D_act)      [-1,1]
@@ -40,14 +40,14 @@ class DiffusionPolicyDataset(Dataset):
 
         self.hdf5_file = h5py.File(hdf5_path, "r")
 
-        # 自动探测 hdf5 里第一条 demo 的 obs 有没有 qvel.
-        # use_qvel=None -> 自动; True/False -> 强制 (强制 True 但缺 qvel 会报错).
+        #  hdf5  demo  obs  qvel.
+        # use_qvel=None  to  ; True/False  to   ( True  qvel ).
         first_demo = next(iter(self.hdf5_file["data"].values()))
         src_has_qvel = "qvel" in first_demo["obs"]
         if use_qvel is None:
             use_qvel = src_has_qvel
         elif use_qvel and not src_has_qvel:
-            raise ValueError(f"use_qvel=True 但 hdf5 中没有 obs/qvel: {hdf5_path}")
+            raise ValueError(f"use_qvel=True  hdf5  obs/qvel: {hdf5_path}")
         self.use_qvel = bool(use_qvel)
 
         if filter_key is not None and "mask" in self.hdf5_file:
@@ -62,8 +62,8 @@ class DiffusionPolicyDataset(Dataset):
             demo_names = demo_names[:load_count]
 
         # Receding-horizon sample indices with "padding at edges"
-        # 与原版 SequenceSampler 一致: allow pad_before=obs_horizon-1, pad_after=pred_horizon-1 的
-        # 边界 padding (通过重复首/尾帧). 这里简化为非边界采样, 跟原 dataset.py 对齐.
+        #  SequenceSampler : allow pad_before=obs_horizon-1, pad_after=pred_horizon-1 
+        #  padding (/). ,  dataset.py .
         self.indices = []
         for demo_name in demo_names:
             demo = self.hdf5_file["data"][demo_name]

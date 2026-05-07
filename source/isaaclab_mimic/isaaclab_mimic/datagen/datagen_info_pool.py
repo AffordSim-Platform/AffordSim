@@ -154,7 +154,7 @@ class DataGenInfoPool:
                     # Last subtask has no termination signal from the datagen_info
                     end_index = ep_grp["actions"].shape[0]
                 else:
-                    # Trick to detect index where first 0 -> 1 transition occurs - this will be the end of the subtask
+                    # Trick to detect index where first 0  to  1 transition occurs - this will be the end of the subtask
                     subtask_term_indicators = (
                         ep_datagen_info_obj.subtask_term_signals[eef_subtask_signal_name].flatten().int()
                     )

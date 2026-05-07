@@ -92,7 +92,7 @@ def main(
     obs, _ = env.reset()
  
     
-    # 选项1: Joint Position Actions
+    # 1: Joint Position Actions
     PourBeansTrajectory = torch.tensor([
     [0.0, -0.785, 0.0, -2.356, 0.0, 1.571, 0.785, 0.04],    
     [0.3, -0.5, 0.0, -2.2, 0.0, 1.9, 0.785, 0.04],     
@@ -113,10 +113,10 @@ def main(
     [0.0, -0.785, 0.0, -2.356, 0.0, 1.571, 0.785, 0.04]      
 ])
     
-    # 选项2: Differential IK Actions
+    # 2: Differential IK Actions
     DifferentialIKPourTrajectory = torch.tensor([
     # [x, y, z, qx, qy, qz, qw, gripper]
-    # 杯子: [0.45, 0.0, 0.0213], 碗: [0.5, 0.20, 0.0106]
+    # : [0.45, 0.0, 0.0213], : [0.5, 0.20, 0.0106]
   
     # [0.45, 0.0, 0.15, 0 , 1, 0,0, 0],
     # [0.45, 0.0, 0.15, 0 , 1, 0,0, 0],

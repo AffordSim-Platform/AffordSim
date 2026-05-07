@@ -23,7 +23,7 @@ FIXED_GRIPPER_STEPS = 3
 
 
 def primitive_push(collector, mode: Optional[str], params: Dict[str, Any], context: Dict[str, Any]) -> bool:
-    """Composite push primitive: compute push poses -> execute push."""
+    """Composite push primitive: compute push poses  to  execute push."""
     del mode
     if not primitive_compute_push_pose(collector, params, context):
         return False
@@ -189,7 +189,7 @@ def primitive_compute_push_pose(collector, params: Dict[str, Any], context: Dict
         )
         return False
 
-    print(f"  👉 [Primitive] Loading push affordance from: {affordance_path}")
+    print(f"   [Primitive] Loading push affordance from: {affordance_path}")
     try:
         affordance_candidates = load_push_affordance_candidates(affordance_path)
     except Exception as exc:
@@ -296,7 +296,7 @@ def primitive_compute_push_pose(collector, params: Dict[str, Any], context: Dict
         selection_infos.append(selection_info)
 
         if best_candidate is None:
-            print(f"  ❌ Env {env_idx}: no reachable push affordance candidate matches target direction.")
+            print(f"   Env {env_idx}: no reachable push affordance candidate matches target direction.")
             pre_positions.append(np.array([0.5, 0.0, 0.5], dtype=np.float64))
             pre_quats.append(np.array([0.0, 1.0, 0.0, 0.0], dtype=np.float64))
             down_positions.append(np.array([0.5, 0.0, 0.4], dtype=np.float64))
@@ -328,7 +328,7 @@ def primitive_compute_push_pose(collector, params: Dict[str, Any], context: Dict
         push_quats.append(contact_quat)
         push_target_positions.append(push_target.copy())
         print(
-            f"  ✅ Env {env_idx}: selected push candidate {best_candidate['candidate_index']} "
+            f"   Env {env_idx}: selected push candidate {best_candidate['candidate_index']} "
             f"(alignment={best_candidate['alignment']:.3f}, total={best_candidate['total_score']:.3f})"
         )
         if should_lift:
@@ -350,7 +350,7 @@ def primitive_compute_push_pose(collector, params: Dict[str, Any], context: Dict
         "lift_quats": np.array(lift_quats, dtype=np.float64) if should_lift else None,
         "selection_infos": selection_infos,
     }
-    print(f"  👉 [Primitive] Computed push pose for '{target_label}'")
+    print(f"   [Primitive] Computed push pose for '{target_label}'")
     return True
 
 
@@ -373,7 +373,7 @@ def primitive_execute_push(collector, params: Dict[str, Any], context: Dict[str,
                 context, local_active, env_idx, FAILURE_REASON_TARGET_MISSING
             )
 
-    print(f"  👉 [Primitive] Executing push on '{push_pose.get('target_label')}'")
+    print(f"   [Primitive] Executing push on '{push_pose.get('target_label')}'")
     pre_plans, pre_plan_successes = collector.motion_planner.plan_to_pose_batch(
         collector.robot.data.joint_pos[:n].cpu().numpy(),
         collector.robot.data.joint_vel[:n].cpu().numpy(),
@@ -453,14 +453,14 @@ def primitive_execute_push(collector, params: Dict[str, Any], context: Dict[str,
             for env_idx, metrics in enumerate(state_metrics):
                 dist_ok = metrics["push_xy_dist"] <= float(PUSH_SUCCESS_XY_THRESHOLD)
                 upright_ok = metrics["object_local_z_world_z"] >= float(PUSH_SUCCESS_TILT_THRESHOLD)
-                print(
-                    f"    [TaskCheck][env {env_idx}] "
-                    f"push_xy_dist={metrics['push_xy_dist']:.4f}m ({'OK' if dist_ok else 'FAIL'}), "
-                    f"obj_local_z·world_z={metrics['object_local_z_world_z']:.3f} "
-                    f"({'OK' if upright_ok else 'FAIL'})"
-                )
+                # print(
+                #     f"    [TaskCheck][env {env_idx}] "
+                #     f"push_xy_dist={metrics['push_xy_dist']:.4f}m ({'OK' if dist_ok else 'FAIL'}), "
+                #     f"obj_local_z_dot_world_z={metrics['object_local_z_world_z']:.3f} "
+                #     f"({'OK' if upright_ok else 'FAIL'})"
+                # )
             print(
-                f"  ✅ [Primitive] Task success (push): "
+                f"   [Primitive] Task success (push): "
                 f"{sum(1 for i in range(n) if plan_active_after[i] and state_successes[i])}/{n} "
                 f"(push_xy_dist<={PUSH_SUCCESS_XY_THRESHOLD:.3f})"
             )
@@ -479,5 +479,5 @@ def primitive_execute_push(collector, params: Dict[str, Any], context: Dict[str,
     context["push_completed"] = any(final_alive)
     context["primitive_executed_motion"] = True
 
-    print(f"  ✅ [Primitive] Push success (alive): {sum(final_alive)}/{n}")
+    print(f"   [Primitive] Push success (alive): {sum(final_alive)}/{n}")
     return any(final_alive)

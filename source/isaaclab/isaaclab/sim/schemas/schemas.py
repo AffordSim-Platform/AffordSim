@@ -638,13 +638,13 @@ def modify_joint_drive_properties(
     # convert values for angular drives from radians to degrees units
     if not is_linear_drive:
         if cfg["max_velocity"] is not None:
-            # rad / s --> deg / s
+            # rad / s - to  deg / s
             cfg["max_velocity"] = cfg["max_velocity"] * 180.0 / math.pi
         if cfg["stiffness"] is not None:
-            # N-m/rad --> N-m/deg
+            # N-m/rad - to  N-m/deg
             cfg["stiffness"] = cfg["stiffness"] * math.pi / 180.0
         if cfg["damping"] is not None:
-            # N-m-s/rad --> N-m-s/deg
+            # N-m-s/rad - to  N-m-s/deg
             cfg["damping"] = cfg["damping"] * math.pi / 180.0
 
     # set into PhysX API

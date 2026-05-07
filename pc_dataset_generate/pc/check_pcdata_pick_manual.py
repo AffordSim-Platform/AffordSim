@@ -10,27 +10,27 @@ except ImportError:
     torch = None
 
 # ============================================================================
-# 夹爪参数 (米)
+#  ()
 # ============================================================================
-GRIPPER_MAX_OPENING = 0.08        # 80mm 最大张开距离(Y/开合方向)
-GRIPPER_FINGER_DEPTH = 0.10       # 100mm 手指深度/长度(Z/approach方向)
-GRIPPER_FINGER_WIDTH = 0.02       # 20mm 手指宽度(X方向)
-GRIPPER_FINGER_THICKNESS = 0.012  # 12mm 手指厚度(Y/开合方向)
-EE_OFFSET_Z = 0.220              # fr3_hand → ee_frame 偏移
-LOCAL_X_ROTATION_DEG = 45.0       # 输出抓取姿态绕局部 X(binormal) 旋转角度
-LOCAL_Y_ROTATION_DEG = 45.0       # 输出抓取姿态绕局部 Y(grip_axis) 旋转角度
-LOCAL_Z_ROTATION_DEG = -5.0      # 输出抓取姿态绕局部 Z(approach) 旋转角度
+GRIPPER_MAX_OPENING = 0.08        # 80mm (Y/)
+GRIPPER_FINGER_DEPTH = 0.10       # 100mm /(Z/approach)
+GRIPPER_FINGER_WIDTH = 0.02       # 20mm (X)
+GRIPPER_FINGER_THICKNESS = 0.012  # 12mm (Y/)
+EE_OFFSET_Z = 0.220              # fr3_hand  to  ee_frame 
+LOCAL_X_ROTATION_DEG = 45.0       #  X(binormal) 
+LOCAL_Y_ROTATION_DEG = 45.0       #  Y(grip_axis) 
+LOCAL_Z_ROTATION_DEG = -5.0      #  Z(approach) 
 
 # ============================================================================
-# ★ 倾斜抓取参数
+#  
 # ============================================================================
-TILT_ANGLE_DEG = 45.0             # approach 方向与水平面的夹角 (度)
-                                   # 45° = 从斜上方45度接近物体
-                                   # 0°  = 水平接近 (原始行为)
-                                   # 90° = 从正上方下压
+TILT_ANGLE_DEG = 45.0             # approach  ()
+                                   # 45 deg = 45
+                                   # 0 deg  =  ()
+                                   # 90 deg = 
 
 # ============================================================================
-# 输入输出配置
+# 
 # ============================================================================
 INPUT_DIR = "***"
 OUTPUT_FILE = "***"
@@ -40,41 +40,41 @@ DEFAULT_UNIT_THRESHOLD_VALUE = DEFAULT_UNIT_THRESHOLD
 
 
 # ============================================================================
-# ★ 辅助函数: 将水平方向倾斜指定角度向上
+#  : 
 # ============================================================================
 def tilt_direction_upward(direction, tilt_deg=TILT_ANGLE_DEG):
-    """将一个方向向量倾斜 tilt_deg 度向上 (Z+方向).
+    """ tilt_deg  (Z+).
 
-    思路: 将 direction 分解为水平分量和竖直分量,
-    然后重新组合, 使其与水平面夹角为 tilt_deg.
-    如果原方向已经是纯竖直 (如 [0,0,-1]), 则保持不变.
+    :  direction ,
+    ,  tilt_deg.
+     ( [0,0,-1]), .
 
     Args:
-        direction: 3D方向向量 (会被归一化)
-        tilt_deg: 与水平面的夹角 (度), 正值=向上倾斜
+        direction: 3D ()
+        tilt_deg:  (), =
 
     Returns:
-        倾斜后的单位方向向量
+        
     """
     d = np.array(direction, dtype=np.float64)
     d /= np.linalg.norm(d)
 
-    # 水平分量
+    # 
     d_horiz = np.array([d[0], d[1], 0.0])
     horiz_norm = np.linalg.norm(d_horiz)
 
-    # 如果方向几乎是纯竖直的, 不做倾斜处理
+    # , 
     if horiz_norm < 1e-6:
         return d
 
     d_horiz /= horiz_norm
 
     tilt_rad = np.radians(tilt_deg)
-    # 新方向 = 水平分量 * cos(tilt) + 竖直向上 * sin(tilt)
-    # 注意: approach 是"从哪里来"的方向, 倾斜向上意味着从斜上方接近
-    # 所以 Z 分量应该是负的 (从上往下的分量), 但 approach 指向物体,
-    # 如果原方向是水平指向物体, 倾斜后应该从斜上方指向物体
-    # approach 方向 = 夹爪前进方向, 所以加一个向下的Z分量表示"从上方来"
+    #  =  * cos(tilt) +  * sin(tilt)
+    # : approach "", 
+    #  Z  (),  approach ,
+    # , 
+    # approach  = , Z""
     new_dir = d_horiz * np.cos(tilt_rad) + np.array([0.0, 0.0, -np.sin(tilt_rad)])
 
     norm = np.linalg.norm(new_dir)
@@ -84,21 +84,21 @@ def tilt_direction_upward(direction, tilt_deg=TILT_ANGLE_DEG):
 
 
 # ============================================================================
-# Step 1: Affordance 点聚类
+# Step 1: Affordance 
 # ============================================================================
 def cluster_affordance_points(points, labels, affordance_label=1,
                               dbscan_eps=0.008, dbscan_min_samples=5):
-    """提取 affordance 点并聚类，返回最大簇的点和质心。"""
+    """ affordance """
     aff_mask = (labels == affordance_label)
     aff_points = points[aff_mask]
 
     if len(aff_points) < 3:
-        print(f"[WARN] affordance 点太少 ({len(aff_points)}), 使用全部")
+        print(f"[WARN] affordance  ({len(aff_points)}), ")
         centroid = aff_points.mean(axis=0) if len(aff_points) > 0 else points.mean(axis=0)
         return aff_points, centroid
 
     if len(aff_points) < 20:
-        print(f"[INFO] affordance 点较少 ({len(aff_points)}), 跳过聚类")
+        print(f"[INFO] affordance  ({len(aff_points)}), ")
         return aff_points, aff_points.mean(axis=0)
 
     aff_pcd = o3d.geometry.PointCloud()
@@ -107,7 +107,7 @@ def cluster_affordance_points(points, labels, affordance_label=1,
         eps=dbscan_eps, min_points=dbscan_min_samples, print_progress=False))
 
     if cluster_labels.max() < 0:
-        print("[WARN] DBSCAN 未发现聚类, 使用全部 affordance 点")
+        print("[WARN] DBSCAN ,  affordance ")
         return aff_points, aff_points.mean(axis=0)
 
     unique_labels, counts = np.unique(cluster_labels[cluster_labels >= 0], return_counts=True)
@@ -115,22 +115,22 @@ def cluster_affordance_points(points, labels, affordance_label=1,
     cluster_mask = (cluster_labels == largest_label)
     cluster_points = aff_points[cluster_mask]
 
-    print(f"[INFO] DBSCAN: {len(unique_labels)} 个簇, 最大簇 {np.max(counts)} 个点 "
-          f"(共 {len(aff_points)} 个 affordance 点)")
+    print(f"[INFO] DBSCAN: {len(unique_labels)} ,  {np.max(counts)}  "
+          f"( {len(aff_points)}  affordance )")
 
     return cluster_points, cluster_points.mean(axis=0)
 
 
 # ============================================================================
-# Step 2: 采样抓取中心点
+# Step 2: 
 # ============================================================================
 def sample_grasp_centers(aff_points, n_samples=12, local_radius=0.003):
-    """在 affordance 点上采样多个局部抓取中心。"""
+    """ affordance """
     aff_spread = aff_points.ptp(axis=0).max()
     centroid = aff_points.mean(axis=0)
 
     if aff_spread < GRIPPER_MAX_OPENING * 1.2 or len(aff_points) < 30:
-        return [(centroid, aff_points, "质心")]
+        return [(centroid, aff_points, "")]
 
     pcd = o3d.geometry.PointCloud()
     pcd.points = o3d.utility.Vector3dVector(aff_points)
@@ -150,28 +150,28 @@ def sample_grasp_centers(aff_points, n_samples=12, local_radius=0.003):
             [k, idx, _] = kdtree.search_knn_vector_3d(pt, 10)
         local_pts = aff_points[idx]
         local_center = local_pts.mean(axis=0)
-        centers.append((local_center, local_pts, f"局部{i}"))
+        centers.append((local_center, local_pts, f"{i}"))
 
-    print(f"[INFO] 采样 {len(centers)} 个抓取中心 (aff_spread={aff_spread*1000:.1f}mm, "
+    print(f"[INFO]  {len(centers)}  (aff_spread={aff_spread*1000:.1f}mm, "
           f"local_r={local_radius*1000:.0f}mm)")
     return centers
 
 
 # ============================================================================
-# Step 3: 生成 approach 方向 (★ 修改: 全部倾斜45°向上)
+# Step 3:  approach  ( : 45 deg)
 # ============================================================================
 def compute_handle_direction(aff_points, all_points):
-    """计算杯把方向: affordance 区域质心相对于整体质心的水平方向。
+    """: affordance 
 
-    返回单位向量 (仅水平分量, Z=0), 指向杯把方向。
-    如果无法计算返回 None。
+     (, Z=0), 
+     None
     """
     if len(aff_points) < 3:
         return None
     aff_centroid = aff_points.mean(axis=0)
     obj_centroid = all_points.mean(axis=0)
     diff = aff_centroid - obj_centroid
-    # 只取水平分量
+    # 
     handle_dir = np.array([diff[0], diff[1], 0.0])
     norm = np.linalg.norm(handle_dir)
     if norm < 1e-6:
@@ -180,10 +180,10 @@ def compute_handle_direction(aff_points, all_points):
 
 
 def generate_approach_directions(local_aff_points, all_points, grasp_center):
-    """为一个 grasp_center 生成候选 approach 方向列表。
+    """ grasp_center  approach 
 
-    ★ 优先生成正对杯把方向的 approach (从杯把正面接近),
-       所有水平方向都会被倾斜 TILT_ANGLE_DEG 度向上。
+      approach (),
+        TILT_ANGLE_DEG 
     """
     directions = []
 
@@ -192,24 +192,24 @@ def generate_approach_directions(local_aff_points, all_points, grasp_center):
         return v / n if n > 1e-8 else None
 
     def add(d, src, apply_tilt=True):
-        """添加候选方向。apply_tilt=True 时对水平方向施加倾斜。"""
+        """apply_tilt=True """
         v = normalize(np.array(d, dtype=np.float64))
         if v is None:
             return
 
         if apply_tilt and TILT_ANGLE_DEG > 0:
             v = tilt_direction_upward(v, TILT_ANGLE_DEG)
-            src += f"(倾斜{TILT_ANGLE_DEG:.0f}°)"
+            src += f"({TILT_ANGLE_DEG:.0f} deg)"
 
         directions.append((v, src))
 
-    # ★★★ 杯把方向优先: 从杯把正面接近 ★★★
+    #  :  
     handle_dir = compute_handle_direction(local_aff_points, all_points)
     if handle_dir is not None:
-        # approach 应该正对杯把 (从杯把外侧朝杯体方向)
-        add(-handle_dir, "杯把正面")
-        add(handle_dir, "杯把背面")
-        # 杯把方向旋转 ±30°, ±60°, ±90° 的候选
+        # approach  ()
+        add(-handle_dir, "")
+        add(handle_dir, "")
+        #  +/-30 deg, +/-60 deg, +/-90 deg 
         for angle_deg in [30, -30, 60, -60, 90, -90]:
             angle_rad = np.radians(angle_deg)
             cos_a, sin_a = np.cos(angle_rad), np.sin(angle_rad)
@@ -218,9 +218,9 @@ def generate_approach_directions(local_aff_points, all_points, grasp_center):
                 handle_dir[0] * sin_a + handle_dir[1] * cos_a,
                 0.0
             ])
-            add(-rotated, f"杯把旋转{angle_deg}°")
+            add(-rotated, f"{angle_deg} deg")
 
-    # 表面法线
+    # 
     if len(local_aff_points) >= 3:
         pcd = o3d.geometry.PointCloud()
         pcd.points = o3d.utility.Vector3dVector(local_aff_points)
@@ -234,8 +234,8 @@ def generate_approach_directions(local_aff_points, all_points, grasp_center):
         avg_normal = normals.mean(axis=0)
         n = normalize(avg_normal)
         if n is not None:
-            add(-n, "法线朝内")
-            add(n, "法线朝外")
+            add(-n, "")
+            add(n, "")
 
     # PCA
     if len(local_aff_points) >= 3:
@@ -245,22 +245,22 @@ def generate_approach_directions(local_aff_points, all_points, grasp_center):
         for sign in [1, -1]:
             add(sign * eigvecs[:, 0], f"PCA{'+' if sign > 0 else '-'}")
 
-    # 物体中心 -> grasp_center
+    #   to  grasp_center
     obj_centroid = all_points.mean(axis=0)
     diff = grasp_center - obj_centroid
-    add(diff, "离心")
-    add(-diff, "向心")
+    add(diff, "")
+    add(-diff, "")
 
-    # 固定方向 (★ 水平方向倾斜, 竖直方向保持)
+    #  ( , )
     add([1, 0, 0], "+X")
     add([-1, 0, 0], "-X")
     add([0, 1, 0], "+Y")
     add([0, -1, 0], "-Y")
-    # 竖直方向不倾斜
-    add([0, 0, -1], "下压", apply_tilt=False)
-    add([0, 0, 1], "上托", apply_tilt=False)
+    # 
+    add([0, 0, -1], "", apply_tilt=False)
+    add([0, 0, 1], "", apply_tilt=False)
 
-    # ★ 额外添加: 斜45°的8个方向 (均匀覆盖水平面各角度)
+    #  : 45 deg8 ()
     tilt_rad = np.radians(TILT_ANGLE_DEG)
     cos_t = np.cos(tilt_rad)
     sin_t = np.sin(tilt_rad)
@@ -271,13 +271,13 @@ def generate_approach_directions(local_aff_points, all_points, grasp_center):
             np.sin(angle_rad) * cos_t,
             -sin_t
         ])
-        add(d, f"斜{angle_deg}°", apply_tilt=False)
+        add(d, f"{angle_deg} deg", apply_tilt=False)
 
     return directions
 
 
 # ============================================================================
-# Step 4: 打分 (★ 修改: upright_score 鼓励45°倾斜)
+# Step 4:  ( : upright_score 45 deg)
 # ============================================================================
 def score_grasp(approach_dir, grip_axis, grasp_center,
                 all_points, labels,
@@ -286,9 +286,9 @@ def score_grasp(approach_dir, grip_axis, grasp_center,
                 finger_width=GRIPPER_FINGER_WIDTH,
                 finger_thickness=GRIPPER_FINGER_THICKNESS,
                 handle_dir=None):
-    """对单个 (grasp_center, approach, grip_axis) 打分。返回 None 表示淘汰。
+    """ (grasp_center, approach, grip_axis)  None 
 
-    局部坐标系: X=binormal(宽度方向), Y=grip_axis(开合方向), Z=approach(深度方向)
+    : X=binormal(), Y=grip_axis(), Z=approach()
     """
     binormal = np.cross(approach_dir, grip_axis)
     bn_norm = np.linalg.norm(binormal)
@@ -312,7 +312,7 @@ def score_grasp(approach_dir, grip_axis, grasp_center,
                 (pts[:, 1] >= yr[0]) & (pts[:, 1] <= yr[1]) &
                 (pts[:, 2] >= zr[0]) & (pts[:, 2] <= zr[1]))
 
-    # 两指之间 (非 aff 点) -> 硬约束
+    #  ( aff )  to  
     n_closing = int(in_box(non_aff_local,
                            [-half_width, half_width],
                            [-half_open, half_open],
@@ -320,7 +320,7 @@ def score_grasp(approach_dir, grip_axis, grasp_center,
     if n_closing > 3:
         return None
 
-    # 手指碰撞
+    # 
     n_left = int(in_box(non_aff_local,
                         [-half_width, half_width],
                         [half_open, half_open + finger_thickness],
@@ -330,13 +330,13 @@ def score_grasp(approach_dir, grip_axis, grasp_center,
                          [-half_open - finger_thickness, -half_open],
                          [-finger_depth, 0]).sum())
 
-    # 手掌碰撞
+    # 
     n_palm = int(in_box(non_aff_local,
                         [-half_width, half_width],
                         [-half_open - finger_thickness, half_open + finger_thickness],
                         [-finger_depth - 0.02, -finger_depth]).sum())
 
-    # 进近通道
+    # 
     n_approach = int(in_box(all_local,
                             [-half_width, half_width],
                             [-half_open - finger_thickness, half_open + finger_thickness],
@@ -346,7 +346,7 @@ def score_grasp(approach_dir, grip_axis, grasp_center,
     collision_score = max(0.0, 1.0 - n_finger_col * 0.2 - n_closing * 0.3 - n_palm * 0.15)
     clearance_score = max(0.0, 1.0 - n_approach * 0.05)
 
-    # 覆盖
+    # 
     in_grip = in_box(aff_local,
                      [-half_width, half_width],
                      [-half_open, half_open],
@@ -354,7 +354,7 @@ def score_grasp(approach_dir, grip_axis, grasp_center,
     n_aff_in_grip = int(in_grip.sum())
     coverage_score = n_aff_in_grip / max(len(aff_local), 1)
 
-    # 对心性
+    # 
     if n_aff_in_grip > 0:
         aff_in = aff_local[in_grip]
         aff_center_y = aff_in[:, 1].mean()
@@ -370,25 +370,25 @@ def score_grasp(approach_dir, grip_axis, grasp_center,
     if aff_spread_y > gripper_opening and n_aff_in_grip < 3:
         return None
 
-    # ★★★ 姿态正则化: 鼓励 approach 方向与水平面夹角接近目标倾斜角 ★★★
-    # approach_dir 的 Z 分量 = -sin(倾斜角), 倾斜45°时 Z ≈ -0.707
+    #  :  approach  
+    # approach_dir  Z  = -sin(), 45 deg Z ~= -0.707
     target_tilt_rad = np.radians(TILT_ANGLE_DEG)
-    target_z = -np.sin(target_tilt_rad)  # 目标 approach 的 Z 分量 (负=从上方来)
+    target_z = -np.sin(target_tilt_rad)  #  approach  Z  (=)
 
-    # 实际 approach 的倾斜角
+    #  approach 
     actual_z = approach_dir[2]
-    # 与目标的偏差 (越小越好)
+    #  ()
     tilt_error = abs(actual_z - target_z)
-    # 归一化到 [0, 1], 误差为0时得分为1
+    #  [0, 1], 01
     tilt_score = max(0.0, 1.0 - tilt_error * 2.0)
 
-    # grip_axis 和 binormal 不应指向正下方 (避免手指戳桌面)
+    # grip_axis  binormal  ()
     grip_z = abs(grip_axis[2])
     binormal_z = abs(binormal[2])
     orientation_penalty = 0.5 * (grip_z + binormal_z)
     upright_score = tilt_score * (1.0 - 0.3 * orientation_penalty)
 
-    # 手指内壁接触
+    # 
     if n_aff_in_grip > 0:
         aff_in = aff_local[in_grip]
         dist_to_wall = half_open - np.abs(aff_in[:, 1])
@@ -396,20 +396,20 @@ def score_grasp(approach_dir, grip_axis, grasp_center,
     else:
         contact_score = 0.0
 
-    # ★ 额外: 桌面碰撞惩罚
-    # 如果 approach 太水平 (Z分量接近0), 严重惩罚
+    #  : 
+    #  approach  (Z0), 
     horiz_penalty = 0.0
     approach_elevation = np.degrees(np.arcsin(np.clip(-approach_dir[2], -1, 1)))
-    if approach_elevation < 15.0:  # 倾斜角小于15°, 几乎水平
+    if approach_elevation < 15.0:  # 15 deg, 
         horiz_penalty = 0.5 * (1.0 - approach_elevation / 15.0)
 
-    # ★★★ 杯把方向对齐分 ★★★
-    # 1) approach 的水平分量应正对杯把方向
-    # 2) grip axis (开合方向) 应与杯把方向对齐, 这样夹爪才能夹住杯把
-    handle_align_score = 0.5  # 默认中性分 (无杯把信息时)
-    grip_handle_score = 0.5   # grip axis 与杯把方向的对齐分
+    #   
+    # 1) approach 
+    # 2) grip axis () , 
+    handle_align_score = 0.5  #  ()
+    grip_handle_score = 0.5   # grip axis 
     if handle_dir is not None:
-        # approach 对齐
+        # approach 
         approach_horiz = np.array([approach_dir[0], approach_dir[1], 0.0])
         ah_norm = np.linalg.norm(approach_horiz)
         if ah_norm > 1e-6:
@@ -419,19 +419,19 @@ def score_grasp(approach_dir, grip_axis, grasp_center,
         else:
             handle_align_score = 0.3
 
-        # ★ grip axis 对齐: grip axis 的水平投影应与杯把方向平行
-        # 夹爪沿 grip axis 开合, 要夹住杯把, grip axis 应垂直于杯把延伸方向
-        # 即 grip axis 水平投影 与 handle_dir 垂直 (dot ≈ 0) 才能正面夹住
-        # 或者 grip axis 与 handle_dir 平行 (dot ≈ ±1) 表示从侧面夹
-        # 对于杯把: 夹爪应该从杯把两侧夹住, 即 grip axis ⊥ handle_dir
+        #  grip axis : grip axis 
+        #  grip axis , , grip axis 
+        #  grip axis   handle_dir  (dot ~= 0) 
+        #  grip axis  handle_dir  (dot ~= +/-1) 
+        # : ,  grip axis perp handle_dir
         grip_horiz = np.array([grip_axis[0], grip_axis[1], 0.0])
         gh_norm = np.linalg.norm(grip_horiz)
         if gh_norm > 1e-6:
             grip_horiz /= gh_norm
-            # grip 与 handle_dir 的点积, 越接近 0 表示越垂直 (夹爪正面夹杯把)
+            # grip  handle_dir ,  0  ()
             grip_dot = abs(np.dot(grip_horiz, handle_dir))
-            # grip_dot ≈ 0 → 垂直 → 最好 (得分 1.0)
-            # grip_dot ≈ 1 → 平行 → 最差 (得分 0.0)
+            # grip_dot ~= 0  to    to   ( 1.0)
+            # grip_dot ~= 1  to    to   ( 0.0)
             grip_handle_score = 1.0 - grip_dot
         else:
             grip_handle_score = 0.3
@@ -442,8 +442,8 @@ def score_grasp(approach_dir, grip_axis, grasp_center,
              antipodal_score * 0.08 +
              upright_score * 0.16 +
              contact_score * 0.08 +
-             handle_align_score * 0.15 +    # approach 正对杯把
-             grip_handle_score * 0.17 -      # ★ grip axis 垂直于杯把 (最高权重)
+             handle_align_score * 0.15 +    # approach 
+             grip_handle_score * 0.17 -      #  grip axis  ()
              horiz_penalty * 0.05)
     total = max(0.0, total)
 
@@ -467,7 +467,7 @@ def score_grasp(approach_dir, grip_axis, grasp_center,
 
 
 def rotation_matrix_from_local_euler(x_deg=0.0, y_deg=0.0, z_deg=0.0):
-    """局部坐标系下的旋转矩阵，按 X -> Y -> Z 顺序依次施加。"""
+    """ X  to  Y  to  Z """
     x_rad = np.radians(x_deg)
     y_rad = np.radians(y_deg)
     z_rad = np.radians(z_deg)
@@ -496,7 +496,7 @@ def rotate_grasp_result_about_local_axes(
     y_deg=LOCAL_Y_ROTATION_DEG,
     z_deg=LOCAL_Z_ROTATION_DEG,
 ):
-    """将最终抓取姿态绕局部 X/Y/Z 轴旋转指定角度。"""
+    """ X/Y/Z """
     r_local = np.array(grasp_result['rotation_matrix'], dtype=np.float64)
     r_delta = rotation_matrix_from_local_euler(x_deg=x_deg, y_deg=y_deg, z_deg=z_deg)
     r_rotated = r_local @ r_delta
@@ -525,17 +525,17 @@ def rotate_grasp_result_about_local_axes(
 
 
 # ============================================================================
-# Step 5: 计算最优抓取
+# Step 5: 
 # ============================================================================
 def compute_best_grasp(points, labels):
-    """主函数：从标注点云计算最优抓取位姿。"""
+    """"""
     aff_points, global_centroid = cluster_affordance_points(points, labels)
     centers = sample_grasp_centers(aff_points)
 
-    # ★ 计算杯把方向 (用于打分时对齐奖励)
+    #   ()
     handle_dir = compute_handle_direction(aff_points, points)
     if handle_dir is not None:
-        print(f"[INFO] 杯把方向: [{handle_dir[0]:.3f}, {handle_dir[1]:.3f}, {handle_dir[2]:.3f}]")
+        print(f"[INFO] Handle direction: [{handle_dir[0]:.3f}, {handle_dir[1]:.3f}, {handle_dir[2]:.3f}]")
 
     results = []
     n_rotations = 12
@@ -566,8 +566,8 @@ def compute_best_grasp(points, labels):
                 results.append(info)
 
     if not results:
-        # ★ Fallback 也使用倾斜方向
-        print("[WARN] 所有候选都被淘汰! 使用 fallback (斜45°下压)")
+        #  Fallback 
+        print("[WARN] No valid candidates found; using fallback (45 deg)")
         tilt_rad = np.radians(TILT_ANGLE_DEG)
         approach = np.array([np.cos(tilt_rad), 0.0, -np.sin(tilt_rad)])
         approach /= np.linalg.norm(approach)
@@ -588,10 +588,10 @@ def compute_best_grasp(points, labels):
 
     results.sort(key=lambda x: x['total_score'], reverse=True)
 
-    # 打印 Top 20
+    #  Top 20
     print(f"\n{'='*140}")
-    print(f"  {'候选':<40} {'总分':>6} {'碰撞':>6} {'通道':>6} {'覆盖':>6} "
-          f"{'对心':>6} {'倾斜':>6} {'贴壁':>6} {'朝向':>6} {'夹向':>6} {'碰数':>5} {'闭碰':>5} {'夹aff':>5} {'宽mm':>6} {'仰角':>6}")
+    print(f"  {'':<40} {'':>6} {'':>6} {'':>6} {'':>6} "
+          f"{'':>6} {'':>6} {'':>6} {'':>6} {'':>6} {'':>5} {'':>5} {'aff':>5} {'mm':>6} {'':>6}")
     print(f"  {'-'*134}")
     for r in results[:20]:
         print(f"  {r['source']:<40} {r['total_score']:>6.3f} "
@@ -607,11 +607,11 @@ def compute_best_grasp(points, labels):
               f"{r['n_closing']:>5} "
               f"{r['n_aff_in_grip']:>5} "
               f"{r['aff_width']*1000:>6.1f} "
-              f"{r.get('approach_elevation', 0):>5.1f}°")
+              f"{r.get('approach_elevation', 0):>5.1f} deg")
     if len(results) > 20:
-        print(f"  ... 还有 {len(results)-20} 个有效候选")
+        print(f"  ...  {len(results)-20} ")
     print(f"{'='*120}")
-    print(f"[INFO] 总计有效候选: {len(results)}")
+    print(f"[INFO] Valid candidates: {len(results)}")
 
     best = results[0]
     approach_dir = best['approach_dir']
@@ -621,9 +621,9 @@ def compute_best_grasp(points, labels):
     grip_axis = np.cross(binormal, approach_dir)
     grip_axis /= np.linalg.norm(grip_axis)
 
-    # ★ 打印 approach 倾斜角度
+    #   approach 
     elevation = np.degrees(np.arcsin(np.clip(-approach_dir[2], -1, 1)))
-    print(f"[INFO] 最优 approach 与水平面夹角: {elevation:.1f}° (目标: {TILT_ANGLE_DEG}°)")
+    print(f"[INFO]  approach : {elevation:.1f} deg (target: {TILT_ANGLE_DEG} deg)")
 
     return rotate_grasp_result_about_local_axes({
         'grasp_center': best['grasp_center'],
@@ -639,7 +639,7 @@ def compute_best_grasp(points, labels):
 
 
 # ============================================================================
-# Step 6: 可视化
+# Step 6: 
 # ============================================================================
 def rotation_from_z_to_dir(direction):
     z = np.array([0.0, 0.0, 1.0])
@@ -669,14 +669,14 @@ def create_grasp_visualization(grasp_result):
     binormal = grasp_result['binormal']
     R_local = np.column_stack([binormal, grip, approach])
 
-    # 抓取中心: 黄色小球
+    # : 
     sphere = o3d.geometry.TriangleMesh.create_sphere(radius=0.004)
     sphere.translate(center)
     sphere.paint_uniform_color([1.0, 1.0, 0.0])
     sphere.compute_vertex_normals()
     geometries.append(sphere)
 
-    # Approach 箭头 (蓝色)
+    # Approach  ()
     arrow_len = 0.07
     arrow_start = center - approach * arrow_len
     shaft = o3d.geometry.TriangleMesh.create_cylinder(radius=0.0015, height=arrow_len * 0.75)
@@ -696,7 +696,7 @@ def create_grasp_visualization(grasp_result):
     cone.compute_vertex_normals()
     geometries.append(cone)
 
-    # 两个手指 (青色)
+    #  ()
     for sign in [+1, -1]:
         finger = o3d.geometry.TriangleMesh.create_box(width=fw, height=ft, depth=fd)
         finger.translate([-fw / 2, -ft / 2 + sign * half_open, -fd])
@@ -706,26 +706,26 @@ def create_grasp_visualization(grasp_result):
         finger.compute_vertex_normals()
         geometries.append(finger)
 
-    # ★ 新增: 画一条虚拟桌面参考线 (帮助观察倾斜角度)
+    #  :  ()
     elevation = np.degrees(np.arcsin(np.clip(-approach[2], -1, 1)))
-    print(f"[VIS] approach 与水平面夹角: {elevation:.1f}°")
+    print(f"[VIS] approach : {elevation:.1f} deg")
 
     return geometries
 
 
 # ============================================================================
-# 主程序
+# 
 # ============================================================================
 def load_points_and_labels(type_path):
     for name in PT_CANDIDATE_NAMES:
         candidate = os.path.join(type_path, name)
         if os.path.exists(candidate):
             if torch is None:
-                raise ImportError("未安装 torch, 无法加载 .pt 文件")
+                raise ImportError(" torch,  .pt ")
             data = torch.load(candidate, map_location="cpu")
             points = data['points'].numpy()
             labels = data['labels'].numpy()
-            print(f"[INFO] 加载: {candidate}")
+            print(f"[INFO] Loaded: {candidate}")
             return points, labels
 
     for name in NPZ_CANDIDATE_NAMES:
@@ -734,10 +734,10 @@ def load_points_and_labels(type_path):
             data = np.load(candidate)
             points = data['points']
             labels = data['labels']
-            print(f"[INFO] 加载: {candidate}")
+            print(f"[INFO] Loaded: {candidate}")
             return points, labels
 
-    raise FileNotFoundError(f"未找到标注文件: {type_path}")
+    raise FileNotFoundError(f": {type_path}")
 
 
 def find_pick_dirs(script_dir):
@@ -753,8 +753,8 @@ def process_type_path(type_path, default_threshold=DEFAULT_UNIT_THRESHOLD_VALUE)
     save_path = os.path.join(type_path, OUTPUT_FILE)
 
     def preview_fn(points, threshold, converted, coord_range):
-        print(f"[INFO] 总点数: {len(points)}, label=0: {(labels==0).sum()}, label=1: {(labels==1).sum()}")
-        print(f"[INFO] 目标倾斜角: {TILT_ANGLE_DEG}° (从斜上方接近)")
+        print(f"[INFO] Points: {len(points)}, label=0: {(labels==0).sum()}, label=1: {(labels==1).sum()}")
+        print(f"[INFO] Tilt angle: {TILT_ANGLE_DEG} deg")
         colors = np.zeros((len(labels), 3))
         colors[labels == 0] = [0.0, 1.0, 0.0]
         colors[labels == 1] = [1.0, 0.0, 0.0]
@@ -764,22 +764,22 @@ def process_type_path(type_path, default_threshold=DEFAULT_UNIT_THRESHOLD_VALUE)
         pcd.colors = o3d.utility.Vector3dVector(colors)
         grasp_result = compute_best_grasp(points, labels)
         print(f"\n{'='*60}")
-        print(f"  抓取结果")
-        print(f"  中心点:     [{grasp_result['grasp_center'][0]:.5f}, "
+        print("  Grasp result")
+        print(f"  Center:     [{grasp_result['grasp_center'][0]:.5f}, "
               f"{grasp_result['grasp_center'][1]:.5f}, {grasp_result['grasp_center'][2]:.5f}]")
         print(f"  Approach:   [{grasp_result['approach_dir'][0]:.4f}, "
               f"{grasp_result['approach_dir'][1]:.4f}, {grasp_result['approach_dir'][2]:.4f}]")
         print(f"  Grip axis:  [{grasp_result['grip_axis'][0]:.4f}, "
               f"{grasp_result['grip_axis'][1]:.4f}, {grasp_result['grip_axis'][2]:.4f}]")
-        print(f"  得分:       {grasp_result['score']:.4f}")
-        print(f"  来源:       {grasp_result['source']}")
-        print(f"  局部X旋转:  {grasp_result['local_x_rotation_deg']:.1f}°")
-        print(f"  局部Y旋转:  {grasp_result['local_y_rotation_deg']:.1f}°")
-        print(f"  局部Z旋转:  {grasp_result['local_z_rotation_deg']:.1f}°")
+        print(f"  Score:      {grasp_result['score']:.4f}")
+        print(f"  Source:     {grasp_result['source']}")
+        print(f"  X:  {grasp_result['local_x_rotation_deg']:.1f} deg")
+        print(f"  Y:  {grasp_result['local_y_rotation_deg']:.1f} deg")
+        print(f"  Z:  {grasp_result['local_z_rotation_deg']:.1f} deg")
         elevation = np.degrees(np.arcsin(np.clip(-grasp_result['approach_dir'][2], -1, 1)))
-        print(f"  倾斜角:     {elevation:.1f}° (目标: {TILT_ANGLE_DEG}°)")
+        print(f"  Elevation:  {elevation:.1f} deg (target: {TILT_ANGLE_DEG} deg)")
         ee_pos = grasp_result['grasp_center'] - grasp_result['approach_dir'] * EE_OFFSET_Z
-        print(f"  EE位置:     [{ee_pos[0]:.5f}, {ee_pos[1]:.5f}, {ee_pos[2]:.5f}]")
+        print(f"  EE:     [{ee_pos[0]:.5f}, {ee_pos[1]:.5f}, {ee_pos[2]:.5f}]")
         print(f"{'='*60}")
         grasp_geometries = create_grasp_visualization(grasp_result)
         all_geometries = [pcd] + grasp_geometries
@@ -787,11 +787,11 @@ def process_type_path(type_path, default_threshold=DEFAULT_UNIT_THRESHOLD_VALUE)
             {"grasp_result": grasp_result, "ee_pos": ee_pos},
             all_geometries,
             window_name=(
-                f"Affordance + 抓取位姿 "
-                f"(倾斜{TILT_ANGLE_DEG}°, "
-                f"Rx{LOCAL_X_ROTATION_DEG:.0f}°, "
-                f"Ry{LOCAL_Y_ROTATION_DEG:.0f}°, "
-                f"Rz{LOCAL_Z_ROTATION_DEG:.0f}°)"
+                f"Affordance +  "
+                f"({TILT_ANGLE_DEG} deg, "
+                f"Rx{LOCAL_X_ROTATION_DEG:.0f} deg, "
+                f"Ry{LOCAL_Y_ROTATION_DEG:.0f} deg, "
+                f"Rz{LOCAL_Z_ROTATION_DEG:.0f} deg)"
             ),
             width=1280,
             height=720,
@@ -814,7 +814,7 @@ def process_type_path(type_path, default_threshold=DEFAULT_UNIT_THRESHOLD_VALUE)
                  local_z_rotation_deg=np.array(grasp_result['local_z_rotation_deg']),
                  unit_threshold=np.array(threshold),
                  unit_converted=np.array(int(converted)))
-        print(f"[INFO] 抓取结果已保存: {save_path}")
+        print(f"[INFO] Saved result: {save_path}")
 
     return run_threshold_debug_loop(
         raw_points, os.path.basename(type_path), preview_fn, accept_fn, default_threshold
@@ -826,8 +826,8 @@ if __name__ == '__main__':
     type_path = os.path.join(script_dir, INPUT_DIR)
 
     if not os.path.isdir(type_path):
-        raise FileNotFoundError(f"目标文件夹不存在: {type_path}")
+        raise FileNotFoundError(f": {type_path}")
 
-    print(f"[INFO] 处理文件夹: {os.path.basename(type_path)}")
-    print("[INFO] 键位: Y/Enter=保存, U/↑=阈值×10, D/↓=阈值÷10, Q/Esc/X=退出")
+    print(f"[INFO] Processing folder: {os.path.basename(type_path)}")
+    print("[INFO] Controls: Y/Enter=save, U/Up=x10, D/Down=/10, Q/Esc/X=quit")
     process_type_path(type_path)

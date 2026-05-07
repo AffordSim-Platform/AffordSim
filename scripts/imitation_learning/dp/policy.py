@@ -1,14 +1,14 @@
 """
 Diffusion Policy (image + lowdim, global-cond, U-Net).
 
-对齐原版 DiffusionUnetHybridImagePolicy:
-- obs -> MultiViewObsEncoder -> global_cond
-- ConditionalUnet1D(input_dim=action_dim) 预测噪声, epsilon 目标
-- 训练用 diffusers.DDPMScheduler (cosine, clip_sample)
-- 推理支持 DDPM / DDIM
+ DiffusionUnetHybridImagePolicy:
+- obs  to  MultiViewObsEncoder  to  global_cond
+- ConditionalUnet1D(input_dim=action_dim) , epsilon 
+-  diffusers.DDPMScheduler (cosine, clip_sample)
+-  DDPM / DDIM
 
-注: 数据已在离线预处理里 min-max 归一化到 [-1,1] (dataset_stat.json), 所以
-policy 自身不内置 normalizer; env rollout 侧反归一化 action 再下发.
+:  min-max  [-1,1] (dataset_stat.json), 
+policy  normalizer; env rollout  action .
 """
 
 from typing import Optional, Tuple
@@ -95,7 +95,7 @@ class DiffusionPolicy(nn.Module):
         )
         self.num_train_timesteps = num_train_timesteps
 
-        # Inference scheduler (共享 beta schedule 以保证分布一致)
+        # Inference scheduler ( beta schedule )
         if inference_scheduler == "ddim":
             self.inference_noise_scheduler = DDIMScheduler(
                 num_train_timesteps=num_train_timesteps,
@@ -155,7 +155,7 @@ class DiffusionPolicy(nn.Module):
         obs_images: (B, T_o, V, 3, H, W) in [0,1]
         obs_lowdim: (B, T_o, D_low)
 
-        Returns: (B, T_a, D_act) 预测的动作序列 (仍在 [-1,1] 归一化空间).
+        Returns: (B, T_a, D_act)  ( [-1,1] ).
         """
         B = obs_images.shape[0]
         device = obs_images.device

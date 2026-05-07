@@ -37,8 +37,8 @@ def parse_cuda_version(version_string):
     not present.
 
        Example:
-           "12.8.9" -> (12, 8, 9)
-           "11.2" -> (11, 2, 0)
+           "12.8.9"  to  (12, 8, 9)
+           "11.2"  to  (11, 2, 0)
     """
     parts = version_string.split(".")
     major = int(parts[0])
@@ -144,7 +144,7 @@ def get_imitation_reward_from_dtw(ref_traj, curr_ee_pos, prev_ee_traj, criterion
         step_idx = min_dist_step_idx[i]
         curr_ee_pos_i = curr_ee_pos[i].reshape(1, 3)
 
-        # NOTE: in reference trajectories, larger index -> closer to goal
+        # NOTE: in reference trajectories, larger index  to  closer to goal
         traj = ref_traj[traj_idx, step_idx:, :].reshape((1, -1, 3))
 
         _, curr_step_idx, _ = get_closest_state_idx(traj, curr_ee_pos_i)

@@ -18,7 +18,7 @@ FIXED_GRIPPER_STEPS = 3
 
 
 def primitive_pick(collector, mode: Optional[str], params: Dict[str, Any], context: Dict[str, Any]) -> bool:
-    """Composite pick primitive: grasp pose -> container check -> execute pick."""
+    """Composite pick primitive: grasp pose  to  container check  to  execute pick."""
     if not primitive_compute_grasp_pose(collector, mode, params, context):
         return False
     if not primitive_detect_pick_container_context(collector, None, params, context):
@@ -90,7 +90,7 @@ def primitive_execute_pick(collector, params: Dict[str, Any], context: Dict[str,
     if execution_mode == "normal":
         container_picks = [None] * n
 
-    print(f"  🚀 [Primitive] Planning Pre-PICK ({execution_mode})...")
+    print(f"   [Primitive] Planning Pre-PICK ({execution_mode})...")
 
     pre_pick_plans, pre_pick_plan_successes = collector.motion_planner.plan_to_pose_batch(
         collector.robot.data.joint_pos[:n].cpu().numpy(),
@@ -112,7 +112,7 @@ def primitive_execute_pick(collector, params: Dict[str, Any], context: Dict[str,
         active_mask=list(local_active),
     )
 
-    print("  🚀 [Primitive] Descending to PICK (IK)...")
+    print("   [Primitive] Descending to PICK (IK)...")
     pick_gripper_open = [1.0 if s else 0.0 for s in local_active]
     pick_target_positions = np.array(context["all_pick_pos"], dtype=float).copy()
     _, pick_segment_successes = collector.execute_ik_motion(
@@ -132,7 +132,7 @@ def primitive_execute_pick(collector, params: Dict[str, Any], context: Dict[str,
         active_mask=list(local_active),
     )
 
-    print("  🚀 [Primitive] Retreat/Lift after PICK (IK)...")
+    print("   [Primitive] Retreat/Lift after PICK (IK)...")
     lift_positions = []
     for pos in context["all_pick_pos"]:
         lift_pos = np.array(pos, dtype=float).copy()
@@ -148,7 +148,7 @@ def primitive_execute_pick(collector, params: Dict[str, Any], context: Dict[str,
                 lift_positions[env_idx] = np.array(pre_pick_positions[env_idx], dtype=float)
                 retreat_count += 1
         if retreat_count > 0:
-            print(f"  [Primitive] Container pick retreat enabled: {retreat_count}/{n} envs -> pre-pick pose")
+            print(f"  [Primitive] Container pick retreat enabled: {retreat_count}/{n} envs returning to pre-pick pose")
 
     _, lift_segment_successes = collector.execute_ik_motion(
         np.array(lift_positions),
@@ -192,5 +192,5 @@ def primitive_execute_pick(collector, params: Dict[str, Any], context: Dict[str,
     context["pick_completed"] = any(final_alive)
     context["primitive_executed_motion"] = True
 
-    print(f"  ✅ [Primitive] Pick success (alive): {sum(final_alive)}/{n}")
+    print(f"   [Primitive] Pick success (alive): {sum(final_alive)}/{n}")
     return any(final_alive)

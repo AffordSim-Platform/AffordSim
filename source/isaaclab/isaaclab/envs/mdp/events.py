@@ -746,7 +746,7 @@ class randomize_joint_parameters(ManagerTermBase):
                 dynamic_friction_coeff = torch.clamp(dynamic_friction_coeff, min=0.0)
                 viscous_friction_coeff = torch.clamp(viscous_friction_coeff, min=0.0)
 
-                # Ensure dynamic ≤ static (same shape before indexing)
+                # Ensure dynamic <= static (same shape before indexing)
                 dynamic_friction_coeff = torch.minimum(dynamic_friction_coeff, friction_coeff)
 
                 # Index once at the end
@@ -1612,7 +1612,7 @@ class randomize_visual_color(ManagerTermBase):
 
             # parse the colors into replicator format
             if isinstance(colors, dict):
-                # (r, g, b) - low, high --> (low_r, low_g, low_b) and (high_r, high_g, high_b)
+                # (r, g, b) - low, high - to  (low_r, low_g, low_b) and (high_r, high_g, high_b)
                 color_low = [colors[key][0] for key in ["r", "g", "b"]]
                 color_high = [colors[key][1] for key in ["r", "g", "b"]]
                 colors = rep.distribution.uniform(color_low, color_high)
@@ -1673,7 +1673,7 @@ class randomize_visual_color(ManagerTermBase):
 
             # parse the colors into replicator format
             if isinstance(colors, dict):
-                # (r, g, b) - low, high --> (low_r, low_g, low_b) and (high_r, high_g, high_b)
+                # (r, g, b) - low, high - to  (low_r, low_g, low_b) and (high_r, high_g, high_b)
                 color_low = [colors[key][0] for key in ["r", "g", "b"]]
                 color_high = [colors[key][1] for key in ["r", "g", "b"]]
                 colors = [color_low, color_high]
@@ -1795,9 +1795,9 @@ def _validate_scale_range(
     if not allow_negative and not allow_zero and low <= 0:
         raise ValueError(f"{name}: lower bound must be > 0 when using the 'scale' operation (got {low}).")
     if not allow_negative and allow_zero and low < 0:
-        raise ValueError(f"{name}: lower bound must be ≥ 0 when using the 'scale' operation (got {low}).")
+        raise ValueError(f"{name}: lower bound must be >= 0 when using the 'scale' operation (got {low}).")
     if high < low:
-        raise ValueError(f"{name}: upper bound ({high}) must be ≥ lower bound ({low}).")
+        raise ValueError(f"{name}: upper bound ({high}) must be >= lower bound ({low}).")
     
 def reset_object_init(env: ManagerBasedEnv, env_ids: torch.Tensor):
     obj = env.scene["basic_block_red"]

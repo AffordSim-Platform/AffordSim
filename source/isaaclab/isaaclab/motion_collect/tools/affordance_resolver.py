@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Optional
 
 
-# action -> (directory suffix, filename)
+# action  to  (directory suffix, filename)
 ACTION_FILE_MAP = {
     "pick":      ("pick",    "grasp_result.npz"),
     "pick_hang": ("pick",    "grasp_result_hang.npz"),

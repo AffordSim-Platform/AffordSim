@@ -137,13 +137,14 @@ class RuntimeConfig:
     
     @staticmethod
     def _find_project_root(start_dir: Path) -> Path:
-        """Search upward from start_dir to find the project root containing .git."""
-        current = start_dir.resolve()
-        while current != current.parent:
-            if (current / ".git").exists():
-                return current
-            current = current.parent
-        return start_dir
+        """Return the project root.
+
+        Derived from this file's fixed location at
+        source/isaaclab_tasks/isaaclab_tasks/real2sim/utils/task_config_loader.py
+        so resolution does not depend on ``.git`` (which may be missing for zip
+        installs or shadowed by a stray ``.git`` higher up the tree).
+        """
+        return Path(__file__).resolve().parents[5]
 
     @classmethod
     def from_dict(cls, data: Dict, config_dir: Optional[Path] = None) -> "RuntimeConfig":

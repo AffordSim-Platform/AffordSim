@@ -19,25 +19,25 @@ NPZ_CANDIDATE_NAMES = ("labeled_result.npz",)
 
 
 # ============================================================================
-# Step 1: Affordance 点聚类
+# Step 1: Affordance 
 # ============================================================================
 def cluster_affordance_points(points, labels, affordance_label=1,
                               dbscan_eps=0.02, dbscan_min_samples=5):
-    """提取 affordance 点并用 DBSCAN 聚类，返回所有连续簇的点和质心列表。
+    """ affordance  DBSCAN 
 
     Returns:
-        clusters: list of dict, 每个 dict 包含 'points' 和 'centroid'，按点数从大到小排列。
+        clusters: list of dict,  dict  'points'  'centroid'
     """
     aff_mask = (labels == affordance_label)
     aff_points = points[aff_mask]
 
     if len(aff_points) < 3:
-        print(f"[WARN] affordance 点太少 ({len(aff_points)}), 使用全部")
+        print(f"[WARN] affordance  ({len(aff_points)}), ")
         centroid = aff_points.mean(axis=0) if len(aff_points) > 0 else points.mean(axis=0)
         return [{'points': aff_points, 'centroid': centroid}]
 
     if len(aff_points) < 20:
-        print(f"[INFO] affordance 点较少 ({len(aff_points)}), 跳过聚类")
+        print(f"[INFO] affordance  ({len(aff_points)}), ")
         return [{'points': aff_points, 'centroid': aff_points.mean(axis=0)}]
 
     aff_pcd = o3d.geometry.PointCloud()
@@ -46,11 +46,11 @@ def cluster_affordance_points(points, labels, affordance_label=1,
         eps=dbscan_eps, min_points=dbscan_min_samples, print_progress=False))
 
     if cluster_labels.max() < 0:
-        print("[WARN] DBSCAN 未发现聚类, 使用全部 affordance 点")
+        print("[WARN] DBSCAN ,  affordance ")
         return [{'points': aff_points, 'centroid': aff_points.mean(axis=0)}]
 
     unique_labels, counts = np.unique(cluster_labels[cluster_labels >= 0], return_counts=True)
-    # 按点数从大到小排列
+    # 
     sorted_indices = np.argsort(-counts)
 
     clusters = []
@@ -61,29 +61,29 @@ def cluster_affordance_points(points, labels, affordance_label=1,
         centroid = cluster_points.mean(axis=0)
         clusters.append({'points': cluster_points, 'centroid': centroid})
 
-    print(f"[INFO] DBSCAN: 发现 {len(clusters)} 个簇 (共 {len(aff_points)} 个 affordance 点)")
+    print(f"[INFO] DBSCAN:  {len(clusters)}  ( {len(aff_points)}  affordance )")
     for i, c in enumerate(clusters):
         ct = c['centroid']
-        print(f"  簇 {i}: {len(c['points'])} 个点, 质心: [{ct[0]:.5f}, {ct[1]:.5f}, {ct[2]:.5f}]")
+        print(f"   {i}: {len(c['points'])} , : [{ct[0]:.5f}, {ct[1]:.5f}, {ct[2]:.5f}]")
 
     return clusters
 
 
 # ============================================================================
-# Step 2: 可视化
+# Step 2: 
 # ============================================================================
 CLUSTER_COLORS = [
-    [1.0, 1.0, 0.0],  # 黄色
-    [0.0, 1.0, 1.0],  # 青色
-    [1.0, 0.0, 1.0],  # 品红
-    [1.0, 0.5, 0.0],  # 橙色
-    [0.5, 0.0, 1.0],  # 紫色
+    [1.0, 1.0, 0.0],  # 
+    [0.0, 1.0, 1.0],  # 
+    [1.0, 0.0, 1.0],  # 
+    [1.0, 0.5, 0.0],  # 
+    [0.5, 0.0, 1.0],  # 
 ]
 
 
 def visualize_affordance(points, labels, clusters):
-    """可视化点云和所有 affordance 聚类质心。"""
-    # 原始点云着色: label=0 绿色, label=1 红色
+    """ affordance """
+    # : label=0 , label=1 
     colors = np.zeros((len(labels), 3))
     colors[labels == 0] = [0.0, 1.0, 0.0]
     colors[labels == 1] = [1.0, 0.0, 0.0]
@@ -94,11 +94,11 @@ def visualize_affordance(points, labels, clusters):
 
     geometries = [pcd]
 
-    # 坐标系
+    # 
     coord_frame = o3d.geometry.TriangleMesh.create_coordinate_frame(size=0.05, origin=[0, 0, 0])
     geometries.append(coord_frame)
 
-    # 为每个簇添加质心球体和坐标系
+    # 
     for i, cluster in enumerate(clusters):
         centroid = cluster['centroid']
         color = CLUSTER_COLORS[i % len(CLUSTER_COLORS)]
@@ -117,7 +117,7 @@ def visualize_affordance(points, labels, clusters):
 
 
 # ============================================================================
-# 数据加载与批处理
+# 
 # ============================================================================
 TARGET_SUFFIXES = ("_hang", "_place", "_pourin", "_pourout")
 
@@ -140,11 +140,11 @@ def load_points_and_labels(type_path):
 
     if pt_path is not None:
         if torch is None:
-            raise ImportError("未安装 torch, 无法加载 .pt 文件")
+            raise ImportError(" torch,  .pt ")
         data = torch.load(pt_path, map_location="cpu")
         points = data['points'].numpy()
         labels = data['labels'].numpy()
-        print(f"[INFO] 加载: {pt_path}")
+        print(f"[INFO] Loaded: {pt_path}")
         return points, labels
 
     npz_path = None
@@ -155,12 +155,12 @@ def load_points_and_labels(type_path):
             break
 
     if npz_path is None:
-        raise FileNotFoundError(f"未找到标注文件: {type_path}")
+        raise FileNotFoundError(f": {type_path}")
 
     data = np.load(npz_path)
     points = data['points']
     labels = data['labels']
-    print(f"[INFO] 加载: {npz_path}")
+    print(f"[INFO] Saved result: {npz_path}")
     return points, labels
 
 
@@ -169,23 +169,23 @@ def process_type_path(type_path, default_threshold=DEFAULT_UNIT_THRESHOLD):
     save_path = os.path.join(type_path, "affordance_clusters.npz")
 
     def preview_fn(points, threshold, converted, coord_range):
-        print(f"[INFO] 总点数: {len(points)}, label=0: {(labels==0).sum()}, label=1: {(labels==1).sum()}")
+        print(f"[INFO] Points: {len(points)}, label=0: {(labels==0).sum()}, label=1: {(labels==1).sum()}")
 
-        # 聚类 (每轮阈值变化都要重算, 因为 dbscan_eps 是基于米的)
+        #  (,  dbscan_eps )
         clusters = cluster_affordance_points(points, labels)
 
         print(f"\n{'='*60}")
-        print(f"  Affordance 聚类结果: 共 {len(clusters)} 个簇")
+        print(f"  Affordance :  {len(clusters)} ")
         for i, c in enumerate(clusters):
             ct = c['centroid']
-            print(f"  簇 {i}: {len(c['points'])} 个点, 质心: [{ct[0]:.5f}, {ct[1]:.5f}, {ct[2]:.5f}]")
+            print(f"   {i}: {len(c['points'])} , : [{ct[0]:.5f}, {ct[1]:.5f}, {ct[2]:.5f}]")
         print(f"{'='*60}")
 
         geometries = visualize_affordance(points, labels, clusters)
         return attach_visualization(
             {"clusters": clusters},
             geometries,
-            window_name=f"Affordance 聚类可视化 ({os.path.basename(type_path)})",
+            window_name=f"Affordance  ({os.path.basename(type_path)})",
             width=1280,
             height=720,
         )
@@ -195,7 +195,7 @@ def process_type_path(type_path, default_threshold=DEFAULT_UNIT_THRESHOLD):
         centroids = np.array([c['centroid'] for c in clusters])
         all_aff_points = np.concatenate([c['points'] for c in clusters], axis=0)
         save_dict = {
-            'centroids': centroids,           # (N, 3) 所有簇的质心
+            'centroids': centroids,           # (N, 3) 
             'num_clusters': len(clusters),
             'aff_points': all_aff_points,
             'unit_threshold': np.array(threshold),
@@ -204,7 +204,7 @@ def process_type_path(type_path, default_threshold=DEFAULT_UNIT_THRESHOLD):
         for i, c in enumerate(clusters):
             save_dict[f'cluster_{i}_points'] = c['points']
         np.savez(save_path, **save_dict)
-        print(f"[INFO] 聚类结果已保存: {save_path}")
+        print(f"[INFO] Saved result: {save_path}")
 
     return run_threshold_debug_loop(
         raw_points, os.path.basename(type_path), preview_fn, accept_fn, default_threshold
@@ -212,25 +212,25 @@ def process_type_path(type_path, default_threshold=DEFAULT_UNIT_THRESHOLD):
 
 
 # ============================================================================
-# 主程序
+# 
 # ============================================================================
 if __name__ == '__main__':
     script_dir = os.path.dirname(os.path.abspath(__file__))
     type_paths = find_target_dirs(script_dir)
 
     if not type_paths:
-        raise FileNotFoundError(f"{script_dir} 下未找到任何 *_hang/*_place/*_pourin/*_pourout 文件夹")
+        raise FileNotFoundError(f"{script_dir}  *_hang/*_place/*_pourin/*_pourout ")
 
     if len(type_paths) > 1:
-        print(f"[INFO] 检测到 {len(type_paths)} 个目标文件夹, 将逐个处理。")
-        print("[INFO] 键位: Y/Enter=保存, U/↑=阈值×10, D/↓=阈值÷10, Q/Esc/X=退出批处理")
+        print(f"[INFO]  {len(type_paths)} , ")
+        print("[INFO] Controls: Y/Enter=save, U/Up=x10, D/Down=/10, Q/Esc/X=quit")
 
     for index, type_path in enumerate(type_paths, start=1):
         folder_name = os.path.basename(type_path)
-        print(f"\n[INFO] ({index}/{len(type_paths)}) 处理文件夹: {folder_name}")
+        print(f"\n[INFO] ({index}/{len(type_paths)}) : {folder_name}")
         try:
             if not process_type_path(type_path):
-                print("[INFO] 用户中止批处理。")
+                print("[INFO] ")
                 break
         except FileNotFoundError as exc:
-            print(f"[WARN] 跳过 {folder_name}: {exc}")
+            print(f"[WARN]  {folder_name}: {exc}")

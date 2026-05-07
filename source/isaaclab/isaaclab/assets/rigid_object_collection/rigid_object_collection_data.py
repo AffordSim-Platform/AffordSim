@@ -511,4 +511,4 @@ class RigidObjectCollectionData:
         Returns:
             The reshaped data. Shape is (num_objects, num_instances, data_size).
         """
-        return torch.einsum("ijk -> jik", data.reshape(self.num_objects, self.num_instances, -1))
+        return torch.einsum("ijk  to  jik", data.reshape(self.num_objects, self.num_instances, -1))

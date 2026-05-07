@@ -27,9 +27,9 @@ class SurfaceGripperBinaryAction(ActionTerm):
 
     This action term maps a binary action to the *open* or *close* surface gripper configurations.
     The surface gripper behavior is as follows:
-    - [-1, -0.3] --> Gripper is Opening
-    - [-0.3, 0.3] --> Gripper is Idle (do nothing)
-    - [0.3, 1] --> Gripper is Closing
+    - [-1, -0.3] - to  Gripper is Opening
+    - [-0.3, 0.3] - to  Gripper is Idle (do nothing)
+    - [0.3, 1] - to  Gripper is Closing
 
     Based on above, we follow the following convention for the binary action:
 

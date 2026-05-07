@@ -225,10 +225,10 @@ In Isaac Sim, the joint ordering is as follows:
 
 Correspondingly, the joint ordering for the ANYmal robot is:
 
-* LF = left front --> [0, 4, 8]
-* LH = left hind --> [1, 5, 9]
-* RF = right front --> [2, 6, 10]
-* RH = right hind --> [3, 7, 11]
+* LF = left front - to  [0, 4, 8]
+* LH = left hind - to  [1, 5, 9]
+* RF = right front - to  [2, 6, 10]
+* RH = right hind - to  [3, 7, 11]
 """
 
 

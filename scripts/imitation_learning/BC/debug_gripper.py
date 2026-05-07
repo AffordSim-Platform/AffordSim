@@ -1,6 +1,6 @@
 """
-Debug: 从 HDF5 取训练数据, 直接过模型, 检查 gripper 输出.
-用法:
+Debug:  HDF5 , ,  gripper .
+:
   python scripts/imitation_learning/BC/debug_gripper.py \
     --checkpoint <path_to_ckpt.pt> \
     --demo_path <path_to_hdf5>
@@ -87,11 +87,11 @@ def main():
                 ee_np = ee_delta.cpu().numpy().squeeze(0)
 
             gt_gripper = gripper_raw[idx]
-            gt_label = (gt_gripper + 1.0) / 2.0  # -1→0, +1→1
+            gt_label = (gt_gripper + 1.0) / 2.0  # -1 to 0, +1 to 1
             gt_ee = actions[idx, :6]
             pred_class = 1.0 if prob > 0.5 else 0.0
 
-            correct = "✓" if pred_class == gt_label else "✗"
+            correct = "" if pred_class == gt_label else ""
             print(f"  [{idx:4d}] gt_gripper={gt_gripper:+.0f} (label={gt_label:.0f}) | "
                   f"logit={logit:+8.4f} prob={prob:.4f} pred={pred_class:.0f} {correct}")
             print(f"         pred_ee={np.round(ee_np, 4)}")

@@ -1,8 +1,8 @@
 """
-Open-loop replay: 从HDF5取action直接在环境里回放, 不经过模型.
-验证反归一化后的action在环境里是否能正常执行.
+Open-loop replay: HDF5action, .
+action.
 
-用法:
+:
   python scripts/imitation_learning/BC/debug_openloop.py \
     --task FrankaFr3-OurGripper-IKRel-VisPick-v0 \
     --task_config generated_task_config.yaml \

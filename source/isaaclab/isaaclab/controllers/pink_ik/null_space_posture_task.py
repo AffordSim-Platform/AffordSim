@@ -247,7 +247,7 @@ class NullSpacePostureTask(Task):
 
         # Wide matrix (typical for robotics): use left pseudoinverse
         # J^+ = J^T @ inv(J @ J^T + λ²I)
-        # This is faster because we invert an m×m matrix instead of n×n
+        # This is faster because we invert an mxm matrix instead of nxn
 
         # Compute J @ J^T using BLAS (faster than numpy)
         JJT = blas.dgemm(1.0, J_combined, J_combined.T)

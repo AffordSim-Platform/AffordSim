@@ -38,7 +38,7 @@ def configclass(cls, **kwargs):
     2. Requiring explicit usage of :meth:`field(default_factory=...)` to reinitialize mutable variables.
 
     This function provides a decorator that wraps around Python's `dataclass`_ utility to deal with
-    the above two issues. It also provides additional helper functions for dictionary <-> class
+    the above two issues. It also provides additional helper functions for dictionary < to  class
     conversion and easily copying class instances.
 
     Usage:
@@ -106,7 +106,7 @@ def configclass(cls, **kwargs):
 
 
 """
-Dictionary <-> Class operations.
+Dictionary < to  Class operations.
 
 These are redefined here to add new docstrings.
 """

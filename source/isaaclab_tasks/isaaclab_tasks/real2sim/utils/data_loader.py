@@ -92,7 +92,7 @@ def view_episode_images(
     save_path = Path(save_path)
     save_path.parent.mkdir(parents=True, exist_ok=True)
     plt.savefig(save_path, dpi=150, bbox_inches='tight')
-    print(f"\n✓ Saved visualization to {save_path}")
+    print(f"\n Saved visualization to {save_path}")
     
     plt.show()
     print(f"{'='*70}\n")
@@ -147,7 +147,7 @@ def create_video_from_episode(
     output_path.parent.mkdir(parents=True, exist_ok=True)
     
     file_size = output_path.stat().st_size / (1024 * 1024)  # MB
-    print(f"\n✅ Video saved successfully!")
+    print(f"\n Video saved successfully!")
     print(f"  Path: {output_path}")
     print(f"  Size: {file_size:.2f} MB")
     print(f"  Total frames: {len(images)}")
@@ -245,7 +245,7 @@ def create_gif_from_episode(
     )
     
     file_size = output_path.stat().st_size / (1024 * 1024)  # MB
-    print(f"\n✅ GIF saved successfully!")
+    print(f"\n GIF saved successfully!")
     print(f"  Path: {output_path}")
     print(f"  Size: {file_size:.2f} MB")
     print(f"  Total frames: {len(pil_images)}")
@@ -312,7 +312,7 @@ if __name__ == "__main__":
     episode_path = f"{REAL2SIM_ROOT_DIR}/scripts/real2sim-v0/dataset/pick up cube and place in bowl/20251114_151543/episode_0001"
     if Path(episode_path).exists():
         episode = load_episode(episode_path)
-        print(f"✓ Loaded episode from {episode_path}")
+        print(f" Loaded episode from {episode_path}")
         print(f"  Actions shape: {episode['actions'].shape}")
         print(f"  Observations: {list(episode['observations'].keys())}")
 

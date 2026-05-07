@@ -11,7 +11,7 @@ task:
   description: grasp the microwave handle
 runtime:
   headless: false
-  episodes: 5
+  episodes: 15
   save_npy: false
   save_camera_images: false
   save_composite_images: false
@@ -25,6 +25,7 @@ runtime:
   cam_wrist_background: backgrounds/wristbackground_realworld1.png
   data_dir: data/r2s2r_data/open_microwave
   task_name: FrankaFr3-OurGripper-Joint-VisPick-v0
+  save_depth_images: false
 robot:
   cfg_name: franka_fr3_our.yml
   type: franka_fr3_default
@@ -43,11 +44,19 @@ articulations:
     init_pos: [0.8, -0.2, 0.16]
     init_rot: [0.7071, 0, 0, -0.7071]
     position_range:
-      x: [0.75, 0.85]
-      y: [-0.25, -0.15]
-      z: [0.16, 0.16]
+      x:
+        - 0.7
+        - 0.8
+      y:
+        - -0.25
+        - -0.15
+      z:
+        - 0.16
+        - 0.16
     orientation_range:
-      yaw: [-0.1745, 0.1745]
+      yaw:
+        - -0.1745
+        - 0.1745
     joint_pos:
       microjoint: 0.0
     actuators:
@@ -61,11 +70,11 @@ primitives:
   - type: open
     params:
       target: microwave1
-      fast_pull_distance: 0.30
+      fast_pull_distance: 0.2
       fast_pull_interpolation_steps: 5
       lift_before_pre_insert: 0.20
       lift_interpolation_steps: 10
-      pre_insert_outward_offset: 0.05
+      pre_insert_outward_offset: 0.03
       align_above_interpolation_steps: 10
       door_tangent_move_distance: 0.4
       success_eval: true

@@ -1,12 +1,12 @@
 """
-多簇 pull 位姿生成
+ pull 
 
-核心思路:
-  1. 聚类 affordance 点, 保留所有簇
-  2. 每个簇都生成一个固定 pull/push 位姿
-  3. approach 方向参考 check_pcdata_handle_open.py:
-     在 XY 平面对准物体中心, 从斜上方 75° 接近
-  4. 不打分, 直接输出所有簇结果
+:
+  1.  affordance , 
+  2.  pull/push 
+  3. approach  check_pcdata_handle_open.py:
+      XY ,  75 deg 
+  4. , 
 """
 
 import numpy as np
@@ -22,22 +22,22 @@ except ImportError:
 
 
 # ============================================================================
-# 夹爪参数 (米)
+#  ()
 # ============================================================================
 GRIPPER_MAX_OPENING = 0.08        # 80mm
 GRIPPER_FINGER_DEPTH = 0.10       # 100mm
 GRIPPER_FINGER_WIDTH = 0.02       # 20mm
 GRIPPER_FINGER_THICKNESS = 0.012  # 12mm
-EE_OFFSET_Z = 0.220               # fr3_hand -> ee_frame 偏移
+EE_OFFSET_Z = 0.220               # fr3_hand  to  ee_frame 
 
-TILT_ANGLE_DEG = 75.0             # 75° = 从斜上方 75° 接近
+TILT_ANGLE_DEG = 75.0             # 75 deg =  75 deg 
 
 CLUSTER_COLORS = [
-    [1.0, 1.0, 0.0],  # 黄色
-    [0.0, 1.0, 1.0],  # 青色
-    [1.0, 0.0, 1.0],  # 品红
-    [1.0, 0.5, 0.0],  # 橙色
-    [0.5, 0.0, 1.0],  # 紫色
+    [1.0, 1.0, 0.0],  # 
+    [0.0, 1.0, 1.0],  # 
+    [1.0, 0.0, 1.0],  # 
+    [1.0, 0.5, 0.0],  # 
+    [0.5, 0.0, 1.0],  # 
 ]
 
 PT_CANDIDATE_NAMES = ("labeled_result.pt",)
@@ -45,21 +45,21 @@ NPZ_CANDIDATE_NAMES = ("labeled_result.npz",)
 
 
 # ============================================================================
-# Step 1: Affordance 点聚类
+# Step 1: Affordance 
 # ============================================================================
 def cluster_affordance_points(points, labels, affordance_label=1,
                               dbscan_eps=0.02, dbscan_min_samples=5):
-    """提取 affordance 点并用 DBSCAN 聚类，返回所有连续簇的点和质心列表。"""
+    """ affordance  DBSCAN """
     aff_mask = (labels == affordance_label)
     aff_points = points[aff_mask]
 
     if len(aff_points) < 3:
-        print(f"[WARN] affordance 点太少 ({len(aff_points)}), 使用全部")
+        print(f"[WARN] affordance  ({len(aff_points)}), ")
         centroid = aff_points.mean(axis=0) if len(aff_points) > 0 else points.mean(axis=0)
         return [{'points': aff_points, 'centroid': centroid}]
 
     if len(aff_points) < 20:
-        print(f"[INFO] affordance 点较少 ({len(aff_points)}), 跳过聚类")
+        print(f"[INFO] affordance  ({len(aff_points)}), ")
         return [{'points': aff_points, 'centroid': aff_points.mean(axis=0)}]
 
     aff_pcd = o3d.geometry.PointCloud()
@@ -68,7 +68,7 @@ def cluster_affordance_points(points, labels, affordance_label=1,
         eps=dbscan_eps, min_points=dbscan_min_samples, print_progress=False))
 
     if cluster_labels.max() < 0:
-        print("[WARN] DBSCAN 未发现聚类, 使用全部 affordance 点")
+        print("[WARN] DBSCAN ,  affordance ")
         return [{'points': aff_points, 'centroid': aff_points.mean(axis=0)}]
 
     unique_labels, counts = np.unique(cluster_labels[cluster_labels >= 0], return_counts=True)
@@ -82,32 +82,32 @@ def cluster_affordance_points(points, labels, affordance_label=1,
         centroid = cluster_points.mean(axis=0)
         clusters.append({'points': cluster_points, 'centroid': centroid})
 
-    print(f"[INFO] DBSCAN: 发现 {len(clusters)} 个簇 (共 {len(aff_points)} 个 affordance 点)")
+    print(f"[INFO] DBSCAN:  {len(clusters)}  ( {len(aff_points)}  affordance )")
     for i, c in enumerate(clusters):
         ct = c['centroid']
-        print(f"  簇 {i}: {len(c['points'])} 个点, 质心: [{ct[0]:.5f}, {ct[1]:.5f}, {ct[2]:.5f}]")
+        print(f"   {i}: {len(c['points'])} , : [{ct[0]:.5f}, {ct[1]:.5f}, {ct[2]:.5f}]")
 
     return clusters
 
 
 # ============================================================================
-# Step 2: 计算每个簇的固定 pull 位姿
+# Step 2:  pull 
 # ============================================================================
 def compute_cluster_grasp(cluster, obj_center):
-    """对单个簇生成一个固定 pull/push 位姿。"""
+    """ pull/push """
     grasp_center = cluster['centroid']
 
     diff_xy = obj_center[:2] - grasp_center[:2]
 
     if abs(diff_xy[0]) < 1e-6 and abs(diff_xy[1]) < 1e-6:
-        print("[WARN] 簇中心与物体中心 XY 重合, 使用默认方向 +X")
+        print("[WARN]  XY ,  +X")
         approach_horiz = np.array([1.0, 0.0])
     elif abs(diff_xy[0]) >= abs(diff_xy[1]):
         approach_horiz = np.array([np.sign(diff_xy[0]), 0.0])
     else:
         approach_horiz = np.array([0.0, np.sign(diff_xy[1])])
 
-    print(f"[INFO] approach 对齐到坐标轴: [{approach_horiz[0]:.0f}, {approach_horiz[1]:.0f}]")
+    print(f"[INFO] approach : [{approach_horiz[0]:.0f}, {approach_horiz[1]:.0f}]")
 
     tilt_rad = np.radians(TILT_ANGLE_DEG)
     approach_dir = np.array([
@@ -139,11 +139,11 @@ def compute_cluster_grasp(cluster, obj_center):
 
 
 def compute_all_cluster_grasps(points, labels):
-    """为所有 affordance 簇生成固定 pull 位姿。"""
+    """ affordance  pull """
     clusters = cluster_affordance_points(points, labels)
     obj_center = points.mean(axis=0)
 
-    print(f"[INFO] 物体中心: [{obj_center[0]:.5f}, {obj_center[1]:.5f}, {obj_center[2]:.5f}]")
+    print(f"[INFO] Object center: [{obj_center[0]:.5f}, {obj_center[1]:.5f}, {obj_center[2]:.5f}]")
 
     grasp_results = []
     for i, cluster in enumerate(clusters):
@@ -154,8 +154,8 @@ def compute_all_cluster_grasps(points, labels):
         approach = grasp_result['approach_dir']
         grip = grasp_result['grip_axis']
 
-        print(f"\n[INFO] 簇 {i} 位姿")
-        print(f"  中心点:     [{center[0]:.5f}, {center[1]:.5f}, {center[2]:.5f}]")
+        print(f"\n[INFO]  {i} ")
+        print(f"  Center:     [{center[0]:.5f}, {center[1]:.5f}, {center[2]:.5f}]")
         print(f"  Approach:   [{approach[0]:.4f}, {approach[1]:.4f}, {approach[2]:.4f}]")
         print(f"  Grip axis:  [{grip[0]:.4f}, {grip[1]:.4f}, {grip[2]:.4f}]")
 
@@ -163,7 +163,7 @@ def compute_all_cluster_grasps(points, labels):
 
 
 # ============================================================================
-# 可视化
+# 
 # ============================================================================
 def rotation_from_z_to_dir(direction):
     z = np.array([0.0, 0.0, 1.0])
@@ -256,7 +256,7 @@ def _to_numpy(array_like):
 
 def _load_pt_data(pt_path):
     if torch is None:
-        raise ImportError("torch 未安装，无法读取 .pt 点云文件")
+        raise ImportError("torch  .pt ")
 
     data = torch.load(pt_path, map_location="cpu")
     return _to_numpy(data["points"]), _to_numpy(data["labels"])
@@ -283,14 +283,14 @@ def resolve_input_path(script_dir, input_dir=None, input_file=None):
     if input_file is not None:
         input_path = input_file if os.path.isabs(input_file) else os.path.join(script_dir, input_file)
         if not os.path.isfile(input_path):
-            raise FileNotFoundError(f"指定输入文件不存在: {input_path}")
+            raise FileNotFoundError(f": {input_path}")
         return input_path
 
     candidate_dirs = []
     if input_dir is not None:
         resolved_dir = input_dir if os.path.isabs(input_dir) else os.path.join(script_dir, input_dir)
         if not os.path.isdir(resolved_dir):
-            raise FileNotFoundError(f"指定输入目录不存在: {resolved_dir}")
+            raise FileNotFoundError(f": {resolved_dir}")
         candidate_dirs.append(resolved_dir)
     else:
         candidate_dirs = sorted(
@@ -306,11 +306,11 @@ def resolve_input_path(script_dir, input_dir=None, input_file=None):
             return path
 
     if input_dir is not None:
-        raise FileNotFoundError(f"目录下未找到可用点云标注文件: {candidate_dirs[0]}")
+        raise FileNotFoundError(f": {candidate_dirs[0]}")
 
     raise FileNotFoundError(
-        "未找到可用的 push 输入数据。"
-        f" 已搜索目录: {searched_dirs if searched_dirs else [script_dir]}"
+        " push "
+        f" : {searched_dirs if searched_dirs else [script_dir]}"
     )
 
 
@@ -323,7 +323,7 @@ def load_points_and_labels(script_dir, input_dir=None, input_file=None):
     elif input_path.endswith(".npz"):
         points, labels = _load_npz_data(input_path)
     else:
-        raise ValueError(f"不支持的输入文件类型: {input_path}")
+        raise ValueError(f": {input_path}")
 
     return points, labels, input_path, input_dirname
 
@@ -342,11 +342,11 @@ def process_input_path(script_dir, input_dir=None, input_file=None, visualize=Tr
         input_dir=input_dir,
         input_file=input_file,
     )
-    print(f"[INFO] 加载: {input_path}")
+    print(f"[INFO] Loaded: {input_path}")
     save_path = os.path.join(type_path, "grasp_result.npz")
 
     def preview_fn(points, threshold, converted, coord_range):
-        print(f"[INFO] 总点数: {len(points)}, label=0: {(labels==0).sum()}, label=1: {(labels==1).sum()}")
+        print(f"[INFO] Points: {len(points)}, label=0: {(labels==0).sum()}, label=1: {(labels==1).sum()}")
 
         colors = np.zeros((len(labels), 3))
         colors[labels == 0] = [0.0, 1.0, 0.0]
@@ -359,13 +359,13 @@ def process_input_path(script_dir, input_dir=None, input_file=None, visualize=Tr
         grasp_results, clusters, obj_center = compute_all_cluster_grasps(points, labels)
 
         print(f"\n{'='*60}")
-        print(f"  Push 结果: 共 {len(grasp_results)} 个簇")
+        print(f"  Push :  {len(grasp_results)} ")
         for i, grasp_result in enumerate(grasp_results):
             ee_pos = grasp_result['grasp_center'] - grasp_result['approach_dir'] * EE_OFFSET_Z
-            print(f"  簇 {i}:")
-            print(f"    中心点:   [{grasp_result['grasp_center'][0]:.5f}, "
+            print(f"   {i}:")
+            print(f"    Center:   [{grasp_result['grasp_center'][0]:.5f}, "
                   f"{grasp_result['grasp_center'][1]:.5f}, {grasp_result['grasp_center'][2]:.5f}]")
-            print(f"    EE位置:   [{ee_pos[0]:.5f}, {ee_pos[1]:.5f}, {ee_pos[2]:.5f}]")
+            print(f"    EE:   [{ee_pos[0]:.5f}, {ee_pos[1]:.5f}, {ee_pos[2]:.5f}]")
         print(f"{'='*60}")
 
         if visualize:
@@ -374,7 +374,7 @@ def process_input_path(script_dir, input_dir=None, input_file=None, visualize=Tr
             return attach_visualization(
                 {"grasp_results": grasp_results, "obj_center": obj_center},
                 all_geometries,
-                window_name="多簇 Push 位姿可视化",
+                window_name=" Push ",
                 width=1280,
                 height=720,
             )
@@ -411,19 +411,19 @@ def process_input_path(script_dir, input_dir=None, input_file=None, visualize=Tr
             save_dict['score'] = np.array(1.0)
             save_dict['ee_position'] = ee_pos
         np.savez(save_path, **save_dict)
-        print(f"[INFO] Push 结果已保存: {save_path}")
+        print(f"[INFO] Push : {save_path}")
 
     return run_threshold_debug_loop(raw_points, os.path.basename(type_path), preview_fn, accept_fn, default_threshold)
 
 
 # ============================================================================
-# 主程序
+# 
 # ============================================================================
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description="多簇 push 位姿生成")
-    parser.add_argument("--input-dir", type=str, default=None, help="输入目录；默认自动搜索 *_push 目录")
-    parser.add_argument("--input-file", type=str, default=None, help="输入文件；可直接指定 .pt/.npz")
-    parser.add_argument("--no-vis", action="store_true", help="只计算和保存，不打开 Open3D 可视化窗口")
+    parser = argparse.ArgumentParser(description=" push ")
+    parser.add_argument("--input-dir", type=str, default=None, help=" *_push ")
+    parser.add_argument("--input-file", type=str, default=None, help=" .pt/.npz")
+    parser.add_argument("--no-vis", action="store_true", help=" Open3D ")
     args = parser.parse_args()
 
     script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -439,19 +439,19 @@ if __name__ == '__main__':
     else:
         push_dirs = find_push_dirs(script_dir)
         if not push_dirs:
-            raise FileNotFoundError(f"{script_dir} 下未找到任何 *_push 文件夹")
+            raise FileNotFoundError(f"{script_dir}  *_push ")
 
         if visualize and len(push_dirs) > 1:
-            print(f"[INFO] 检测到 {len(push_dirs)} 个 *_push 文件夹, 将逐个可视化。请在 Open3D 窗口内按 Y/Enter 保存，U/D 调阈值，Q/Esc/X 退出。")
+            print(f"[INFO]  {len(push_dirs)}  *_push ,  Open3D  Y/Enter U/D Q/Esc/X ")
 
         for index, push_dir in enumerate(push_dirs, start=1):
             folder_name = os.path.basename(push_dir)
-            print(f"\n[INFO] ({index}/{len(push_dirs)}) 处理文件夹: {folder_name}")
+            print(f"\n[INFO] ({index}/{len(push_dirs)}) : {folder_name}")
             if not process_input_path(
                 script_dir,
                 input_dir=push_dir,
                 input_file=None,
                 visualize=visualize,
             ):
-                print("[INFO] 用户中止批处理。")
+                print("[INFO] ")
                 break

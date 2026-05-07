@@ -116,7 +116,7 @@ class VisualizationMarkers:
 
             # alter the markers based on their prototypes indices
             # first 12 markers will be marker1 and the rest will be marker2
-            # 0 -> marker1, 1 -> marker2
+            # 0  to  marker1, 1  to  marker2
             marker_indices = [0] * 12 + [1] * 12
             # this will change the marker prototypes at the given indices
             # note: the translations of the markers will not be changed from the previous call
@@ -383,7 +383,7 @@ class VisualizationMarkers:
         while len(all_prims) > 0:
             # get current prim
             child_prim = all_prims.pop(0)
-            # check if it is physics body -> if so, remove it
+            # check if it is physics body  to  if so, remove it
             if child_prim.HasAPI(UsdPhysics.ArticulationRootAPI):
                 child_prim.RemoveAPI(UsdPhysics.ArticulationRootAPI)
                 child_prim.RemoveAPI(PhysxSchema.PhysxArticulationAPI)
@@ -392,10 +392,10 @@ class VisualizationMarkers:
                 child_prim.RemoveAPI(PhysxSchema.PhysxRigidBodyAPI)
             if child_prim.IsA(UsdPhysics.Joint):
                 child_prim.GetAttribute("physics:jointEnabled").Set(False)
-            # check if prim is instanced -> if so, make it uninstanceable
+            # check if prim is instanced  to  if so, make it uninstanceable
             if child_prim.IsInstance():
                 child_prim.SetInstanceable(False)
-            # check if prim is a mesh -> if so, make it invisible to secondary rays
+            # check if prim is a mesh  to  if so, make it invisible to secondary rays
             if child_prim.IsA(UsdGeom.Gprim):
                 # early attach stage to usd context if stage is in memory
                 # since stage in memory is not supported by the "ChangePropertyCommand" kit command

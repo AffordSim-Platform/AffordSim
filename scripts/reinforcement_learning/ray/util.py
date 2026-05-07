@@ -714,7 +714,7 @@ def submit_wrapped_jobs(
             future = not_ready
         print("[INFO] all jobs completed.")
     except KeyboardInterrupt:
-        print("[INFO] KeyboardInterrupt received, cancelling …")
+        print("[INFO] KeyboardInterrupt received, cancelling ...")
         for actor in actors:
             ray.cancel(actor, force=True)
         sys.exit(0)

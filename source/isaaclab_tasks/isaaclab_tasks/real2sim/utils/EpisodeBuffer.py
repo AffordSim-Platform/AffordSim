@@ -28,7 +28,7 @@ def replace_background_with_segmentation(
     """
     # Convert RGB to [H, W, C] format
     if rgb_image.ndim == 3 and rgb_image.shape[0] in [1, 3, 4]:
-        rgb_img = rgb_image.transpose(1, 2, 0)  # [C, H, W] -> [H, W, C]
+        rgb_img = rgb_image.transpose(1, 2, 0)  # [C, H, W]  to  [H, W, C]
     else:
         rgb_img = rgb_image
 
@@ -156,7 +156,7 @@ class EpisodeDataRecorder:
         self.aggregate_json_path = self.save_dir / "episodes_metadata.json"
         self._aggregate_json_data: Dict[str, Any] = {"episodes": []}
 
-        print(f"✓ EpisodeDataRecorder initialized")
+        print(f" EpisodeDataRecorder initialized")
         print(f"  Save directory: {self.save_dir}")
         print(f"  Save npy: {save_npy}")
         print(f"  Save camera images: {save_camera_images}")
@@ -364,7 +364,7 @@ class EpisodeDataRecorder:
     
     def _is_image(self, array: np.ndarray) -> bool:
         """Check if array is an image (has spatial dimensions)"""
-        # 图像通常是 (H, W, C) 或 (B, H, W, C) 或 (C, H, W)
+        #  (H, W, C)  (B, H, W, C)  (C, H, W)
         if len(array.shape) >= 3:
             if len(array.shape) == 3:  # (H, W, C) or (C, H, W)
                 return True
@@ -382,7 +382,7 @@ class EpisodeDataRecorder:
             image = image[0]
         
         if len(image.shape) == 3:
-            # 判断是 (H, W, C) 还是 (C, H, W)
+            #  (H, W, C)  (C, H, W)
             if image.shape[0] in [1, 3, 4]:  # (C, H, W) - channels first
                 # Convert to (H, W, C)
                 image = np.transpose(image, (1, 2, 0))
@@ -390,9 +390,9 @@ class EpisodeDataRecorder:
             else:  # (H, W, C) - channels last
                 channels_first = False
             
-            if image.shape[:2] != self.image_size[::-1]:  # 如果当前大小不等于目标大小
+            if image.shape[:2] != self.image_size[::-1]:  # 
                 try:
-                    # cv2.resize 参数是 (width, height)
+                    # cv2.resize  (width, height)
                     resized = cv2.resize(
                         image, 
                         self.image_size,  # (width, height)
@@ -407,12 +407,12 @@ class EpisodeDataRecorder:
                         resized = resized[np.newaxis, ...]  # Add batch dim back
                     
                     # if key:
-                        # print(f"    Resized {key}: {original_shape} -> {resized.shape}")
+                        # print(f"    Resized {key}: {original_shape}  to  {resized.shape}")
                     
                     return resized
                     
                 except Exception as e:
-                    print(f"    ⚠️  Failed to resize {key}: {e}, keeping original")
+                    print(f"      Failed to resize {key}: {e}, keeping original")
                     return image
         
         return image
@@ -438,7 +438,7 @@ class EpisodeDataRecorder:
         for env_idx in range(self.num_envs):
             # Skip environments that didn't succeed
             if not successful_envs[env_idx]:
-                print(f"  ⊘ Skipping env {env_idx} - planning failed")
+                print(f"   Skipping env {env_idx} - planning failed")
                 continue
             episode_buffer = self.episode_buffers[env_idx]
             if episode_buffer is None:
@@ -487,7 +487,7 @@ class EpisodeDataRecorder:
                 print(f"  Env {env_idx} - Removed {num_idle} idle steps (EE delta == 0)")
             
             num_steps = len(episode_buffer['actions'])
-            print(f"  Env {env_idx} - Aligned data: {num_steps_raw} raw steps -> {num_steps} aligned steps")
+            print(f"  Env {env_idx} - Aligned data: {num_steps_raw} raw steps  to  {num_steps} aligned steps")
             
             save_dict = {}
             episode_dir = self.save_dir / f"episode_{((self.current_episode_num-1)*self.num_envs+env_idx):04d}.npy"
@@ -506,10 +506,6 @@ class EpisodeDataRecorder:
                 self._save_camera_images(obs_dict, env_idx)
             
             for key, value in obs_dict.items():
-                # Temporarily keep image observations out of episode npy files.
-                if isinstance(value, np.ndarray) and (len(value.shape) >= 3 or self._is_image_key(str(key))):
-                    print(f"  Env {env_idx} - skip image in npy: {str(key)} shape={value.shape}, dtype={value.dtype}")
-                    continue
                 save_dict[str(key)] = value
                 print(f"  Env {env_idx} - {str(key)}: shape={value.shape}, dtype={value.dtype}")
             
@@ -518,7 +514,7 @@ class EpisodeDataRecorder:
                 print(f"  Env {env_idx} - ee_pose_delta: shape={ee_delta.shape}, dtype={ee_delta.dtype}")
             
             np.save(episode_dir, save_dict, allow_pickle=True)
-            print(f"  ✓ Saved episode {self.current_episode_num} env {env_idx} to {episode_dir.name}")
+            print(f"   Saved episode {self.current_episode_num} env {env_idx} to {episode_dir.name}")
             print(f"    Steps: {num_steps}")
 
             self._append_episode_state_json_entry(
@@ -575,7 +571,7 @@ class EpisodeDataRecorder:
             env_initial_state = initial_env_states[env_idx]
 
         episode_entry = {
-            # Keep only the 4-digit episode id from file name (episode_XXXX.npy -> XXXX).
+            # Keep only the 4-digit episode id from file name (episode_XXXX.npy  to  XXXX).
             "episode_id": self._extract_episode_id(npy_path),
             # Keep only object poses; positions are in meters relative to env origin,
             # consistent with YAML init_pos/init_rot convention.
@@ -676,7 +672,7 @@ class EpisodeDataRecorder:
             # delta_rotvec = rot_delta.as_rotvec()
             
             # Combine into 6D delta [dx, dy, dz, droll, dpitch, dyaw]
-            # Combine into 6D delta [dx, dy, dz, ax, ay, az]（不是 roll, pitch, yaw）
+            # Combine into 6D delta [dx, dy, dz, ax, ay, az] roll, pitch, yaw
             delta = np.concatenate([delta_pos, delta_euler])
             deltas.append(delta)
         
@@ -815,13 +811,13 @@ class EpisodeDataRecorder:
             rgb_np = rgb[env_idx].cpu().numpy() if isinstance(rgb[env_idx], torch.Tensor) else rgb[env_idx]
             seg_np = seg[env_idx].cpu().numpy() if isinstance(seg[env_idx], torch.Tensor) else seg[env_idx]
 
-            # Process RGB: [1, 3, H, W] -> [3, H, W]
+            # Process RGB: [1, 3, H, W]  to  [3, H, W]
             if rgb_np.ndim == 1:
                 rgb_img = rgb_np.reshape(3, sim_h, sim_w)
             else:
                 rgb_img = rgb_np.squeeze() if rgb_np.ndim == 4 else rgb_np
 
-            # Process seg: [1, 4, H, W] -> [H, W, 4]
+            # Process seg: [1, 4, H, W]  to  [H, W, 4]
             if seg_np.ndim == 1:
                 seg_rgba = seg_np.reshape(4, sim_h, sim_w).transpose(1, 2, 0).astype(np.uint8)
             else:
@@ -831,7 +827,7 @@ class EpisodeDataRecorder:
 
             # Resize sim images to background size (no distortion: scale + center crop)
             if (sim_h, sim_w) != (bg_h, bg_w):
-                # rgb_img: [C, H, W] -> [H, W, C] for resize, then back
+                # rgb_img: [C, H, W]  to  [H, W, C] for resize, then back
                 rgb_hwc = rgb_img.transpose(1, 2, 0) if rgb_img.ndim == 3 and rgb_img.shape[0] in [1, 3, 4] else rgb_img
                 rgb_hwc = self._resize_bg_no_distortion(rgb_hwc, bg_w, bg_h)
                 rgb_img = rgb_hwc.transpose(2, 0, 1)  # back to [C, H, W]
@@ -846,8 +842,8 @@ class EpisodeDataRecorder:
             if self.save_mask_images:
                 self._save_mask_image(mask_img, rgb_key, env_idx)
             
-            # Convert back to original format: [H, W, 3] -> [3, H, W] -> flatten if needed
-            composite_img_chw = composite_img.transpose(2, 0, 1)  # [H, W, 3] -> [3, H, W]
+            # Convert back to original format: [H, W, 3]  to  [3, H, W]  to  flatten if needed
+            composite_img_chw = composite_img.transpose(2, 0, 1)  # [H, W, 3]  to  [3, H, W]
             
             if rgb[env_idx].ndim == 1:
                 # If original was flattened, flatten the composite too
@@ -953,14 +949,14 @@ class EpisodeDataRecorder:
                     depth_dir = self.save_dir / "depth_images" / img_key / f"env{env_idx}_ep{self.current_episode_num}"
                     depth_dir.mkdir(parents=True, exist_ok=True)
                     filename = depth_dir / f"step_{self.current_step_count:04d}"
-                    depth_img = img_np.reshape(image_height, image_width)  # 深度图通常是单通道
+                    depth_img = img_np.reshape(image_height, image_width)  # 
                     depth_mm = (depth_img * 1000).astype(np.uint16)
                     cv2.imwrite(str(filename) + '.png', depth_mm)
                 else:
                     original_dir = self.save_dir / "original_images" / img_key / f"env{env_idx}_ep{self.current_episode_num}"
                     original_dir.mkdir(parents=True, exist_ok=True)
                     filename = original_dir / f"step_{self.current_step_count:04d}"
-                    # RGB：保存 png
+                    # RGB png
                     img_to_save = img_np.reshape(3, image_height, image_width).transpose(1, 2, 0)
                     if img_to_save.max() <= 1.0:
                         img_to_save = (img_to_save * 255).astype(np.uint8)
@@ -1031,7 +1027,7 @@ class EpisodeDataRecorder:
                         img_np = self._reshape_flat_rgb_image(img_np)
                     elif img_np.ndim == 3:
                         if img_np.shape[0] in [1, 3, 4]:
-                            # Channel-first [C, H, W] -> [H, W, C]
+                            # Channel-first [C, H, W]  to  [H, W, C]
                             img_np = img_np.transpose(1, 2, 0)
                         # else: already [H, W, C]
                     
@@ -1049,9 +1045,9 @@ class EpisodeDataRecorder:
                     cv2.imwrite(str(filename), cv2.cvtColor(img_np, cv2.COLOR_RGB2BGR))
                     
                 except Exception as e:
-                    print(f"⚠️ Failed to save {camera_name} image at step {step_idx}: {e}")
+                    print(f" Failed to save {camera_name} image at step {step_idx}: {e}")
             
-            print(f"  ✓ Saved {len(images)} {camera_name} images to {camera_dir.relative_to(self.save_dir)}")
+            print(f"   Saved {len(images)} {camera_name} images to {camera_dir.relative_to(self.save_dir)}")
 
     def _reshape_flat_rgb_image(self, img_np: np.ndarray) -> np.ndarray:
         """Reshape a flattened RGB image using configured resolutions.

@@ -141,7 +141,7 @@ def load_containers_registry() -> dict:
 
 
 def get_sim_object_type_map() -> dict[str, str]:
-    """Return label -> object type from the available asset registry."""
+    """Return label  to  object type from the available asset registry."""
     try:
         from sim_config import get_asset_registry
 

@@ -43,33 +43,33 @@ parser.add_argument("--pick_lift_threshold", type=float, default=0.05)
 parser.add_argument(
     "--action_type", type=str, default=None, choices=["ee_delta", "joint_delta"],
     help=(
-        "Action semantics the policy server returns. ee_delta=6D EE delta+gripper (env 用 IK-rel, 直接下发); "
-        "joint_delta=7D joint delta+gripper (env 用 JointPosition 绝对, play 时按 --joint_delta_mode 展开). "
-        "未指定则按 task id 自动推断: 含 'joint' → joint_delta, 否则 ee_delta."
+        "Action semantics the policy server returns. ee_delta=6D EE delta+gripper (env  IK-rel, ); "
+        "joint_delta=7D joint delta+gripper (env  JointPosition , play  --joint_delta_mode ). "
+        " task id :  'joint'  to  joint_delta,  ee_delta."
     ),
 )
 parser.add_argument(
     "--joint_delta_mode", type=str, default="cumulative", choices=["current", "cumulative"],
     help=(
-        "joint_delta -> 绝对位置的展开方式 (仅 action_type=joint_delta 时生效). "
-        "'current'   : arm_target(k) = cur_qpos(k) + delta(k), 每步重新读最新 qpos, 偏差自我修正; "
-        "'cumulative': arm_target(k) = arm_target(k-1) + delta(k), 初值=首帧 arm qpos, 与训练数据一阶差分语义一致, 但对执行偏差无反馈."
+        "joint_delta  to   ( action_type=joint_delta ). "
+        "'current'   : arm_target(k) = cur_qpos(k) + delta(k),  qpos, ; "
+        "'cumulative': arm_target(k) = arm_target(k-1) + delta(k), = arm qpos, , ."
     ),
 )
 parser.add_argument(
     "--linger_frames", type=int, default=10,
     help=(
-        "整个 play 流程结束 (early_success / terminated / horizon 到) 后, 用 freeze 动作再多跑这么多帧, "
-        "用来观察 place/pour/hang 完成后环境是否突变 (物体掉落/翻倒). "
-        "freeze 动作: arm 不动 (ee_delta=0 或 joint_delta=cur_qpos), gripper=最后一帧的 gripper 命令."
+        " play  (early_success / terminated / horizon ) ,  freeze , "
+        " place/pour/hang  (/). "
+        "freeze : arm  (ee_delta=0  joint_delta=cur_qpos), gripper= gripper ."
     ),
 )
 parser.add_argument(
     "--warmup_action", type=str, default=None, choices=["zero", "hold"],
     help=(
-        "rollout 前的 warmup 模式. 'zero' 适合 delta 模式; 'hold' (arm=当前 qpos, gripper=-1/open) 适合 "
-        "JointPosition 绝对模式 (否则 zero 会把 robot 命令到全零关节位形). "
-        "未指定则按 --action_type 推断 (joint_delta → hold, 其它 → zero)."
+        "rollout  warmup . 'zero'  delta ; 'hold' (arm= qpos, gripper=-1/open)  "
+        "JointPosition  ( zero  robot ). "
+        " --action_type  (joint_delta  to  hold,   to  zero)."
     ),
 )
 
@@ -77,13 +77,13 @@ AppLauncher.add_app_launcher_args(parser)
 args_cli = parser.parse_args()
 
 # Auto-infer action_type / warmup_action from task id if not given.
-# 约定: task id 字符串里含 "joint" 的都是 *_joint-v0 绑 JointPositionActionCfg 绝对模式.
+# : task id  "joint"  *_joint-v0  JointPositionActionCfg .
 if args_cli.action_type is None:
     args_cli.action_type = "joint_delta" if "joint" in args_cli.task.lower() else "ee_delta"
-    print(f"[EVAL] --action_type 未指定, 按 task='{args_cli.task}' 推断为 '{args_cli.action_type}'")
+    print(f"[EVAL] --action_type ,  task='{args_cli.task}'  '{args_cli.action_type}'")
 if args_cli.warmup_action is None:
     args_cli.warmup_action = "hold" if args_cli.action_type == "joint_delta" else "zero"
-    print(f"[EVAL] --warmup_action 未指定, 按 action_type='{args_cli.action_type}' 推断为 '{args_cli.warmup_action}'")
+    print(f"[EVAL] --warmup_action ,  action_type='{args_cli.action_type}'  '{args_cli.warmup_action}'")
 
 app_launcher = AppLauncher(args_cli)
 simulation_app = app_launcher.app
@@ -158,7 +158,7 @@ def load_background_images(task_config_path):
             img = cv2.imread(full_path)
             if img is not None:
                 bg_images[key] = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-                print(f"[INFO] Loaded background image {key}: {full_path} -> {img.shape}")
+                print(f"[INFO] Loaded background image {key}: {full_path}  to  {img.shape}")
             else:
                 print(f"[WARN] Failed to load background image {key}: {full_path}")
     return bg_images
@@ -202,7 +202,7 @@ def _apply_speckle_noise_u8(img_u8: np.ndarray, std: float) -> np.ndarray:
 
 
 # ============================================================================
-# Task YAML -> eval stages
+# Task YAML  to  eval stages
 # ============================================================================
 
 def _get_object_scale_from_cfg(cfg: dict, object_name: str) -> np.ndarray:
@@ -299,7 +299,7 @@ def evaluate_stages_at_episode_end(
     pull_peak_displacement: float | None = None,
     pour_min_tilt_z: float | None = None,
 ) -> dict[str, dict]:
-    # 兼容: 旧签名传 float (单 pick_target). 新签名传 dict[target -> z], 支持 stack 多 pick.
+    # :  float ( pick_target).  dict[target  to  z],  stack  pick.
     if not isinstance(pick_initial_z, dict):
         legacy_target = resolve_pick_target(stages)
         pick_initial_z = {legacy_target: pick_initial_z} if legacy_target else {}
@@ -308,7 +308,7 @@ def evaluate_stages_at_episode_end(
         pick_peak_z = {legacy_target: pick_peak_z} if (legacy_target and pick_peak_z is not None) else {}
 
     results: dict[str, dict] = {}
-    held_target: str | None = None  # 最近一次 pick 抓的物体, place/pour/hang 用它
+    held_target: str | None = None  #  pick , place/pour/hang 
 
     for idx, stage in enumerate(stages):
         ptype = stage["type"]
@@ -530,9 +530,9 @@ def frames_to_gif(frames: list[np.ndarray], save_path: str,
 def _build_warmup_action(mode: str, env, obs_dict, device):
     """(1, D_act) warmup action.
 
-    - "zero": 全零, 适合 delta action 模式 (IK-rel / JointDelta), delta=0 ≡ 不动.
-    - "hold": arm ← 当前 qpos, gripper ← -1 (open). 给 JointPosition 绝对模式用,
-              否则 zeros() 会把 robot 命令到全零关节位形, 砸坏场景.
+    - "zero": ,  delta action  (IK-rel / JointDelta), delta=0 ≡ .
+    - "hold": arm <-  qpos, gripper <- -1 (open).  JointPosition ,
+               zeros()  robot , .
     """
     D = env.action_space.shape[1]
     if mode == "zero":
@@ -559,8 +559,8 @@ def rollout(policy, env, horizon, action_horizon, device, prompt,
             linger_frames: int = 0):
     """Run one episode with Pi0.5 remote policy.
 
-    pick_targets: 全部 pick 物体名 (stack 任务有多个), 用于 per-target 追踪 peak_z.
-    primary_pick_target: 倾倒类任务里用来判断「靠近 pour_target」的主物体, 默认取首个 pick.
+    pick_targets:  pick  (stack ),  per-target  peak_z.
+    primary_pick_target:  pour_target,  pick.
     """
     debug_dir = f"debug_images/pi05_trial_{trial_id}"
     os.makedirs(debug_dir, exist_ok=True)
@@ -581,13 +581,13 @@ def rollout(policy, env, horizon, action_horizon, device, prompt,
     pick_peak_z: dict[str, float] = {tgt: None for tgt in pick_targets}  # type: ignore[assignment]
     pull_peak_displacement = None
     pour_min_tilt_z = None  # min z_component (max tilt) when pick obj within 10cm of pour target
-    # joint_delta: 一次性记下第一帧 arm qpos, 之后每个 delta 都累加到它上面 (而不是当前 qpos),
-    # 即 arm_target(k) = arm_target(k-1) + delta(k), 初值 = 首帧 arm qpos.
+    # joint_delta:  arm qpos,  delta  ( qpos),
+    #  arm_target(k) = arm_target(k-1) + delta(k),  =  arm qpos.
     accumulated_arm = None
 
-    POUR_NEAR_RADIUS = 0.15  # 20cm. 之前 10cm 经常漏掉真正的倾倒动作:
-    # 壶嘴虽然在容器上方, 但壶身中心可能已经 12-15cm 外,
-    # 导致 pour_min_tilt_z 在真正倾倒时没被更新.
+    POUR_NEAR_RADIUS = 0.15  # 20cm.  10cm :
+    # ,  12-15cm ,
+    #  pour_min_tilt_z .
 
     def _update_peak():
         nonlocal pull_peak_displacement, pour_min_tilt_z
@@ -606,7 +606,7 @@ def rollout(policy, env, horizon, action_horizon, device, prompt,
             cur = pick_peak_z.get(tgt)
             if cur is None or z > cur:
                 pick_peak_z[tgt] = z
-            # 倾倒判定: 仅对 primary pick (壶/容器) 跟踪倾斜.
+            # :  primary pick (/) .
             if tgt == primary_pick_target and pour_target and quat_w is not None:
                 pour_pos_w, _ = _get_object_pose_world_from_scene(env.scene, pour_target, 0)
                 if pour_pos_w is not None:
@@ -618,7 +618,7 @@ def rollout(policy, env, horizon, action_horizon, device, prompt,
                             pour_min_tilt_z = tilt_z
 
     def _check_early_success():
-        """全部 stage 都已成功 -> True, 用于早停."""
+        """ stage   to  True, ."""
         if stages is None:
             return False
         res = evaluate_stages_at_episode_end(
@@ -633,7 +633,7 @@ def rollout(policy, env, horizon, action_horizon, device, prompt,
 
     step = 0
     early_success = False
-    last_gripper_cmd = -1.0  # 最后一次下发给 env 的 gripper 命令, linger 阶段保留它 (不要松手)
+    last_gripper_cmd = -1.0  #  env  gripper , linger  ()
     while step < horizon and not early_success:
         obs = obs_dict["policy"]
 
@@ -714,10 +714,10 @@ def rollout(policy, env, horizon, action_horizon, device, prompt,
         truncated = False
         for idx in range(n_exec):
             action = actions_chunk[idx]  # 7 or 8 dim, auto from server
-            # joint_delta: server 返回的是关节角 delta, env 是 JointPositionActionCfg 绝对模式.
-            # 两种展开方式 (--joint_delta_mode 控制), gripper 维直通:
-            #   "current"   : arm_target(k) = cur_qpos(k) + delta(k), 偏差自我修正
-            #   "cumulative": arm_target(k) = arm_target(k-1) + delta(k), 初值=首帧 arm qpos
+            # joint_delta: server  delta, env  JointPositionActionCfg .
+            #  (--joint_delta_mode ), gripper :
+            #   "current"   : arm_target(k) = cur_qpos(k) + delta(k), 
+            #   "cumulative": arm_target(k) = arm_target(k-1) + delta(k), = arm qpos
             if action_type == "joint_delta":
                 if joint_delta_mode == "current":
                     cur_qpos = obs_dict["policy"]["qpos"].squeeze().detach().cpu().numpy().astype(action.dtype)
@@ -750,7 +750,7 @@ def rollout(policy, env, horizon, action_horizon, device, prompt,
             if terminated or truncated:
                 break
 
-            # 早停: 全部 stage 都成功就立刻退出, 下一个 trial 早点开始
+            # :  stage ,  trial 
             if step % early_stop_check_every == 0 and _check_early_success():
                 print(f"[EVAL] early stop at step={step}: all stages passed")
                 early_success = True
@@ -761,10 +761,10 @@ def rollout(policy, env, horizon, action_horizon, device, prompt,
         if terminated or truncated or early_success:
             break
 
-    # --- Linger: 整个 play 结束后多跑 N 帧观察是否有突变 (物体掉落 / place 后翻倒等). ---
-    # freeze 动作: arm 不动, gripper 维持最后一次命令 (不要松开正在抓的物体).
-    #   ee_delta:    arm = 6 维全 0 delta
-    #   joint_delta: arm = 当前 qpos (env 走 JointPosition 绝对)
+    # --- Linger:  play  N  ( / place ). ---
+    # freeze : arm , gripper  ().
+    #   ee_delta:    arm = 6  0 delta
+    #   joint_delta: arm =  qpos (env  JointPosition )
     if linger_frames > 0:
         D = env.action_space.shape[1]
         arm_dim = D - 1
@@ -827,7 +827,7 @@ def main():
     _entry = gym.spec(args_cli.task).kwargs["env_cfg_entry_point"]
     _mod_name, _cls_name = _entry.split(":")
     env_cfg_class = getattr(importlib.import_module(_mod_name), _cls_name)
-    print(f"[EVAL] task={args_cli.task} -> env_cfg_class={_cls_name}")
+    print(f"[EVAL] task={args_cli.task}  to  env_cfg_class={_cls_name}")
 
     env_cfg = create_pick_env_cfg_from_yaml(
         yaml_path=args_cli.task_config,
@@ -857,7 +857,7 @@ def main():
 
     # --- Eval stages ---
     stages = load_eval_stages(args_cli.task_config)
-    pick_targets = resolve_unique_pick_targets(stages)  # stack 任务有多个 pick
+    pick_targets = resolve_unique_pick_targets(stages)  # stack  pick
     primary_pick_target = pick_targets[0] if pick_targets else None
     pull_target = next((s.get("pull_target") for s in stages if s["type"] == "pull"), None)
     pour_target = next((s.get("pour_target") for s in stages if s["type"] == "pour"), None)
@@ -886,7 +886,7 @@ def main():
         for _ in range(10):
             warmup = _build_warmup_action(args_cli.warmup_action, env, initial_obs_dict, device)
             initial_obs_dict, _, _, _, _ = env.step(warmup)
-        # Per-target initial_z (stack 任务里每个 block 都要单独记).
+        # Per-target initial_z (stack  block ).
         pick_initial_z = {
             tgt: capture_object_initial_z(env.scene, tgt, env_idx=0)
             for tgt in pick_targets
@@ -923,7 +923,7 @@ def main():
         saved = frames_to_gif(front_frames, gif_path, target_frames=30, target_size=256)
         if saved:
             gif_paths.append(saved)
-            print(f"[EVAL] saved GIF: {saved} ({len(front_frames)} frames -> 30 sampled)")
+            print(f"[EVAL] saved GIF: {saved} ({len(front_frames)} frames  to  30 sampled)")
 
         # Evaluate stages
         stage_results = evaluate_stages_at_episode_end(

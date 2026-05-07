@@ -56,7 +56,7 @@ if errorlevel 1 (
     for /f "tokens=2" %%V in ('"!python_exe!" -m pip show torch ^| findstr /B /C:"Version:"') do set "TORCH_CUR=%%V"
     echo [INFO] Found PyTorch version !TORCH_CUR!.
     if /I not "!TORCH_CUR!"=="!TORCH_VER!+!CUDA_TAG!" (
-        echo [INFO] Replacing PyTorch !TORCH_CUR! -> !TORCH_VER!+!CUDA_TAG!...
+        echo [INFO] Replacing PyTorch !TORCH_CUR! with !TORCH_VER!+!CUDA_TAG!...
         call "!python_exe!" -m pip uninstall -y torch torchvision torchaudio >nul 2>&1
         call "!python_exe!" -m pip install "torch==!TORCH_VER!" "torchvision==!TV_VER!" --index-url "!PYTORCH_INDEX!"
     ) else (
@@ -186,13 +186,13 @@ if %errorlevel% equ 0 (
 ) else (
     echo [INFO] Creating conda environment named '%env_name%'...
     echo [INFO] Installing dependencies from %ISAACLAB_PATH%\environment.yml
-    rem ————————————————————————————————
+    rem --------------------------------
     rem patch Python version if needed, but back up first
-    rem ————————————————————————————————
+    rem --------------------------------
     copy "%ISAACLAB_PATH%environment.yml" "%ISAACLAB_PATH%environment.yml.bak" >nul
     call :is_isaacsim_version_4_5
     if !ERRORLEVEL! EQU 0 (
-        echo [INFO] Detected Isaac Sim 4.5 --^> forcing python=3.10
+        echo [INFO] Detected Isaac Sim 4.5, forcing python=3.10
         rem Use findstr to replace the python version line
         (
             for /f "delims=" %%L in ('type "%ISAACLAB_PATH%environment.yml"') do (

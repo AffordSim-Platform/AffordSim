@@ -51,7 +51,7 @@ class MotionPlanner:
         sys.path.insert(0, str(curobo_path))
         self._import_curobo()
         self._init_motion_gen()
-        print("✓ MotionPlanner initialized")
+        print(" MotionPlanner initialized")
     
     def _import_curobo(self):
         """Import CuRobo modules"""
@@ -130,7 +130,7 @@ class MotionPlanner:
         self.motion_gen = self.MotionGen(motion_gen_config)
         self.motion_gen.warmup(enable_graph=True, warmup_js_trajopt=False)
         
-        print("  ✓ Motion generator initialized")
+        print("   Motion generator initialized")
     
     # =========================================================================
     # Environment context (injected by datacollector after env init)
@@ -194,7 +194,7 @@ class MotionPlanner:
             object_poses=object_poses,
             env_idx=env_idx,
             total_num_envs=self.num_envs,
-            debug=True,
+            debug=False,
         )
 
     def update_all_env_obstacles(self, target_prim_path: Optional[str] = None):
@@ -219,7 +219,7 @@ class MotionPlanner:
         planning should call update_obstacles_for_env() before plan_to_pose().
         """
         self._last_target_prim_path = target_prim_path
-        print("✓ Motion planning initialized")
+        print(" Motion planning initialized")
 
     def update_obstacles(self, world_stage, robot_prim_path: str, ignored_objects: List[str]):
         """
@@ -246,7 +246,7 @@ class MotionPlanner:
                 else:
                     obstacles.cuboid.append(self._table_cuboid)
             self.motion_gen.update_world(obstacles)
-            print(f"  ✓ Obstacles updated: {len(obstacles.objects)} objects")
+            print(f"   Obstacles updated: {len(obstacles.objects)} objects")
 
     @staticmethod
     def _obstacle_name_matches_label(obstacle_name: str, label: str) -> bool:
@@ -267,7 +267,7 @@ class MotionPlanner:
         object_poses: Optional[Dict[str, np.ndarray]] = None,
         env_idx: int = 0,
         total_num_envs: int = 1,
-        debug: bool = True,
+        debug: bool = False,
     ):
         """
         Update obstacle world from USD stage (improved multi-environment version).
@@ -303,15 +303,16 @@ class MotionPlanner:
         ).get_collision_check_world()
         
         if obstacles is None:
-            print(f"  ⚠️  No obstacles found for env_{env_idx}")
+            print(f"    No obstacles found for env_{env_idx}")
             return
         
         # Override obstacle positions with actual simulation poses
         if object_poses:
             if debug:
-                print(f"  [DEBUG] Object poses to apply: {list(object_poses.keys())}")
-                for k, v in object_poses.items():
-                    print(f"    {k}: {np.round(v, 4).tolist()}")
+                # print(f"  [DEBUG] Object poses to apply: {list(object_poses.keys())}")
+                # for k, v in object_poses.items():
+                #     print(f"    {k}: {np.round(v, 4).tolist()}")
+                pass
             
             for obj in obstacles.objects:
                 obj_name = getattr(obj, "name", "")
@@ -346,14 +347,17 @@ class MotionPlanner:
                         pose_attr[2] = float(matched_pos[2])
                         
                         if debug:
-                            print(f"    ✓ Updated '{matched_key}' -> '{obj_name}':")
-                            print(f"      USD: {np.round(old_pos, 4).tolist()} -> Sim: {np.round(matched_pos[:3], 4).tolist()}")
+                            # print(f"     Updated '{matched_key}'  to  '{obj_name}':")
+                            # print(f"      USD: {np.round(old_pos, 4).tolist()}  to  Sim: {np.round(matched_pos[:3], 4).tolist()}")
+                            pass
                     else:
                         if debug:
-                            print(f"  ⚠️  Cannot update pose for {obj_name}: unsupported type {type(pose_attr)}")
+                            # print(f"    Cannot update pose for {obj_name}: unsupported type {type(pose_attr)}")
+                            pass
                 except Exception as e:
                     if debug:
-                        print(f"  ⚠️  Failed to update pose for {obj_name}: {e}")
+                        # print(f"    Failed to update pose for {obj_name}: {e}")
+                        pass
         
         # Append table cuboid to obstacle list when enabled.
         if self.use_table_obstacle and hasattr(self, '_table_cuboid'):
@@ -367,7 +371,7 @@ class MotionPlanner:
         if debug:
             n_objs = len(obstacles.objects) if obstacles.objects else 0
             n_cuboids = len(obstacles.cuboid) if obstacles.cuboid else 0
-            print(f"  ✓ Obstacles updated for env_{env_idx}: {n_objs} mesh + {n_cuboids} cuboid")
+            # print(f"   Obstacles updated for env_{env_idx}: {n_objs} mesh + {n_cuboids} cuboid")
             for i, obj in enumerate(obstacles.objects):
                 name = getattr(obj, "name", "N/A")
                 # Extract position string for debugging
@@ -388,7 +392,7 @@ class MotionPlanner:
                             pos_str = str(np.round(pose.flatten()[:3], 4).tolist())
                 except Exception as e:
                     pos_str = f"error: {e}"
-                print(f"    [{i}] {name}: pos={pos_str}")
+                # print(f"    [{i}] {name}: pos={pos_str}")
     
     def plan_to_pose(
         self,
@@ -416,7 +420,7 @@ class MotionPlanner:
             Tuple of (planned trajectory, success flag)
         """
         if np.any(np.isnan(current_joint_pos)):
-            print("  ⚠️  Invalid joint positions (NaN)")
+            print("    Invalid joint positions (NaN)")
             return None, False
         
         cu_js = self.JointState(
@@ -428,7 +432,7 @@ class MotionPlanner:
         )
         
         cu_js = cu_js.get_ordered_joint_state(self.motion_gen.kinematics.joint_names)
-        
+
         # UR5e / Kinova ee_link frame differs from the upper-level grasp
         # frame by 90 degrees around Z axis.
         if (
@@ -445,10 +449,10 @@ class MotionPlanner:
             quaternion=self.tensor_args.to_device(target_quat),
         )
 
-        print(f"  → Planning to pose: pos={target_pos}, quat={target_quat}")
-        
+        # print(f"  Planning to pose: pos={target_pos}, quat={target_quat}")
+
         graph_attempt = 3 if enable_graph else 0
-        
+
         plan_config = self.MotionGenPlanConfig(
             enable_graph=enable_graph,
             enable_graph_attempt=graph_attempt,
@@ -457,33 +461,33 @@ class MotionPlanner:
             time_dilation_factor=1.0,
             finetune_attempts=5,
         )
-        
+
         result = self.motion_gen.plan_single(cu_js.unsqueeze(0), ik_goal, plan_config)
 
-        print(f"  🔍 Planning result details:")
-        print(f"      - success: {result.success.item()}")
-        print(f"      - status: {result.status}")
-        print(f"      - valid_query: {result.valid_query}")
-        print(f"      - ik_success: {result.ik_success if hasattr(result, 'ik_success') else 'N/A'}")
-        print(f"      - graph_success: {result.graph_success if hasattr(result, 'graph_success') else 'N/A'}")
-        print(f"      - trajopt_success: {result.trajopt_success if hasattr(result, 'trajopt_success') else 'N/A'}")
+        # print(f"   Planning result details:")
+        # print(f"      - success: {result.success.item()}")
+        # print(f"      - status: {result.status}")
+        # print(f"      - valid_query: {result.valid_query}")
+        # print(f"      - ik_success: {result.ik_success if hasattr(result, 'ik_success') else 'N/A'}")
+        # print(f"      - graph_success: {result.graph_success if hasattr(result, 'graph_success') else 'N/A'}")
+        # print(f"      - trajopt_success: {result.trajopt_success if hasattr(result, 'trajopt_success') else 'N/A'}")
+        #
+        # if hasattr(result, 'interpolated_plan') and result.interpolated_plan is not None:
+        #     print(f"      - interpolated_plan exists")
+        # else:
+        #     print(f"      - interpolated_plan is None")
 
-        if hasattr(result, 'interpolated_plan') and result.interpolated_plan is not None:
-            print(f"      - interpolated_plan exists")
-        else:
-            print(f"      - interpolated_plan is None")
-        
         if result.success.item():
             cmd_plan = result.get_interpolated_plan()
             cmd_plan = self.motion_gen.get_full_js(cmd_plan)
             return cmd_plan, True
         else:
-            print(f"  ⚠️  Planning failed: {result.status}")
-            print(f"  ⚠️  Debug info:")
-            print(f"      - valid_query: {result.valid_query}")
-            print(f"      - optimized_dt: {result.optimized_dt if hasattr(result, 'optimized_dt') else 'N/A'}")
-            if hasattr(result, 'debug_info'):
-                print(f"      - debug_info: {result.debug_info}")
+            print(f"    Planning failed: {result.status}")
+            # print(f"    Debug info:")
+            # print(f"      - valid_query: {result.valid_query}")
+            # print(f"      - optimized_dt: {result.optimized_dt if hasattr(result, 'optimized_dt') else 'N/A'}")
+            # if hasattr(result, 'debug_info'):
+            #     print(f"      - debug_info: {result.debug_info}")
             return None, False
     
     def plan_to_pose_batch(
@@ -533,10 +537,10 @@ class MotionPlanner:
                 )
         
         if np.any(np.isnan(current_joint_pos_batch)):
-            print("  ⚠️  Invalid joint positions (NaN) in batch")
+            print("    Invalid joint positions (NaN) in batch")
             return [None] * batch_size, [False] * batch_size
         
-        print(f"  → Sequential planning for {batch_size} environments...")
+        print(f"  Planning sequentially for {batch_size} environments...")
         
         cmd_plans = []
         successes = []
@@ -565,7 +569,7 @@ class MotionPlanner:
             if success:
                 success_count += 1
         
-        print(f"  ✓ Planning complete: {success_count}/{batch_size} succeeded")
+        print(f"   Planning complete: {success_count}/{batch_size} succeeded")
         return cmd_plans, successes
 
     # =========================================================================
@@ -596,7 +600,7 @@ class MotionPlanner:
         self.ik_solver = IKSolver(ik_config)
         self._ik_pose_cls = CuroboPose
         self._ik_tensor_args = tensor_args
-        print("✓ CuRobo IK solver initialized (no world collision, self-collision enabled)")
+        print(" CuRobo IK solver initialized (no world collision, self-collision enabled)")
 
     @staticmethod
     def _apply_robot_quat_correction(
@@ -617,12 +621,12 @@ class MotionPlanner:
             and "kinova" not in robot_cfg_name
         ):
             return quaternions.copy()
-        # wxyz -> xyzw for scipy
+        # wxyz  to  xyzw for scipy
         q_scipy = quaternions[:, [1, 2, 3, 0]].astype(np.float64)
         r_target = R.from_quat(q_scipy)
         r_corr = R.from_euler('z', 90, degrees=True)
         q_corrected = (r_target * r_corr).as_quat()  # (batch, 4) xyzw
-        # xyzw -> wxyz
+        # xyzw  to  wxyz
         return q_corrected[:, [3, 0, 1, 2]]
 
     @staticmethod
@@ -791,7 +795,7 @@ class MotionPlanner:
 
         Args:
             target_positions: (batch, 3)
-            target_quaternions: (batch, 4) wxyz — before robot-specific correction
+            target_quaternions: (batch, 4) wxyz - before robot-specific correction
             seed_joint_pos: (batch, n_ik_joints) in IK joint order
             arm_joint_names: Arm joint names in robot order
             n_arm: Number of arm joints
@@ -887,7 +891,7 @@ class MotionPlanner:
         Returns:
             joint_trajectory: (num_envs, num_steps, n_arm) in arm_joint_names order
             step_successes: (num_envs, num_steps) bool
-            env_successes: List[bool] — True if all steps succeeded for that env
+            env_successes: List[bool] - True if all steps succeeded for that env
         """
         if not hasattr(self, 'ik_solver') or self.ik_solver is None:
             raise RuntimeError("IK solver must be initialized before solve_ik_trajectory")
@@ -925,7 +929,7 @@ class MotionPlanner:
             failed_envs = []
             for env_idx in range(num_envs):
                 if not env_successes[env_idx]:
-                    # Already frozen — repeat last good position
+                    # Already frozen - repeat last good position
                     prev = joint_trajectory[env_idx, step - 1, :] if step > 0 else initial_arm[env_idx]
                     joint_trajectory[env_idx, step, :] = prev
                     continue
@@ -946,14 +950,14 @@ class MotionPlanner:
                     joint_trajectory[env_idx, step, :] = prev_arm
                     continue
 
-                # Success — record and update seed
+                # Success - record and update seed
                 step_successes[env_idx, step] = True
                 joint_trajectory[env_idx, step, :] = ik_arm[env_idx]
                 seed_ik[env_idx] = ik_ik[env_idx]
 
             if failed_envs:
                 print(
-                    f"  ⚠️ IK trajectory pre-solve failed at step {step}/{num_steps} "
+                    f"   IK trajectory pre-solve failed at step {step}/{num_steps} "
                     f"for envs={failed_envs}"
                 )
 
@@ -990,7 +994,7 @@ class MotionPlanner:
         n_arm = len(arm_joint_names)
         ik_joint_names = list(self.ik_solver.joint_names)
 
-        # Map current_joint_pos (robot order) → IK order for seeding
+        # Map current_joint_pos (robot order)  to  IK order for seeding
         ik_ordered_idx = [robot.joint_names.index(j) for j in ik_joint_names]
         seed_ik = current_joint_pos[:, ik_ordered_idx]
 
@@ -1126,14 +1130,14 @@ class MotionPlanner:
         active_mask: Optional[List[bool]] = None,
     ):
         """Execute planned trajectories for all environments simultaneously."""
-        for env_idx, plan in enumerate(cmd_plans):
-            if plan is not None:
-                n_points = plan.position.shape[0]
-                first_joints = plan.position[0, :4].cpu().numpy()
-                last_joints = plan.position[-1, :4].cpu().numpy()
-                print(f"  [DEBUG] Env {env_idx}: Trajectory has {n_points} points")
-                print(f"  [DEBUG] Env {env_idx}: First joints: {first_joints}")
-                print(f"  [DEBUG] Env {env_idx}: Last joints: {last_joints}")
+        # for env_idx, plan in enumerate(cmd_plans):
+        #     if plan is not None:
+        #         n_points = plan.position.shape[0]
+        #         first_joints = plan.position[0, :4].cpu().numpy()
+        #         last_joints = plan.position[-1, :4].cpu().numpy()
+        #         print(f"  [DEBUG] Env {env_idx}: Trajectory has {n_points} points")
+        #         print(f"  [DEBUG] Env {env_idx}: First joints: {first_joints}")
+        #         print(f"  [DEBUG] Env {env_idx}: Last joints: {last_joints}")
 
         common_js_names = []
         idx_list = []
@@ -1289,7 +1293,7 @@ class MotionPlanner:
 
         for step in tqdm(range(interpolation_steps), desc=desc):
             if not any(env_successes):
-                print(f"  ⚠️ No active envs remaining at IK step {step}/{interpolation_steps}, stopping early")
+                print(f"   No active envs remaining at IK step {step}/{interpolation_steps}, stopping early")
                 break
 
             action = robot.data.joint_pos[:num_envs, :action_dim].cpu().clone()

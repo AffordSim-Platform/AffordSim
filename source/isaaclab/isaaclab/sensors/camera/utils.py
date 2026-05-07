@@ -18,7 +18,7 @@ import isaaclab.utils.math as math_utils
 from isaaclab.utils.array import TensorData, convert_to_torch
 
 """
-Depth <-> Pointcloud conversions.
+Depth < to  Pointcloud conversions.
 """
 
 

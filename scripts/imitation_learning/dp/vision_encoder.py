@@ -1,11 +1,11 @@
 """
-视觉 + 低维观测编码器 (RSS 原版对齐).
+ +  (RSS ).
 
-要点:
-- ResNet18 pretrained, BatchNorm -> GroupNorm 替换 (小 batch + EMA 更稳)
-- 每个 RGB key 独立 encoder (front / wrist 权重不共享)
-- ImageNet 归一化 (mean/std) 放在 encoder 内部, 外部输入 [0,1] 的 RGB
-- RandomCrop / CenterCrop: 训练随机裁, 推理中心裁; 每个样本独立裁剪位置
+:
+- ResNet18 pretrained, BatchNorm  to  GroupNorm  ( batch + EMA )
+-  RGB key  encoder (front / wrist )
+- ImageNet  (mean/std)  encoder ,  [0,1]  RGB
+- RandomCrop / CenterCrop: , ; 
 """
 
 from typing import List
@@ -25,7 +25,7 @@ def replace_bn_with_gn(
     root: nn.Module,
     features_per_group: int = 16,
 ) -> nn.Module:
-    """把 ``root`` 里所有 BatchNorm2d 替换为 GroupNorm (num_groups = C // features_per_group)."""
+    """ ``root``  BatchNorm2d  GroupNorm (num_groups = C // features_per_group)."""
     replace_list = []
     for name, module in root.named_modules():
         for child_name, child in module.named_children():
@@ -42,17 +42,17 @@ def build_resnet18_encoder(
     pretrained: bool = True,
     use_group_norm: bool = True,
 ) -> nn.Module:
-    """ResNet18 去掉 fc+avgpool, 输出 (B, 512, h, w). 可选 BN->GN 替换."""
+    """ResNet18  fc+avgpool,  (B, 512, h, w).  BN to GN ."""
     weights = models.ResNet18_Weights.DEFAULT if pretrained else None
     net = models.resnet18(weights=weights)
-    backbone = nn.Sequential(*list(net.children())[:-2])  # -> (B, 512, H/32, W/32)
+    backbone = nn.Sequential(*list(net.children())[:-2])  #  to  (B, 512, H/32, W/32)
     if use_group_norm:
         backbone = replace_bn_with_gn(backbone)
     return backbone
 
 
 class BatchRandomCrop(nn.Module):
-    """每个样本独立随机裁剪 (训练); eval 时 center crop."""
+    """ (); eval  center crop."""
 
     def __init__(self, crop_h: int, crop_w: int):
         super().__init__()
@@ -86,9 +86,9 @@ class BatchRandomCrop(nn.Module):
 
 
 class SingleImageEncoder(nn.Module):
-    """Resize -> (RandomCrop / CenterCrop) -> ImageNet norm -> ResNet18 -> AdaptiveAvgPool -> fc.
+    """Resize  to  (RandomCrop / CenterCrop)  to  ImageNet norm  to  ResNet18  to  AdaptiveAvgPool  to  fc.
 
-    image_aug=False 时关闭随机裁剪: 直接 resize 到 crop_shape 后跳过裁剪步, train/eval 行为完全一致.
+    image_aug=False :  resize  crop_shape , train/eval .
     """
 
     def __init__(
@@ -103,11 +103,11 @@ class SingleImageEncoder(nn.Module):
         super().__init__()
         self.image_aug = image_aug
         if image_aug:
-            # 标准路径: resize 到大尺寸, 训练时随机 crop, 推理时 center crop.
+            # : resize ,  crop,  center crop.
             self.resize = torchvision.transforms.Resize(resize_shape, antialias=True)
             self.randomizer = BatchRandomCrop(crop_shape[0], crop_shape[1])
         else:
-            # 关掉增强: 直接 resize 到 crop_shape, 不做 cropper. 模型输入尺寸 = crop_shape.
+            # :  resize  crop_shape,  cropper.  = crop_shape.
             self.resize = torchvision.transforms.Resize(crop_shape, antialias=True)
             self.randomizer = nn.Identity()
         self.register_buffer("_mean", torch.tensor(IMAGENET_MEAN).view(1, 3, 1, 1))
@@ -117,7 +117,7 @@ class SingleImageEncoder(nn.Module):
         self.fc = nn.Linear(512, feature_dim)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        """x: (B, 3, H, W) in [0, 1]. -> (B, feature_dim)."""
+        """x: (B, 3, H, W) in [0, 1].  to  (B, feature_dim)."""
         x = self.resize(x)
         x = self.randomizer(x)
         x = (x - self._mean) / self._std
@@ -134,7 +134,7 @@ class MultiViewObsEncoder(nn.Module):
     forward:
         obs_images: (B, T_o, V=2, 3, H, W) in [0, 1]
         obs_lowdim: (B, T_o, D_low)
-        -> (B, T_o * (V * img_feat_dim + lowdim_feat_dim))
+         to  (B, T_o * (V * img_feat_dim + lowdim_feat_dim))
     """
 
     def __init__(
@@ -155,7 +155,7 @@ class MultiViewObsEncoder(nn.Module):
         self.lowdim_feature_dim = lowdim_feature_dim
         self.image_aug = image_aug
 
-        # Per-view independent encoder (对齐原版 share_rgb_model=False)
+        # Per-view independent encoder ( share_rgb_model=False)
         self.view_encoders = nn.ModuleList([
             SingleImageEncoder(
                 feature_dim=img_feature_dim,

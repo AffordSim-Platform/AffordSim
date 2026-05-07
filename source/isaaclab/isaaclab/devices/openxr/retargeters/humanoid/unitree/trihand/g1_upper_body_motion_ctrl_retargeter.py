@@ -20,9 +20,9 @@ class G1TriHandUpperBodyMotionControllerRetargeter(RetargeterBase):
     """Simple retargeter that maps motion controller inputs to G1 hand joints.
 
     Mapping:
-    - A button (digital 0/1) → Thumb joints
-    - Trigger (analog 0-1) → Index finger joints
-    - Squeeze (analog 0-1) → Middle finger joints
+    - A button (digital 0/1)  to  Thumb joints
+    - Trigger (analog 0-1)  to  Index finger joints
+    - Squeeze (analog 0-1)  to  Middle finger joints
     """
 
     def __init__(self, cfg: G1TriHandUpperBodyMotionControllerRetargeterCfg):
@@ -159,12 +159,12 @@ class G1TriHandUpperBodyMotionControllerRetargeter(RetargeterBase):
 
         # Map to G1 hand joints (in radians)
         # Thumb joints (3 joints) - controlled by A button (digital)
-        thumb_angle = -thumb_button  # Max 1 radian ≈ 57°
+        thumb_angle = -thumb_button  # Max 1 radian ~= 57 deg
 
         # Thumb rotation: If trigger is pressed, we rotate the thumb toward the index finger. If squeeze is pressed, we rotate the thumb toward the middle finger.
         # If both are pressed, the thumb stays between the index and middle fingers.
         # Trigger pushes toward +0.5, squeeze pushes toward -0.5
-        # trigger=1,squeeze=0 → 0.5; trigger=0,squeeze=1 → -0.5; both=1 → 0
+        # trigger=1,squeeze=0  to  0.5; trigger=0,squeeze=1  to  -0.5; both=1  to  0
         thumb_rotation = 0.5 * trigger - 0.5 * squeeze
 
         if not is_left:
@@ -177,12 +177,12 @@ class G1TriHandUpperBodyMotionControllerRetargeter(RetargeterBase):
         hand_joints[2] = thumb_angle * 0.7  # thumb_2_joint (tip)
 
         # Index finger joints (2 joints) - controlled by trigger (analog)
-        index_angle = trigger * 1.0  # Max 1.0 radians ≈ 57°
+        index_angle = trigger * 1.0  # Max 1.0 radians ~= 57 deg
         hand_joints[3] = index_angle  # index_0_joint (proximal)
         hand_joints[4] = index_angle  # index_1_joint (distal)
 
         # Middle finger joints (2 joints) - controlled by squeeze (analog)
-        middle_angle = squeeze * 1.0  # Max 1.0 radians ≈ 57°
+        middle_angle = squeeze * 1.0  # Max 1.0 radians ~= 57 deg
         hand_joints[5] = middle_angle  # middle_0_joint (proximal)
         hand_joints[6] = middle_angle  # middle_1_joint (distal)
 
@@ -193,7 +193,7 @@ class G1TriHandUpperBodyMotionControllerRetargeter(RetargeterBase):
         wrist_pos = torch.tensor(wrist[:3], dtype=torch.float32)
         wrist_quat = torch.tensor(wrist[3:], dtype=torch.float32)
 
-        # Combined -75° (rather than -90° for wrist comfort) Y rotation + 90° Z rotation
+        # Combined -75 deg (rather than -90 deg for wrist comfort) Y rotation + 90 deg Z rotation
         # This is equivalent to (0, -75, 90) in euler angles
         combined_quat = torch.tensor([0.5358, -0.4619, 0.5358, 0.4619], dtype=torch.float32)
 

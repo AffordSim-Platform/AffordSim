@@ -1,4 +1,4 @@
-"""检查原始action scale和累计位移"""
+"""action scale"""
 import json
 import numpy as np
 import h5py

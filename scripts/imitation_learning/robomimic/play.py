@@ -90,10 +90,10 @@ from isaaclab_tasks.real2sim.utils.EpisodeBuffer import replace_background_with_
 
 
 # ============================================================================
-# 归一化/反归一化工具
+# /
 # ============================================================================
 def load_norm_params(stat_path):
-    """加载 dataset_stat.json 中的 min-max 归一化参数."""
+    """ dataset_stat.json  min-max ."""
     with open(stat_path) as f:
         stat = json.load(f)
     params = stat["_minmax_params"]
@@ -107,14 +107,14 @@ def load_norm_params(stat_path):
 
 
 def minmax_normalize(data, dmin, dmax):
-    """min-max 归一化到 [-1, 1]."""
+    """min-max  [-1, 1]."""
     drange = dmax - dmin
     drange = np.where(drange < 1e-8, 1.0, drange)
     return 2.0 * (data - dmin) / drange - 1.0
 
 
 def minmax_denormalize(data, dmin, dmax):
-    """从 [-1, 1] 反归一化回原始尺度."""
+    """ [-1, 1] ."""
     drange = dmax - dmin
     return (data + 1.0) / 2.0 * drange + dmin
 
@@ -127,7 +127,7 @@ import isaaclab_tasks.real2sim.tasks.task_gen  # noqa: F401
 
 
 def load_background_images(task_config_path):
-    """从 YAML 配置中加载背景图片."""
+    """ YAML ."""
     import yaml
     with open(task_config_path) as f:
         cfg = yaml.safe_load(f)
@@ -142,9 +142,9 @@ def load_background_images(task_config_path):
             img = cv2.imread(full_path)
             if img is not None:
                 bg_images[key] = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-                print(f"[INFO] 加载背景图片 {key}: {full_path} -> {img.shape}")
+                print(f"[INFO]  {key}: {full_path}  to  {img.shape}")
             else:
-                print(f"[WARN] 无法加载背景图片: {full_path}")
+                print(f"[WARN] : {full_path}")
     return bg_images
 
 
@@ -178,7 +178,7 @@ def rollout(policy, env, success_term, horizon, device, norm_params=None, bg_ima
         for ob in obs:
             obs[ob] = torch.squeeze(obs[ob])
 
-        # 对低维 obs 做 min-max 归一化 (和训练数据一致)
+        #  obs  min-max  ()
         if norm_params is not None:
             for key in ["qpos", "qvel"]:
                 if key in obs and key in norm_params:
@@ -198,7 +198,7 @@ def rollout(policy, env, success_term, horizon, device, norm_params=None, bg_ima
                 image = obs[image_name].clone().float()
                 image = image.reshape(channels, env_cam_h, env_cam_w)  # (C, H, W)
 
-                # 背景替换: 用语义分割 mask + 真实背景图片
+                # :  mask + 
                 seg_key = seg_keys[image_name]
                 if bg_images and image_name in bg_images and seg_key in obs:
                     seg = obs[seg_key].cpu().numpy()  # flattened
@@ -209,7 +209,7 @@ def rollout(policy, env, success_term, horizon, device, norm_params=None, bg_ima
                     composite, _ = replace_background_with_segmentation(
                         rgb_np, seg_rgba, bg_images[image_name]
                     )
-                    # composite 是 float [0, 1], shape (H, W, 3)
+                    # composite  float [0, 1], shape (H, W, 3)
                     image = torch.from_numpy(composite.transpose(2, 0, 1)).float()  # (C, H, W)
 
                 # Center crop to square, then resize to training resolution
@@ -224,7 +224,7 @@ def rollout(policy, env, success_term, horizon, device, norm_params=None, bg_ima
                     image = image.squeeze(0)  # (C, 256, 256)
                 obs[image_name] = image
 
-        # 移除语义分割 obs (不送入模型)
+        #  obs ()
         for seg_key in seg_keys.values():
             obs.pop(seg_key, None)
 
@@ -246,14 +246,14 @@ def rollout(policy, env, success_term, horizon, device, norm_params=None, bg_ima
             actions = policy(obs)
         print(f"[DEBUG] step {i} raw actions: {np.round(actions, 4)}")
 
-        # 反归一化 ee_delta (前6维), gripper 单独处理
+        #  ee_delta (6), gripper 
         if norm_params is not None and "action" in norm_params:
             actions[:-1] = minmax_denormalize(
                 actions[:-1], norm_params["action"]["min"][:-1], norm_params["action"]["max"][:-1]
             )
 
-        # Gripper 二值化: 模型输出的是 logit (BCEWithLogitsLoss 训练)
-        # sigmoid(logit) > 0.5 → close (+1), 否则 → open (-1)
+        # Gripper :  logit (BCEWithLogitsLoss )
+        # sigmoid(logit) > 0.5  to  close (+1),   to  open (-1)
         gripper_prob = 1.0 / (1.0 + np.exp(-actions[-1]))  # sigmoid
         actions[-1] = 1.0 if gripper_prob > 0.5 else -1.0
         print(f"[DEBUG] step {i} gripper prob: {gripper_prob:.4f}, action: {actions[-1]}")
@@ -321,15 +321,15 @@ def main():
     # Acquire device
     device = TorchUtils.get_torch_device(try_to_use_cuda=True)
 
-    # 加载归一化参数
+    # 
     norm_params = None
     if args_cli.dataset_stat is not None:
         norm_params = load_norm_params(args_cli.dataset_stat)
-        print(f"[INFO] 加载归一化参数: {args_cli.dataset_stat}")
+        print(f"[INFO] Loaded dataset stats: {args_cli.dataset_stat}")
     else:
-        print("[WARN] 未指定 --dataset_stat, 不做归一化/反归一化")
+        print("[WARN]  --dataset_stat, /")
 
-    # 加载背景图片 (用于背景替换)
+    #  ()
     bg_images = {}
     if args_cli.task_config is not None:
         bg_images = load_background_images(args_cli.task_config)

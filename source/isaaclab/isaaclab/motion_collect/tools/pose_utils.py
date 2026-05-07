@@ -29,7 +29,7 @@ def parse_facing_axis_local(
     """Parse the facing_axis_local field from containers.yaml into a unit 3D vector.
 
     Accepted values:
-    - None -> returns None (not declared)
+    - None  to  returns None (not declared)
     - "+x" / "-x" / "+y" / "-y" / "+z" / "-z" (case insensitive)
     - Length-3 sequence [x, y, z] (will be normalized)
     """
@@ -123,7 +123,7 @@ def normalize_ee_orientation_wxyz(
         return quat_wxyz
 
     # Rotate 180 degrees around EE's own z-axis = right-multiply by q_flip
-    q_flip = np.array([0.0, 0.0, 0.0, 1.0])  # wxyz: 180° around z
+    q_flip = np.array([0.0, 0.0, 0.0, 1.0])  # wxyz: 180 deg around z
     quat_flipped = _quat_multiply_wxyz(quat_wxyz, q_flip)
     ref = np.array(reference_quat_wxyz, dtype=np.float64)
 
@@ -144,7 +144,7 @@ def normalize_ee_orientation_wxyz(
             return quat_wxyz
         elif flip_same and not orig_same:
             return quat_flipped
-        # Both have same sign -> fall back to dot product to pick the closer one
+        # Both have same sign  to  fall back to dot product to pick the closer one
 
     # pick mode, or place mode fallback when both have same sign
     dot_orig = abs(np.dot(quat_wxyz, ref))
@@ -203,7 +203,7 @@ def compute_face_target_place_quat(
     if xy_norm < 1e-6:
         raise ValueError(
             "compute_face_target_place_quat: facing_axis projected onto world XY "
-            "is nearly zero (facing is ±z). A horizontal target direction is required."
+            "is nearly zero (facing is +/-z). A horizontal target direction is required."
         )
     facing_xy /= xy_norm
     facing_yaw = float(np.arctan2(facing_xy[1], facing_xy[0]))

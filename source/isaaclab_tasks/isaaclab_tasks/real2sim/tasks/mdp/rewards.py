@@ -48,7 +48,7 @@ def object_is_lifted(
 #     std: float,
 #     object_cfg: SceneEntityCfg = SceneEntityCfg("object"),
 #     ee_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
-# ) -> torch.Tensor:
+# )  to  torch.Tensor:
 #     """Reward the agent for reaching the object using tanh-kernel."""
 #     # extract the used quantities (to enable type-hinting)
 #     object: RigidObject = env.scene[object_cfg.name]
@@ -93,7 +93,7 @@ def object_ee_distance(
 #     command_name: str,
 #     robot_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
 #     object_cfg: SceneEntityCfg = SceneEntityCfg("object"),
-# ) -> torch.Tensor:
+# )  to  torch.Tensor:
 #     """Reward the agent for tracking the goal pose using tanh-kernel."""
 #     # extract the used quantities (to enable type-hinting)
 #     robot: RigidObject = env.scene[robot_cfg.name]
@@ -112,7 +112,7 @@ def object_ee_distance(
 #     # asset_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
 #     object_cfg: SceneEntityCfg = SceneEntityCfg("object"),
 #     robot_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
-# ) -> torch.Tensor:
+# )  to  torch.Tensor:
 #     object: RigidObject = env.scene[object_cfg.name]
 #     asset: Articulation = env.scene[robot_cfg.name]
 #     obj_z = object.data.root_pos_w[:, 2]
@@ -129,7 +129,7 @@ def object_ee_distance(
 #     minimal_height: float, 
 #     maximum_height: float, 
 #     object_cfg: SceneEntityCfg = SceneEntityCfg("object")
-# ) -> torch.Tensor:
+# )  to  torch.Tensor:
 #     """Reward the agent for lifting the object above the minimal height.
 #     The reward increases linearly with height within the valid range [minimal_height, maximum_height].
 #     """
@@ -215,9 +215,9 @@ def ee_orientation_penalty(
     # Dot product range [-1, 1]: 1 = fully aligned (pointing down), -1 = fully opposite (pointing up)
     alignment = torch.sum(ee_z_axis_w * down_vector_w, dim=1)
     
-    # Compute error: alignment = 1 (fully down) -> error = 0
-    # alignment = 0 (horizontal) -> error = 1
-    # alignment = -1 (fully up) -> error = 2
+    # Compute error: alignment = 1 (fully down)  to  error = 0
+    # alignment = 0 (horizontal)  to  error = 1
+    # alignment = -1 (fully up)  to  error = 2
     error = 1.0 - alignment
     
     # Use exponential kernel to compute reward; smaller error means higher reward

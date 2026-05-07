@@ -374,7 +374,7 @@ class OnPolicyRunnerViTBC:
         print(f"[INFO] Resumed from iteration {self.current_learning_iteration}")
         
         return loaded_dict["infos"]
-    # def load(self, path: str, load_optimizer: bool = True, map_location: str | None = None) -> dict:
+    # def load(self, path: str, load_optimizer: bool = True, map_location: str | None = None)  to  dict:
     #     loaded_dict = torch.load(path, weights_only=False, map_location=map_location)
     #     # Load model
     #     resumed_training = self.alg.policy.load_state_dict(loaded_dict["model_state_dict"])
@@ -726,7 +726,7 @@ class OnPolicyRunnerViTBC:
             
             composite_img = replace_background_with_segmentation(
                 rgb_img, seg_rgba, self._bg_side_image
-            ) # TODO: 输出的图像已经乘以255
+            ) # TODO: 255
             new_ext_cam_list.append(torch.from_numpy(composite_img.transpose(2, 0, 1).flatten()).float())
             
             # Process wrist camera
@@ -791,4 +791,3 @@ class OnPolicyRunnerViTBC:
             # actions_clamped = torch.clamp(actions, -1.0, 1.0)
             # return torch.concat([actions_clamped[:, :6] * self.bc_buffer.max_abs, actions[:, 6:]], dim=-1)
             return torch.concat([actions[:, :6] * self.bc_buffer.max_abs, actions[:, 6:]], dim=-1)
-        

@@ -11,10 +11,10 @@ task:
   description: grasp the green leek and put it in the pink basket
 runtime:
   headless: false
-  episodes: 1
+  episodes: 5
   save_npy: false
-  save_camera_images: true
-  save_composite_images: true
+  save_camera_images: false
+  save_composite_images: false
   save_mask_images: false
   save_original_images: true
   enable_motion_planning: true
@@ -25,6 +25,7 @@ runtime:
   cam_wrist_background: backgrounds/wristbackground_realworld1.png
   data_dir: data/r2s2r_data/pick_leek_place_cuttingboard
   task_name: FrankaFr3-OurGripper-Joint-VisPick-v0
+  save_depth_images: false
 robot:
   cfg_name: franka_fr3_our.yml
   type: franka_fr3_default
@@ -37,71 +38,45 @@ objects:
     semantic_tags:
       -   - class
           - green_leek
-    init_pos: [0.55, 0.15, 0.07]
+    init_pos: [0.55, -0.25, 0.07]
     init_rot: [0.3994, 0.0, 0.0, 0.9168]
-    position_range:
-      x: [0.5, 0.55]
-      y: [0.15, 0.20]
-      z: [0.07, 0.07]
-    orientation_range:
-      yaw: [-0.2618, 0.2618]
     height: 0.04
+    position_range:
+      x:
+        - 0.45
+        - 0.70
+      y:
+        - -0.40
+        - -0.05
+      z:
+        - 0.07
+        - 0.07
+    orientation_range:
+      yaw:
+        - -3.1416
+        - 3.1416
   wood_cuttingboard:
     usd_path: models/all_object/wood_cuttingboard.usd
     semantic_tags:
       -   - class
           - wood_cuttingboard
-    init_pos: [0.57, -0.15, 0.08]
+    init_pos: [0.55, 0.25, 0.08]
     init_rot: [1.0, 0.0, 0.0, 0.0]
-    position_range:
-      x: [0.57, 0.57]
-      y: [-0.2, -0.20]
-      z: [0.08, 0.08]
-    orientation_range:
-      yaw: [0, 0]
     height: 0.08
-  orange_carrot:
-    usd_path: models/all_object/orange_carrot.usd
-    semantic_tags:
-      -   - class
-          - orange_carrot
-    init_pos: [0.7, -0.17, 0.13]
-    init_rot: [0.5, 0.0, 0.0, 0.866]
     position_range:
-      x: [0.65, 0.65]
-      y: [-0.27, -0.27]
-      z: [0.13, 0.13]
+      x:
+        - 0.45
+        - 0.70
+      y:
+        - 0.05
+        - 0.40
+      z:
+        - 0.08
+        - 0.08
     orientation_range:
-      yaw: [0, 0]
-    height: 0.04
-  yellow_banana:
-    usd_path: models/all_object/yellow_banana.usd
-    semantic_tags:
-      -   - class
-          - yellow_banana
-    init_pos: [0.75, 0.05, 0.05]
-    init_rot: [1, 0, 0, 0]
-    height: 0.036
-    position_range:
-      x: [0.75, 0.85]
-      y: [0.05, 0.15]
-      z: [0.05, 0.05]
-    orientation_range:
-      yaw: [-0.1, 0.1]
-  red_apple:
-    usd_path: models/all_object/red_apple.usd
-    semantic_tags:
-      -   - class
-          - red_apple
-    init_pos: [0.75, -0.4, 0.06]
-    init_rot: [1.0, 0.0, 0.0, 0.0]
-    height: 0.07
-    position_range:
-      x: [0.75, 0.85]
-      y: [-0.55, -0.55]
-      z: [0.06, 0.06]
-    orientation_range:
-      yaw: [-0.1, 0.1]
+      yaw:
+        - -0.1745
+        - 0.1745
 primitives:
   - type: pick
     mode: affordance
@@ -122,7 +97,7 @@ primitives:
 enable_random_lights: false
 image_noise_std: 0
 image_speckle_noise_std: 0
-enable_objects_randomization: false
+enable_objects_randomization: true
 enable_objects_randomization_curriculum: false
 texture_randomization:
   enabled: true

@@ -11,7 +11,7 @@ task:
   description: close the microwave door
 runtime:
   headless: false
-  episodes: 1
+  episodes: 5
   save_npy: false
   save_camera_images: false
   save_composite_images: false
@@ -25,6 +25,7 @@ runtime:
   cam_wrist_background: backgrounds/wristbackground_realworld1.png
   data_dir: data/r2s2r_data/close_microwave
   task_name: FrankaFr3-OurGripper-Joint-VisPick-v0
+  save_depth_images: false
 robot:
   cfg_name: franka_fr3_our.yml
   type: franka_fr3_default
@@ -42,6 +43,20 @@ articulations:
     enabled_self_collisions: true
     init_pos: [0.8, -0.2, 0.16]
     init_rot: [0.7071, 0, 0, -0.7071]
+    position_range:
+      x:
+        - 0.7
+        - 0.8
+      y:
+        - -0.25
+        - -0.15
+      z:
+        - 0.16
+        - 0.16
+    orientation_range:
+      yaw:
+        - -0.1745
+        - 0.1745
     joint_pos:
       microjoint: -1.57
     actuators:
@@ -65,7 +80,7 @@ primitives:
 enable_random_lights: false
 image_noise_std: 0
 image_speckle_noise_std: 0
-enable_objects_randomization: false
+enable_objects_randomization: true
 enable_objects_randomization_curriculum: false
 texture_randomization:
   enabled: false

@@ -185,7 +185,7 @@ def apply_random_texture_preview(
         UsdShade.MaterialBindingAPI(mesh_prim).Bind(
             material, UsdShade.Tokens.strongerThanDescendants
         )
-        print(f"[live-rand] bound texture {tex_file} -> {mesh_prim_path}")
+        print(f"[live-rand] bound texture {tex_file}  to  {mesh_prim_path}")
         bound_any = True
 
     return bound_any

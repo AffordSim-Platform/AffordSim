@@ -573,7 +573,7 @@ class RigidObjectCollection(AssetBase):
         Returns:
             The reshaped data. Shape is (num_instances, num_objects, data_dim).
         """
-        return torch.einsum("ijk -> jik", data.reshape(self.num_objects, self.num_instances, -1))
+        return torch.einsum("ijk  to  jik", data.reshape(self.num_objects, self.num_instances, -1))
 
     def reshape_data_to_view(self, data: torch.Tensor) -> torch.Tensor:
         """Reshapes and arranges the data to the be consistent with data from the :attr:`root_physx_view`.
@@ -584,7 +584,7 @@ class RigidObjectCollection(AssetBase):
         Returns:
             The reshaped data. Shape is (num_instances * num_objects, data_dim).
         """
-        return torch.einsum("ijk -> jik", data).reshape(self.num_objects * self.num_instances, *data.shape[2:])
+        return torch.einsum("ijk  to  jik", data).reshape(self.num_objects * self.num_instances, *data.shape[2:])
 
     """
     Internal helper.

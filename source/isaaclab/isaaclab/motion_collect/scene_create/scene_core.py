@@ -201,7 +201,7 @@ Rules:
 4. Do not invent extra disambiguating attributes that the user did not say. Never add colors, materials, sizes,
    indices, or serial numbers on your own. If the user says "kettle", output "kettle", not "blue_kettle".
 5. If the user mentions a count of concrete named objects, repeat that object phrase in `specified_objects`
-   exactly that many times and use the singular noun. Example: "two kettles" -> ["kettle", "kettle"].
+   exactly that many times and use the singular noun. Example: "two kettles"  to  ["kettle", "kettle"].
    Do not put the extra counted concrete objects in `random_objects_count`.
 6. Put a number in `random_objects_count` only when the user explicitly asks for random/any/arbitrary objects,
    such as "two random objects". Otherwise use 0.
@@ -212,13 +212,13 @@ Rules:
    - "left_of", "right_of", "front", "behind"
    - "near"
 9. Normalize common phrasing to the canonical relations above:
-   - in / into / inside -> "inside"
-   - on / onto / on top of / atop -> "on_top"
-   - left / on the left of / to the left of -> "left_of"
-   - right / on the right of / to the right of -> "right_of"
-   - in front of / ahead of -> "front"
-   - back of / behind / in back of -> "behind"
-   - near / next to / close to / beside -> "near"
+   - in / into / inside  to  "inside"
+   - on / onto / on top of / atop  to  "on_top"
+   - left / on the left of / to the left of  to  "left_of"
+   - right / on the right of / to the right of  to  "right_of"
+   - in front of / ahead of  to  "front"
+   - back of / behind / in back of  to  "behind"
+   - near / next to / close to / beside  to  "near"
 10. Ignore filler words like "please", "carefully", "then", "after that", "could you".
 11. If a relation is not clearly expressed, omit it instead of inventing one.
 
@@ -431,7 +431,7 @@ class SceneGenerator:
                 print(f"[WARN] Duplicate label '{label}' ignored (one sim slot per USD)")
                 continue
             instances[label] = {"label": label, "data": obj_data, "parent": None, "relation": None}
-            print(f"[MATCH] '{label}' -> exact match")
+            print(f"[MATCH] '{label}'  to  exact match")
 
         used_labels = set(instances.keys())
         available = [item for item in self._raw_objects if item.get("label", "") not in used_labels]

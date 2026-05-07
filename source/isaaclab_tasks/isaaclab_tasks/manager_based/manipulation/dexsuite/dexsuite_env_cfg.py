@@ -303,8 +303,8 @@ class EventCfg:
     )
 
     # Note (Octi): This is a deliberate trick in Remake to accelerate learning.
-    # By scheduling gravity as a curriculum — starting with no gravity (easy)
-    # and gradually introducing full gravity (hard) — the agent learns more smoothly.
+    # By scheduling gravity as a curriculum - starting with no gravity (easy)
+    # and gradually introducing full gravity (hard) - the agent learns more smoothly.
     # This removes the need for a special "Lift" reward (often required to push the
     # agent to counter gravity), which has bonus effect of simplifying reward composition overall.
     variable_gravity = EventTerm(

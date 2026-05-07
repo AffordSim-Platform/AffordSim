@@ -1,12 +1,12 @@
 """
-Diffusion Policy 训练 (RSS 原版风格).
+Diffusion Policy  (RSS ).
 
-要点:
-- EMA 权重 (每个 opt step 更新), ckpt 里同时保存 main + ema, eval/inference 用 ema
-- 余弦 β schedule + clip_sample (由 diffusers.DDPMScheduler 提供)
-- 训练期评估: 每次 save ckpt 后同步拉起 eval_rollout.py 子进程
+:
+- EMA  ( opt step ), ckpt  main + ema, eval/inference  ema
+-  β schedule + clip_sample ( diffusers.DDPMScheduler )
+- :  save ckpt  eval_rollout.py 
 
-用法:
+:
     python scripts/imitation_learning/dp_rss/train.py \
         --dataset /path/to/merged_trajectories_robo.hdf5 \
         --stat    /path/to/dataset_stat.json \
@@ -42,7 +42,7 @@ from policy import DiffusionPolicy
 
 
 # ===========================================================================
-# 训练期评估 (subprocess)
+#  (subprocess)
 # ===========================================================================
 
 def run_eval_subprocess(args, ckpt_path: str, log_dir: str, epoch: int):
@@ -142,12 +142,12 @@ def train(args):
     )
     print(f"[INFO] train={len(train_ds)}, valid={len(valid_ds)}")
 
-    # 把 dataset 解析出的真实 use_qvel 回填到 args (保证 ckpt 里存的是实际值, play 时一致).
+    #  dataset  use_qvel  args ( ckpt , play ).
     args.use_qvel = train_ds.use_qvel
-    # lowdim_dim 必须随 use_qvel 调整 (qpos=7, qvel=7).
+    # lowdim_dim  use_qvel  (qpos=7, qvel=7).
     expected_lowdim = 14 if args.use_qvel else 7
     if args.lowdim_dim != expected_lowdim:
-        print(f"[INFO] lowdim_dim 自动调整: {args.lowdim_dim} -> {expected_lowdim} (use_qvel={args.use_qvel})")
+        print(f"[INFO] lowdim_dim : {args.lowdim_dim}  to  {expected_lowdim} (use_qvel={args.use_qvel})")
         args.lowdim_dim = expected_lowdim
 
     # --- policy ---
@@ -294,7 +294,7 @@ def train(args):
         if epoch % args.save_every == 0:
             ckpt_path = os.path.join(log_dir, "models", f"model_epoch_{epoch}.pth")
             save_ckpt(ckpt_path, policy, ema, optimizer, lr_scheduler, epoch, args)
-            print(f"  -> saved {ckpt_path}")
+            print(f"   to  saved {ckpt_path}")
 
             if args.eval_task_config:
                 res = run_eval_subprocess(args, ckpt_path, log_dir, epoch)
@@ -304,7 +304,7 @@ def train(args):
                     for sk, rate in (res.get("stage_success_rate") or {}).items():
                         writer.add_scalar(f"eval/stage/{sk}", float(rate), epoch)
                     print(
-                        f"  -> Eval overall={overall:.2%}, "
+                        f"   to  Eval overall={overall:.2%}, "
                         + ", ".join(
                             f"{k}={float(v):.2%}"
                             for k, v in (res.get("stage_success_rate") or {}).items()
@@ -325,13 +325,13 @@ def train(args):
                                 torch.from_numpy(vid), epoch, fps=6,
                             )
                         except Exception as e:
-                            print(f"  -> [WARN] gif->tb failed: {e}")
+                            print(f"   to  [WARN] gif to tb failed: {e}")
 
         if avg_valid < best_valid_loss:
             best_valid_loss = avg_valid
             ckpt_path = os.path.join(log_dir, "models", "model_best.pth")
             save_ckpt(ckpt_path, policy, ema, optimizer, lr_scheduler, epoch, args)
-            print(f"  -> best (valid {best_valid_loss:.6f})")
+            print(f"   to  best (valid {best_valid_loss:.6f})")
 
     writer.close()
     train_ds.close()
@@ -348,17 +348,17 @@ def build_parser():
 
     # data
     p.add_argument("--dataset", type=str, required=True)
-    p.add_argument("--stat", type=str, default=None, help="dataset_stat.json (仅传给 eval 子进程)")
+    p.add_argument("--stat", type=str, default=None, help="dataset_stat.json ( eval )")
     p.add_argument("--output_dir", type=str, default="logs/dp_rss")
     p.add_argument("--load_count", type=int, default=None)
 
-    # qvel 是否进入 obs_lowdim. 默认 None=按 hdf5 自动探测;
-    # --no_qvel 强制只用 qpos (lowdim_dim=7); --use_qvel 强制要 qvel (缺则报错).
+    # qvel  obs_lowdim.  None= hdf5 ;
+    # --no_qvel  qpos (lowdim_dim=7); --use_qvel  qvel ().
     qvel_grp = p.add_mutually_exclusive_group()
     qvel_grp.add_argument("--no_qvel", dest="use_qvel", action="store_false", default=None,
-                          help="不使用 qvel, obs_lowdim 只含 qpos (lowdim_dim 自动设 7)")
+                          help=" qvel, obs_lowdim  qpos (lowdim_dim  7)")
     qvel_grp.add_argument("--use_qvel", dest="use_qvel", action="store_true", default=None,
-                          help="强制使用 qvel; hdf5 没 qvel 时报错")
+                          help=" qvel; hdf5  qvel ")
 
     # training
     p.add_argument("--epochs", type=int, default=1000)
@@ -393,12 +393,12 @@ def build_parser():
     p.add_argument("--crop_shape", type=int, nargs=2, default=[224, 224])
     p.add_argument("--num_views", type=int, default=2)
     p.add_argument("--pretrained", action="store_true", default=True)
-    # 图像增强 (训练随机 crop, 推理 center crop). 默认开;
-    # --no_image_aug 关掉 (resize 直接到 crop_shape, train/eval 行为一致, 风险: 易过拟合).
+    #  ( crop,  center crop). ;
+    # --no_image_aug  (resize  crop_shape, train/eval , : ).
     p.add_argument("--image_aug", action="store_true", default=True,
-                   help="启用 RandomCrop 图像增强 (默认开)")
+                   help=" RandomCrop  ()")
     p.add_argument("--no_image_aug", dest="image_aug", action="store_false",
-                   help="关闭图像增强, 直接 resize 到 crop_shape, train/eval 完全一致")
+                   help=",  resize  crop_shape, train/eval ")
 
     # U-Net
     p.add_argument("--down_dims", type=int, nargs="+", default=[256, 512, 1024])
@@ -425,16 +425,16 @@ def build_parser():
     p.add_argument("--eval_pick_lift_threshold", type=float, default=0.05)
     p.add_argument(
         "--eval_action_horizon", type=int, default=None,
-        help="评测时的开环执行步数; 不传则用模型训练时的 action_horizon. 调小可减少累积误差.",
+        help=";  action_horizon. .",
     )
     p.add_argument("--eval_env_cfg_class", type=str, default=None)
     p.add_argument("--eval_warmup_action", type=str, default=None, choices=["zero", "hold"])
     p.add_argument(
         "--eval_joint_delta_mode", type=str, default="cumulative", choices=["current", "cumulative"],
         help=(
-            "joint_delta -> 绝对位置的展开方式 (传给 eval 子进程, 仅 action_type=joint_delta 时生效). "
+            "joint_delta  to   ( eval ,  action_type=joint_delta ). "
             "'current'=arm_target(k)=cur_qpos(k)+delta(k); "
-            "'cumulative'=arm_target(k)=arm_target(k-1)+delta(k), 初值=首帧 arm qpos."
+            "'cumulative'=arm_target(k)=arm_target(k-1)+delta(k), = arm qpos."
         ),
     )
 
@@ -445,20 +445,20 @@ if __name__ == "__main__":
     parser = build_parser()
     args = parser.parse_args()
 
-    # 自动推断 action_dim 和 eval_warmup_action (与现有 diffusion_policy/train.py 语义一致)
+    #  action_dim  eval_warmup_action ( diffusion_policy/train.py )
     _DIM_BY_TYPE = {"ee_delta": 7, "joint_delta": 8}
     _WARMUP_BY_TYPE = {"ee_delta": "zero", "joint_delta": "hold"}
     expected_dim = _DIM_BY_TYPE[args.action_type]
     if args.action_dim is None:
         args.action_dim = expected_dim
-        print(f"[INFO] --action_dim 推断为 {expected_dim} (action_type={args.action_type})")
+        print(f"[INFO] --action_dim  {expected_dim} (action_type={args.action_type})")
     elif args.action_dim != expected_dim:
         print(
-            f"[WARN] --action_dim={args.action_dim} != 推断值 {expected_dim}, "
-            f"沿用显式值 (请自行确保数据 action 维度一致)."
+            f"[WARN] --action_dim={args.action_dim} !=  {expected_dim}, "
+            f" ( action )."
         )
     if args.eval_warmup_action is None:
         args.eval_warmup_action = _WARMUP_BY_TYPE[args.action_type]
-        print(f"[INFO] --eval_warmup_action 推断为 '{args.eval_warmup_action}'")
+        print(f"[INFO] --eval_warmup_action  '{args.eval_warmup_action}'")
 
     train(args)

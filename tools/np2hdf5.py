@@ -150,7 +150,7 @@ def main():
     for i, ep_file in enumerate(episode_files):
         # i = i+142  
         out_path = os.path.join(args.out, f"episode_{i}.hdf5")
-        print(f"\n: {ep_file} -> : episode_{i}.hdf5")
+        print(f"\n: {ep_file}  to  : episode_{i}.hdf5")
         try:
             ep_data = convert_episode(ep_file)
    

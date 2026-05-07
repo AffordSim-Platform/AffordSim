@@ -51,7 +51,7 @@ is_isaacsim_version_4_5() {
     python_exe=$(extract_python_exe)
 
     # 0) Fast path: read VERSION file from the symlinked _isaac_sim directory (binary install)
-    # If the repository has _isaac_sim → <IsaacSimRoot> symlink, the VERSION file is the simplest source of truth.
+    # If the repository has _isaac_sim to <IsaacSimRoot> symlink, the VERSION file is the simplest source of truth.
     if [[ -f "${ISAACLAB_PATH}/_isaac_sim/VERSION" ]]; then
         # Read first line of the VERSION file; don't fail the whole script on errors.
         version=$(head -n1 "${ISAACLAB_PATH}/_isaac_sim/VERSION" || true)
@@ -359,7 +359,7 @@ setup_conda_env() {
         # patch Python version if needed, but back up first
         cp "${ISAACLAB_PATH}/environment.yml"{,.bak}
         if is_isaacsim_version_4_5; then
-            echo "[INFO] Detected Isaac Sim 4.5 → forcing python=3.10"
+            echo "[INFO] Detected Isaac Sim 4.5, forcing python=3.10"
             sed -i 's/^  - python=3\.11/  - python=3.10/' "${ISAACLAB_PATH}/environment.yml"
         else
             echo "[INFO] Isaac Sim >= 5.0 detected, installing python=3.11"
@@ -396,7 +396,7 @@ setup_conda_env() {
         '' > ${CONDA_PREFIX}/etc/conda/activate.d/setenv.sh
 
     write_torch_gomp_hooks
-    # check if we have _isaac_sim directory -> if so that means binaries were installed.
+    # check if we have _isaac_sim directory to if so that means binaries were installed.
     # we need to setup conda variables to load the binaries
     local isaacsim_setup_conda_env_script=${ISAACLAB_PATH}/_isaac_sim/setup_conda_env.sh
 
@@ -426,7 +426,7 @@ setup_conda_env() {
         'unset RESOURCE_NAME' \
         '' > ${CONDA_PREFIX}/etc/conda/deactivate.d/unsetenv.sh
 
-    # check if we have _isaac_sim directory -> if so that means binaries were installed.
+    # check if we have _isaac_sim directory to if so that means binaries were installed.
     if [ -f "${isaacsim_setup_conda_env_script}" ]; then
         # add variables to environment during activation
         printf '%s\n' \

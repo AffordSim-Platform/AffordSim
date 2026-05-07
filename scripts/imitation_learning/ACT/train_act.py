@@ -1,17 +1,17 @@
 """
-ACT (Action Chunking with Transformers) 训练脚本.
+ACT (Action Chunking with Transformers) .
 
-CVAE + Transformer 训练流程:
-1. 从数据集采样 (obs, action_chunk)
-2. CVAE Encoder: 编码 (obs, action) -> latent z
-3. Transformer Decoder: 以 obs + z 为条件预测 action chunk
+CVAE + Transformer :
+1.  (obs, action_chunk)
+2. CVAE Encoder:  (obs, action)  to  latent z
+3. Transformer Decoder:  obs + z  action chunk
 4. Loss = L1 reconstruction + beta * KL divergence
 
-数据格式 (支持两种):
-  robomimic 格式: data/demo_X/actions, data/demo_X/obs/qpos, .../front, ...
-  原始格式: traj_X/action, traj_X/observations/qpos, .../images/front, ...
+ ():
+  robomimic : data/demo_X/actions, data/demo_X/obs/qpos, .../front, ...
+  : traj_X/action, traj_X/observations/qpos, .../images/front, ...
 
-用法:
+:
     python scripts/imitation_learning/ACT/train_act.py \
         --dataset /path/to/merged_trajectories_robomimic.hdf5 \
         --stat /path/to/dataset_stat.json \
@@ -53,28 +53,28 @@ def compute_minmax(all_data):
 
 
 def minmax_normalize(data, dmin, dmax):
-    """min-max 归一化到 [-1, 1]."""
+    """min-max  [-1, 1]."""
     drange = dmax - dmin
     drange = np.where(drange < 1e-8, 1.0, drange)
     return 2.0 * (data - dmin) / drange - 1.0
 
 
 def minmax_denormalize(data, dmin, dmax):
-    """从 [-1, 1] 反归一化回原始尺度."""
+    """ [-1, 1] ."""
     drange = dmax - dmin
     return (data + 1.0) / 2.0 * drange + dmin
 
 
 # ============================================================================
-# Gripper Conversion: Binary -> Continuous
+# Gripper Conversion: Binary  to  Continuous
 # ============================================================================
 
 def convert_binary_gripper_to_continuous(gripper_seq):
     """
-    将二值夹爪信号转换为连续值并归一化.
+    .
 
-    输入: gripper_seq (N,) — 值为 -1 (open) 或 +1 (close)
-    输出: (N,) — 值在 [0, 1], 0=close, 1=open
+    : gripper_seq (N,) -  -1 (open)  +1 (close)
+    : (N,) -  [0, 1], 0=close, 1=open
     """
     N = len(gripper_seq)
     is_open = gripper_seq < 0
@@ -104,17 +104,17 @@ def convert_binary_gripper_to_continuous(gripper_seq):
 # ============================================================================
 
 def get_active_mask(action):
-    """返回 EE delta 非零的步骤 mask."""
+    """ EE delta  mask."""
     return np.abs(action[:, :6]).sum(axis=1) > 1e-8
 
 
 class ACTDataset(Dataset):
     """
-    加载 HDF5 数据, 自动检测格式:
-      - 原始格式: traj_X/action, traj_X/observations/qpos, .../images/front, ...
-      - robomimic 格式: data/demo_X/actions, data/demo_X/obs/qpos, .../front, ...
+     HDF5 , :
+      - : traj_X/action, traj_X/observations/qpos, .../images/front, ...
+      - robomimic : data/demo_X/actions, data/demo_X/obs/qpos, .../front, ...
 
-    action_chunk_size: 返回未来 chunk_size 步的 action 序列.
+    action_chunk_size:  chunk_size  action .
     """
 
     def __init__(self, dataset_file: str, load_count=None, remove_idle=True,
@@ -134,7 +134,7 @@ class ACTDataset(Dataset):
 
         data.close()
 
-        # 构建有效索引
+        # 
         valid = []
         for i in range(len(self.states)):
             act_end = i + action_chunk_size
@@ -309,7 +309,7 @@ class ACTDataset(Dataset):
 
 
 # ============================================================================
-# Sampler (无限迭代)
+# Sampler ()
 # ============================================================================
 
 class IterationBasedBatchSampler(BatchSampler):
@@ -341,11 +341,11 @@ def act_loss(pred_actions, target_actions, mu, log_var, kl_weight=10.0):
     """ACT Loss = L1 reconstruction + KL divergence.
 
     Args:
-        pred_actions: (B, C, action_dim) 预测的 action chunk
-        target_actions: (B, C, action_dim) 目标 action chunk
-        mu: (B, latent_dim) CVAE encoder 输出的均值
-        log_var: (B, latent_dim) CVAE encoder 输出的 log 方差
-        kl_weight: KL 散度权重 (beta in beta-VAE)
+        pred_actions: (B, C, action_dim)  action chunk
+        target_actions: (B, C, action_dim)  action chunk
+        mu: (B, latent_dim) CVAE encoder 
+        log_var: (B, latent_dim) CVAE encoder  log 
+        kl_weight: KL  (beta in beta-VAE)
 
     Returns:
         total_loss, l1_loss, kl_loss
@@ -374,7 +374,7 @@ def save_checkpoint(policy, optimizer, iteration, run_dir, tag, norm_params):
         "iteration": iteration,
         "norm_params": norm_params,
         "model_config": {
-            "state_dim": policy.front_encoder.fc.out_features * 0 + \
+            "state_dim": policy.front_encoder.fc.out_features * 0 +\
                          policy.state_proj.in_features,  # state_dim
             "action_dim": policy.action_dim,
             "action_chunk_size": policy.action_chunk_size,
@@ -387,7 +387,7 @@ def save_checkpoint(policy, optimizer, iteration, run_dir, tag, norm_params):
 
 
 def run_eval_subprocess(args, ckpt_path: str, run_dir: str, iteration: int) -> dict | None:
-    """每次保存 ckpt 后同步拉起 eval_rollout_act.py 子进程."""
+    """ ckpt  eval_rollout_act.py ."""
     if not args.eval_task_config or not args.eval_task:
         return None
 
@@ -449,9 +449,9 @@ def parse_args():
 
     # Action chunking
     parser.add_argument("--action_chunk_size", type=int, default=16,
-                        help="Action chunk size: 规划未来 m 步动作")
+                        help="Action chunk size:  m ")
     parser.add_argument("--action_horizon", type=int, default=8,
-                        help="Action horizon: 每次实际执行 n 步 (n <= action_chunk_size)")
+                        help="Action horizon:  n  (n <= action_chunk_size)")
 
     # ACT architecture
     parser.add_argument("--hidden_dim", type=int, default=512, help="Transformer hidden dim")
@@ -466,18 +466,18 @@ def parse_args():
     parser.add_argument("--log_freq", type=int, default=50, help="Logging frequency")
     parser.add_argument("--save_freq", type=int, default=2000, help="Checkpoint saving frequency")
 
-    # 训练期评估
+    # 
     parser.add_argument("--stat", type=str, default=None,
-                        help="dataset_stat.json; 用于覆盖 norm_params 反归一化")
+                        help="dataset_stat.json;  norm_params ")
     parser.add_argument("--eval_task_config", type=str, default=None,
-                        help="task yaml 路径; 设置后才会启用训练期评估")
+                        help="task yaml ; ")
     parser.add_argument("--eval_task", type=str, default=None,
-                        help="gym 环境 id, 用于评估子进程")
+                        help="gym  id, ")
     parser.add_argument("--eval_num_rollouts", type=int, default=5)
     parser.add_argument("--eval_horizon", type=int, default=300)
     parser.add_argument("--eval_pick_lift_threshold", type=float, default=0.05)
     parser.add_argument("--eval_env_cfg_class", type=str, default=None,
-                        help="可选 'pkg.mod:ClassName' 覆盖默认 pick env cfg")
+                        help=" 'pkg.mod:ClassName'  pick env cfg")
 
     return parser.parse_args()
 
@@ -497,7 +497,7 @@ def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"[INFO] Device: {device}")
 
-    assert args.action_horizon <= args.action_chunk_size, \
+    assert args.action_horizon <= args.action_chunk_size,\
         f"action_horizon ({args.action_horizon}) must <= action_chunk_size ({args.action_chunk_size})"
 
     # Run name
@@ -575,7 +575,7 @@ def main():
         state = batch["state"].to(device)
         target = batch["action"].to(device)
 
-        # Forward (训练模式: 返回 pred_actions, mu, log_var)
+        # Forward (:  pred_actions, mu, log_var)
         pred_actions, mu, log_var = policy(front, wrist, state, actions=target)
 
         # ACT Loss
@@ -593,7 +593,7 @@ def main():
         # Logging
         if iteration % args.log_freq == 0:
             with torch.no_grad():
-                # 分维度 loss
+                #  loss
                 ee_l1 = F.l1_loss(pred_actions[:, :, :6], target[:, :, :6])
                 gripper_l1 = F.l1_loss(pred_actions[:, :, 6:], target[:, :, 6:])
 
@@ -641,8 +641,8 @@ def main():
                         vid_tensor = torch.from_numpy(vid).unsqueeze(0)
                         writer.add_video(f"Eval/rollout_trial_{gi}", vid_tensor, iteration, fps=6)
                     except Exception as e:
-                        print(f"  -> [WARN] failed to log GIF to tensorboard: {e}")
-                print(f"  -> Eval overall={overall:.2%}, "
+                        print(f"   to  [WARN] failed to log GIF to tensorboard: {e}")
+                print(f"   to  Eval overall={overall:.2%}, "
                       + ", ".join(f"{k}={float(v):.2%}"
                                   for k, v in (eval_result.get("stage_success_rate") or {}).items()))
                 if overall > best_eval_success:
@@ -671,7 +671,7 @@ def main():
                 vid_tensor = torch.from_numpy(vid).unsqueeze(0)
                 writer.add_video(f"Eval/rollout_trial_{gi}", vid_tensor, args.total_iters, fps=6)
             except Exception as e:
-                print(f"  -> [WARN] failed to log GIF to tensorboard: {e}")
+                print(f"   to  [WARN] failed to log GIF to tensorboard: {e}")
 
     writer.close()
     print(f"[INFO] Training complete. Results saved to {run_dir}")

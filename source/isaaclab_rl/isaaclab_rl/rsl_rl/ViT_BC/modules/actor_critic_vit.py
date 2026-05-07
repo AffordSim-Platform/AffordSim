@@ -34,7 +34,7 @@ class PatchEmbed2(nn.Module):
     def forward(self, x: torch.Tensor):
         # x: [B, 3, H, W]
         y = self.embed(x)
-        # y: [B, C, H', W'] -> [B, H'*W', C]
+        # y: [B, C, H', W']  to  [B, H'*W', C]
         y = y.flatten(2).transpose(1, 2)
         return y
 
@@ -150,7 +150,7 @@ class SpatialEmb(nn.Module):
         y = self.input_proj(feat)
         
         # Weighted sum (Spatial Aggregation)
-        # weight * y -> sum over patch dim
+        # weight * y  to  sum over patch dim
         z = (self.weight * y).sum(dim=1)
         z = self.dropout(z)
         return z
@@ -205,7 +205,7 @@ class ActorCriticViT(nn.Module):
         
         self.critic_prop_dim = num_critic_obs - self.img_flat_dim
         assert self.critic_prop_dim >= 0, "Critic obs dim too small for images"
-        print(f"IBRL Arch: Input {self.img_h}x{self.img_w} -> Resized to {self.img_h_enc}x{self.img_w_enc}")
+        print(f"IBRL Arch: Input {self.img_h}x{self.img_w}  to  Resized to {self.img_h_enc}x{self.img_w_enc}")
 
         # 2. Initialize visual backbone (MinVit)
         # IBRL Student is typically very shallow (depth=1)
@@ -247,7 +247,7 @@ class ActorCriticViT(nn.Module):
         activation_fn = get_activation(activation)
         
         # Actor MLP
-        # 输入: SpatialEmb输出 (1024) + Skip Connection Prop (prop_dim)
+        # : SpatialEmb (1024) + Skip Connection Prop (prop_dim)
         actor_in_dim = self.spatial_proj_dim + self.prop_dim
         
         actor_layers = []
@@ -264,7 +264,7 @@ class ActorCriticViT(nn.Module):
         self.actor_mlp = nn.Sequential(*actor_layers)
 
         # Critic MLP
-        # 输入: SpatialEmb输出 (1024) + Skip Connection Prop (prop_dim)
+        # : SpatialEmb (1024) + Skip Connection Prop (prop_dim)
         critic_in_dim = self.spatial_proj_dim + self.prop_dim
         
         critic_layers = []
@@ -289,12 +289,12 @@ class ActorCriticViT(nn.Module):
 
         # Print info
         print(f"Backbone: MinVit (Depth=1, Embed={self.vit_embed_dim}, Total Patches={self.total_patches})")
-        print(f"Actor Head: SpatialEmb -> MLP({actor_hidden_dims})")
-        print(f"Critic Head: SpatialEmb -> MLP({critic_hidden_dims})")
+        print(f"Actor Head: SpatialEmb  to  MLP({actor_hidden_dims})")
+        print(f"Critic Head: SpatialEmb  to  MLP({critic_hidden_dims})")
 
     def _process_obs(self, obs_tensor: torch.Tensor, prop_dim: int):
         """
-        Process flattened observation vector: split -> reshape -> backbone.
+        Process flattened observation vector: split  to  reshape  to  backbone.
         """
         # 1. Split proprioception
         prop = obs_tensor[:, :prop_dim]

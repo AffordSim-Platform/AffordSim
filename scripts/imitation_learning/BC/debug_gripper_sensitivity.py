@@ -1,9 +1,9 @@
 """
-测试 gripper head 对输入的敏感度:
-1. 用训练数据 step 0 的输入, logit 应该是正的 (open)
-2. 用训练数据 step 45 的输入, logit 应该是负的 (close)
-3. 用 step 0 的图像 + step 45 的 state → 看 gripper 跟谁走
-4. 用 step 45 的图像 + step 0 的 state → 看 gripper 跟谁走
+ gripper head :
+1.  step 0 , logit  (open)
+2.  step 45 , logit  (close)
+3.  step 0  + step 45  state  to   gripper 
+4.  step 45  + step 0  state  to   gripper 
 """
 import os, sys, json
 import numpy as np
@@ -71,4 +71,4 @@ for name, fi, wi, si in tests:
         ee, logit = policy(f, w, s)
     prob = torch.sigmoid(logit).item()
     pred = "OPEN" if prob > 0.5 else "CLOSE"
-    print(f"{name:45s} | logit={logit.item():+8.4f} prob={prob:.4f} → {pred}")
+    print(f"{name:45s} | logit={logit.item():+8.4f} prob={prob:.4f}  to  {pred}")

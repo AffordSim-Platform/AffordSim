@@ -162,7 +162,7 @@ def _get_articulation_joint_pos(
 def _get_articulation_all_joint_pos(
     scene, label: str, env_idx: int
 ) -> dict[str, float] | None:
-    """返回 {joint_name: joint_pos} 的全部关节位置字典."""
+    """ {joint_name: joint_pos} ."""
     object_key = _find_object_in_scene(scene, label)
     if object_key is None:
         return None

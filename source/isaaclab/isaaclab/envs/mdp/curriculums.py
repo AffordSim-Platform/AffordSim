@@ -64,7 +64,7 @@ class modify_env_param(ManagerTermBase):
 
     .. code-block:: python
 
-        def modify_fn(env, env_ids, old_value, **modify_params) -> new_value | modify_env_param.NO_CHANGE:
+        def modify_fn(env, env_ids, old_value, **modify_params)  to  new_value | modify_env_param.NO_CHANGE:
             ...
 
     where ``env`` is the learning environment, ``env_ids`` are the sub-environment indices,

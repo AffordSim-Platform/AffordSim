@@ -222,10 +222,10 @@ def convert_quat(quat: torch.Tensor | np.ndarray, to: Literal["xyzw", "wxyz"] = 
     if isinstance(quat, np.ndarray):
         # use numpy functions
         if to == "xyzw":
-            # wxyz -> xyzw
+            # wxyz  to  xyzw
             return np.roll(quat, -1, axis=-1)
         else:
-            # xyzw -> wxyz
+            # xyzw  to  wxyz
             return np.roll(quat, 1, axis=-1)
     else:
         # convert to torch (sanity check)
@@ -233,10 +233,10 @@ def convert_quat(quat: torch.Tensor | np.ndarray, to: Literal["xyzw", "wxyz"] = 
             quat = torch.tensor(quat, dtype=float)
         # convert to specified quaternion type
         if to == "xyzw":
-            # wxyz -> xyzw
+            # wxyz  to  xyzw
             return quat.roll(-1, dims=-1)
         else:
-            # xyzw -> wxyz
+            # xyzw  to  wxyz
             return quat.roll(1, dims=-1)
 
 
@@ -492,7 +492,7 @@ def axis_angle_from_quat(quat: torch.Tensor, eps: float = 1.0e-6) -> torch.Tenso
     # Axis-angle is [a_x, a_y, a_z] = [theta * n_x, theta * n_y, theta * n_z]
     # Thus, axis-angle is [q_x, q_y, q_z] / (sin(theta/2) / theta)
     # When theta = 0, (sin(theta/2) / theta) is undefined
-    # However, as theta --> 0, we can use the Taylor approximation 1/2 - theta^2 / 48
+    # However, as theta - to  0, we can use the Taylor approximation 1/2 - theta^2 / 48
     quat = quat * (1.0 - 2.0 * (quat[..., 0:1] < 0.0))
     mag = torch.linalg.norm(quat[..., 1:], dim=-1)
     half_angle = torch.atan2(mag, quat[..., 0])
@@ -1034,7 +1034,7 @@ def transform_points(
     is_batched = points_batch.dim() == 3
     # -- check inputs
     if points_batch.dim() == 2:
-        points_batch = points_batch[None]  # (P, 3) -> (1, P, 3)
+        points_batch = points_batch[None]  # (P, 3)  to  (1, P, 3)
     if points_batch.dim() != 3:
         raise ValueError(f"Expected points to have dim = 2 or dim = 3: got shape {points.shape}")
     if not (pos is None or pos.dim() == 1 or pos.dim() == 2):
@@ -1046,24 +1046,24 @@ def transform_points(
         # convert to batched rotation matrix
         rot_mat = matrix_from_quat(quat)
         if rot_mat.dim() == 2:
-            rot_mat = rot_mat[None]  # (3, 3) -> (1, 3, 3)
-        # convert points to matching batch size (N, P, 3) -> (N, 3, P)
+            rot_mat = rot_mat[None]  # (3, 3)  to  (1, 3, 3)
+        # convert points to matching batch size (N, P, 3)  to  (N, 3, P)
         # and apply rotation
         points_batch = torch.matmul(rot_mat, points_batch.transpose_(1, 2))
-        # (N, 3, P) -> (N, P, 3)
+        # (N, 3, P)  to  (N, P, 3)
         points_batch = points_batch.transpose_(1, 2)
     # -- translation
     if pos is not None:
         # convert to batched translation vector
         if pos.dim() == 1:
-            pos = pos[None, None, :]  # (3,) -> (1, 1, 3)
+            pos = pos[None, None, :]  # (3,)  to  (1, 1, 3)
         else:
-            pos = pos[:, None, :]  # (N, 3) -> (N, 1, 3)
+            pos = pos[:, None, :]  # (N, 3)  to  (N, 1, 3)
         # apply translation
         points_batch += pos
     # -- return points in same shape as input
     if not is_batched:
-        points_batch = points_batch.squeeze(0)  # (1, P, 3) -> (P, 3)
+        points_batch = points_batch.squeeze(0)  # (1, P, 3)  to  (P, 3)
 
     return points_batch
 
@@ -1109,19 +1109,19 @@ def orthogonalize_perspective_depth(depth: torch.Tensor, intrinsics: torch.Tenso
     add_last_dim = False
     if perspective_depth_batch.dim() == 4 and perspective_depth_batch.shape[-1] == 1:
         add_last_dim = True
-        perspective_depth_batch = perspective_depth_batch.squeeze(dim=3)  # (N, H, W, 1) -> (N, H, W)
+        perspective_depth_batch = perspective_depth_batch.squeeze(dim=3)  # (N, H, W, 1)  to  (N, H, W)
     if perspective_depth_batch.dim() == 3 and perspective_depth_batch.shape[-1] == 1:
         add_last_dim = True
-        perspective_depth_batch = perspective_depth_batch.squeeze(dim=2)  # (H, W, 1) -> (H, W)
+        perspective_depth_batch = perspective_depth_batch.squeeze(dim=2)  # (H, W, 1)  to  (H, W)
 
     if perspective_depth_batch.dim() == 2:
-        perspective_depth_batch = perspective_depth_batch[None]  # (H, W) -> (1, H, W)
+        perspective_depth_batch = perspective_depth_batch[None]  # (H, W)  to  (1, H, W)
 
     if intrinsics_batch.dim() == 2:
-        intrinsics_batch = intrinsics_batch[None]  # (3, 3) -> (1, 3, 3)
+        intrinsics_batch = intrinsics_batch[None]  # (3, 3)  to  (1, 3, 3)
 
     if is_batched and intrinsics_batch.shape[0] == 1:
-        intrinsics_batch = intrinsics_batch.expand(perspective_depth_batch.shape[0], -1, -1)  # (1, 3, 3) -> (N, 3, 3)
+        intrinsics_batch = intrinsics_batch.expand(perspective_depth_batch.shape[0], -1, -1)  # (1, 3, 3)  to  (N, 3, 3)
 
     # Validate input shapes
     if perspective_depth_batch.dim() != 3:
@@ -1214,13 +1214,13 @@ def unproject_depth(depth: torch.Tensor, intrinsics: torch.Tensor, is_ortho: boo
     is_batched = depth_batch.dim() == 4 or (depth_batch.dim() == 3 and depth_batch.shape[-1] != 1)
     # make sure inputs are batched
     if depth_batch.dim() == 3 and depth_batch.shape[-1] == 1:
-        depth_batch = depth_batch.squeeze(dim=2)  # (H, W, 1) -> (H, W)
+        depth_batch = depth_batch.squeeze(dim=2)  # (H, W, 1)  to  (H, W)
     if depth_batch.dim() == 2:
-        depth_batch = depth_batch[None]  # (H, W) -> (1, H, W)
+        depth_batch = depth_batch[None]  # (H, W)  to  (1, H, W)
     if depth_batch.dim() == 4 and depth_batch.shape[-1] == 1:
-        depth_batch = depth_batch.squeeze(dim=3)  # (N, H, W, 1) -> (N, H, W)
+        depth_batch = depth_batch.squeeze(dim=3)  # (N, H, W, 1)  to  (N, H, W)
     if intrinsics_batch.dim() == 2:
-        intrinsics_batch = intrinsics_batch[None]  # (3, 3) -> (1, 3, 3)
+        intrinsics_batch = intrinsics_batch[None]  # (3, 3)  to  (1, 3, 3)
     # check shape of inputs
     if depth_batch.dim() != 3:
         raise ValueError(f"Expected depth images to have dim = 2 or 3 or 4: got shape {depth.shape}")
@@ -1234,12 +1234,12 @@ def unproject_depth(depth: torch.Tensor, intrinsics: torch.Tensor, is_ortho: boo
     indices_v = torch.arange(im_height, device=depth.device, dtype=depth.dtype)
     img_indices = torch.stack(torch.meshgrid([indices_u, indices_v], indexing="ij"), dim=0).reshape(2, -1)
     pixels = torch.nn.functional.pad(img_indices, (0, 0, 0, 1), mode="constant", value=1.0)
-    pixels = pixels.unsqueeze(0)  # (3, H x W) -> (1, 3, H x W)
+    pixels = pixels.unsqueeze(0)  # (3, H x W)  to  (1, 3, H x W)
 
     # unproject points into 3D space
     points = torch.matmul(torch.inverse(intrinsics_batch), pixels)  # (N, 3, H x W)
     points = points / points[:, -1, :].unsqueeze(1)  # normalize by last coordinate
-    # flatten depth image (N, H, W) -> (N, H x W)
+    # flatten depth image (N, H, W)  to  (N, H x W)
     depth_batch = depth_batch.transpose_(1, 2).reshape(depth_batch.shape[0], -1).unsqueeze(2)
     depth_batch = depth_batch.expand(-1, -1, 3)
     # scale points by depth
@@ -1288,9 +1288,9 @@ def project_points(points: torch.Tensor, intrinsics: torch.Tensor) -> torch.Tens
     is_batched = points_batch.dim() == 2
     # make sure inputs are batched
     if points_batch.dim() == 2:
-        points_batch = points_batch[None]  # (P, 3) -> (1, P, 3)
+        points_batch = points_batch[None]  # (P, 3)  to  (1, P, 3)
     if intrinsics_batch.dim() == 2:
-        intrinsics_batch = intrinsics_batch[None]  # (3, 3) -> (1, 3, 3)
+        intrinsics_batch = intrinsics_batch[None]  # (3, 3)  to  (1, 3, 3)
     # check shape of inputs
     if points_batch.dim() != 3:
         raise ValueError(f"Expected points to have dim = 3: got shape {points.shape}.")
@@ -1300,13 +1300,13 @@ def project_points(points: torch.Tensor, intrinsics: torch.Tensor) -> torch.Tens
     # project points into 2D image plane
     points_2d = torch.matmul(intrinsics_batch, points_batch.transpose(1, 2))
     points_2d = points_2d / points_2d[:, -1, :].unsqueeze(1)  # normalize by last coordinate
-    points_2d = points_2d.transpose_(1, 2)  # (N, 3, P) -> (N, P, 3)
+    points_2d = points_2d.transpose_(1, 2)  # (N, 3, P)  to  (N, P, 3)
     # replace last coordinate with depth
     points_2d[:, :, -1] = points_batch[:, :, -1]
 
     # return points in same shape as input
     if not is_batched:
-        points_2d = points_2d.squeeze(0)  # (1, 3, P) -> (3, P)
+        points_2d = points_2d.squeeze(0)  # (1, 3, P)  to  (3, P)
 
     return points_2d
 
@@ -1607,7 +1607,7 @@ def create_rotation_matrix_from_view(
     of the camera in world coordinates and the vector ''targets'' which
     indicate the position of the object.
     The output is a rotation matrix representing the transformation
-    from world coordinates -> view coordinates.
+    from world coordinates  to  view coordinates.
 
         The inputs eyes and targets can each be a
         - 3 element tuple/list
@@ -1703,7 +1703,7 @@ def pose_inv(pose: torch.Tensor) -> torch.Tensor:
     # Take transpose of last 2 dimensions
     inv_pose[..., :3, :3] = pose[..., :3, :3].transpose(-1, -2)
 
-    # note: PyTorch matmul wants shapes [..., 3, 3] x [..., 3, 1] -> [..., 3, 1] so we add a dimension and take it away after
+    # note: PyTorch matmul wants shapes [..., 3, 3] x [..., 3, 1]  to  [..., 3, 1] so we add a dimension and take it away after
     inv_pose[..., :3, 3] = torch.matmul(-inv_pose[..., :3, :3], pose[..., :3, 3:4])[..., 0]
     inv_pose[..., 3, 3] = 1.0
     return inv_pose

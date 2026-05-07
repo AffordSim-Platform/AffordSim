@@ -33,7 +33,7 @@ from .utils import (
 
 
 def primitive_pour(collector, mode: Optional[str], params: Dict[str, Any], context: Dict[str, Any]) -> bool:
-    """Composite pour primitive: compute pour pose -> execute pour."""
+    """Composite pour primitive: compute pour pose  to  execute pour."""
     if "source" in params:
         print("[ERROR] 'pour.params.source' is deprecated and no longer supported. Source object is inferred from pick context.")
         return False
@@ -88,13 +88,13 @@ def primitive_compute_pour_pose(collector, mode: Optional[str], params: Dict[str
     if not has_any_grasp_center or not object_pour_path or not container_pour_path:
         print("[ERROR] Primitive 'compute_pour_pose' requires prior pick grasp-center context and pour affordance paths.")
         return False
-    print(f"  🫗 [Primitive] Loading object pour affordance: {object_pour_path}")
+    print(f"   [Primitive] Loading object pour affordance: {object_pour_path}")
     pour_geometry = prepare_pour_geometry(
         object_pour_path,
         directional_threshold=0.35,
     )
     pour_centroids_local = load_affordance_clusters(object_pour_path)
-    print(f"  🫗 [Primitive] Loading container pour affordance: {container_pour_path}")
+    print(f"   [Primitive] Loading container pour affordance: {container_pour_path}")
     container_center_local = load_affordance_centroid(container_pour_path)
 
     object_scale = np.array([1.0, 1.0, 1.0], dtype=np.float64)
@@ -132,7 +132,7 @@ def primitive_compute_pour_pose(collector, mode: Optional[str], params: Dict[str
 
         grasp_center_local = grasp_centers_local[env_idx] if env_idx < len(grasp_centers_local) else None
         if grasp_center_local is None:
-            print(f"  ⚠️ Env {env_idx}: missing grasp center in pick context, using lift fallback.")
+            print(f"   Env {env_idx}: missing grasp center in pick context, using lift fallback.")
             all_pour_pos.append(np.array(lift_positions[env_idx], dtype=np.float64))
             all_pour_quat.append(np.array(context["all_pick_quat"][env_idx], dtype=np.float64))
             all_pour_dir.append(np.array([1.0, 0.0, 0.0], dtype=np.float64))
@@ -143,7 +143,7 @@ def primitive_compute_pour_pose(collector, mode: Optional[str], params: Dict[str
         obj_pos_w, obj_quat_w = collector._get_object_pose_global(target_label, env_idx)
         cont_pos_w, cont_quat_w = collector._get_object_pose_global(container_label, env_idx)
         if obj_pos_w is None or cont_pos_w is None:
-            print(f"  ⚠️ Env {env_idx}: pour pose unavailable, using lift fallback.")
+            print(f"   Env {env_idx}: pour pose unavailable, using lift fallback.")
             all_pour_pos.append(np.array(lift_positions[env_idx], dtype=np.float64))
             all_pour_quat.append(np.array(context["all_pick_quat"][env_idx], dtype=np.float64))
             all_pour_dir.append(np.array([1.0, 0.0, 0.0], dtype=np.float64))
@@ -230,7 +230,7 @@ def primitive_compute_pour_pose(collector, mode: Optional[str], params: Dict[str
         "object_scale": object_scale.copy(),
         "meta": all_pour_meta,
     }
-    print(f"  🫗 [Primitive] Computed pour poses for '{target_label}' -> '{container_label}'")
+    print(f"   [Primitive] Computed pour poses from '{target_label}' to '{container_label}'")
     return True
 
 
@@ -260,7 +260,7 @@ def primitive_execute_pour(collector, params: Dict[str, Any], context: Dict[str,
     has_return_lift = return_lift_height_raw is not None
     return_lift_height = float(return_lift_height_raw) if has_return_lift else 0.0
 
-    print(f"  🚀 [Primitive] Executing POUR to '{pour_pose.get('target_label')}'")
+    print(f"   [Primitive] Executing POUR to '{pour_pose.get('target_label')}'")
 
     move_targets = np.array(pour_pose["positions"], dtype=np.float64).copy()
     move_targets[:, 2] += move_hover_height
@@ -379,7 +379,7 @@ def primitive_execute_pour(collector, params: Dict[str, Any], context: Dict[str,
     merge_segment_into_local_active(local_active, tilt_segment_successes)
     tilt_active = list(local_active)  # post-tilt plan-active snapshot
 
-    print("  ⏱️ [Primitive] Holding pour pose...")
+    print("   [Primitive] Holding pour pose...")
     action_dim = collector.env.env.action_manager.total_action_dim
     for _ in range(hold_steps):
         action = torch.zeros(n, action_dim, device=collector.device)
@@ -444,7 +444,7 @@ def primitive_execute_pour(collector, params: Dict[str, Any], context: Dict[str,
             process_successes.append(proc_ok)
             process_metrics.append(proc_metric)
 
-        # Task-line pass = axis ∧ process. Plan failures are NOT folded in here;
+        # Task-line pass = axis and process. Plan failures are NOT folded in here;
         # they are tracked separately via plan_success_mask.
         task_pass = [
             bool(axis_successes[i] and process_successes[i]) for i in range(n)
@@ -488,27 +488,27 @@ def primitive_execute_pour(collector, params: Dict[str, Any], context: Dict[str,
             if tilt_ok and not tilt_monotonic:
                 fail_reasons.append("pour_tilt_not_monotonic")
             reason_text = ",".join(fail_reasons) if fail_reasons else "none"
-            print(
-                f"    [TaskCheck][env {env_idx}] "
-                f"tilt_success={'OK' if tilt_ok else 'FAIL'}, "
-                f"object_local_z_world_z={z_text} "
-                f"(<= {tilt_threshold:.4f}: {'OK' if z_ok else 'FAIL'}), "
-                f"pour_target_in_range={'OK' if pour_target_ok else 'FAIL'}, "
-                f"process={'OK' if proc_ok else 'FAIL'} "
-                f"(max_xy_excess={xy_excess_text}, max_tilt_reverse={tilt_rev_text}, "
-                f"total_tilt_decrease={total_dec_text}), "
-                f"final={'OK' if final_ok else 'FAIL'}, "
-                f"reason={reason_text}"
-            )
+            # print(
+            #     f"    [TaskCheck][env {env_idx}] "
+            #     f"tilt_success={'OK' if tilt_ok else 'FAIL'}, "
+            #     f"object_local_z_world_z={z_text} "
+            #     f"(<= {tilt_threshold:.4f}: {'OK' if z_ok else 'FAIL'}), "
+            #     f"pour_target_in_range={'OK' if pour_target_ok else 'FAIL'}, "
+            #     f"process={'OK' if proc_ok else 'FAIL'} "
+            #     f"(max_xy_excess={xy_excess_text}, max_tilt_reverse={tilt_rev_text}, "
+            #     f"total_tilt_decrease={total_dec_text}), "
+            #     f"final={'OK' if final_ok else 'FAIL'}, "
+            #     f"reason={reason_text}"
+            # )
         print(
-            "  ✅ [Primitive] Task success (pour): "
+            "   [Primitive] Task success (pour): "
             f"{sum(1 for i in range(n) if tilt_active[i] and task_mask_now[i])}/{n}"
         )
 
     # ---- Return-upright phase (planning line; failure here also kills env) ----
     return_active_in = list(local_active)
     if has_return_lift:
-        print("  ↩️ [Primitive] Lifting before returning upright...")
+        print("   [Primitive] Lifting before returning upright...")
         return_positions = []
         for pos in all_tilt_pos:
             lifted = np.array(pos, dtype=np.float64).copy()
@@ -535,7 +535,7 @@ def primitive_execute_pour(collector, params: Dict[str, Any], context: Dict[str,
         )
         merge_segment_into_local_active(local_active, return_seg_successes)
     else:
-        print("  ↩️ [Primitive] Returning upright...")
+        print("   [Primitive] Returning upright...")
         _, return_seg_successes = collector.execute_ik_motion(
             target_positions=all_tilt_pos,
             target_quaternions=move_quats,
@@ -561,5 +561,5 @@ def primitive_execute_pour(collector, params: Dict[str, Any], context: Dict[str,
     context["pour_completed"] = any(final_alive)
     context["primitive_executed_motion"] = True
 
-    print(f"  ✅ [Primitive] Pour success (alive): {sum(final_alive)}/{n}")
+    print(f"   [Primitive] Pour success (alive): {sum(final_alive)}/{n}")
     return any(final_alive)

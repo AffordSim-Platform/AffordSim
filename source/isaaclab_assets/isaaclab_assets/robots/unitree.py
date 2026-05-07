@@ -560,7 +560,7 @@ Configuration for the Unitree G1 Humanoid robot with Inspire 5fingers hand.
 The Unitree G1 URDF can be found here: https://github.com/unitreerobotics/unitree_ros/tree/master/robots/g1_description/g1_29dof_with_hand_rev_1_0.urdf
 The Inspire hand URDF is available at: https://github.com/unitreerobotics/xr_teleoperate/tree/main/assets/inspire_hand
 The merging code for the hand and robot can be found here: https://github.com/unitreerobotics/unitree_ros/blob/master/robots/g1_description/merge_g1_29dof_and_inspire_hand.ipynb,
-Necessary modifications should be made to ensure the correct parent–child relationship.
+Necessary modifications should be made to ensure the correct parent-child relationship.
 """
 # Inherit PD settings from G1_29DOF_CFG, with minor adjustments for grasping task
 G1_INSPIRE_FTP_CFG = G1_29DOF_CFG.copy()

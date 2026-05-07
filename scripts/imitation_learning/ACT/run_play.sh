@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# 设置遇到错误时自动退出
+# 
 set -e
 
-echo "开始运行 ACT 测试脚本..."
+echo " ACT ..."
 
-# 运行训练命令
+# 
 # pick_banana_and_place_on_plate_final
 
 # CUDA_VISIBLE_DEVICES=3 python scripts/imitation_learning/ACT/play_act.py \
@@ -127,4 +127,4 @@ CUDA_VISIBLE_DEVICES=4 python scripts/imitation_learning/ACT/play_act.py \
     --task Pick_Pour_WhiteKettle4-v0 \
     --horizon 250 --enable_cameras --save_img_interval 0 --num_rollouts 30 --headless
 
-echo "测试运行结束！"
+echo ""

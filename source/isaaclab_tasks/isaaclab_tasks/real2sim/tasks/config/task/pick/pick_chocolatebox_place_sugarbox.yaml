@@ -11,7 +11,7 @@ task:
   description: grasp the blue cup and put it on the shelf
 runtime:
   headless: false
-  episodes: 1
+  episodes: 3
   save_npy: false
   save_camera_images: false
   save_composite_images: false
@@ -25,6 +25,7 @@ runtime:
   cam_wrist_background: backgrounds/wristbackground_realworld1.png
   data_dir: data/r2s2r_data/pick_chocolatebox_place_sugarbox
   task_name: FrankaFr3-OurGripper-Joint-VisPick-v0
+  save_depth_images: false
 robot:
   cfg_name: franka_fr3_our.yml
   type: franka_fr3_default
@@ -37,25 +38,45 @@ objects:
     semantic_tags:
       -   - class
           - brown_chocolatebox
-    init_pos: [0.7, 0.15, 0.04]
+    init_pos: [0.55, -0.25, 0.04]
     init_rot: [0.9239, 0.0, 0.0, 0.3827]
     height: 0.06
-  # red_cheezbox:
-  #   usd_path: models/all_object/red_cheezbox.usd
-  #   semantic_tags:
-  #     -   - class
-  #         - red_cheezbox
-  #   init_pos: [0.55, 0.0, 0.073]
-  #   init_rot: [1, 0, 0, 0]
-  #   height: 0.045
+    position_range:
+      x:
+        - 0.45
+        - 0.75
+      y:
+        - -0.25
+        - -0.05
+      z:
+        - 0.04
+        - 0.04
+    orientation_range:
+      yaw:
+        - -0.3489
+        - 0.3489
   yellow_sugarbox:
     usd_path: models/all_object/yellow_sugarbox.usd
     semantic_tags:
       -   - class
           - yellow_sugarbox
-    init_pos: [0.429, -0.370, 0.073]
+    init_pos: [0.55, 0.25, 0.073]
     init_rot: [0.6452, 0.0, 0.0, 0.764]
     height: 0.045
+    position_range:
+      x:
+        - 0.45
+        - 0.75
+      y:
+        - 0.05
+        - 0.25
+      z:
+        - 0.073
+        - 0.073
+    orientation_range:
+      yaw:
+        - -3.1416
+        - 3.1416
 primitives:
   - type: pick
     mode: affordance
@@ -70,7 +91,7 @@ primitives:
 enable_random_lights: false
 image_noise_std: 0
 image_speckle_noise_std: 0
-enable_objects_randomization: false
+enable_objects_randomization: true
 enable_objects_randomization_curriculum: false
 texture_randomization:
   enabled: false

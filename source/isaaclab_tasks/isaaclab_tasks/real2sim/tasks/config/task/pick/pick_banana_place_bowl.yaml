@@ -12,10 +12,10 @@ task:
 runtime:
   headless: false
   episodes: 5
-  save_npy: true
-  save_camera_images: true
-  save_composite_images: true
-  save_mask_images: true
+  save_npy: false
+  save_camera_images: false
+  save_composite_images: false
+  save_mask_images: false
   save_original_images: true
   enable_motion_planning: true
   sim_camera_resolution: [640, 480]
@@ -25,6 +25,7 @@ runtime:
   cam_wrist_background: backgrounds/wristbackground_realworld1.png
   data_dir: data/r2s2r_data/pick_banana_place_bowl
   task_name: FrankaFr3-OurGripper-Joint-VisPick-v0
+  save_depth_images: false
 robot:
   cfg_name: franka_fr3_our.yml
   type: franka_fr3_default
@@ -37,29 +38,45 @@ objects:
     semantic_tags:
       -   - class
           - yellow_bigbowl
-    init_pos: [0.65, 0.15, 0.0754]
+    init_pos: [0.55, 0.25, 0.0754]
     init_rot: [-0.9838, 0.0, 0.0, 0.1791]
     height: 0.0504
     position_range:
-      x: [0.45, 0.65]
-      y: [0.05, 0.25]
-      z: [0.0754, 0.0754]
+      x:
+        - 0.45
+        - 0.70
+      y:
+        - 0.05
+        - 0.40
+      z:
+        - 0.0754
+        - 0.0754
     orientation_range:
-      yaw: [-3.14, 3.14]
+      yaw:
+        - -3.1416
+        - 3.1416
   yellow_banana:
     usd_path: models/all_object/yellow_banana.usd
     semantic_tags:
       -   - class
           - yellow_banana
-    init_pos: [0.48, -0.23, 0.0443]
+    init_pos: [0.55, -0.25, 0.0443]
     init_rot: [-0.9838, 0.0, 0.0, 0.1791]
     height: 0.0193
     position_range:
-      x: [0.45, 0.65]
-      y: [-0.25, -0.05]
-      z: [0.0443, 0.0443]
+      x:
+        - 0.45
+        - 0.70
+      y:
+        - -0.40
+        - -0.05
+      z:
+        - 0.0443
+        - 0.0443
     orientation_range:
-      yaw: [-3.14, 3.14]
+      yaw:
+        - -3.1416
+        - 3.1416
 primitives:
   - type: pick
     mode: affordance
@@ -74,7 +91,7 @@ primitives:
     mode: on
     params:
       target: yellow_bigbowl
-      on_height_margin: 0.01 
+      on_height_margin: 0.01
       success_eval: true
 enable_random_lights: false
 image_noise_std: 0

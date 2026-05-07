@@ -64,7 +64,7 @@ class NatureCNN(nn.Module):
         extractors["camera"] = nn.Sequential(cnn, fc)
         self.out_features += self.img_feature_size * self.img_n
         state_dim = dict_obs["state"].shape[-1]
-        print(f"CNN Encoder: State dimension {state_dim} -> compressed to {self.state_feature_size}")
+        print(f"CNN Encoder: State dimension {state_dim}  to  compressed to {self.state_feature_size}")
         
         extractors["state"] = nn.Linear(state_dim, self.state_feature_size)
         self.out_features += self.state_feature_size

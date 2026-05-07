@@ -94,9 +94,9 @@ class SurfaceGripper(AssetBase):
         """Returns the gripper state buffer.
 
         The gripper state is a list of integers:
-        - -1 --> Open
-        - 0 --> Closing
-        - 1 --> Closed
+        - -1 - to  Open
+        - 0 - to  Closing
+        - 1 - to  Closed
         """
         return self._gripper_state
 
@@ -105,9 +105,9 @@ class SurfaceGripper(AssetBase):
         """Returns the gripper command buffer.
 
         The gripper command is a list of floats:
-        - [-1, -0.3] --> Open
-        - [-0.3, 0.3] --> Do nothing
-        - [0.3, 1] --> Close
+        - [-1, -0.3] - to  Open
+        - [-0.3, 0.3] - to  Do nothing
+        - [0.3, 1] - to  Close
         """
         return self._gripper_command
 
@@ -165,14 +165,14 @@ class SurfaceGripper(AssetBase):
 
         This function is called every simulation step.
         The data fetched from the gripper view is a list of strings containing 3 possible states:
-            - "Open" --> 0
-            - "Closing" --> 1
-            - "Closed" --> 2
+            - "Open" - to  0
+            - "Closing" - to  1
+            - "Closed" - to  2
 
         To make this more neural network friendly, we convert the list of strings to a list of floats:
-            - "Open" --> -1.0
-            - "Closing" --> 0.0
-            - "Closed" --> 1.0
+            - "Open" - to  -1.0
+            - "Closing" - to  0.0
+            - "Closed" - to  1.0
 
         Note:
             We need to do this conversion for every single step of the simulation because the gripper can lose contact
@@ -185,9 +185,9 @@ class SurfaceGripper(AssetBase):
         """Write the gripper command to the SurfaceGripperView.
 
         The gripper command is a list of integers that needs to be converted to a list of strings:
-            - [-1, -0.3] --> Open
-            - ]-0.3, 0.3[ --> Do nothing
-            - [0.3, 1] --> Closed
+            - [-1, -0.3] - to  Open
+            - ]-0.3, 0.3[ - to  Do nothing
+            - [0.3, 1] - to  Closed
 
         The Do nothing command is not applied, and is only used to indicate whether the gripper state has changed.
         """
@@ -205,9 +205,9 @@ class SurfaceGripper(AssetBase):
         """Set the internal gripper command buffer. This function does not write to the simulation.
 
         Possible values for the gripper command are:
-            - [-1, -0.3] --> Open
-            - ]-0.3, 0.3[ --> Do nothing
-            - [0.3, 1] --> Close
+            - [-1, -0.3] - to  Open
+            - ]-0.3, 0.3[ - to  Do nothing
+            - [0.3, 1] - to  Close
 
         Args:
             states: A tensor of integers representing the gripper command. Shape must match that of indices.

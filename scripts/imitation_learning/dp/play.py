@@ -1,7 +1,7 @@
 """
-Diffusion Policy (dp_rss) 推理脚本 — 在 Isaac Lab 里 rollout 训好的模型.
+Diffusion Policy (dp_rss)  -  Isaac Lab  rollout .
 
-用法:
+:
     python scripts/imitation_learning/dp_rss/play.py \
         --checkpoint /path/to/model_best.pth \
         --stat /path/to/dataset_stat.json \
@@ -28,29 +28,29 @@ parser.add_argument("--seed", type=int, default=None)
 parser.add_argument("--pick_lift_threshold", type=float, default=0.05)
 parser.add_argument("--task_config", type=str, required=True)
 parser.add_argument("--env_cfg_class", type=str, default=None,
-                    help="'pkg.mod:ClassName'; 不传则按 task id 从 gym registry 解析")
+                    help="'pkg.mod:ClassName';  task id  gym registry ")
 parser.add_argument(
     "--warmup_action", type=str, default=None, choices=["zero", "hold"],
-    help="reset 后预跑 10 步的动作模式. 不传则按 action_type 推断: "
-         "ee_delta→zero (delta=0 不动), joint_delta→hold (绝对模式下 zero 会飞向零位).",
+    help="reset  10 .  action_type : "
+         "ee_delta to zero (delta=0 ), joint_delta to hold ( zero ).",
 )
 parser.add_argument(
     "--joint_delta_mode", type=str, default="cumulative", choices=["current", "cumulative"],
     help=(
-        "joint_delta -> 绝对位置的展开方式. "
+        "joint_delta  to  . "
         "'current'=arm_target(k)=cur_qpos(k)+delta(k); "
-        "'cumulative'=arm_target(k)=arm_target(k-1)+delta(k), 初值=首帧 arm qpos."
+        "'cumulative'=arm_target(k)=arm_target(k-1)+delta(k), = arm qpos."
     ),
 )
 parser.add_argument("--use_main_weights", action="store_true",
-                    help="默认加载 EMA 权重; 传此 flag 用非 EMA 的 main 权重")
+                    help=" EMA ;  flag  EMA  main ")
 parser.add_argument(
     "--action_horizon", type=int, default=None,
-    help="开环执行步数; 不传则用 ckpt 里训练时的值. 调小可减少累积偏差但增加推理频率.",
+    help=";  ckpt . .",
 )
 parser.add_argument(
     "--print_action_every", type=int, default=50,
-    help="每 N 步打印一次下发给 env 的 action; 0 关闭. 默认 10.",
+    help=" N  env  action; 0 .  10.",
 )
 
 AppLauncher.add_app_launcher_args(parser)
@@ -90,7 +90,7 @@ from isaaclab.motion_collect.success.success import capture_object_initial_z
 
 def _import_env_cfg_class(spec: str):
     if ":" not in spec:
-        raise ValueError(f"--env_cfg_class 必须是 'pkg.mod:ClassName', got: {spec}")
+        raise ValueError(f"--env_cfg_class  'pkg.mod:ClassName', got: {spec}")
     mod_path, cls_name = spec.split(":", 1)
     return getattr(importlib.import_module(mod_path), cls_name)
 
@@ -107,16 +107,16 @@ def main():
     obs_horizon = model_args.get("obs_horizon", 2)
     action_type = model_args.get("action_type", "ee_delta")
 
-    # warmup_action 必须配 action_type, 否则 joint_delta 用 zero 会把机械臂命令到全零关节位形.
+    # warmup_action  action_type,  joint_delta  zero .
     _WARMUP_BY_TYPE = {"ee_delta": "zero", "joint_delta": "hold"}
     if args_cli.warmup_action is None:
         args_cli.warmup_action = _WARMUP_BY_TYPE.get(action_type, "zero")
-        print(f"[PLAY] warmup_action 自动推断为 '{args_cli.warmup_action}' (action_type={action_type})")
+        print(f"[PLAY] warmup_action  '{args_cli.warmup_action}' (action_type={action_type})")
     elif action_type == "joint_delta" and args_cli.warmup_action == "zero":
-        print(f"[PLAY] WARN: action_type={action_type} 但 warmup_action=zero, 起步会飞向零位关节; 推荐 'hold'")
+        print(f"[PLAY] WARN: action_type={action_type}  warmup_action=zero, ;  'hold'")
 
     if args_cli.action_horizon is not None and args_cli.action_horizon != ckpt_action_horizon:
-        print(f"[PLAY] action_horizon override: ckpt={ckpt_action_horizon} -> use {action_horizon}")
+        print(f"[PLAY] action_horizon override: ckpt={ckpt_action_horizon}  to  use {action_horizon}")
     print(f"[PLAY] epoch={ckpt.get('epoch', '?')}, obs_h={obs_horizon}, act_h={action_horizon}, type={action_type}")
 
     # env
@@ -125,7 +125,7 @@ def main():
     else:
         entry = gym.spec(args_cli.task).kwargs["env_cfg_entry_point"]
         env_cfg_cls = _import_env_cfg_class(entry)
-        print(f"[PLAY] task={args_cli.task} -> env_cfg_class={env_cfg_cls.__name__}")
+        print(f"[PLAY] task={args_cli.task}  to  env_cfg_class={env_cfg_cls.__name__}")
 
     from isaaclab_tasks.real2sim.tasks.pick_r2s_env_cfg import create_pick_env_cfg_from_yaml
     env_cfg = create_pick_env_cfg_from_yaml(
@@ -222,7 +222,7 @@ def main():
         print(f"[PLAY] trial {trial}: {'Success' if results[-1] else 'Fail'} | {summary}")
 
     # aggregate
-    print("\n[PLAY] ===== 结果汇总 =====")
+    print("\n[PLAY] =====  =====")
     print(f"Success term: {sum(results)}/{len(results)} = {sum(results) / max(len(results), 1):.2%}")
     stage_keys: list = []
     for r in all_stage_results:

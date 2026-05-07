@@ -1,25 +1,25 @@
 """
-Behavior Cloning (BC) 训练脚本 — Gaussian NLL Loss.
+Behavior Cloning (BC)  - Gaussian NLL Loss.
 
-网络结构:
-  - 双摄像头 ResNet18 encoder (ImageNet pretrained)
-  - 拼接视觉特征 + 机器人本体状态 (qpos + qvel)
-  - MLP 输出 action 的均值 μ, 学习 log_std σ
+:
+  -  ResNet18 encoder (ImageNet pretrained)
+  -  +  (qpos + qvel)
+  - MLP  action  μ,  log_std σ
   - Loss: Gaussian Negative Log-Likelihood
 
-数据格式:
+:
   traj_X/action                      (N, 7)   [ee_delta(6) + gripper(1)]
   traj_X/observations/qpos           (N, 7)
   traj_X/observations/qvel           (N, 7)
   traj_X/observations/images/front   (N, 256, 256, 3)
   traj_X/observations/images/wrist   (N, 256, 256, 3)
 
-夹爪处理:
-  - 原始数据: 二值 (-1=open, +1=close)
-  - 转换为连续: open=0.04, close=0.02, 过渡 5 步平滑
-  - 归一化到 [0, 1]: 0=close, 1=open
+:
+  - :  (-1=open, +1=close)
+  - : open=0.04, close=0.02,  5 
+  -  [0, 1]: 0=close, 1=open
 
-用法:
+:
   python train_bc.py --dataset /path/to/data.h5 --task FrankaFr3-xxx-v0 \\
       --action_chunk_size 8 --action_horizon 4
 """
@@ -54,58 +54,58 @@ def compute_minmax(all_data):
 
 
 def minmax_normalize(data, dmin, dmax):
-    """min-max 归一化到 [-1, 1]."""
+    """min-max  [-1, 1]."""
     drange = dmax - dmin
     drange = np.where(drange < 1e-8, 1.0, drange)
     return 2.0 * (data - dmin) / drange - 1.0
 
 
 def minmax_denormalize(data, dmin, dmax):
-    """从 [-1, 1] 反归一化回原始尺度."""
+    """ [-1, 1] ."""
     drange = dmax - dmin
     return (data + 1.0) / 2.0 * drange + dmin
 
 
 # ============================================================================
-# Gripper Conversion: Binary → Continuous
+# Gripper Conversion: Binary  to  Continuous
 # ============================================================================
 
 def convert_binary_gripper_to_continuous(gripper_seq):
     """
-    将二值夹爪信号转换为连续值并归一化.
+    .
 
-    输入: gripper_seq (N,) — 值为 -1 (open) 或 +1 (close)
-    输出: (N,) — 值在 [0, 1], 0=close, 1=open
+    : gripper_seq (N,) -  -1 (open)  +1 (close)
+    : (N,) -  [0, 1], 0=close, 1=open
 
-    物理值:
+    :
       open  = 0.04
       close = 0.02
-    过渡: 切换后 5 步线性插值
-    归一化: (physical - 0.02) / 0.02
+    :  5 
+    : (physical - 0.02) / 0.02
     """
     N = len(gripper_seq)
     is_open = gripper_seq < 0  # -1 = open
     physical = np.where(is_open, 0.04, 0.02).astype(np.float64)
 
-    # 找到切换点并应用平滑过渡
+    # 
     for i in range(1, N):
         if gripper_seq[i] != gripper_seq[i - 1]:
             if gripper_seq[i] > 0:
-                # open → close: 0.04 → 0.02 over 5 steps
+                # open  to  close: 0.04  to  0.02 over 5 steps
                 for j in range(5):
                     idx = i + j
                     if idx < N and gripper_seq[idx] > 0:
                         t = (j + 1) / 5.0
                         physical[idx] = 0.04 * (1 - t) + 0.02 * t
             else:
-                # close → open: 0.02 → 0.04 over 5 steps
+                # close  to  open: 0.02  to  0.04 over 5 steps
                 for j in range(5):
                     idx = i + j
                     if idx < N and gripper_seq[idx] < 0:
                         t = (j + 1) / 5.0
                         physical[idx] = 0.02 * (1 - t) + 0.04 * t
 
-    # 归一化到 [0, 1]: 0.02 → 0, 0.04 → 1
+    #  [0, 1]: 0.02  to  0, 0.04  to  1
     normalized = (physical - 0.02) / 0.02
     return np.clip(normalized, 0.0, 1.0).astype(np.float32)
 
@@ -115,17 +115,17 @@ def convert_binary_gripper_to_continuous(gripper_seq):
 # ============================================================================
 
 def get_active_mask(action):
-    """返回 EE delta 非零的步骤 mask."""
+    """ EE delta  mask."""
     return np.abs(action[:, :6]).sum(axis=1) > 1e-8
 
 
 class BCDataset(Dataset):
     """
-    加载 HDF5 数据, 自动检测格式:
-      - 原始格式: traj_X/action, traj_X/observations/qpos, .../images/front, ...
-      - robomimic 格式: data/demo_X/actions, data/demo_X/obs/qpos, .../front, ...
+     HDF5 , :
+      - : traj_X/action, traj_X/observations/qpos, .../images/front, ...
+      - robomimic : data/demo_X/actions, data/demo_X/obs/qpos, .../front, ...
 
-    action_chunk_size: 返回未来 chunk_size 步的 action 序列 (action chunking).
+    action_chunk_size:  chunk_size  action  (action chunking).
     """
 
     def __init__(self, dataset_file: str, load_count=None, remove_idle=True,
@@ -145,7 +145,7 @@ class BCDataset(Dataset):
 
         data.close()
 
-        # 构建有效索引: 需要 action_chunk_size 帧未来, 且不跨 trajectory
+        # :  action_chunk_size ,  trajectory
         valid = []
         for i in range(len(self.states)):
             act_end = i + action_chunk_size
@@ -169,7 +169,7 @@ class BCDataset(Dataset):
         print(f"  gripper mean: {gripper.mean():.4f}")
 
     def _load_robomimic(self, data, load_count, remove_idle):
-        """加载 robomimic 格式."""
+        """ robomimic ."""
         data_grp = data["data"]
         demo_keys = sorted(
             [k for k in data_grp.keys() if k.startswith("demo_")],
@@ -207,11 +207,11 @@ class BCDataset(Dataset):
                 print(f"[Dataset] WARN: remove_idle disabled for action_chunk_size={self.action_chunk_size} "
                       f"to preserve temporal continuity")
 
-            # EE delta: 已归一化, 放大 100 倍
+            # EE delta: ,  100 
             norm_ee = (action[:, :6] * 100.0).astype(np.float32)
-            # Gripper: 二值 → 连续 [0, 1]
+            # Gripper:   to   [0, 1]
             gripper_cont = convert_binary_gripper_to_continuous(action[:, -1])
-            # 合并为 7 维 action
+            #  7  action
             full_action = np.concatenate([norm_ee, gripper_cont[:, None]], axis=-1)
 
             state = np.concatenate([qpos, qvel], axis=-1).astype(np.float32)
@@ -226,7 +226,7 @@ class BCDataset(Dataset):
 
         self._concat_all()
 
-        # robomimic 格式: ee 已归一化, 设置为 [-1, 1]
+        # robomimic : ee ,  [-1, 1]
         self.action_ee_min = -np.ones(6, dtype=np.float32)
         self.action_ee_max = np.ones(6, dtype=np.float32)
         self.qpos_min = -np.ones(self.states.shape[1] // 2, dtype=np.float32)
@@ -235,7 +235,7 @@ class BCDataset(Dataset):
         self.qvel_max = np.ones(self.states.shape[1] // 2, dtype=np.float32)
 
     def _load_raw(self, data, load_count, remove_idle):
-        """加载原始格式, 自行计算 min-max 归一化."""
+        """,  min-max ."""
         traj_keys = sorted(
             [k for k in data.keys() if k.startswith("traj_")],
             key=lambda x: int(x.split("_")[1]),
@@ -340,7 +340,7 @@ class BCDataset(Dataset):
 
 
 # ============================================================================
-# Sampler (无限迭代)
+# Sampler ()
 # ============================================================================
 
 class IterationBasedBatchSampler(BatchSampler):
@@ -380,7 +380,7 @@ def make_mlp(in_channels, mlp_channels, act_builder=nn.ReLU, last_act=True):
 
 
 class SpatialSoftmax(nn.Module):
-    """Spatial Softmax: 将 (B, C, H, W) 特征图转为 (B, C*2) 空间坐标."""
+    """Spatial Softmax:  (B, C, H, W)  (B, C*2) ."""
 
     def __init__(self, height, width, num_channels):
         super().__init__()
@@ -403,10 +403,10 @@ class ResNet18Encoder(nn.Module):
     """
     ResNet18 encoder with Spatial Softmax.
 
-    输入: (B, H, W, C) float [0, 1]
-    输出: (B, out_dim)
+    : (B, H, W, C) float [0, 1]
+    : (B, out_dim)
 
-    finetune_from: 从哪一层开始解冻 ('layer3', 'layer4', 'all')
+    finetune_from:  ('layer3', 'layer4', 'all')
     """
 
     def __init__(self, in_channels=3, out_dim=256, finetune_from="all"):
@@ -426,14 +426,14 @@ class ResNet18Encoder(nn.Module):
 
         # Spatial Softmax on layer4 output (512 channels, 8x8 for 256x256 input)
         self.spatial_softmax = SpatialSoftmax(8, 8, 512)
-        # 512 * 2 = 1024 → out_dim
+        # 512 * 2 = 1024  to  out_dim
         self.fc = nn.Linear(1024, out_dim)
 
         # ImageNet normalization
         self.register_buffer("img_mean", torch.tensor([0.485, 0.456, 0.406]).view(1, 3, 1, 1))
         self.register_buffer("img_std", torch.tensor([0.229, 0.224, 0.225]).view(1, 3, 1, 1))
 
-        # 冻结前面的层
+        # 
         for param in self.parameters():
             param.requires_grad = False
 
@@ -447,14 +447,14 @@ class ResNet18Encoder(nn.Module):
             for param in layer.parameters():
                 param.requires_grad = True
 
-        # spatial_softmax 和 fc 始终可训练
+        # spatial_softmax  fc 
         for param in self.spatial_softmax.parameters():
             param.requires_grad = True
         for param in self.fc.parameters():
             param.requires_grad = True
 
     def forward(self, image):
-        # image: (B, H, W, C) float [0, 1] → (B, C, H, W), ImageNet normalize
+        # image: (B, H, W, C) float [0, 1]  to  (B, C, H, W), ImageNet normalize
         x = image.permute(0, 3, 1, 2)
         x = (x - self.img_mean) / self.img_std
 
@@ -474,12 +474,12 @@ class ResNet18Encoder(nn.Module):
 
 class BCGaussianPolicy(nn.Module):
     """
-    BC 策略网络 — Gaussian 输出.
+    BC  - Gaussian .
 
-    输出 action 的均值 μ, 使用可学习的 log_std.
+     action  μ,  log_std.
     Loss: Gaussian Negative Log-Likelihood.
 
-    action = [ee_delta(6), gripper(1)] = 7 维
+    action = [ee_delta(6), gripper(1)] = 7 
     """
 
     def __init__(self, state_dim, action_dim=7, visual_feat_dim=256,
@@ -488,22 +488,22 @@ class BCGaussianPolicy(nn.Module):
         self.action_dim = action_dim
         self.action_chunk_size = action_chunk_size
 
-        # 双摄像头 ResNet18 encoder
+        #  ResNet18 encoder
         self.front_encoder = ResNet18Encoder(in_channels=3, out_dim=visual_feat_dim)
         self.wrist_encoder = ResNet18Encoder(in_channels=3, out_dim=visual_feat_dim)
 
-        # MLP: visual_feat * 2 + state → action mean
+        # MLP: visual_feat * 2 + state  to  action mean
         feat_dim = visual_feat_dim * 2 + state_dim
         self.mlp = make_mlp(feat_dim, [1024, 512, 256], last_act=True)
         self.mean_head = nn.Linear(256, action_dim * action_chunk_size)
 
-        # 可学习的 log_std (input-independent, 每个 action 维度一个)
+        #  log_std (input-independent,  action )
         self.log_std = nn.Parameter(torch.zeros(action_chunk_size, action_dim))
 
     def forward(self, front, wrist, state):
         """
         front: (B, H, W, C), wrist: (B, H, W, C), state: (B, state_dim)
-        返回: mean (B, C, 7), log_std (B, C, 7)
+        : mean (B, C, 7), log_std (B, C, 7)
         """
         feat_front = self.front_encoder(front)   # (B, 256)
         feat_wrist = self.wrist_encoder(wrist)   # (B, 256)
@@ -516,7 +516,7 @@ class BCGaussianPolicy(nn.Module):
         C = self.action_chunk_size
         mean = mean.view(B, C, self.action_dim)
 
-        # log_std: clamp 上界收紧, 防止模型通过增大 σ 偷懒
+        # log_std: clamp ,  σ 
         log_std = self.log_std.clamp(-5.0, 0.5)
         log_std = log_std.unsqueeze(0).expand(B, -1, -1)  # (B, C, 7)
 
@@ -524,9 +524,9 @@ class BCGaussianPolicy(nn.Module):
 
     def get_action(self, front, wrist, state):
         """
-        推理时调用, 返回确定性动作 (均值).
+        ,  ().
         front: (1, H, W, C), wrist: (1, H, W, C), state: (1, D)
-        返回: (1, C, 7) action chunk
+        : (1, C, 7) action chunk
         """
         with torch.no_grad():
             mean, _ = self.forward(front, wrist, state)
@@ -576,7 +576,7 @@ def save_checkpoint(policy, optimizer, iteration, run_dir, tag, norm_params):
 
 
 def run_eval_subprocess(args, ckpt_path: str, run_dir: str, iteration: int) -> dict | None:
-    """每次保存 ckpt 后同步拉起 eval_rollout_bc.py 子进程."""
+    """ ckpt  eval_rollout_bc.py ."""
     if not args.eval_task_config or not args.eval_task:
         return None
 
@@ -636,24 +636,24 @@ def parse_args():
     parser.add_argument("--no_remove_idle", action="store_true",
                         help="Disable removing idle (zero EE delta) steps")
     parser.add_argument("--action_chunk_size", type=int, default=8,
-                        help="Action chunk size: 规划未来 m 步动作")
+                        help="Action chunk size:  m ")
     parser.add_argument("--action_horizon", type=int, default=4,
-                        help="Action horizon: 每次实际执行 n 步 (n <= action_chunk_size)")
+                        help="Action horizon:  n  (n <= action_chunk_size)")
     parser.add_argument("--log_freq", type=int, default=50, help="Logging frequency")
     parser.add_argument("--save_freq", type=int, default=200, help="Checkpoint saving frequency")
 
-    # 训练期评估
+    # 
     parser.add_argument("--stat", type=str, default=None,
-                        help="dataset_stat.json; 用于覆盖 norm_params 反归一化")
+                        help="dataset_stat.json;  norm_params ")
     parser.add_argument("--eval_task_config", type=str, default=None,
-                        help="task yaml 路径; 设置后才会启用训练期评估")
+                        help="task yaml ; ")
     parser.add_argument("--eval_task", type=str, default=None,
-                        help="gym 环境 id, 用于评估子进程")
+                        help="gym  id, ")
     parser.add_argument("--eval_num_rollouts", type=int, default=5)
     parser.add_argument("--eval_horizon", type=int, default=300)
     parser.add_argument("--eval_pick_lift_threshold", type=float, default=0.05)
     parser.add_argument("--eval_env_cfg_class", type=str, default=None,
-                        help="可选 'pkg.mod:ClassName' 覆盖默认 pick env cfg")
+                        help=" 'pkg.mod:ClassName'  pick env cfg")
 
     return parser.parse_args()
 
@@ -673,7 +673,7 @@ def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"[INFO] Device: {device}")
 
-    assert args.action_horizon <= args.action_chunk_size, \
+    assert args.action_horizon <= args.action_chunk_size,\
         f"action_horizon ({args.action_horizon}) must <= action_chunk_size ({args.action_chunk_size})"
 
     # Run name
@@ -758,7 +758,7 @@ def main():
         # Logging
         if iteration % args.log_freq == 0:
             with torch.no_grad():
-                # 分维度 loss
+                #  loss
                 ee_target = target[:, :, :6]
                 ee_mean = pred_mean[:, :, :6]
                 ee_log_std = pred_log_std[:, :, :6]
@@ -819,8 +819,8 @@ def main():
                         vid_tensor = torch.from_numpy(vid).unsqueeze(0)
                         writer.add_video(f"Eval/rollout_trial_{gi}", vid_tensor, iteration, fps=6)
                     except Exception as e:
-                        print(f"  -> [WARN] failed to log GIF to tensorboard: {e}")
-                print(f"  -> Eval overall={overall:.2%}, "
+                        print(f"   to  [WARN] failed to log GIF to tensorboard: {e}")
+                print(f"   to  Eval overall={overall:.2%}, "
                       + ", ".join(f"{k}={float(v):.2%}"
                                   for k, v in (eval_result.get("stage_success_rate") or {}).items()))
                 if overall > best_eval_success:
@@ -849,7 +849,7 @@ def main():
                 vid_tensor = torch.from_numpy(vid).unsqueeze(0)
                 writer.add_video(f"Eval/rollout_trial_{gi}", vid_tensor, args.total_iters, fps=6)
             except Exception as e:
-                print(f"  -> [WARN] failed to log GIF to tensorboard: {e}")
+                print(f"   to  [WARN] failed to log GIF to tensorboard: {e}")
 
     writer.close()
     print(f"[INFO] Training complete. Results saved to {run_dir}")

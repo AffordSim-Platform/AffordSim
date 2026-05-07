@@ -10,6 +10,7 @@ Improvements:
 """
 
 import json
+import os
 import subprocess
 import numpy as np
 import torch
@@ -89,11 +90,11 @@ class GraspPoseConverter:
         forward = rotation_corrected[:, 0]
         position_moved = position_corrected + forward * (gripper_depth)
 
-        # Camera frame -> World frame
+        # Camera frame  to  World frame
         wrist_position_world = self.cam_rot_world_matrix @ position_moved + self.cam_pos_world
         wrist_rotation_world_matrix = self.cam_rot_world_matrix @ rotation_corrected
 
-        # World frame -> Robot base frame
+        # World frame  to  Robot base frame
         wrist_position_robot = self.inv_robot_base_rot_matrix @ (wrist_position_world - self.robot_base_pos_world)
         wrist_rotation_robot_matrix = self.inv_robot_base_rot_matrix @ wrist_rotation_world_matrix
 
@@ -116,9 +117,10 @@ class VisionPipeline:
     Responsible for camera data capture, BBox generation and AnyGrasp grasp detection.
     """
     
-    # Default configuration
-    ANYGRASP_SCRIPT_PICK = Path("/home/xhf/anygrasp_sdk/grasp_detection/demo_pick.py")
-    DEFAULT_ANYGRASP_CWD = Path("/home/xhf/anygrasp_sdk/grasp_detection")
+    # AnyGrasp SDK lives outside this repo. Resolve via env var, falling back to ~/anygrasp_sdk.
+    _ANYGRASP_HOME = Path(os.environ.get("ANYGRASP_HOME", Path.home() / "anygrasp_sdk"))
+    DEFAULT_ANYGRASP_CWD = _ANYGRASP_HOME / "grasp_detection"
+    ANYGRASP_SCRIPT_PICK = DEFAULT_ANYGRASP_CWD / "demo_pick.py"
     DEFAULT_TEMP_DIR = repo_root / "anygrasp_file"
     DEFAULT_CAMERA_POSE = {'pos': [0.68, 0, 1], 'quat': [0.707, 0, 0, 0.707]}
 
@@ -180,7 +182,7 @@ class VisionPipeline:
             print(f"  [VisionPipeline] Captured camera data for {num_envs} environments")
             return True
         except Exception as e:
-            print(f"  [VisionPipeline] ❌ Camera capture failed: {e}")
+            print(f"  [VisionPipeline]  Camera capture failed: {e}")
             return False
     
     def _find_object_in_scene(self, target_label: str, scene: Any) -> Optional[str]:
@@ -235,7 +237,7 @@ class VisionPipeline:
         
         if not matched_name:
             rigid_keys = list(getattr(scene, "rigid_objects", {}).keys())
-            print(f"  [VisionPipeline] ❌ Target '{target_label}' not found in rigid_objects.")
+            print(f"  [VisionPipeline]  Target '{target_label}' not found in rigid_objects.")
             print(f"  [VisionPipeline]    Available objects: {rigid_keys}")
             return False
         
@@ -274,22 +276,29 @@ class VisionPipeline:
             num_envs: Number of environments
         """
         script = self.anygrasp_script if self.anygrasp_script else self.ANYGRASP_SCRIPT_PICK
+        conda_env = os.environ.get("ANYGRASP_CONDA_ENV")
+        if not conda_env:
+            print("  [VisionPipeline]  ANYGRASP_CONDA_ENV is not set. Export it to the AnyGrasp conda environment name.")
+            return False
         cmd = [
-            "conda", "run", "-n", "sdk", "python", str(script),
+            "conda", "run", "-n", conda_env, "python", str(script),
             "--top_down_grasp",
             "--num_envs", str(num_envs),
+            "--data_dir", str(self.temp_dir),
         ]
         
         try:
+            env = os.environ.copy()
+            env.setdefault("ANYGRASP_DATA_DIR", str(self.temp_dir))
             print(f"  [VisionPipeline] Running AnyGrasp...")
-            result = subprocess.run(cmd, cwd=self.anygrasp_cwd, capture_output=True, text=True)
+            result = subprocess.run(cmd, cwd=self.anygrasp_cwd, capture_output=True, text=True, env=env)
             if result.returncode == 0:
-                print(f"  [VisionPipeline] ✓ AnyGrasp completed successfully")
+                print(f"  [VisionPipeline]  AnyGrasp completed successfully")
                 return True
-            print(f"  [VisionPipeline] ❌ AnyGrasp Error:\n{result.stderr}")
+            print(f"  [VisionPipeline]  AnyGrasp Error:\n{result.stderr}")
             return False
         except Exception as e:
-            print(f"  [VisionPipeline] ❌ Failed to launch AnyGrasp: {e}")
+            print(f"  [VisionPipeline]  Failed to launch AnyGrasp: {e}")
             return False
     
     def parse_grasp_results(
