@@ -709,6 +709,25 @@ def create_pick_env_cfg_from_yaml(
                 },
             )
 
+    if task_config.runtime.save_depth_images:
+        policy_cfg = env_cfg.observations.policy
+        policy_cfg.external_cam_side_distance_to_image_plane = ObsTerm(
+            func=mdp.image,
+            params={
+                "sensor_cfg": SceneEntityCfg("external_cam_side"),
+                "data_type": "distance_to_image_plane",
+                "normalize": False,
+            },
+        )
+        policy_cfg.wrist_cam_distance_to_image_plane = ObsTerm(
+            func=mdp.image,
+            params={
+                "sensor_cfg": SceneEntityCfg("wrist_cam"),
+                "data_type": "distance_to_image_plane",
+                "normalize": False,
+            },
+        )
+
     env_cfg.config_path = yaml_path
     env_cfg.task_config = task_config
     
