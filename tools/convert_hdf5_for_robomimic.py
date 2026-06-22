@@ -138,11 +138,14 @@ def convert(src_path: str, dst_path: str, stat_path: str, remove_idle: bool = Tr
         all_norm_qvel.append(norm_qvel)
 
       
+        side = np.array(traj["observations/images/side"])
         front = np.array(traj["observations/images/front"])
         wrist = np.array(traj["observations/images/wrist"])
         if num_idle > 0:
+            side = side[active_mask]
             front = front[active_mask]
             wrist = wrist[active_mask]
+        obs_grp.create_dataset("side", data=side, compression="gzip")
         obs_grp.create_dataset("front", data=front, compression="gzip")
         obs_grp.create_dataset("wrist", data=wrist, compression="gzip")
 
