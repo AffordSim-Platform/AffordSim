@@ -8,7 +8,8 @@ scene:
   env_spacing: 10
 task:
   name: pick_cup_place_coffeemachine
-  description: grasp the red mugcup and place it into coffeemachine2 with affordance
+  description: Pick up the Starbucks cup; then place the Starbucks cup in the coffee
+    machine 2.
 runtime:
   headless: false
   episodes: 5
@@ -18,8 +19,12 @@ runtime:
   save_mask_images: false
   save_original_images: true
   enable_motion_planning: true
-  sim_camera_resolution: [640, 480]
-  background_image_size: [640, 480]
+  sim_camera_resolution:
+  - 640
+  - 480
+  background_image_size:
+  - 640
+  - 480
   use_background_replace: true
   cam_side_background: backgrounds/1123_background.png
   cam_wrist_background: backgrounds/wristbackground_realworld1.png
@@ -28,83 +33,112 @@ runtime:
   save_depth_images: false
 robot:
   cfg_name: franka_fr3_our.yml
-  type: franka_fr3_default
+  type: franka_fr3
 offsets:
-  grasp: [0, 0, 0.0]
-  place: [0, 0, 0.0]
+  grasp:
+  - 0
+  - 0
+  - 0.0
+  place:
+  - 0
+  - 0
+  - 0.0
 objects:
   starbuckscup:
     usd_path: models/all_object/starbuckscup.usd
     semantic_tags:
-      -   - class
-          - starbuckscup
-    scale: [0.8, 0.8, 0.8]
-    init_pos: [0.55, -0.25, 0.10]
-    init_rot: [1.0, 0.0, 0.0, 0.0]
-    height: 0.10
-    position_range:
-      x:
-        - 0.45
-        - 0.75
-      y:
-        - -0.25
-        - -0.05
-      z:
-        - 0.1
-        - 0.1
-    orientation_range:
-      yaw:
-        - -0.785
-        - 0.785
+    - - class
+      - starbuckscup
+    scale:
+    - 0.8
+    - 0.8
+    - 0.8
+    init_pos:
+    - 0.52
+    - -0.35
+    - 0.1
+    init_rot:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    height: 0.1
+  white_75mmcup:
+    usd_path: models/all_object/white_75mmcup.usd
+    semantic_tags:
+    - - class
+      - white_75mmcup
+    init_pos:
+    - 0.68
+    - -0.45
+    - 0.08
+    init_rot:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    height: 0.08
   coffeemachine2:
     usd_path: models/all_object/coffeemachine2.usd
     semantic_tags:
-      -   - class
-          - coffeemachine2
-    scale: [0.3, 0.3, 0.3]
+    - - class
+      - coffeemachine2
+    scale:
+    - 0.3
+    - 0.3
+    - 0.3
     disable_gravity: false
     enabled_self_collisions: true
-    init_pos: [0.7, 0.25, 0.23]
-    init_rot: [0.9537, 0.0, 0.0, 0.3007]
-    position_range:
-      x:
-        - 0.70
-        - 0.85
-      y:
-        - 0.15
-        - 0.35
-      z:
-        - 0.23
-        - 0.23
-    orientation_range:
-      yaw:
-        - -0.1745
-        - 0.1745
+    init_pos:
+    - 0.9
+    - -0.01
+    - 0.23
+    init_rot:
+    - 0.9537
+    - 0.0
+    - 0.0
+    - 0.3007
 primitives:
-  - type: pick
-    mode: affordance
-    params:
-      target: starbuckscup
-      pre_pick_offset: [0.0, 0.0, 0.10]
-      pick_interpolation_steps: 10
-  - type: place
-    mode: affordance
-    params:
-      target: coffeemachine2
-      pre_place_distance: 0.15
-      ik_interpolation_steps: 30
-      success_eval: true
-      post_release_lift_offset: [0.0, 0.0, 0.08]
-      post_release_lift_steps: 10
+- type: pick
+  mode: affordance
+  params:
+    target: starbuckscup
+    pre_pick_offset:
+    - 0.0
+    - 0.0
+    - 0.1
+    pick_interpolation_steps: 10
+- type: place
+  mode: affordance
+  params:
+    target: coffeemachine2
+    pre_place_distance: 0.15
+    ik_interpolation_steps: 30
+    success_eval: true
+    post_release_lift_offset:
+    - 0.0
+    - 0.0
+    - 0.08
+    post_release_lift_steps: 10
 enable_random_lights: false
 image_noise_std: 0
 image_speckle_noise_std: 0
 enable_objects_randomization: true
 enable_objects_randomization_curriculum: false
 texture_randomization:
-  enabled: false
+  enabled: true
+  avoid_repeats: true
   texture_dir: models/random_pic/table
   targets:
     table:
-      prim_path: "/World/envs/env_{i}/table/Xform_01/Xform/leg/node_/Cube"
+      prim_path: /World/envs/env_{i}/table/Xform_01/Xform/leg/node_/Cube
       texture_dir: models/random_pic/table
+articulations: {}
+phase_depenetration:
+  objects:
+  - starbuckscup
+  - coffeemachine2
+  reset: 2.0
+  primitives:
+    pick: 2.0
+    release: 0.5

@@ -8,7 +8,7 @@ scene:
   env_spacing: 10
 task:
   name: pick_lid_place_pot
-  description: pick the lid from the table and place it on the pot
+  description: Pick up the lid; then place the lid on the pot.
 runtime:
   headless: false
   episodes: 4
@@ -18,94 +18,142 @@ runtime:
   save_mask_images: false
   save_original_images: true
   enable_motion_planning: true
-  sim_camera_resolution: [640, 480]
-  background_image_size: [640, 480]
+  sim_camera_resolution:
+  - 640
+  - 480
+  background_image_size:
+  - 640
+  - 480
   use_background_replace: true
   cam_side_background: backgrounds/1123_background.png
   cam_wrist_background: backgrounds/wristbackground_realworld1.png
   data_dir: data/r2s2r_data/pick_lid_place_pot
-  task_name: FrankaFr3-OurGripper-Joint-VisPick-v0
+  task_name: FrankaFr3-DefaultGripper-Joint-VisPick-v0
   save_depth_images: false
 robot:
-  cfg_name: franka_fr3_our.yml
-  type: franka_fr3_default
+  cfg_name: franka_fr3.yml
+  type: franka_fr3
 offsets:
-  grasp: [0, 0, 0.07]
-  place: [0, 0, 0.0]
+  grasp:
+  - 0
+  - 0
+  - 0.075
+  place:
+  - 0
+  - 0
+  - 0.0
 objects:
   pot:
     usd_path: models/all_object/pot.usd
     semantic_tags:
-      -   - class
-          - pot
-    init_pos: [0.55, 0.25, 0.10]
-    init_rot: [1.0, 0.0, 0.0, 0.0]
+    - - class
+      - pot
+    init_pos:
+    - 0.65
+    - -0.1
+    - 0.1
+    init_rot:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
     height: 0.08
     position_range:
       x:
-        - 0.45
-        - 0.70
+      - 0.6749999999999999
+      - 0.725
       y:
-        - 0.05
-        - 0.40
+      - -0.17500000000000002
+      - -0.12500000000000003
       z:
-        - 0.1
-        - 0.1
+      - 0.1
+      - 0.1
     orientation_range:
       yaw:
-        - -3.1416
-        - 3.1416
+      - -0.1309
+      - 0.1309
   lid:
     usd_path: models/all_object/lid.usd
     semantic_tags:
-      -   - class
-          - lid
-    init_pos: [0.55, -0.25, 0.075]
-    init_rot: [1.0, 0.0, 0.0, 0.0]
+    - - class
+      - lid
+    init_pos:
+    - 0.55
+    - 0.18
+    - 0.075
+    init_rot:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
     height: 0.03
     position_range:
       x:
-        - 0.45
-        - 0.70
+      - 0.5750000000000001
+      - 0.6250000000000001
       y:
-        - -0.40
-        - -0.05
+      - 0.20500000000000002
+      - 0.255
       z:
-        - 0.075
-        - 0.075
+      - 0.075
+      - 0.075
     orientation_range:
       yaw:
-        - -3.1416
-        - 3.1416
+      - -0.1309
+      - 0.1309
 primitives:
-  - type: pick
-    mode: gt
-    params:
-      target: lid
-      grasp_quat: [0.0, 1.0, 0.0, 0.0]
-      pre_pick_offset: [0.0, 0.0, 0.10]
-      pick_interpolation_steps: 10
-      lift_interpolation_steps: 10
-      lift_offset: 0.12
-  - type: place
-    mode: "on"
-    params:
-      target: pot
-      orientation: [0.0, 1.0, 0.0, 0.0]
-      on_height_margin: 0.005
-      ik_interpolation_steps: 30
-      post_release_lift_offset: [0.0, 0.0, 0.10]
-      post_release_lift_steps: 10
-      success_eval: true
+- type: pick
+  mode: gt
+  params:
+    target: lid
+    grasp_quat:
+    - 0.0
+    - 1.0
+    - 0.0
+    - 0.0
+    pre_pick_offset:
+    - 0.0
+    - 0.0
+    - 0.1
+    pick_interpolation_steps: 10
+    lift_interpolation_steps: 10
+    lift_offset: 0.12
+- type: place
+  mode: 'on'
+  params:
+    target: pot
+    orientation:
+    - 0.0
+    - 1.0
+    - 0.0
+    - 0.0
+    on_height_margin: 0.005
+    ik_interpolation_steps: 30
+    post_release_lift_offset:
+    - 0.0
+    - 0.0
+    - 0.1
+    post_release_lift_steps: 10
+    success_eval: true
 enable_random_lights: false
 image_noise_std: 0
 image_speckle_noise_std: 0
 enable_objects_randomization: true
 enable_objects_randomization_curriculum: false
 texture_randomization:
-  enabled: false
+  enabled: true
+  avoid_repeats: true
   texture_dir: models/random_pic/table
   targets:
     table:
       prim_path: /World/envs/env_{i}/table/Xform_01/Xform/leg/node_/Cube
       texture_dir: models/random_pic/table
+articulations: {}
+phase_depenetration:
+  objects:
+  - lid
+  - pot
+  reset: 2.0
+  primitives:
+    pick: 2.0
+    release: 0.5

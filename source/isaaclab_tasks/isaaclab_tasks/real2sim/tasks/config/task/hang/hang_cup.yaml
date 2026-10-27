@@ -8,7 +8,7 @@ scene:
   env_spacing: 10
 task:
   name: hang_cup
-  description: grasp the white cup and hang it on the wood rack
+  description: Pick up the white cup; then hang the white cup on the wood rack.
 runtime:
   headless: false
   episodes: 5
@@ -18,93 +18,130 @@ runtime:
   save_mask_images: false
   save_original_images: true
   enable_motion_planning: true
-  sim_camera_resolution: [640, 480]
-  background_image_size: [640, 480]
+  sim_camera_resolution:
+  - 640
+  - 480
+  background_image_size:
+  - 640
+  - 480
   use_background_replace: true
   cam_side_background: backgrounds/1123_background.png
   cam_wrist_background: backgrounds/wristbackground_realworld1.png
   data_dir: data/r2s2r_data/hang_cup
-  task_name: FrankaFr3-OurGripper-Joint-VisPick-v0
+  task_name: XArm7-UFactory-Joint-EE-VisPick-v0
   save_depth_images: false
 robot:
-  cfg_name: franka_fr3_our.yml
-  type: franka_fr3_default
+  cfg_name: xarm7.yml
+  type: xarm7_ufactory
 offsets:
-  grasp: [0, 0, 0.0]
-  place: [0, 0, 0.0]
+  grasp:
+  - 0
+  - 0
+  - 0.0
+  place:
+  - 0
+  - 0
+  - 0.0
 objects:
   white_cup:
     usd_path: models/all_object/white_cup.usd
     semantic_tags:
-      -   - class
-          - white_cup
-    init_pos: [0.55, 0.25, 0.10]
-    init_rot: [-0.7071, 0.0, 0.0, 0.7071]
+    - - class
+      - white_cup
+    init_pos:
+    - 0.55
+    - 0.18
+    - 0.1
+    init_rot:
+    - -0.7071
+    - 0.0
+    - 0.0
+    - 0.7071
     height: 0.15
     position_range:
       x:
-        - 0.45
-        - 0.70
+      - 0.5
+      - 0.6000000000000001
       y:
-        - 0.00
-        - 0.40
+      - 0.13
+      - 0.22999999999999998
       z:
-        - 0.1
-        - 0.1
+      - 0.1
+      - 0.1
     orientation_range:
       yaw:
-        - -3.1416
-        - 3.1416
+      - -0.261799
+      - 0.261799
   wood_rack:
     usd_path: models/all_object/wood_rack.usd
     semantic_tags:
-      -   - class
-          - wood_rack
-    init_pos: [0.8, -0.2, 0.25]
-    init_rot: [0.7071, 0.0, 0.0, 0.7071]
-    height: 0.30
+    - - class
+      - wood_rack
+    init_pos:
+    - 0.78
+    - -0.22
+    - 0.25
+    init_rot:
+    - 0.7071
+    - 0.0
+    - 0.0
+    - 0.7071
+    height: 0.3
     position_range:
       x:
-        - 0.65
-        - 0.80
+      - 0.73
+      - 0.8300000000000001
       y:
-        - -0.25
-        - -0.05
+      - -0.27
+      - -0.17000000000000004
       z:
-        - 0.25
-        - 0.25
+      - 0.25
+      - 0.25
     orientation_range:
       yaw:
-        - -0.1745
-        - 0.1745
+      - -0.261799
+      - 0.261799
 primitives:
-  - type: pick
-    mode: hang
-    params:
-      target: white_cup
-      pre_pick_offset: [0.0, 0.0, 0.08]
-      pick_interpolation_steps: 10
-      lift_interpolation_steps: 10
-  - type: hang
-    mode: mount
-    params:
-      target: wood_rack
-      pre_hang_distance: 0.05
-      insert_interpolation_steps: 20
-      extra_insert_distance: 0.05
-      extra_insert_interpolation_steps: 10
-      post_release_retreat_distance: 0.10
-      retreat_interpolation_steps: 10
-      success_eval: true
+- type: pick
+  mode: hang
+  params:
+    target: white_cup
+    pre_pick_offset:
+    - 0.0
+    - 0.0
+    - 0.08
+    pick_interpolation_steps: 10
+    lift_interpolation_steps: 10
+- type: hang
+  mode: mount
+  params:
+    target: wood_rack
+    pre_hang_distance: 0.05
+    insert_interpolation_steps: 20
+    extra_insert_distance: 0.05
+    extra_insert_interpolation_steps: 10
+    post_release_retreat_distance: 0.1
+    retreat_interpolation_steps: 10
+    success_eval: true
 enable_random_lights: false
 image_noise_std: 0
 image_speckle_noise_std: 0
 enable_objects_randomization: true
 enable_objects_randomization_curriculum: false
 texture_randomization:
-  enabled: false
+  enabled: true
+  avoid_repeats: true
   texture_dir: models/random_pic/table
   targets:
     table:
       prim_path: /World/envs/env_{i}/table/Xform_01/Xform/leg/node_/Cube
       texture_dir: models/random_pic/table
+articulations: {}
+phase_depenetration:
+  objects:
+  - white_cup
+  - wood_rack
+  reset: 2.0
+  primitives:
+    pick: 2.0
+    release: 0.5

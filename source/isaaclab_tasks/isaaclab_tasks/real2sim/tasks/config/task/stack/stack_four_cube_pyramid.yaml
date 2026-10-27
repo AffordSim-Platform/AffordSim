@@ -8,7 +8,10 @@ scene:
   env_spacing: 10
 task:
   name: stack_four_cube_pyramid
-  description: stack four colored cubes into a pyramid with three cubes on the bottom and one cube on top
+  description: Pick up the red cube; then place the red cube at the specified position;
+    then pick up the green cube; then place the green cube at the specified position;
+    then pick up the blue cube; then place the blue cube at the specified position;
+    then pick up the yellow cube; then place the yellow cube at the specified position.
 runtime:
   headless: false
   episodes: 3
@@ -18,187 +21,276 @@ runtime:
   save_mask_images: false
   save_original_images: true
   enable_motion_planning: true
-  sim_camera_resolution: [640, 480]
-  background_image_size: [640, 480]
+  sim_camera_resolution:
+  - 640
+  - 480
+  background_image_size:
+  - 640
+  - 480
   use_background_replace: true
   cam_side_background: backgrounds/1123_background.png
   cam_wrist_background: backgrounds/wristbackground_realworld1.png
   data_dir: data/r2s2r_data/stack_four_cube_pyramid
-  task_name: FrankaFr3-OurGripper-Joint-VisPick-v0
+  task_name: Kinova-Robotiq85-IKRel-EE-VisPick-v0
   save_depth_images: false
 robot:
-  cfg_name: franka_fr3_our.yml
-  type: franka_fr3_default
+  cfg_name: kinova_robotiq85.yml
+  type: kinova_robotiq85
 offsets:
-  grasp: [0, 0, 0.0]
-  place: [0, 0, 0.0]
+  grasp:
+  - 0
+  - 0
+  - 0.0
+  place:
+  - 0
+  - 0
+  - 0.0
 objects:
   red_cube:
     usd_path: models/all_object/red_cube.usd
     semantic_tags:
-      - [class, red_cube]
-    init_pos: [0.45, -0.25, 0.08]
-    init_rot: [0.9397, 0.0, 0.0, -0.342]
+    - - class
+      - red_cube
+    init_pos:
+    - 0.45
+    - -0.25
+    - 0.08
+    init_rot:
+    - 0.9397
+    - 0.0
+    - 0.0
+    - -0.342
     height: 0.06
     position_range:
       x:
-        - 0.45
-        - 0.60
+      - 0.48750000000000004
+      - 0.5625
       y:
-        - -0.40
-        - -0.10
+      - -0.2875
+      - -0.2125
       z:
-        - 0.08
-        - 0.08
+      - 0.08
+      - 0.08
     orientation_range:
       yaw:
-        - -3.1416
-        - 3.1416
+      - -0.2617993877991494
+      - 0.2617993877991494
   blue_cube:
     usd_path: models/all_object/blue_cube.usd
     semantic_tags:
-      - [class, blue_cube]
-    init_pos: [0.55, 0.1, 0.08]
-    init_rot: [1.0, 0.0, 0.0, 0.0]
+    - - class
+      - blue_cube
+    init_pos:
+    - 0.55
+    - 0.1
+    - 0.08
+    init_rot:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
     height: 0.06
     position_range:
       x:
-        - 0.45
-        - 0.60
+      - 0.48750000000000004
+      - 0.5625
       y:
-        - 0.10
-        - 0.40
+      - 0.2125
+      - 0.2875
       z:
-        - 0.08
-        - 0.08
+      - 0.08
+      - 0.08
     orientation_range:
       yaw:
-        - -3.1416
-        - 3.1416
+      - -0.2617993877991494
+      - 0.2617993877991494
   green_cube:
     usd_path: models/all_object/green_cube.usd
     semantic_tags:
-      - [class, green_cube]
-    init_pos: [0.7, -0.25, 0.08]
-    init_rot: [0.766, 0.0, 0.0, 0.6428]
+    - - class
+      - green_cube
+    init_pos:
+    - 0.7
+    - -0.25
+    - 0.08
+    init_rot:
+    - 0.766
+    - 0.0
+    - 0.0
+    - 0.6428
     height: 0.06
     position_range:
       x:
-        - 0.60
-        - 0.70
+      - 0.6249999999999999
+      - 0.6749999999999999
       y:
-        - -0.40
-        - -0.10
+      - -0.2875
+      - -0.2125
       z:
-        - 0.08
-        - 0.08
+      - 0.08
+      - 0.08
     orientation_range:
       yaw:
-        - -3.1416
-        - 3.1416
+      - -0.2617993877991494
+      - 0.2617993877991494
   yellow_cube:
     usd_path: models/all_object/yellow_cube.usd
     semantic_tags:
-      - [class, yellow_cube]
-    init_pos: [0.6, 0.25, 0.08]
-    init_rot: [1.0, 0.0, 0.0, 0.0]
+    - - class
+      - yellow_cube
+    init_pos:
+    - 0.6
+    - 0.25
+    - 0.08
+    init_rot:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
     height: 0.06
     position_range:
       x:
-        - 0.60
-        - 0.70
+      - 0.6249999999999999
+      - 0.6749999999999999
       y:
-        - 0.10
-        - 0.40
+      - 0.2125
+      - 0.2875
       z:
-        - 0.08
-        - 0.08
+      - 0.08
+      - 0.08
     orientation_range:
       yaw:
-        - -3.1416
-        - 3.1416
+      - -0.2617993877991494
+      - 0.2617993877991494
 primitives:
-  - type: pick
-    mode: gt
-    params:
-      target: red_cube
-      # grasp_quat: [0.0, 1.0, 0.0, 0.0]
-      pre_pick_offset: 0.1
-      pick_interpolation_steps: 10
-      lift_interpolation_steps: 10
-      lift_offset: 0.1
-  - type: place
-    mode: pose
-    params:
-      position: [0.58, -0.03, 0.12]
-      orientation: [0.0, 1.0, 0.0, 0.0]
-      ik_interpolation_steps: 5
-      post_release_lift_offset: [0.0, 0.0, 0.1]
-      post_release_lift_steps: 10
-      success_eval: true
-  - type: pick
-    mode: gt
-    params:
-      target: green_cube
-      # grasp_quat: [0.0, 1.0, 0.0, 0.0]
-      pre_pick_offset: 0.1
-      pick_interpolation_steps: 10
-      lift_interpolation_steps: 10
-      lift_offset: 0.1
-  - type: place
-    mode: pose
-    params:
-      position: [0.64, -0.03, 0.12]
-      orientation: [0.0, 1.0, 0.0, 0.0]
-      ik_interpolation_steps: 5
-      post_release_lift_offset: [0.0, 0.0, 0.1]
-      post_release_lift_steps: 10
-      success_eval: true
-  - type: pick
-    mode: gt
-    params:
-      target: blue_cube
-      # grasp_quat: [0.0, 1.0, 0.0, 0.0]
-      pre_pick_offset: 0.1
-      pick_interpolation_steps: 10
-      lift_interpolation_steps: 10
-      lift_offset: 0.1
-  - type: place
-    mode: pose
-    params:
-      position: [0.61, -0.085, 0.12]
-      orientation: [0.0, 1.0, 0.0, 0.0]
-      ik_interpolation_steps: 5
-      post_release_lift_offset: [0.0, 0.0, 0.1]
-      post_release_lift_steps: 10
-      success_eval: true
-  - type: pick
-    mode: gt
-    params:
-      target: yellow_cube
-      # grasp_quat: [0.0, 1.0, 0.0, 0.0]
-      pre_pick_offset: 0.1
-      pick_interpolation_steps: 10
-      lift_interpolation_steps: 10
-      lift_offset: 0.1
-  - type: place
-    mode: pose
-    params:
-      position: [0.61, -0.05, 0.18]
-      orientation: [0.0, 1.0, 0.0, 0.0]
-      ik_interpolation_steps: 5
-      post_release_lift_offset: [0.0, 0.0, 0.1]
-      post_release_lift_steps: 10
-      success_eval: true
+- type: pick
+  mode: gt
+  params:
+    target: red_cube
+    pre_pick_offset: 0.1
+    pick_interpolation_steps: 10
+    lift_interpolation_steps: 10
+    lift_offset: 0.1
+- type: place
+  mode: pose
+  params:
+    position:
+    - 0.58
+    - -0.03
+    - 0.12
+    orientation:
+    - 0.0
+    - 1.0
+    - 0.0
+    - 0.0
+    ik_interpolation_steps: 5
+    post_release_lift_offset:
+    - 0.0
+    - 0.0
+    - 0.1
+    post_release_lift_steps: 10
+    success_eval: true
+- type: pick
+  mode: gt
+  params:
+    target: green_cube
+    pre_pick_offset: 0.1
+    pick_interpolation_steps: 10
+    lift_interpolation_steps: 10
+    lift_offset: 0.1
+- type: place
+  mode: pose
+  params:
+    position:
+    - 0.64
+    - -0.03
+    - 0.12
+    orientation:
+    - 0.0
+    - 1.0
+    - 0.0
+    - 0.0
+    ik_interpolation_steps: 5
+    post_release_lift_offset:
+    - 0.0
+    - 0.0
+    - 0.1
+    post_release_lift_steps: 10
+    success_eval: true
+- type: pick
+  mode: gt
+  params:
+    target: blue_cube
+    pre_pick_offset: 0.1
+    pick_interpolation_steps: 10
+    lift_interpolation_steps: 10
+    lift_offset: 0.1
+- type: place
+  mode: pose
+  params:
+    position:
+    - 0.61
+    - -0.085
+    - 0.12
+    orientation:
+    - 0.0
+    - 1.0
+    - 0.0
+    - 0.0
+    ik_interpolation_steps: 5
+    post_release_lift_offset:
+    - 0.0
+    - 0.0
+    - 0.1
+    post_release_lift_steps: 10
+    success_eval: true
+- type: pick
+  mode: gt
+  params:
+    target: yellow_cube
+    pre_pick_offset: 0.1
+    pick_interpolation_steps: 10
+    lift_interpolation_steps: 10
+    lift_offset: 0.1
+- type: place
+  mode: pose
+  params:
+    position:
+    - 0.61
+    - -0.05
+    - 0.18
+    orientation:
+    - 0.0
+    - 1.0
+    - 0.0
+    - 0.0
+    ik_interpolation_steps: 5
+    post_release_lift_offset:
+    - 0.0
+    - 0.0
+    - 0.1
+    post_release_lift_steps: 10
+    success_eval: true
 enable_random_lights: false
 image_noise_std: 0
 image_speckle_noise_std: 0
 enable_objects_randomization: true
 enable_objects_randomization_curriculum: false
 texture_randomization:
-  enabled: false
+  enabled: true
+  avoid_repeats: true
   texture_dir: models/random_pic/table
   targets:
     table:
-      prim_path: "/World/envs/env_{i}/table/Xform_01/Xform/leg/node_/Cube"
+      prim_path: /World/envs/env_{i}/table/Xform_01/Xform/leg/node_/Cube
       texture_dir: models/random_pic/table
+phase_depenetration:
+  objects:
+  - red_cube
+  - green_cube
+  - blue_cube
+  - yellow_cube
+  reset: 2.0
+  primitives:
+    pick: 2.0
+    release: 0.5

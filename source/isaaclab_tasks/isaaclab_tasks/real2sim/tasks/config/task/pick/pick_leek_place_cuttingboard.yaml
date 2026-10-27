@@ -8,7 +8,8 @@ scene:
   env_spacing: 10
 task:
   name: pick_leek_place_cuttingboard
-  description: grasp the green leek and put it in the pink basket
+  description: Pick up the green leek; then place the green leek on the wood cutting
+    board.
 runtime:
   headless: false
   episodes: 5
@@ -18,82 +19,126 @@ runtime:
   save_mask_images: false
   save_original_images: true
   enable_motion_planning: true
-  sim_camera_resolution: [640, 480]
-  background_image_size: [640, 480]
+  sim_camera_resolution:
+  - 640
+  - 480
+  background_image_size:
+  - 640
+  - 480
   use_background_replace: true
   cam_side_background: backgrounds/1123_background.png
   cam_wrist_background: backgrounds/wristbackground_realworld1.png
   data_dir: data/r2s2r_data/pick_leek_place_cuttingboard
-  task_name: FrankaFr3-OurGripper-Joint-VisPick-v0
+  task_name: UR5e-Robotiq85-IKRel-EE-VisPick-v0
   save_depth_images: false
 robot:
-  cfg_name: franka_fr3_our.yml
-  type: franka_fr3_default
+  cfg_name: ur5e_robotiq_2f_85.yml
+  type: ur5e
 offsets:
-  grasp: [0, 0, 0.0]
-  place: [0, 0, 0.0]
+  grasp:
+  - 0
+  - 0
+  - 0.0
+  place:
+  - 0
+  - 0
+  - 0.0
 objects:
   green_leek:
     usd_path: models/all_object/green_leek.usd
     semantic_tags:
-      -   - class
-          - green_leek
-    init_pos: [0.55, -0.25, 0.07]
-    init_rot: [0.3994, 0.0, 0.0, 0.9168]
+    - - class
+      - green_leek
+    init_pos:
+    - 0.55
+    - 0.15
+    - 0.07
+    init_rot:
+    - 0.3994
+    - 0.0
+    - 0.0
+    - 0.9168
     height: 0.04
-    position_range:
-      x:
-        - 0.45
-        - 0.70
-      y:
-        - -0.40
-        - -0.05
-      z:
-        - 0.07
-        - 0.07
-    orientation_range:
-      yaw:
-        - -3.1416
-        - 3.1416
   wood_cuttingboard:
     usd_path: models/all_object/wood_cuttingboard.usd
     semantic_tags:
-      -   - class
-          - wood_cuttingboard
-    init_pos: [0.55, 0.25, 0.08]
-    init_rot: [1.0, 0.0, 0.0, 0.0]
+    - - class
+      - wood_cuttingboard
+    init_pos:
+    - 0.57
+    - -0.15
+    - 0.08
+    init_rot:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
     height: 0.08
-    position_range:
-      x:
-        - 0.45
-        - 0.70
-      y:
-        - 0.05
-        - 0.40
-      z:
-        - 0.08
-        - 0.08
-    orientation_range:
-      yaw:
-        - -0.1745
-        - 0.1745
+  orange_carrot:
+    usd_path: models/all_object/orange_carrot.usd
+    semantic_tags:
+    - - class
+      - orange_carrot
+    init_pos:
+    - 0.7
+    - -0.17
+    - 0.13
+    init_rot:
+    - 0.5
+    - 0.0
+    - 0.0
+    - 0.866
+    height: 0.04
+  yellow_banana:
+    usd_path: models/all_object/yellow_banana.usd
+    semantic_tags:
+    - - class
+      - yellow_banana
+    init_pos:
+    - 0.75
+    - 0.05
+    - 0.05
+    init_rot:
+    - 1
+    - 0
+    - 0
+    - 0
+    height: 0.036
+  red_apple:
+    usd_path: models/all_object/red_apple.usd
+    semantic_tags:
+    - - class
+      - red_apple
+    init_pos:
+    - 0.75
+    - -0.4
+    - 0.06
+    init_rot:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    height: 0.07
 primitives:
-  - type: pick
-    mode: affordance
-    params:
-      target: green_leek
-      pre_pick_offset: [0.0, 0.0, 0.10]
-      pick_interpolation_steps: 10
-      lift_interpolation_steps: 10
-  - type: place
-    mode: on
-    params:
-      target: wood_cuttingboard
-      success_eval: true
-      on_height_margin: 0.04
-  - type: return_home
-    params:
-      post_settle_steps: 20
+- type: pick
+  mode: affordance
+  params:
+    target: green_leek
+    pre_pick_offset:
+    - 0.0
+    - 0.0
+    - 0.1
+    pick_interpolation_steps: 10
+    lift_interpolation_steps: 10
+- type: place
+  mode: 'on'
+  params:
+    target: wood_cuttingboard
+    success_eval: true
+    on_height_margin: 0.04
+- type: return_home
+  params:
+    post_settle_steps: 20
 enable_random_lights: false
 image_noise_std: 0
 image_speckle_noise_std: 0
@@ -101,14 +146,18 @@ enable_objects_randomization: true
 enable_objects_randomization_curriculum: false
 texture_randomization:
   enabled: true
+  avoid_repeats: true
   texture_dir: models/random_pic/table
   targets:
     table:
       prim_path: /World/envs/env_{i}/table/Xform_01/Xform/leg/node_/Cube
       texture_dir: models/random_pic/table
-    # wood_cuttingboard:
-    #   prim_path: /World/envs/env_{i}/wood_cuttingboard
-    #   texture_dir: models/random_pic/table
-    # yellow_banana:
-    #   prim_path: /World/envs/env_{i}/yellow_banana
-    #   texture_dir: models/random_pic/table
+articulations: {}
+phase_depenetration:
+  objects:
+  - green_leek
+  - wood_cuttingboard
+  reset: 2.0
+  primitives:
+    pick: 2.0
+    release: 0.5

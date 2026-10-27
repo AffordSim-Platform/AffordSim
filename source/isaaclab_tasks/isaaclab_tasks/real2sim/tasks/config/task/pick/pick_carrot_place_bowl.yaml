@@ -7,8 +7,9 @@ scene:
   num_envs: 5
   env_spacing: 4
 task:
-  name: pick_banana_place_bowl
-  description: grasp the banana and put it in the bowl
+  name: pick_carrot_place_bowl
+  description: Pick up the orange carrot; then place the orange carrot in the yellow
+    large bowl.
 runtime:
   headless: false
   episodes: 5
@@ -18,90 +19,122 @@ runtime:
   save_mask_images: false
   save_original_images: true
   enable_motion_planning: true
-  sim_camera_resolution: [640, 480]
-  background_image_size: [640, 480]
+  sim_camera_resolution:
+  - 640
+  - 480
+  background_image_size:
+  - 640
+  - 480
   use_background_replace: true
   cam_side_background: backgrounds/1123_background.png
   cam_wrist_background: backgrounds/wristbackground_realworld1.png
   data_dir: data/r2s2r_data/pick_carrot_place_bowl
-  task_name: FrankaFr3-OurGripper-Joint-VisPick-v0
+  task_name: Sawyer-Robotiq85-Joint-EE-VisPick-v0
   save_depth_images: false
 robot:
-  cfg_name: franka_fr3_our.yml
-  type: franka_fr3_default
+  cfg_name: sawyer.yml
+  type: sawyer_robotiq85
 offsets:
-  grasp: [0, 0, 0.0]
-  place: [0, 0, 0.0]
+  grasp:
+  - 0
+  - 0
+  - 0.0
+  place:
+  - 0
+  - 0
+  - 0.0
 objects:
   yellow_bigbowl:
     usd_path: models/all_object/yellow_bigbowl.usd
     semantic_tags:
-      -   - class
-          - yellow_bigbowl
-    init_pos: [0.55, 0.25, 0.0754]
-    init_rot: [-0.9838, 0.0, 0.0, 0.1791]
+    - - class
+      - yellow_bigbowl
+    init_pos:
+    - 0.55
+    - 0.25
+    - 0.0754
+    init_rot:
+    - -0.9838
+    - 0.0
+    - 0.0
+    - 0.1791
     height: 0.0504
     position_range:
       x:
-        - 0.45
-        - 0.75
+      - 0.5250000000000001
+      - 0.675
       y:
-        - 0.05
-        - 0.45
+      - 0.175
+      - 0.325
       z:
-        - 0.0754
-        - 0.0754
+      - 0.0754
+      - 0.0754
     orientation_range:
       yaw:
-        - -3.1416
-        - 3.1416
+      - -0.5235987755982988
+      - 0.5235987755982988
   orange_carrot:
     usd_path: models/all_object/orange_carrot.usd
     semantic_tags:
-      -   - class
-          - orange_carrot
-    init_pos: [0.55, -0.25, 0.0714]
-    init_rot: [0.1791, 0.0, 0.0, -0.9838]
+    - - class
+      - orange_carrot
+    init_pos:
+    - 0.55
+    - -0.25
+    - 0.0714
+    init_rot:
+    - 0.1791
+    - 0.0
+    - 0.0
+    - -0.9838
     height: 0.0264
     position_range:
       x:
-        - 0.45
-        - 0.75
+      - 0.5250000000000001
+      - 0.675
       y:
-        - -0.45
-        - -0.05
+      - -0.325
+      - -0.175
       z:
-        - 0.0714
-        - 0.0714
+      - 0.0714
+      - 0.0714
     orientation_range:
       yaw:
-        - -3.1416
-        - 3.1416
+      - -0.5235987755982988
+      - 0.5235987755982988
 primitives:
-  - type: pick
-    mode: gt
-    params:
-      target: orange_carrot
-      pre_pick_offset: 0.1
-      pick_interpolation_steps: 10
-      lift_interpolation_steps: 10
-      lift_offset: 0.08
-
-  - type: place
-    mode: on
-    params:
-      target: yellow_bigbowl
-      on_height_margin: 0.03
-      success_eval: true
+- type: pick
+  mode: gt
+  params:
+    target: orange_carrot
+    pre_pick_offset: 0.1
+    pick_interpolation_steps: 10
+    lift_interpolation_steps: 10
+    lift_offset: 0.08
+- type: place
+  mode: 'on'
+  params:
+    target: yellow_bigbowl
+    on_height_margin: 0.03
+    success_eval: true
 enable_random_lights: false
 image_noise_std: 0
 image_speckle_noise_std: 0
 enable_objects_randomization: true
 enable_objects_randomization_curriculum: false
 texture_randomization:
-  enabled: false
+  enabled: true
+  avoid_repeats: true
   texture_dir: models/random_pic/table
   targets:
     table:
       prim_path: /World/envs/env_{i}/table/Xform_01/Xform/leg/node_/Cube
       texture_dir: models/random_pic/table
+phase_depenetration:
+  objects:
+  - orange_carrot
+  - yellow_bigbowl
+  reset: 2.0
+  primitives:
+    pick: 2.0
+    release: 0.5

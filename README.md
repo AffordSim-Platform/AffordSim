@@ -11,6 +11,8 @@
   <img src="logs/composite.gif" alt="AffordSim Task Gallery" width="100%">
 </p>
 
+The gallery shows the latest banana, bowl, and cube tests alongside 47 earlier results. Each panel labels its physics settings; success rates in the benchmark manifest refer to the earlier evaluation.
+
 ## Introduction
 
 **AffordSim** is the first simulation framework that integrates open-vocabulary 3D affordance prediction into the robotic manipulation data generation pipeline. Existing simulation platforms do not explicitly incorporate object affordance information into trajectory generation, making it impossible to automatically generate semantically correct trajectories for tasks that require precise interaction with specific functional regions - such as grasping a mug by its handle, pouring from a cup's rim, or hanging a mug on a hook.
@@ -68,9 +70,15 @@ pip install -U torch==2.7.0 torchvision==0.22.0 --index-url https://download.pyt
 
 ```bash
 unzip curobo.zip
+python scripts/apply_curobo_overrides.py --apply
 cd curobo
 python -m pip install -e .[isaacsim] --no-build-isolation
+cd ..
 ```
+
+The override command installs the versioned Franka FR3 TCP and joint-limit
+corrections. It backs up differing files under `outputs/curobo_override_backups/`.
+Omit `--apply` to preview the changes. Start a new collection process after applying them.
 
 > **Note:** Warnings about `packaging` / `wheel` version conflicts during cuRobo installation can usually be ignored if the install finishes successfully.
 
@@ -122,9 +130,12 @@ python -m pip install diffusers einops
 
 ### Step 8: Configure Runtime Environment
 
+This checkout includes the Isaac Lab 2.3.1 application configurations in `apps/`.
+Put this checkout's Python packages first so an existing editable installation
+does not silently load another copy of AffordSim:
+
 ```bash
-ln -s $CONDA_PREFIX/lib/python3.11/site-packages/isaaclab/apps ./apps
-export PYTHONPATH=$PWD/source/isaaclab:$PWD/source/isaaclab_tasks:$PWD/source/isaaclab_assets:$PYTHONPATH
+export PYTHONPATH="$PWD/source/isaaclab:$PWD/source/isaaclab_tasks:$PWD/source/isaaclab_assets:$PWD/curobo/src${PYTHONPATH:+:$PYTHONPATH}"
 ```
 
 ### First Launch
@@ -142,7 +153,7 @@ Type `Yes`. The first startup may take a while.
 
 ### Scene Editor
 
-The scene editor is optional. This repository already includes 50 task YAML files under `source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/`, so you do not need the editor to run the provided benchmark tasks.
+The scene editor is optional. This repository includes 50 benchmark task YAML files, plus standalone examples, under `source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/`, so you do not need the editor to run the provided benchmark tasks.
 
 Use the scene editor only if you want to create or modify your own tabletop scene and task configuration.
 
@@ -230,7 +241,7 @@ python scripts/run_data_collect_improve.py \
     --skip_editor \
     --num_envs 2 \
     --robot franka_fr3 \
-    --task_name pick_banana_place_bowl \
+    --task_name pick_banana_place_plate \
     --headless
 ```
 
@@ -247,6 +258,49 @@ Typical workflow:
 
 1. Run `python scripts/run_data_collect_improve.py` to create and export a task YAML.
 2. Run `python scripts/run_data_collect_improve.py --skip_editor ...` to collect trajectories for that task.
+
+Object entries can optionally specify `mass` in kilograms or `max_depenetration_velocity` in m/s. To change the latter for selected objects during a task, use a phase policy such as:
+
+```yaml
+phase_depenetration:
+  objects: [green_cube, doraemoncup]
+  reset: 2.0
+  primitives: {pick: 2.0, release: 0.5}
+```
+
+This keeps the selected objects at 2.0 through transport and switches them to 0.5 immediately before release. Use `place` instead of `release` to switch at the start of the entire placement primitive.
+
+### Validate the 50 benchmark tasks
+
+[`benchmarks/affordsim_50.json`](benchmarks/affordsim_50.json) maps each task to its YAML, its assigned robot, and its training-set membership. It contains 50 tasks, including the 20 policy-learning tasks. The six assignments are Franka with its default gripper (9 tasks), Franka with the long gripper (9), Kinova (8), Sawyer (8), xArm7 (8), and UR5e (8). Each task is tested only on its assigned robot.
+
+Run these commands from the repository root in the Isaac Sim environment:
+
+```bash
+python scripts/run_benchmark_50.py \
+  --manifest benchmarks/affordsim_50.json \
+  --output-dir outputs/local_benchmark/results \
+  --trials 10 --no-adapt --resume
+```
+
+The 10 trials are total attempts per task. The runner limits the number of parallel environments to the trial count. It records object-to-object contacts and motion at each physics substep; attempts identified as abnormal collision-induced flyaways are excluded from the success-rate denominator and reported separately. This conservative, threshold-based detector can miss some flyaways. Ordinary physical failures count in the success rate. If collision monitoring is unavailable or no eligible attempts remain, the success rate is reported as unavailable; program errors are also reported separately. Table textures are sampled without repetition within the available set, and the original external-camera and wrist-camera frames are saved for successful and failed trials.
+
+Use `--task pick_banana_place_plate` to run one task. The command above evaluates the released ranges unchanged. To try narrower ranges after a success rate below 50%, omit `--no-adapt`: the runner retests at 75% and then 50% of the configured XY and yaw spans, preserving their centers and fixed positions. These are separate 10-attempt rounds, and all results remain available.
+
+Create trial GIFs, a representative GIF for each task, and the 10-column by 5-row overview:
+
+```bash
+python scripts/render_benchmark_gallery.py \
+  --manifest benchmarks/affordsim_50.json \
+  --results-dir outputs/local_benchmark/results \
+  --output-dir outputs/local_benchmark/media
+```
+
+The media directory includes `summary.csv`, `summary.json`, individual task GIFs, and the overview. The per-frame RGB images remain under the results directory as lossless WebP (or PNG for earlier recordings). Both encodings are supported by the GIF renderer. Add `--publish` only when replacing `logs/composite.gif`; publication requires complete collision assessments and at least one eligible attempt for each task, and backs up the previous GIF. A task that remains below 50% is displayed with its measured result.
+
+The manifest records the original baseline and final ranges for both objects and articulated assets, the final scale, measured success rates, and hashes of the tested configurations. Released YAMLs use the final ranges; their original baseline ranges remain in each manifest entry's `initial_ranges`. A new adaptive run scales the released ranges again, so use `--no-adapt` to keep them unchanged. All YAML paths are relative to the repository. The standalone calibrated DA3 example is separate from these 50 benchmark tasks.
+
+Objects without pose ranges retain their configured initial poses. Fixed-position bounds are supplied only to reset events, so missing ranges do not introduce extra success conditions.
 
 ### Training Imitation Learning Policies
 
@@ -423,6 +477,73 @@ AffordSim applies domain randomization along five axes to enable zero-shot sim-t
 3. **Object texture** - PBR material property perturbation
 4. **Object pose** - small random perturbations to initial positions and orientations
 5. **DA3 Gaussian background** - photorealistic backgrounds from 3D Gaussian Splatting reconstruction of real scenes
+
+### Calibrated DA3 backgrounds
+
+[background_cameras.json](backgrounds/background_cameras.json) maps each background
+image path to its matching camera extrinsics, intrinsics, image size, and pose.
+Its `cameras` object uses repository-relative image paths as keys, such as
+`backgrounds/coffee_shop/orbit_renders/coffee_shop_view_06.png`.
+
+The complete task example is available in
+[pick_banana_place_bowl_da3.yaml](source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/pick/pick_banana_place_bowl_da3.yaml).
+The relevant settings in its `runtime` section are:
+
+```yaml
+runtime:
+  use_background_replace: true
+  cam_side_background: ""  # Set automatically from the DA3 selection below.
+  cam_wrist_background: ""  # The selected view belongs to the external camera.
+  da3_background:
+    image_path: backgrounds/coffee_shop/orbit_renders/coffee_shop_view_06.png
+    keep_table: true
+```
+
+To change the background, set `image_path` to another image listed in the JSON.
+The bundled mapping covers 12 images: four each in `backgrounds/coffee_shop/`,
+`backgrounds/library/`, and `backgrounds/workshop/`. The loader looks up the
+specified path in `backgrounds/background_cameras.json`, scales its intrinsics
+to the simulation resolution, and sets `external_cam_side` to the matching
+camera pose. An image without a calibration entry raises an error.
+
+`extrinsics_w2c_user` is a world-to-camera transform in the metric USER frame,
+which is already aligned with the robot frame; `pose_user` is its inverse,
+using the OpenCV/ROS camera convention and a wxyz quaternion. The loader does
+not apply the original DA3 origin offset again. `keep_table: true` keeps the
+simulated support table visible. The wrist background is left empty because
+this calibrated image belongs to the fixed external camera.
+
+From the repository root, with the Isaac Sim environment and local package
+paths configured as described in Installation, run one collection episode:
+
+```bash
+python scripts/run_data_collect_improve.py --skip_editor \
+  --task_name pick_banana_place_bowl_da3 \
+  --num_envs 1 --episodes 1 --seed 42 --headless --enable_cameras
+```
+
+Trajectory data, original camera images, masks, and composites are saved under
+`outputs/da3_pick_banana_place_bowl/`.
+
+To validate the image/calibration mapping or render all 12 backgrounds:
+
+```bash
+python scripts/test_backgrounds.py --validate-only
+python scripts/test_backgrounds.py --headless --enable_cameras
+```
+
+The checks use this checkout's code and save their reports and renders under
+`outputs/background_validation/`. For a single complete episode with a JSON
+result report, use the local-checkout smoke-test runner:
+
+```bash
+python scripts/test_collection.py \
+  --config source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/pick/pick_banana_place_bowl_da3.yaml \
+  --headless --enable_cameras
+```
+
+The smoke-test report and episode are saved under `outputs/collection_validation/`.
+Test outputs are ignored by Git.
 
 ## Benchmark Evaluation
 

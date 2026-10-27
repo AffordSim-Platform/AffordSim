@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "target": "curobo directory in the same AffordSim checkout",
+  "archive": "curobo.zip",
+  "files": [
+    {
+      "path": "src/curobo/content/configs/robot/franka_fr3.yml",
+      "sha256": "926821940bbb27eb4d82ee07ecb4fc83ce1b5d5162af4d223ecc2081f95f93df",
+      "archive_sha256": "e84a46c7ba64cdbc10a22cacaeae5f1de8dc67a7a655b07f59a849ba42276bec",
+      "change": "Use a TCP 0.1034 m ahead of fr3_hand, matching the stock-gripper Isaac Sim EE frame."
+    },
+    {
+      "path": "src/curobo/content/assets/robot/franka_description/franka_fr3.urdf",
+      "sha256": "418611af2ffeade69a3f4ddb76b7f2deb45d7345823f1e3b66e6034f3cab76cc",
+      "archive_sha256": "610813d7574b1c83f32c78842a2a8f47af20956fc031956a68089e6613fa2d43",
+      "change": "Align the seven active arm-joint hard position lower/upper limits to models/franka_fr3.usd; retain other URDF values."
+    }
+  ],
+  "archive_comparison": {
+    "entry_count": 946,
+    "modified_file_count": 2,
+    "missing_file_count": 0,
+    "additional_noncache_file_count": 0,
+    "comparison": "All archive file entries compared with the working tree by uncompressed byte count and CRC32 before adding this overlay. Only the two files listed above differed."
+  },
+  "provenance": {
+    "stock_robot_usd": "models/franka_fr3.usd",
+    "stock_robot_usd_sha256": "717d13acefd8061815e35dc7ee9da67d205dde3c672be4af9286bf379740697c",
+    "joint_limit_audit": "outputs/benchmark_paper50/franka_default_joint_limit_alignment.json",
+    "tcp_offset_m": 0.1034
+  }
+}

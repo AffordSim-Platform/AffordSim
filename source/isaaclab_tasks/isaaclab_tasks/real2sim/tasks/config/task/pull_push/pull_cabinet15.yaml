@@ -8,7 +8,7 @@ scene:
   env_spacing: 10
 task:
   name: pull_cabinet15
-  description: pull the cabinet drawer open
+  description: Pull the cabinet 15 open.
 runtime:
   headless: false
   episodes: 5
@@ -18,70 +18,96 @@ runtime:
   save_mask_images: false
   save_original_images: true
   enable_motion_planning: true
-  sim_camera_resolution: [640, 480]
-  background_image_size: [640, 480]
+  sim_camera_resolution:
+  - 640
+  - 480
+  background_image_size:
+  - 640
+  - 480
   use_background_replace: true
   cam_side_background: backgrounds/1123_background.png
   cam_wrist_background: backgrounds/wristbackground_realworld1.png
   data_dir: data/r2s2r_data/pull_cabinet15
-  task_name: FrankaFr3-OurGripper-Joint-VisPick-v0
+  task_name: XArm7-UFactory-Joint-EE-VisPick-v0
   save_depth_images: false
 robot:
-  cfg_name: franka_fr3_our.yml
-  type: franka_fr3_default
+  cfg_name: xarm7.yml
+  type: xarm7_ufactory
 offsets:
-  grasp: [0, 0, 0]
-  place: [0, 0, 0]
+  grasp:
+  - 0
+  - 0
+  - 0
+  place:
+  - 0
+  - 0
+  - 0
 articulations:
   cabinet15:
     usd_path: models/all_object/cabinet15.usd
     semantic_tags:
-      - [class, cabinet15]
-    scale: [0.3, 0.3, 0.3]
+    - - class
+      - cabinet15
+    scale:
+    - 0.3
+    - 0.3
+    - 0.3
     disable_gravity: false
     enabled_self_collisions: true
-    init_pos: [0.8, 0.0, 0.4]
-    init_rot: [1.0, 0.0, 0.0, 0.0]
+    init_pos:
+    - 0.8
+    - 0.0
+    - 0.4
+    init_rot:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
     position_range:
       x:
-        - 0.8
-        - 0.9
+      - 0.8250000000000001
+      - 0.8750000000000001
       y:
-        - -0.05
-        - 0.05
+      - -0.025
+      - 0.025
       z:
-        - 0.4
-        - 0.4
+      - 0.4
+      - 0.4
     orientation_range:
       yaw:
-        - -0.1745
-        - 0.1745
+      - -0.08725
+      - 0.08725
     joint_pos: {}
     actuators:
       joint:
-        joint_names_expr: [".*"]
+        joint_names_expr:
+        - .*
         effort_limit: 1000
         velocity_limit: 1000
         stiffness: 0
         damping: 0
 primitives:
-  - type: pull
-    params:
-      target: cabinet15
-      pre_grasp_offset: 0.08
-      pick_interpolation_steps: 10
-      pull_distance: 0.10
-      pull_interpolation_steps: 30
-      release_after_pull: false
+- type: pull
+  params:
+    target: cabinet15
+    pre_grasp_offset: 0.08
+    pick_interpolation_steps: 10
+    pull_distance: 0.1
+    pull_interpolation_steps: 30
+    release_after_pull: false
+    success_eval: true
+    success_joint_name: joint_0
+    pull_success_min_angle_rad: 1.0
 enable_random_lights: false
 image_noise_std: 0
 image_speckle_noise_std: 0
 enable_objects_randomization: true
 enable_objects_randomization_curriculum: false
 texture_randomization:
-  enabled: false
+  enabled: true
+  avoid_repeats: true
   texture_dir: models/random_pic/table
   targets:
     table:
-      prim_path: "/World/envs/env_{i}/table/Xform_01/Xform/leg/node_/Cube"
+      prim_path: /World/envs/env_{i}/table/Xform_01/Xform/leg/node_/Cube
       texture_dir: models/random_pic/table

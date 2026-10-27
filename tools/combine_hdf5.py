@@ -31,7 +31,7 @@ parser.add_argument(
     "--data_dir",
     default=os.environ.get(
         "COMBINE_DATA_DIR",
-        "data/r2s2r_data/hang_mugcup_franka_fr3_default/20260618_170303/hdf5",
+        "train_hdf5/pick_banana_place_plate/hdf5",
     ),
     help="Directory containing the per-episode HDF5 files.",
 )
@@ -39,7 +39,7 @@ parser.add_argument(
     "--output_file",
     default=os.environ.get(
         "COMBINE_OUTPUT_FILE",
-        "data/r2s2r_data/hang_mugcup_franka_fr3_default/20260618_170303/merged_trajectories.hdf5",
+        "train_hdf5/pick_banana_place_plate/merged_trajectories.hdf5",
     ),
     help="Path to the merged output HDF5 file.",
 )
@@ -77,7 +77,8 @@ with h5py.File(output_file, 'w') as h5out:
             h5in.copy('observations/qvel', obs_grp)
 
             images_grp = obs_grp.create_group('images')
-            h5in.copy('observations/images/side', images_grp)
+            if 'observations/images/side' in h5in:
+                h5in.copy('observations/images/side', images_grp)
             h5in.copy('observations/images/front', images_grp)
             h5in.copy('observations/images/wrist', images_grp)
 

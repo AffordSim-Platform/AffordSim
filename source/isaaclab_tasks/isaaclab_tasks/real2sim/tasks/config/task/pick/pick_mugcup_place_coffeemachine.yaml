@@ -8,7 +8,7 @@ scene:
   env_spacing: 10
 task:
   name: pick_mugcup_place_coffeemachine
-  description: grasp the red mugcup and place it into coffeemachine1 with affordance
+  description: Pick up the red mug; then place the red mug in the coffee machine 1.
 runtime:
   headless: false
   episodes: 5
@@ -18,8 +18,12 @@ runtime:
   save_mask_images: false
   save_original_images: true
   enable_motion_planning: true
-  sim_camera_resolution: [640, 480]
-  background_image_size: [640, 480]
+  sim_camera_resolution:
+  - 640
+  - 480
+  background_image_size:
+  - 640
+  - 480
   use_background_replace: true
   cam_side_background: backgrounds/1123_background.png
   cam_wrist_background: backgrounds/wristbackground_realworld1.png
@@ -28,81 +32,120 @@ runtime:
   save_depth_images: false
 robot:
   cfg_name: franka_fr3_our.yml
-  type: franka_fr3_default
+  type: franka_fr3
 offsets:
-  grasp: [0, 0, 0.0]
-  place: [0, 0, 0.0]
+  grasp:
+  - 0
+  - 0
+  - 0.0
+  place:
+  - 0
+  - 0
+  - 0.0
 objects:
   red_mugcup:
     usd_path: models/all_object/red_mugcup.usd
     semantic_tags:
-      -   - class
-          - red_mugcup
-    init_pos: [0.55, 0.25, 0.09]
-    init_rot: [-0.38268343, 0.0, 0.0, 0.92387953]
+    - - class
+      - red_mugcup
+    init_pos:
+    - 0.55
+    - 0.2
+    - 0.09
+    init_rot:
+    - 0.3173
+    - 0.0
+    - 0.0
+    - 0.9483
     position_range:
       x:
-        - 0.45
-        - 0.75
+      - 0.55
+      - 0.5999999999999999
       y:
-        - 0.05
-        - 0.35
+      - 0.14999999999999997
+      - 0.2
       z:
-        - 0.09
-        - 0.09
+      - 0.09
+      - 0.09
     orientation_range:
       yaw:
-        - -0.3489
-        - 0.3489
+      - -0.1745
+      - 0.1745
   coffeemachine1:
     usd_path: models/all_object/coffeemachine1.usd
     semantic_tags:
-      -   - class
-          - coffeemachine1
-    scale: [0.3, 0.3, 0.3]
+    - - class
+      - coffeemachine1
+    scale:
+    - 0.3
+    - 0.3
+    - 0.3
     disable_gravity: false
     enabled_self_collisions: true
-    init_pos: [0.7, -0.25, 0.23]
-    init_rot: [0.999, 0.0, 0.0, -0.0436]
+    init_pos:
+    - 0.9
+    - -0.25
+    - 0.23
+    init_rot:
+    - 0.999
+    - 0.0
+    - 0.0
+    - -0.0436
     position_range:
       x:
-        - 0.70
-        - 0.85
+      - 0.85
+      - 0.9
       y:
-        - -0.35
-        - -0.15
+      - -0.27
+      - -0.22999999999999998
       z:
-        - 0.23
-        - 0.23
+      - 0.23
+      - 0.23
     orientation_range:
       yaw:
-        - -0.1745
-        - 0.1745
+      - -0.1745
+      - 0.1745
 primitives:
-  - type: pick
-    mode: affordance
-    params:
-      target: red_mugcup
-      pre_pick_offset: [0.0, 0.0, 0.08]
-      pick_interpolation_steps: 10
-  - type: place
-    mode: affordance
-    params:
-      target: coffeemachine1
-      pre_place_distance: 0.15
-      ik_interpolation_steps: 30
-      success_eval: true
-      post_release_lift_offset: [0.0, 0.0, 0.08]
-      post_release_lift_steps: 10
+- type: pick
+  mode: affordance
+  params:
+    target: red_mugcup
+    pre_pick_offset:
+    - 0.0
+    - 0.0
+    - 0.08
+    pick_interpolation_steps: 10
+- type: place
+  mode: affordance
+  params:
+    target: coffeemachine1
+    pre_place_distance: 0.15
+    ik_interpolation_steps: 30
+    success_eval: true
+    post_release_lift_offset:
+    - 0.0
+    - 0.0
+    - 0.08
+    post_release_lift_steps: 10
 enable_random_lights: false
 image_noise_std: 0
 image_speckle_noise_std: 0
 enable_objects_randomization: true
 enable_objects_randomization_curriculum: false
 texture_randomization:
-  enabled: false
+  enabled: true
+  avoid_repeats: true
   texture_dir: models/random_pic/table
   targets:
     table:
-      prim_path: "/World/envs/env_{i}/table/Xform_01/Xform/leg/node_/Cube"
+      prim_path: /World/envs/env_{i}/table/Xform_01/Xform/leg/node_/Cube
       texture_dir: models/random_pic/table
+articulations: {}
+phase_depenetration:
+  objects:
+  - red_mugcup
+  - coffeemachine1
+  reset: 2.0
+  primitives:
+    pick: 2.0
+    release: 0.5

@@ -523,6 +523,11 @@ def primitive_execute_hang(collector, params: Dict[str, Any], context: Dict[str,
         merge_segment_into_local_active(local_active, extra_insert_successes)
         release_positions = extra_insert_positions
 
+    phase_policy = getattr(collector, "_phase_depenetration", None)
+    if phase_policy is not None and any(local_active):
+        phase_policy.apply_primitive("release", list(local_active),
+                                     objects=[held_object_label, container_label])
+
     collector.control_gripper_batch(
         [1.0 if s else 0.0 for s in local_active],
         steps=FIXED_GRIPPER_STEPS,

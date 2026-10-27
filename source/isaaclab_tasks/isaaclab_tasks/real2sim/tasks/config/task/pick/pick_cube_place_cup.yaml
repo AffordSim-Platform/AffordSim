@@ -8,7 +8,7 @@ scene:
   env_spacing: 10
 task:
   name: pick_cube_place_cup
-  description: pick cube 016 and place it on redcup 013
+  description: Pick up the green cube; then place the green cube in the Doraemon cup.
 runtime:
   headless: false
   episodes: 5
@@ -18,91 +18,135 @@ runtime:
   save_mask_images: false
   save_original_images: true
   enable_motion_planning: true
-  sim_camera_resolution: [640, 480]
-  background_image_size: [640, 480]
+  sim_camera_resolution:
+  - 640
+  - 480
+  background_image_size:
+  - 640
+  - 480
   use_background_replace: true
   cam_side_background: backgrounds/1123_background.png
   cam_wrist_background: backgrounds/wristbackground_realworld1.png
   data_dir: data/r2s2r_data/pick_cube_place_cup
-  task_name: FrankaFr3-OurGripper-Joint-VisPick-v0
+  task_name: FrankaFr3-DefaultGripper-Joint-VisPick-v0
   save_depth_images: false
 robot:
-  cfg_name: franka_fr3_our.yml
-  type: franka_fr3_default
+  cfg_name: franka_fr3.yml
+  type: franka_fr3
 offsets:
-  grasp: [0, 0, 0.0]
-  place: [0, 0, 0.0]
+  grasp:
+  - 0
+  - 0
+  - 0.0
+  place:
+  - 0
+  - 0
+  - 0.0
 objects:
   green_cube:
     usd_path: models/all_object/green_cube.usd
     semantic_tags:
-      -   - class
-          - green_cube
-    init_pos: [0.55, -0.25, 0.08]
-    init_rot: [1.0, 0.0, 0.0, 0.0]
+    - - class
+      - green_cube
+    init_pos:
+    - 0.5
+    - -0.12
+    - 0.08
+    init_rot:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
     height: 0.06
-    position_range:
-      x:
-        - 0.45
-        - 0.75
-      y:
-        - -0.45
-        - -0.05
-      z:
-        - 0.08
-        - 0.08
-    orientation_range:
-      yaw:
-        - -3.1416
-        - 3.1416
   doraemoncup:
     usd_path: models/all_object/doraemoncup.usd
     semantic_tags:
-      -   - class
-          - doraemoncup
-    init_pos: [0.55, 0.25, 0.08]
-    init_rot: [0.9239, 0.0, 0.0, 0.3827]
+    - - class
+      - doraemoncup
+    init_pos:
+    - 0.55
+    - 0.18
+    - 0.09
+    init_rot:
+    - 0.9239
+    - 0.0
+    - 0.0
+    - 0.3827
     height: 0.09
-    position_range:
-      x:
-        - 0.45
-        - 0.75
-      y:
-        - 0.05
-        - 0.45
-      z:
-        - 0.08
-        - 0.08
-    orientation_range:
-      yaw:
-        - -3.1416
-        - 3.1416
+  white_100mmcup:
+    usd_path: models/all_object/white_100mmcup.usd
+    semantic_tags:
+    - - class
+      - white_100mmcup
+    init_pos:
+    - 0.68
+    - -0.05
+    - 0.08
+    init_rot:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    height: 0.08
+  white_95mmcup:
+    usd_path: models/all_object/white_95mmcup.usd
+    semantic_tags:
+    - - class
+      - white_95mmcup
+    init_pos:
+    - 0.78
+    - 0.05
+    - 0.08
+    init_rot:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    height: 0.08
 primitives:
-  - type: pick
-    mode: gt
-    params:
-      target: green_cube
-      grasp_quat: [0.0, 1.0, 0.0, 0.0]
-      pre_pick_offset: 0.1
-      pick_interpolation_steps: 10
-      lift_interpolation_steps: 10
-      lift_offset: 0.1
-  - type: place
-    mode: "on"
-    params:
-      target: doraemoncup
-      orientation: [0.0, 1.0, 0.0, 0.0]
-      ik_interpolation_steps: 5
-      success_eval: true
+- type: pick
+  mode: gt
+  params:
+    target: green_cube
+    grasp_quat:
+    - 0.0
+    - 1.0
+    - 0.0
+    - 0.0
+    pre_pick_offset: 0.1
+    pick_interpolation_steps: 10
+    lift_interpolation_steps: 10
+    lift_offset: 0.1
+- type: place
+  mode: 'on'
+  params:
+    target: doraemoncup
+    orientation:
+    - 0.0
+    - 1.0
+    - 0.0
+    - 0.0
+    ik_interpolation_steps: 5
+    success_eval: true
 enable_random_lights: false
 image_noise_std: 0
 image_speckle_noise_std: 0
 enable_objects_randomization: true
 enable_objects_randomization_curriculum: false
 texture_randomization:
-  enabled: false
+  enabled: true
+  avoid_repeats: true
   texture_dir: models/random_pic/table
   targets:
     table:
-      prim_path: "/World/envs/env_{i}/table/Xform_01/Xform/leg/node_/Cube"
+      prim_path: /World/envs/env_{i}/table/Xform_01/Xform/leg/node_/Cube
       texture_dir: models/random_pic/table
+articulations: {}
+phase_depenetration:
+  objects:
+  - green_cube
+  - doraemoncup
+  reset: 2.0
+  primitives:
+    pick: 2.0
+    release: 0.5
