@@ -2,21 +2,19 @@ import argparse
 import os
 import re
 import glob
-from functools import partial
-from multiprocessing import Pool
 
 import cv2
 import h5py
 import numpy as np
 
-DEFAULT_NEW = "data/r2s2r_data/hang_mugcup_franka_fr3_default/20260618_170303/20260618_170311"
+DEFAULT_NEW = "data/r2s2r_data/pick_banana_and_place_in_plate_franka_fr3/20260331_015023/20260331_015128"
 DEFAULT_REF = "data/reference.hdf5"
-DEFAULT_OUT = "data/r2s2r_data/hang_mugcup_franka_fr3_default/20260618_170303/hdf5"
+DEFAULT_OUT = "data/r2s2r_data/task_gen/pick_place/pick_banana_and_place_on_plate/hdf5"
 
 
 NPY_IMG_SHAPE = (3, 480, 640)
 
-TARGET_IMG_SIZE = (480, 640)
+TARGET_IMG_SIZE = (256, 256)
 
 
 def collect_episode_files(folder: str) -> list[str]:
@@ -61,10 +59,17 @@ def reshape_and_resize_images(flat: np.ndarray, src_shape: tuple, target_size: t
     tH, tW = target_size
     H, W = imgs.shape[1], imgs.shape[2]
     if H != tH or W != tW:
-        resized = np.empty((T, tH, tW, 3), dtype=np.uint8)
-        for i in range(T):
-            resized[i] = cv2.resize(imgs[i], (tW, tH), interpolation=cv2.INTER_AREA)
-        return resized
+  
+        crop_size = min(H, W)
+        y0 = (H - crop_size) // 2
+        x0 = (W - crop_size) // 2
+        imgs = imgs[:, y0:y0+crop_size, x0:x0+crop_size, :]
+        # Resize cropped square to target size
+        if crop_size != tH or crop_size != tW:
+            resized = np.empty((T, tH, tW, 3), dtype=np.uint8)
+            for i in range(T):
+                resized[i] = cv2.resize(imgs[i], (tW, tH), interpolation=cv2.INTER_AREA)
+            return resized
     return imgs
 
 
@@ -72,25 +77,31 @@ def convert_episode(npy_path: str) -> dict:
 
     data = np.load(npy_path, allow_pickle=True).item()
 
-    action = data["obs_policy_actions"].astype(np.float32)
+    def _pick_array(keys: list[str], field_name: str) -> np.ndarray:
+        for k in keys:
+            if k in data:
+                return data[k]
+        raise KeyError(f"{field_name} (expected one of: {keys})")
 
-    qpos = data["obs_policy_q_pos"].astype(np.float32)
-    qvel = data["obs_policy_q_vel"].astype(np.float32)
 
-    side_flat = data["obs_policy_external_cam_side"]
-    front_flat = data["obs_policy_external_cam_front"]
-    wrist_flat = data["obs_policy_wrist_cam"]
-    side = reshape_and_resize_images(side_flat, NPY_IMG_SHAPE, TARGET_IMG_SIZE)
+    action = _pick_array(["actions", "obs_policy_actions", "obs_policy_lastactions"], "actions").astype(np.float32)
+
+  
+    qpos = _pick_array(["obs_policy_q_pos", "qpos"], "qpos").astype(np.float32)
+    qvel = _pick_array(["obs_policy_q_vel", "qvel"], "qvel").astype(np.float32)
+
+
+    front_flat = _pick_array(["obs_policy_external_cam_side", "front", "images_front"], "front image")
+    wrist_flat = _pick_array(["obs_policy_wrist_cam", "wrist", "images_wrist"], "wrist image")
     front = reshape_and_resize_images(front_flat, NPY_IMG_SHAPE, TARGET_IMG_SIZE)
     wrist = reshape_and_resize_images(wrist_flat, NPY_IMG_SHAPE, TARGET_IMG_SIZE)
 
-
-    T = min(action.shape[0], qpos.shape[0], qvel.shape[0], side.shape[0], front.shape[0], wrist.shape[0])
+   
+    T = min(action.shape[0], qpos.shape[0], qvel.shape[0], front.shape[0], wrist.shape[0])
     return {
         "action": action[:T],
         "observations": {
             "images": {
-                "side": side[:T],
                 "front": front[:T],
                 "wrist": wrist[:T],
             },
@@ -100,20 +111,8 @@ def convert_episode(npy_path: str) -> dict:
     }
 
 
-def _compression_kwargs(name: str) -> dict:
-    """Map a compression name to h5py create_dataset kwargs."""
-    if name == "none":
-        return {}
-    if name == "lzf":
-        return {"compression": "lzf"}
-    if name == "gzip-fast":
-        return {"compression": "gzip", "compression_opts": 1}
-    return {"compression": "gzip"}  # default gzip (level 4): smallest, slowest
+def write_hdf5(episode_data: dict, out_path: str):
 
-
-def write_hdf5(episode_data: dict, out_path: str, comp_kwargs: dict = None):
-    if comp_kwargs is None:
-        comp_kwargs = {"compression": "gzip"}
 
     def _write_recursive(group: h5py.Group, d: dict):
         for k, v in d.items():
@@ -121,22 +120,11 @@ def write_hdf5(episode_data: dict, out_path: str, comp_kwargs: dict = None):
                 g = group.require_group(k)
                 _write_recursive(g, v)
             else:
-                group.create_dataset(k, data=v, **comp_kwargs)
+                group.create_dataset(k, data=v, compression="gzip")
 
     with h5py.File(out_path, "w") as f:
         _write_recursive(f, episode_data)
-
-
-def _process_episode(task: tuple, out_dir: str, comp_kwargs: dict) -> tuple:
-    """Convert one npy -> hdf5. Runs in a worker process. Returns (idx, ok, msg)."""
-    idx, ep_file = task
-    out_path = os.path.join(out_dir, f"episode_{idx}.hdf5")
-    try:
-        ep_data = convert_episode(ep_file)
-        write_hdf5(ep_data, out_path, comp_kwargs)
-        return (idx, True, os.path.basename(ep_file))
-    except Exception as e:  # noqa: BLE001
-        return (idx, False, f"{os.path.basename(ep_file)}: {e}")
+    print(f"  -: {out_path}")
 
 
 def main():
@@ -144,53 +132,36 @@ def main():
     parser.add_argument("--npy_folder", default=DEFAULT_NEW, help="")
     parser.add_argument("--ref", default=DEFAULT_REF, help="")
     parser.add_argument("--out", default=DEFAULT_OUT, help="")
-    parser.add_argument("--num_episodes", type=int, default=500,
-                        help="Only convert the first N episodes. If fewer exist, convert all. Default: all.")
-    parser.add_argument("--workers", type=int, default=min(8, os.cpu_count() or 1),
-                        help="Number of parallel worker processes. 1 = serial.")
-    parser.add_argument("--compression", default="gzip",
-                        choices=["gzip", "gzip-fast", "lzf", "none"],
-                        help="HDF5 compression: gzip (smallest), gzip-fast/lzf (faster), none (largest, fastest).")
     args = parser.parse_args()
 
+ 
+    ref_info = load_ref_structure(args.ref)
+  
+    for k, v in ref_info.items():
+        print(f"  {k}: shape={v['shape']}, dtype={v['dtype']}")
+
+   
     episode_files = collect_episode_files(args.npy_folder)
-
-    # Keep only the first N episodes when requested; if fewer exist, keep all.
-    if args.num_episodes is not None:
-        if len(episode_files) < args.num_episodes:
-            print(f"[WARN] requested {args.num_episodes} episodes but only {len(episode_files)} found; converting all.")
-        episode_files = episode_files[:args.num_episodes]
-
+   
+ 
     os.makedirs(args.out, exist_ok=True)
-    comp_kwargs = _compression_kwargs(args.compression)
 
-    print(f"Converting {len(episode_files)} episodes from {args.npy_folder} "
-          f"(workers={args.workers}, compression={args.compression})")
 
-    tasks = list(enumerate(episode_files))
-    worker = partial(_process_episode, out_dir=args.out, comp_kwargs=comp_kwargs)
-
-    n_ok = 0
-    if args.workers <= 1:
-        results = (worker(t) for t in tasks)
-    else:
-        pool = Pool(args.workers)
-        # imap (not imap_unordered) keeps results in submission order for tidy logs;
-        # throughput is effectively the same.
-        results = pool.imap(worker, tasks)
-
-    for idx, ok, msg in results:
-        if ok:
-            n_ok += 1
-            print(f"  [{n_ok}/{len(tasks)}] episode_{idx}.hdf5  <- {msg}")
-        else:
-            print(f"  !! episode_{idx} FAILED: {msg}")
-
-    if args.workers > 1:
-        pool.close()
-        pool.join()
-
-    print(f"Done: {n_ok}/{len(tasks)} episodes -> {args.out}")
+    for i, ep_file in enumerate(episode_files):
+        # i = i+142  
+        out_path = os.path.join(args.out, f"episode_{i}.hdf5")
+        print(f"\n: {ep_file}  to  : episode_{i}.hdf5")
+        try:
+            ep_data = convert_episode(ep_file)
+   
+            print(f"  action: {ep_data['action'].shape}")
+            print(f"  front:  {ep_data['observations']['images']['front'].shape}")
+            print(f"  wrist:  {ep_data['observations']['images']['wrist'].shape}")
+            print(f"  qpos:   {ep_data['observations']['qpos'].shape}")
+            print(f"  qvel:   {ep_data['observations']['qvel'].shape}")
+            write_hdf5(ep_data, out_path)
+        except Exception as e:
+            print(f"  !! : {e}")
 
 
 if __name__ == "__main__":

@@ -206,11 +206,6 @@ def main():
             "cfg_name": "franka_fr3_our.yml",
             "type": "franka_fr3_default",
         },
-        "franka_fr3_default": {
-            "env_task_name": "FrankaFr3-DefaultGripper-Joint-VisPick-v0",
-            "cfg_name": "franka_fr3.yml",
-            "type": "franka_fr3_default",
-        },
         "ur5e": {
             "env_task_name": "UR5e-Robotiq85-IKRel-EE-VisPick-v0",
             "cfg_name": "ur5e_robotiq_2f_85.yml",
