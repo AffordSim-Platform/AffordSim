@@ -784,6 +784,15 @@ def primitive_execute_place(collector, params: Dict[str, Any], context: Dict[str
             active_mask=active_for_normal,
         )
 
+    phase_policy = getattr(collector, "_phase_depenetration", None)
+    if phase_policy is not None and any(local_active):
+        # In release-only mode keep the pickup setting through the approach;
+        # switch only surviving environments immediately before opening.
+        phase_policy.apply_primitive("release", list(local_active), objects=[
+            context.get("held_object") or context.get("pick_target_label"),
+            place_pose.get("target_label"),
+        ])
+
     collector.control_gripper_batch(
         [1.0 if s else 0.0 for s in local_active],
         steps=FIXED_GRIPPER_STEPS,

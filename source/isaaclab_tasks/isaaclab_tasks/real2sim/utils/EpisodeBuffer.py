@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Dict, Any, Optional, List, Tuple
 from datetime import datetime
 import cv2
+from PIL import Image
 from scipy.spatial.transform import Rotation as R
 
 
@@ -83,6 +84,7 @@ class EpisodeDataRecorder:
         wrist_cam_background_image: Optional[np.ndarray] = None,
         image_noise_std: float = 0.5,
         image_speckle_noise_std: float = 0.0,
+        original_image_format: str = "png",
     ):
         if save_dir is None:
             save_dir = Path("data") / "episodes" / datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -95,6 +97,7 @@ class EpisodeDataRecorder:
         self.save_composite_images = save_composite_images
         self.save_mask_images = save_mask_images
         self.save_original_images = save_original_images
+        self.original_image_format = original_image_format
         self.save_depth_images = save_depth_images
         self.image_size = image_size
         self.num_envs = num_envs
@@ -231,6 +234,12 @@ class EpisodeDataRecorder:
         
         # Increment step counter
         self.current_step_count += 1
+
+        # RGB/composite/mask files are already written above. Image-only runs
+        # need no in-memory trajectory (which otherwise also retains depth and
+        # segmentation observations for every step).
+        if not self.save_npy and not self.save_camera_images:
+            return
         
         # Split batch data into per-environment data
         for env_idx in range(actual_num_envs):
@@ -430,6 +439,11 @@ class EpisodeDataRecorder:
                            If None, save all environments.
         """
         saved_paths = []
+
+        if not self.save_npy and not self.save_camera_images:
+            self.episode_buffers = [None] * self.num_envs
+            self.current_episode_num = None
+            return saved_paths
         
         # If no successful_envs list provided, assume all environments succeeded
         if successful_envs is None:
@@ -513,8 +527,9 @@ class EpisodeDataRecorder:
                 save_dict['ee_pose_delta'] = ee_delta
                 print(f"  Env {env_idx} - ee_pose_delta: shape={ee_delta.shape}, dtype={ee_delta.dtype}")
             
-            np.save(episode_dir, save_dict, allow_pickle=True)
-            print(f"   Saved episode {self.current_episode_num} env {env_idx} to {episode_dir.name}")
+            if self.save_npy:
+                np.save(episode_dir, save_dict, allow_pickle=True)
+                print(f"   Saved episode {self.current_episode_num} env {env_idx} to {episode_dir.name}")
             print(f"    Steps: {num_steps}")
 
             self._append_episode_state_json_entry(
@@ -525,7 +540,8 @@ class EpisodeDataRecorder:
                 metadata=episode_buffer.get("metadata", {}),
             )
             
-            saved_paths.append(episode_dir)
+            if self.save_npy:
+                saved_paths.append(episode_dir)
         
         # Clear buffers
         self.episode_buffers = [None] * self.num_envs
@@ -962,7 +978,15 @@ class EpisodeDataRecorder:
                         img_to_save = (img_to_save * 255).astype(np.uint8)
                     else:
                         img_to_save = img_to_save.astype(np.uint8)
-                    cv2.imwrite(str(filename) + '.png', cv2.cvtColor(img_to_save, cv2.COLOR_RGB2BGR))
+                    if self.original_image_format == "webp_lossless":
+                        Image.fromarray(img_to_save).save(
+                            str(filename) + '.webp', format='WEBP', lossless=True, method=0, exact=True
+                        )
+                    elif self.original_image_format == "png":
+                        if not cv2.imwrite(str(filename) + '.png', cv2.cvtColor(img_to_save, cv2.COLOR_RGB2BGR)):
+                            raise OSError(f"Could not save RGB frame: {filename}.png")
+                    else:
+                        raise ValueError(f"Unsupported original_image_format: {self.original_image_format}")
     
     def _is_image_tensor(self, tensor) -> bool:
         """Check if a tensor looks like image data"""

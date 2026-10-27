@@ -1,3 +1,5 @@
+# Historical bowl examples below retain their original checkpoint/dataset/task IDs.
+# BOWL_TASK_CONFIG must point to the matching historical bowl YAML, not the plate task.
 # python scripts/imitation_learning/Pi0.5/play.py --task Pick_Hang_WhiteCup_On_Rack-v0 \
 #     --server_host 10.184.17.177 --server_port 8000 \
 #     --prompt "Grab the white cup, hang it on the cup rack." \
@@ -86,7 +88,7 @@ python scripts/imitation_learning/Pi0.5/play.py --task Pick_Open_Microwave-v0 \
 # python scripts/imitation_learning/Pi0.5/play.py --task pick_banana_place_bowl_joint-v0 \
 #     --server_host 10.184.17.177 --server_port 8008 \
 #     --prompt "Pick up the banana and put it in the yellow bowl." \
-#     --task_config source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/pick/pick_banana_place_bowl.yaml \
+#     --task_config "${BOWL_TASK_CONFIG}" \
 #     --horizon 500 --num_rollouts 30 --enable_cameras --headless --joint_delta_mode cumulative
 
 # python scripts/imitation_learning/Pi0.5/play.py --task Pick_Pour_WhiteKettle4-v0 \

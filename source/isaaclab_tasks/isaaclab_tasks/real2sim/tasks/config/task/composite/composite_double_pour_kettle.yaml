@@ -7,8 +7,11 @@ scene:
   num_envs: 1
   env_spacing: 10
 task:
-  name: composite_pick_kettle_pour_bowl_pick_kettle_pour_bowl
-  description: grasp the white kettle and pour into the bowl, the 80mm cup, and the 75mm cup sequentially
+  name: composite_double_pour_kettle
+  description: Pick up the white kettle 6; then pour from the white kettle 6 into
+    the yellow bowl; then place the white kettle 6 at the specified position; then
+    pick up the white kettle 3; then pour from the white kettle 3 into the yellow
+    bowl.
 runtime:
   headless: false
   episodes: 4
@@ -18,140 +21,158 @@ runtime:
   save_mask_images: false
   save_original_images: true
   enable_motion_planning: true
-  sim_camera_resolution: [640, 480]
-  background_image_size: [640, 480]
+  sim_camera_resolution:
+  - 640
+  - 480
+  background_image_size:
+  - 640
+  - 480
   use_background_replace: true
   cam_side_background: backgrounds/1123_background.png
   cam_wrist_background: backgrounds/wristbackground_realworld1.png
   data_dir: data/r2s2r_data/composite_double_pour_kettle
-  task_name: FrankaFr3-OurGripper-Joint-VisPick-v0
+  task_name: Kinova-Robotiq85-IKRel-EE-VisPick-v0
   save_depth_images: false
 robot:
-  cfg_name: franka_fr3_our.yml
-  type: franka_fr3_default
+  cfg_name: kinova_robotiq85.yml
+  type: kinova_robotiq85
 offsets:
-  grasp: [0, 0, 0.0]
-  place: [0, 0, 0.0]
+  grasp:
+  - 0
+  - 0
+  - 0.0
+  place:
+  - 0
+  - 0
+  - 0.0
 objects:
   white_kettle6:
     usd_path: models/all_object/white_kettle6.usd
     semantic_tags:
-      -   - class
-          - white_kettle6
-    scale: [0.15, 0.15, 0.15]
-    init_pos: [0.65, -0.25, 0.18]
-    init_rot: [0, 0, 0, 1]
+    - - class
+      - white_kettle6
+    scale:
+    - 0.15
+    - 0.15
+    - 0.15
+    init_pos:
+    - 0.722
+    - 0.152
+    - 0.18
+    init_rot:
+    - 0
+    - 0
+    - 0
+    - 1
     height: 0.242
-    position_range:
-      x:
-        - 0.45
-        - 0.65
-      y:
-        - -0.40
-        - -0.20
-      z:
-        - 0.18
-        - 0.18
-    orientation_range:
-      yaw:
-        - -0.5236
-        - 0.5236
   yellow_bowl:
     usd_path: models/all_object/yellow_bowl.usd
     semantic_tags:
-      -   - class
-          - yellow_bowl
-    init_pos: [0.6, -0.05, 0.077]
-    init_rot: [-0.3826834, 0, 0, 0.9238795]
+    - - class
+      - yellow_bowl
+    init_pos:
+    - 0.65
+    - -0.1
+    - 0.077
+    init_rot:
+    - -0.3826834
+    - 0
+    - 0
+    - 0.9238795
     height: 0.054
-    position_range:
-      x:
-        - 0.60
-        - 0.65
-      y:
-        - -0.10
-        - -0.05
-      z:
-        - 0.077
-        - 0.077
-    orientation_range:
-      yaw:
-        - -3.1416
-        - 3.1416
   white_kettle3:
     usd_path: models/all_object/white_kettle3.usd
     semantic_tags:
-      -   - class
-          - white_kettle3
-    scale: [0.15, 0.15, 0.15]
-    init_pos: [0.55, 0.15, 0.15]
-    init_rot: [0.3827, 0.0, 0.0, -0.9239]
+    - - class
+      - white_kettle3
+    scale:
+    - 0.15
+    - 0.15
+    - 0.15
+    init_pos:
+    - 0.68
+    - -0.4
+    - 0.18
+    init_rot:
+    - 0.3827
+    - 0.0
+    - 0.0
+    - -0.9239
     height: 0.242
-    position_range:
-      x:
-        - 0.55
-        - 0.65
-      y:
-        - 0.15
-        - 0.40
-      z:
-        - 0.15
-        - 0.15
-    orientation_range:
-      yaw:
-        - -0.5236
-        - 0.5236
 primitives:
-  - type: pick
-    mode: affordance
-    params:
-      target: white_kettle6
-      pre_pick_offset: [0.0, 0.0, 0.10]
-      pick_interpolation_steps: 10
-      lift_interpolation_steps: 10
-      lift_offset: 0.15
-  - type: pour
-    params:
-      target: yellow_bowl
-      tilt_angle_deg: 62
-      move_hover_height: 0.25
-      tilt_lift_height: 0.3
-      tilt_horizontal_offset: 0.0
-      success_eval: true
-  - type: place
-    mode: pose
-    params:
-      position: [0.63, -0.3, 0.18]
-      orientation: [0.0, 0.9239, 0.0, 0.3827]
-      success_eval: true
-  - type: return_home
-    params:
-      post_settle_steps: 2
-  - type: pick
-    mode: affordance
-    params:
-      target: white_kettle3
-      pre_pick_offset: [0.0, 0.0, 0.10]
-      pick_interpolation_steps: 10
-      lift_interpolation_steps: 10
-      lift_offset: 0.15
-  - type: pour
-    params:
-      target: yellow_bowl
-      tilt_angle_deg: 62
-      move_hover_height: 0.3
-      tilt_lift_height: 0.3
-      tilt_horizontal_offset: 0.13
-      success_eval: true
+- type: pick
+  mode: affordance
+  params:
+    target: white_kettle6
+    pre_pick_offset:
+    - 0.0
+    - 0.0
+    - 0.1
+    pick_interpolation_steps: 10
+    lift_interpolation_steps: 10
+    lift_offset: 0.15
+- type: pour
+  params:
+    target: yellow_bowl
+    tilt_angle_deg: 62
+    move_hover_height: 0.25
+    tilt_lift_height: 0.3
+    tilt_horizontal_offset: 0.0
+    success_eval: true
+- type: place
+  mode: pose
+  params:
+    position:
+    - 0.63
+    - -0.3
+    - 0.18
+    orientation:
+    - 0.0
+    - 0.9239
+    - 0.0
+    - 0.3827
+    success_eval: true
+- type: return_home
+  params:
+    post_settle_steps: 2
+- type: pick
+  mode: affordance
+  params:
+    target: white_kettle3
+    pre_pick_offset:
+    - 0.0
+    - 0.0
+    - 0.1
+    pick_interpolation_steps: 10
+    lift_interpolation_steps: 10
+    lift_offset: 0.15
+- type: pour
+  params:
+    target: yellow_bowl
+    tilt_angle_deg: 62
+    move_hover_height: 0.3
+    tilt_lift_height: 0.3
+    tilt_horizontal_offset: 0.13
+    success_eval: true
 enable_random_lights: false
 image_noise_std: 0
 image_speckle_noise_std: 0
 enable_objects_randomization: true
 enable_objects_randomization_curriculum: false
 texture_randomization:
-  enabled: false
+  enabled: true
+  avoid_repeats: true
   texture_dir: models/random_pic/table
   targets:
     table:
-      prim_path: "/World/envs/env_{i}/table/Xform_01/Xform/leg/node_/Cube"
+      prim_path: /World/envs/env_{i}/table/Xform_01/Xform/leg/node_/Cube
       texture_dir: models/random_pic/table
+articulations: {}
+phase_depenetration:
+  objects:
+  - white_kettle6
+  - white_kettle3
+  reset: 2.0
+  primitives:
+    pick: 2.0
+    release: 0.5

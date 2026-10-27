@@ -250,6 +250,7 @@ def prepare_primitive_episode(collector, context: Dict[str, Any]) -> bool:
             collector.apply_random_textures(
                 texture_dir=tex_cfg["texture_dir"],
                 targets=tex_cfg.get("targets", {}),
+                avoid_repeats=bool(tex_cfg.get("avoid_repeats", False)),
             )
 
     action_dim = collector.env.env.action_manager.total_action_dim
@@ -828,6 +829,10 @@ def select_effective_pour_point_local(
     }
 
 
+class NoFeasiblePourRotationError(RuntimeError):
+    """The geometric search found no pose satisfying the existing constraints."""
+
+
 def search_best_pour_rotation(
     container_center_world: np.ndarray,
     effective_pour_world: np.ndarray,
@@ -958,7 +963,7 @@ def search_best_pour_rotation(
             best_breakdown = breakdown
 
     if best_ee_robot is None:
-        raise RuntimeError(
+        raise NoFeasiblePourRotationError(
             "No pour rotation candidate satisfies hard constraint: "
             f"z_axis_x > {hard_constraint_min_z_axis_x}, z_axis_z < {hard_constraint_max_z_axis_z}"
         )

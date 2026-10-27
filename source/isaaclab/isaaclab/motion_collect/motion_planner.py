@@ -35,7 +35,8 @@ class MotionPlanner:
         Args:
             robot_cfg_name: Robot configuration file name (e.g., "franka.yml")
             device: Device to run planning on
-            curobo_path: Path to CuRobo installation
+            curobo_path: CuRobo source directory containing the ``curobo`` package.
+                Defaults to this repository's ``curobo/src`` directory.
             num_envs: Number of parallel environments (for obstacle filtering)
             use_table_obstacle: Whether to add a table cuboid obstacle.
         """
@@ -47,14 +48,41 @@ class MotionPlanner:
         self._env_context_configured = False
         
         if curobo_path is None:
-            curobo_path = Path(__file__).parent.parent / "curobo-0.7.7" / "src"
-        sys.path.insert(0, str(curobo_path))
+            for root in Path(__file__).resolve().parents:
+                if (root / "source").is_dir() and (root / "models").is_dir():
+                    curobo_path = root / "curobo" / "src"
+                    break
+            else:
+                raise FileNotFoundError(
+                    "Cannot locate the repository root; pass curobo_path explicitly."
+                )
+        self.curobo_path = Path(curobo_path).expanduser().resolve()
+        if not (self.curobo_path / "curobo" / "__init__.py").is_file():
+            raise FileNotFoundError(f"CuRobo source package not found in {self.curobo_path}")
+        sys.path.insert(0, str(self.curobo_path))
         self._import_curobo()
         self._init_motion_gen()
         print(" MotionPlanner initialized")
     
     def _import_curobo(self):
         """Import CuRobo modules"""
+        import curobo
+
+        expected_package = (self.curobo_path / "curobo").resolve()
+        module_file = getattr(curobo, "__file__", None)
+        if module_file is None or Path(module_file).resolve() != expected_package / "__init__.py":
+            raise ImportError(
+                f"CuRobo was loaded from {module_file}, expected {expected_package}. "
+                "Restart Python with the intended CuRobo source directory."
+            )
+        for name, module in tuple(sys.modules.items()):
+            if name.startswith("curobo.") and getattr(module, "__file__", None):
+                if not Path(module.__file__).resolve().is_relative_to(expected_package):
+                    raise ImportError(
+                        f"CuRobo module {name} is cached from another source: {module.__file__}"
+                    )
+        print(f"[INFO] CuRobo source: {module_file}")
+
         from curobo.geom.sdf.world import CollisionCheckerType
         from curobo.geom.types import WorldConfig
         from curobo.types.base import TensorDeviceType

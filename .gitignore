@@ -1,2 +1,6 @@
 curobo/
+!configs/curobo_overrides/src/curobo/
+__pycache__/
+*.py[cod]
+outputs/
 

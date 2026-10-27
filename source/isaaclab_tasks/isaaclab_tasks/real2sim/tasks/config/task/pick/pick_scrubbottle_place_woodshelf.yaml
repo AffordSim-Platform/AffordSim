@@ -8,7 +8,8 @@ scene:
   env_spacing: 10
 task:
   name: pick_scrubbottle_place_woodshelf
-  description: grasp the yellow bowl and put it in the microwave
+  description: Pick up the white scrub bottle; then place the white scrub bottle on
+    the brown wood shelf.
 runtime:
   headless: false
   episodes: 5
@@ -18,89 +19,98 @@ runtime:
   save_mask_images: false
   save_original_images: true
   enable_motion_planning: true
-  sim_camera_resolution: [640, 480]
-  background_image_size: [640, 480]
+  sim_camera_resolution:
+  - 640
+  - 480
+  background_image_size:
+  - 640
+  - 480
   use_background_replace: true
   cam_side_background: backgrounds/1123_background.png
   cam_wrist_background: backgrounds/wristbackground_realworld1.png
   data_dir: data/r2s2r_data/pick_scrubbottle_place_woodshelf
-  task_name: FrankaFr3-OurGripper-Joint-VisPick-v0
+  task_name: UR5e-Robotiq85-IKRel-EE-VisPick-v0
   save_depth_images: false
 robot:
-  cfg_name: franka_fr3_our.yml
-  type: franka_fr3_default
+  cfg_name: ur5e_robotiq_2f_85.yml
+  type: ur5e
 offsets:
-  grasp: [0, 0, 0.0]
-  place: [0, 0, 0.0]
+  grasp:
+  - 0
+  - 0
+  - 0.0
+  place:
+  - 0
+  - 0
+  - 0.0
 objects:
   white_scrubbottle:
     usd_path: models/all_object/white_scrubbottle.usd
     semantic_tags:
-      -   - class
-          - white_scrubbottle
-    scale: [0.6, 0.6, 0.6]
-    init_pos: [0.55, 0.25, 0.16]
-    init_rot: [1,0,0,0]
-    position_range:
-      x:
-        - 0.45
-        - 0.75
-      y:
-        - 0.05
-        - 0.35
-      z:
-        - 0.16
-        - 0.16
-    orientation_range:
-      yaw:
-        - -0.5236
-        - 0.5236
+    - - class
+      - white_scrubbottle
+    init_pos:
+    - 0.7
+    - 0.1
+    - 0.15
+    init_rot:
+    - 0.9848
+    - 0.0
+    - 0.0
+    - -0.1736
+    height: 0.03
   brown_woodshelf:
     usd_path: models/all_object/brown_woodshelf.usd
     semantic_tags:
-      -   - class
-          - brown_woodshelf
-    init_pos: [0.8, -0.2, 0.35]
-    init_rot: [0.92387953, 0.0, 0.0, -0.38268343]
+    - - class
+      - brown_woodshelf
+    init_pos:
+    - 0.8
+    - -0.2
+    - 0.35
+    init_rot:
+    - 0.92387953
+    - 0.0
+    - 0.0
+    - -0.38268343
     height: 0.42
-    position_range:
-      x:
-        - 0.65
-        - 0.85
-      y:
-        - -0.35
-        - -0.05
-      z:
-        - 0.35
-        - 0.35
-    orientation_range:
-      yaw:
-        - -0.1745
-        - 0.1745
 primitives:
-  - type: pick
-    mode: affordance
-    params:
-      target: white_scrubbottle
-      pre_pick_offset: [0.0, 0.0, 0.15]
-      pick_interpolation_steps: 10
-      lift_interpolation_steps: 10
-      lift_offset: 0.15
-  - type: place
-    mode: in
-    params:
-      target: brown_woodshelf
-      ik_interpolation_steps: 30
-      success_eval: true
+- type: pick
+  mode: affordance
+  params:
+    target: white_scrubbottle
+    pre_pick_offset:
+    - 0.0
+    - 0.0
+    - 0.15
+    pick_interpolation_steps: 10
+    lift_interpolation_steps: 10
+    lift_offset: 0.15
+- type: place
+  mode: in
+  params:
+    target: brown_woodshelf
+    ik_interpolation_steps: 30
+    success_eval: true
 enable_random_lights: false
 image_noise_std: 0
 image_speckle_noise_std: 0
 enable_objects_randomization: true
 enable_objects_randomization_curriculum: false
 texture_randomization:
-  enabled: false
+  enabled: true
+  avoid_repeats: true
   texture_dir: models/random_pic/table
   targets:
     table:
       prim_path: /World/envs/env_{i}/table/Xform_01/Xform/leg/node_/Cube
       texture_dir: models/random_pic/table
+articulations: {}
+phase_depenetration:
+  objects:
+  - white_scrubbottle
+  - brown_woodshelf
+  reset: 2.0
+  primitives:
+    pick: 2.0
+    release: 0.5

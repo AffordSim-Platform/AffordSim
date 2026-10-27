@@ -1,0 +1,134 @@
+{
+  "upstream": "https://github.com/isaac-sim/IsaacLab",
+  "tag": "v2.3.1",
+  "commit": "5c2ec81cb17532d32f7922dd7fcaae40d123b71a",
+  "files": [
+    {
+      "path": "apps/isaaclab.python.headless.kit",
+      "git_blob_sha1": "f96f25bf39ed77744d7634ba699941fd8ae1a160",
+      "sha256": "7f803d803f9b48405ca3182f1f178d830894f674e8dac038b80a7787b5be1321",
+      "url": "https://raw.githubusercontent.com/isaac-sim/IsaacLab/5c2ec81cb17532d32f7922dd7fcaae40d123b71a/apps/isaaclab.python.headless.kit"
+    },
+    {
+      "path": "apps/isaaclab.python.headless.rendering.kit",
+      "git_blob_sha1": "0cd44a3cb10b8191d787b0d080e6b73b8e6eca48",
+      "sha256": "07b26af8a2330729974c3887c9c75c1b16af76fe58fb9ccf73ebbd3f494b81a6",
+      "url": "https://raw.githubusercontent.com/isaac-sim/IsaacLab/5c2ec81cb17532d32f7922dd7fcaae40d123b71a/apps/isaaclab.python.headless.rendering.kit"
+    },
+    {
+      "path": "apps/isaaclab.python.kit",
+      "git_blob_sha1": "b84235c870f9fdcd0067d400d76c4bd5a9b45e40",
+      "sha256": "ac69ba2877deedf9e51975edca1d7f213a3f4836c869c51d033f61a035257c30",
+      "url": "https://raw.githubusercontent.com/isaac-sim/IsaacLab/5c2ec81cb17532d32f7922dd7fcaae40d123b71a/apps/isaaclab.python.kit"
+    },
+    {
+      "path": "apps/isaaclab.python.rendering.kit",
+      "git_blob_sha1": "5b333e7fcb5b91f27b5f58f38b5038b4032b5b13",
+      "sha256": "cc1e8cd28a43c8b24b4c8a98dac7fb3e6a063226deef461297d30cf9282c82b1",
+      "url": "https://raw.githubusercontent.com/isaac-sim/IsaacLab/5c2ec81cb17532d32f7922dd7fcaae40d123b71a/apps/isaaclab.python.rendering.kit"
+    },
+    {
+      "path": "apps/isaaclab.python.xr.openxr.headless.kit",
+      "git_blob_sha1": "c2ddd4cb9e8ec072f03d428dc3fa468fe7d128e6",
+      "sha256": "4fab9f8ef523940742e83ca4e97fb49371e373ade18857868e62a211c86a6807",
+      "url": "https://raw.githubusercontent.com/isaac-sim/IsaacLab/5c2ec81cb17532d32f7922dd7fcaae40d123b71a/apps/isaaclab.python.xr.openxr.headless.kit"
+    },
+    {
+      "path": "apps/isaaclab.python.xr.openxr.kit",
+      "git_blob_sha1": "b7cdfc4d4a9571137eaa8baa42885df12254995d",
+      "sha256": "d16e446b2ccbbef778f4aa860f0e95f0985c47f88627c6138f8559ccd815e287",
+      "url": "https://raw.githubusercontent.com/isaac-sim/IsaacLab/5c2ec81cb17532d32f7922dd7fcaae40d123b71a/apps/isaaclab.python.xr.openxr.kit"
+    },
+    {
+      "path": "apps/isaacsim_4_5/extension.toml",
+      "git_blob_sha1": "f0668b9184d126682bb868596d119d0112e46e80",
+      "sha256": "205fae2a30929724b9f6b5e126eb803491a7d2b0dccfe10d5f691bd4082501a4",
+      "url": "https://raw.githubusercontent.com/isaac-sim/IsaacLab/5c2ec81cb17532d32f7922dd7fcaae40d123b71a/apps/isaacsim_4_5/extension.toml"
+    },
+    {
+      "path": "apps/isaacsim_4_5/isaaclab.python.headless.kit",
+      "git_blob_sha1": "5c7fa0818878122f5e907bb54add632d73a02447",
+      "sha256": "e05ec8fb5ac5499fda019cc3a945b3a3dcfe0187460195006113f35e78b8ac05",
+      "url": "https://raw.githubusercontent.com/isaac-sim/IsaacLab/5c2ec81cb17532d32f7922dd7fcaae40d123b71a/apps/isaacsim_4_5/isaaclab.python.headless.kit"
+    },
+    {
+      "path": "apps/isaacsim_4_5/isaaclab.python.headless.rendering.kit",
+      "git_blob_sha1": "4db45f4cccd048ef4f68ebc379ebc2adfe6978c0",
+      "sha256": "c3472c8a8992c614ed2503ea54081db7477f8924362bd512a3a19ef423fdcc27",
+      "url": "https://raw.githubusercontent.com/isaac-sim/IsaacLab/5c2ec81cb17532d32f7922dd7fcaae40d123b71a/apps/isaacsim_4_5/isaaclab.python.headless.rendering.kit"
+    },
+    {
+      "path": "apps/isaacsim_4_5/isaaclab.python.kit",
+      "git_blob_sha1": "211b78eba8e980936edbafef4633e87300e1333e",
+      "sha256": "43424eaa8ee08fa6150cc086c9484ee2d279b6428fa7760e10e979ba1bce7008",
+      "url": "https://raw.githubusercontent.com/isaac-sim/IsaacLab/5c2ec81cb17532d32f7922dd7fcaae40d123b71a/apps/isaacsim_4_5/isaaclab.python.kit"
+    },
+    {
+      "path": "apps/isaacsim_4_5/isaaclab.python.rendering.kit",
+      "git_blob_sha1": "0ab2869fdfbeba0ff5db3f8d5d6efe617b316d21",
+      "sha256": "cda58bc447f40dca7ba68351ec9c82f0592cbb5641e01a2bbdf2b8926657c930",
+      "url": "https://raw.githubusercontent.com/isaac-sim/IsaacLab/5c2ec81cb17532d32f7922dd7fcaae40d123b71a/apps/isaacsim_4_5/isaaclab.python.rendering.kit"
+    },
+    {
+      "path": "apps/isaacsim_4_5/isaaclab.python.xr.openxr.headless.kit",
+      "git_blob_sha1": "f20f3bacb5a8f87a1690650d1992cd3bab4ed195",
+      "sha256": "9cc5ae1e796d82a7cd43c15e496b5ed5215655d005f090f186c5e8d803651d36",
+      "url": "https://raw.githubusercontent.com/isaac-sim/IsaacLab/5c2ec81cb17532d32f7922dd7fcaae40d123b71a/apps/isaacsim_4_5/isaaclab.python.xr.openxr.headless.kit"
+    },
+    {
+      "path": "apps/isaacsim_4_5/isaaclab.python.xr.openxr.kit",
+      "git_blob_sha1": "355d3737c9511c1eae7fd51ec8654aee29b1dc6e",
+      "sha256": "3a812eb35cdce0d39a649f0ddd657a75a375e93eea4b5c8b0e9e40d2ebb0cbdf",
+      "url": "https://raw.githubusercontent.com/isaac-sim/IsaacLab/5c2ec81cb17532d32f7922dd7fcaae40d123b71a/apps/isaacsim_4_5/isaaclab.python.xr.openxr.kit"
+    },
+    {
+      "path": "apps/isaacsim_4_5/rendering_modes/balanced.kit",
+      "git_blob_sha1": "ee92625fd7e7ade27d2ca0c4f3253fb384560ba6",
+      "sha256": "e4018ffa5f6c42293ba86b09f3036d4078585962233d5001a8580c7eb7a782ad",
+      "url": "https://raw.githubusercontent.com/isaac-sim/IsaacLab/5c2ec81cb17532d32f7922dd7fcaae40d123b71a/apps/isaacsim_4_5/rendering_modes/balanced.kit"
+    },
+    {
+      "path": "apps/isaacsim_4_5/rendering_modes/performance.kit",
+      "git_blob_sha1": "3cfe6e8c0e2c2bb57e43fa9caa5ffd8692007cd9",
+      "sha256": "07488d242117cbb18e1dd8cd99594e10a2f4b4a469f4ac8d84cd0c8ed15b4eca",
+      "url": "https://raw.githubusercontent.com/isaac-sim/IsaacLab/5c2ec81cb17532d32f7922dd7fcaae40d123b71a/apps/isaacsim_4_5/rendering_modes/performance.kit"
+    },
+    {
+      "path": "apps/isaacsim_4_5/rendering_modes/quality.kit",
+      "git_blob_sha1": "8e966ddfd3b7c428d7773c6a8e2d0221943fde79",
+      "sha256": "bf701e78c1bd15dc87f6533a8a3918dc3727bd67bf42f4aa68371e3c4ff1e651",
+      "url": "https://raw.githubusercontent.com/isaac-sim/IsaacLab/5c2ec81cb17532d32f7922dd7fcaae40d123b71a/apps/isaacsim_4_5/rendering_modes/quality.kit"
+    },
+    {
+      "path": "apps/isaacsim_4_5/rendering_modes/xr.kit",
+      "git_blob_sha1": "8cfc2c988d78d8e2b8483744ee74878e851ca329",
+      "sha256": "efe35c789f50640340ab611e5fcd854faff64fe9fdf3036c44632ed4557b834d",
+      "url": "https://raw.githubusercontent.com/isaac-sim/IsaacLab/5c2ec81cb17532d32f7922dd7fcaae40d123b71a/apps/isaacsim_4_5/rendering_modes/xr.kit"
+    },
+    {
+      "path": "apps/rendering_modes/balanced.kit",
+      "git_blob_sha1": "ee92625fd7e7ade27d2ca0c4f3253fb384560ba6",
+      "sha256": "e4018ffa5f6c42293ba86b09f3036d4078585962233d5001a8580c7eb7a782ad",
+      "url": "https://raw.githubusercontent.com/isaac-sim/IsaacLab/5c2ec81cb17532d32f7922dd7fcaae40d123b71a/apps/rendering_modes/balanced.kit"
+    },
+    {
+      "path": "apps/rendering_modes/extension.toml",
+      "git_blob_sha1": "f0668b9184d126682bb868596d119d0112e46e80",
+      "sha256": "205fae2a30929724b9f6b5e126eb803491a7d2b0dccfe10d5f691bd4082501a4",
+      "url": "https://raw.githubusercontent.com/isaac-sim/IsaacLab/5c2ec81cb17532d32f7922dd7fcaae40d123b71a/apps/rendering_modes/extension.toml"
+    },
+    {
+      "path": "apps/rendering_modes/performance.kit",
+      "git_blob_sha1": "3cfe6e8c0e2c2bb57e43fa9caa5ffd8692007cd9",
+      "sha256": "07488d242117cbb18e1dd8cd99594e10a2f4b4a469f4ac8d84cd0c8ed15b4eca",
+      "url": "https://raw.githubusercontent.com/isaac-sim/IsaacLab/5c2ec81cb17532d32f7922dd7fcaae40d123b71a/apps/rendering_modes/performance.kit"
+    },
+    {
+      "path": "apps/rendering_modes/quality.kit",
+      "git_blob_sha1": "8e966ddfd3b7c428d7773c6a8e2d0221943fde79",
+      "sha256": "bf701e78c1bd15dc87f6533a8a3918dc3727bd67bf42f4aa68371e3c4ff1e651",
+      "url": "https://raw.githubusercontent.com/isaac-sim/IsaacLab/5c2ec81cb17532d32f7922dd7fcaae40d123b71a/apps/rendering_modes/quality.kit"
+    }
+  ],
+  "license_url": "https://raw.githubusercontent.com/isaac-sim/IsaacLab/5c2ec81cb17532d32f7922dd7fcaae40d123b71a/LICENSE"
+}

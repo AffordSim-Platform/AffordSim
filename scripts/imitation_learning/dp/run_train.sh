@@ -1,4 +1,6 @@
 #!/bin/bash
+# Historical bowl examples below retain their original checkpoint/dataset/task IDs.
+# BOWL_TASK_CONFIG must point to the matching historical bowl YAML, not the plate task.
 # dp_rss . : isaacsim5 conda env (torch/torchvision/h5py/diffusers/einops).
 
 set -e
@@ -23,7 +25,7 @@ echo " dp_rss (RSS-faithful Diffusion Policy) ..."
 #     --pred_horizon 16 --obs_horizon 2 --action_horizon 8 \
 #     --num_diffusion_steps 100 --beta_schedule squaredcos_cap_v2 \
 #     --inference_scheduler ddim --num_inference_steps 16 \
-#     --eval_task_config source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/pick/pick_banana_place_bowl.yaml \
+#     --eval_task_config "${BOWL_TASK_CONFIG}" \
 #     --eval_task Pick_Banana_Place_Bowl_Nogap_joint-v0 \
 #     --eval_num_rollouts 5 --eval_horizon 300 \
 #     --eval_joint_delta_mode cumulative --action_type joint_delta
@@ -35,7 +37,7 @@ echo " dp_rss (RSS-faithful Diffusion Policy) ..."
 #     --pred_horizon 16 --obs_horizon 2 --action_horizon 8 \
 #     --num_diffusion_steps 100 --beta_schedule squaredcos_cap_v2 \
 #     --inference_scheduler ddim --num_inference_steps 16 \
-#     --eval_task_config source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/pick/pick_banana_place_bowl.yaml \
+#     --eval_task_config "${BOWL_TASK_CONFIG}" \
 #     --eval_task Pick_Banana_Place_Bowl_Nogap_joint-v0 \
 #     --eval_num_rollouts 5 --eval_horizon 300 \
 #     --eval_joint_delta_mode cumulative --action_type joint_delta
@@ -47,7 +49,7 @@ echo " dp_rss (RSS-faithful Diffusion Policy) ..."
 #     --pred_horizon 16 --obs_horizon 2 --action_horizon 8 \
 #     --num_diffusion_steps 100 --beta_schedule squaredcos_cap_v2 \
 #     --inference_scheduler ddim --num_inference_steps 16 \
-#     --eval_task_config source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/pick/pick_banana_place_bowl.yaml \
+#     --eval_task_config "${BOWL_TASK_CONFIG}" \
 #     --eval_task Pick_Banana_Place_Bowl_Nogap_joint-v0 \
 #     --eval_num_rollouts 5 --eval_horizon 300 \
 #     --eval_joint_delta_mode cumulative --action_type joint_delta --no_image_aug
@@ -59,7 +61,7 @@ echo " dp_rss (RSS-faithful Diffusion Policy) ..."
 #     --pred_horizon 16 --obs_horizon 2 --action_horizon 8 \
 #     --num_diffusion_steps 100 --beta_schedule squaredcos_cap_v2 \
 #     --inference_scheduler ddim --num_inference_steps 16 \
-#     --eval_task_config source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/pick/pick_banana_place_bowl.yaml \
+#     --eval_task_config "${BOWL_TASK_CONFIG}" \
 #     --eval_task Pick_Banana_Place_Bowl_Nogap-v0 \
 #     --eval_num_rollouts 5 --eval_horizon 300 \
 #     --eval_joint_delta_mode cumulative --action_type ee_delta

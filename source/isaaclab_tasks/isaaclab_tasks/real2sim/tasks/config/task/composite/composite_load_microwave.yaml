@@ -7,8 +7,9 @@ scene:
   num_envs: 1
   env_spacing: 10
 task:
-  name: composite_open_microwave_pick_soup_place_microwave
-  description: open microwave door, then pick soupcan and place inside
+  name: composite_load_microwave
+  description: Open the microwave 1; then pick up the red soup can; then place the
+    red soup can in the microwave 1.
 runtime:
   headless: false
   episodes: 4
@@ -18,116 +19,158 @@ runtime:
   save_mask_images: false
   save_original_images: true
   enable_motion_planning: true
-  sim_camera_resolution: [640, 480]
-  background_image_size: [640, 480]
+  sim_camera_resolution:
+  - 640
+  - 480
+  background_image_size:
+  - 640
+  - 480
   use_background_replace: true
   cam_side_background: backgrounds/1123_background.png
   cam_wrist_background: backgrounds/wristbackground_realworld1.png
   data_dir: data/r2s2r_data/composite_load_microwave
-  task_name: FrankaFr3-OurGripper-Joint-VisPick-v0
+  task_name: Sawyer-Robotiq85-Joint-EE-VisPick-v0
   save_depth_images: false
 robot:
-  cfg_name: franka_fr3_our.yml
-  type: franka_fr3_default
+  cfg_name: sawyer.yml
+  type: sawyer_robotiq85
 offsets:
-  grasp: [0, 0, 0]
-  place: [0, 0, 0]
+  grasp:
+  - 0
+  - 0
+  - 0
+  place:
+  - 0
+  - 0
+  - 0
 objects:
   red_soupcan:
     usd_path: models/all_object/red_soupcan.usd
     semantic_tags:
-      -   - class
-          - red_soupcan
-    init_pos: [0.7, -0.3, 0.15]
-    init_rot: [1, 0, 0, 0]
-    height: 0.10
+    - - class
+      - red_soupcan
+    init_pos:
+    - 0.7
+    - -0.3
+    - 0.15
+    init_rot:
+    - 1
+    - 0
+    - 0
+    - 0
+    height: 0.1
     position_range:
       x:
-        - 0.60
-        - 0.70
+      - 0.6249999999999999
+      - 0.6749999999999999
       y:
-        - -0.4
-        - -0.3
+      - -0.375
+      - -0.32499999999999996
       z:
-        - 0.15
-        - 0.15
+      - 0.15
+      - 0.15
+    orientation_range:
+      yaw:
+      - -0.08725
+      - 0.08725
 articulations:
   microwave1:
     usd_path: models/all_object/microwave1.usd
     semantic_tags:
-      -   - class
-          - microwave1
-    scale: [0.7, 0.6, 0.7]
+    - - class
+      - microwave1
+    scale:
+    - 0.7
+    - 0.6
+    - 0.7
     disable_gravity: false
     enabled_self_collisions: true
-    init_pos: [0.8, 0.2, 0.16]
-    init_rot: [0.9239, 0.0, 0.0, -0.3827]
+    init_pos:
+    - 0.8
+    - 0.2
+    - 0.16
+    init_rot:
+    - 0.9239
+    - 0.0
+    - 0.0
+    - -0.3827
     position_range:
       x:
-        - 0.7
-        - 0.8
+      - 0.8
+      - 0.8
       y:
-        - 0.15
-        - 0.25
+      - 0.2
+      - 0.2
       z:
-        - 0.16
-        - 0.16
+      - 0.16
+      - 0.16
     orientation_range:
       yaw:
-        - -0.1745
-        - 0.1745
+      - 0.0
+      - 0.0
     joint_pos:
       microjoint: 0.0
     actuators:
       joint:
-        joint_names_expr: ["microjoint"]
+        joint_names_expr:
+        - microjoint
         effort_limit: 1000
         velocity_limit: 1000
         stiffness: 0
         damping: 0
-
 primitives:
-  - type: open
-    params:
-      target: microwave1
-      fast_pull_distance: 0.15
-      fast_pull_interpolation_steps: 5
-      lift_before_pre_insert: 0.2
-      lift_interpolation_steps: 10
-      pre_insert_outward_offset: 0.03
-      align_above_interpolation_steps: 10
-      door_tangent_move_distance: 0.3
-      success_eval: true
-      success_joint_name: microjoint
-  - type: return_home
-    params:
-      post_settle_steps: 20
-  - type: pick
-    mode: affordance
-    params:
-      target: red_soupcan
-      pre_pick_offset: [0.0, 0.0, 0.10]
-      pick_interpolation_steps: 10
-      lift_interpolation_steps: 10
-      lift_offset: 0.15
-  - type: place
-    mode: in
-    params:
-      target: microwave1
-      ik_interpolation_steps: 30
-      success_eval: true
-  - type: return_home
-    params:
-      post_settle_steps: 20
+- type: open
+  params:
+    target: microwave1
+    fast_pull_distance: 0.15
+    fast_pull_interpolation_steps: 5
+    lift_before_pre_insert: 0.2
+    lift_interpolation_steps: 10
+    pre_insert_outward_offset: 0.03
+    align_above_interpolation_steps: 10
+    door_tangent_move_distance: 0.3
+    success_eval: true
+    success_joint_name: microjoint
+- type: return_home
+  params:
+    post_settle_steps: 20
+- type: pick
+  mode: affordance
+  params:
+    target: red_soupcan
+    pre_pick_offset:
+    - 0.0
+    - 0.0
+    - 0.1
+    pick_interpolation_steps: 10
+    lift_interpolation_steps: 10
+    lift_offset: 0.15
+- type: place
+  mode: in
+  params:
+    target: microwave1
+    ik_interpolation_steps: 30
+    success_eval: true
+- type: return_home
+  params:
+    post_settle_steps: 20
 enable_random_lights: false
 image_noise_std: 0
 image_speckle_noise_std: 0
 enable_objects_randomization: true
 enable_objects_randomization_curriculum: false
 texture_randomization:
-  enabled: false
+  enabled: true
+  avoid_repeats: true
   texture_dir: models/random_pic/table
   targets:
     table:
-      prim_path: "/World/envs/env_{i}/table/Xform_01/Xform/leg/node_/Cube"
+      prim_path: /World/envs/env_{i}/table/Xform_01/Xform/leg/node_/Cube
       texture_dir: models/random_pic/table
+phase_depenetration:
+  objects:
+  - red_soupcan
+  reset: 2.0
+  primitives:
+    pick: 2.0
+    release: 0.5

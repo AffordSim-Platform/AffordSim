@@ -49,6 +49,14 @@ class CollectorUtilsMixin:
                 containers_path = candidate
                 break
         if containers_path is None:
+            # Evaluation copies task YAMLs into per-run output directories.
+            # They still use the registry bundled with this checkout unless
+            # an explicit registry exists beside the task (or an ancestor).
+            project_root = Path(__file__).resolve().parents[4]
+            candidate = project_root / "source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/containers.yaml"
+            if candidate.is_file():
+                containers_path = candidate
+        if containers_path is None:
             print(
                 f"  [INFO] containers.yaml not found when searching from {task_cfg_path.parent} upward, "
                 "no semi-enclosed containers registered."
@@ -56,7 +64,7 @@ class CollectorUtilsMixin:
             return {}
         with open(containers_path, 'r', encoding='utf-8') as f:
             registry = yaml.safe_load(f) or {}
-        print(f"  [INFO] Loaded {len(registry)} semi-enclosed container(s): {list(registry.keys())}")
+        print(f"  [INFO] Loaded {len(registry)} semi-enclosed container(s) from {containers_path}: {list(registry.keys())}")
         return registry
 
     def is_semi_enclosed_container(self, container_name: str) -> bool:
@@ -567,7 +575,7 @@ class CollectorUtilsMixin:
 
     
     
-    def apply_random_textures(self, texture_dir: str, targets: Dict[str, str]):
+    def apply_random_textures(self, texture_dir: str, targets: Dict[str, str], avoid_repeats: bool = False):
         """
         Randomly assign textures to specified meshes for each environment, supporting multiple objects.
 
@@ -578,6 +586,8 @@ class CollectorUtilsMixin:
                 e.g.: {"table": "/World/envs/env_{i}/table/.../Cube"}
                 or:   {"table": {"prim_path": "/World/envs/env_{i}/table/.../Cube",
                                  "texture_dir": "/path/to/table_textures"}}
+            avoid_repeats: Shuffle each target's texture pool and exhaust it before
+                reusing a texture. Useful for comparing repeated evaluation trials.
         """
         stage = omni.usd.get_context().get_stage()
         assignments: List[Dict[str, Any]] = []
@@ -593,7 +603,7 @@ class CollectorUtilsMixin:
                 mesh_prim_template = target_cfg
                 target_texture_dir = texture_dir
 
-            texture_files = [f for f in os.listdir(target_texture_dir) if f.endswith(".png")]
+            texture_files = sorted(f for f in os.listdir(target_texture_dir) if f.endswith(".png"))
             if not texture_files:
                 print(f"[WARNING] No textures found: {target_texture_dir} (target: {target_name})")
                 assignments.append(
@@ -606,7 +616,21 @@ class CollectorUtilsMixin:
                 continue
 
             for i in range(self.num_envs):
-                tex_file = random.choice(texture_files)
+                if avoid_repeats:
+                    if not hasattr(self, "_texture_shuffle_bags"):
+                        self._texture_shuffle_bags = {}
+                    pool_key = (target_name, os.path.abspath(target_texture_dir), tuple(texture_files))
+                    pool = self._texture_shuffle_bags.setdefault(pool_key, {"remaining": [], "last": None})
+                    if not pool["remaining"]:
+                        pool["remaining"] = list(texture_files)
+                        random.shuffle(pool["remaining"])
+                        # Avoid an adjacent repeat across two shuffled cycles.
+                        if len(pool["remaining"]) > 1 and pool["remaining"][-1] == pool["last"]:
+                            pool["remaining"][0], pool["remaining"][-1] = pool["remaining"][-1], pool["remaining"][0]
+                    tex_file = pool["remaining"].pop()
+                    pool["last"] = tex_file
+                else:
+                    tex_file = random.choice(texture_files)
                 texture_path = os.path.join(target_texture_dir, tex_file)
 
                 mtl_path = f"/Looks/RandomMaterial_{target_name}_env_{i}"

@@ -1,5 +1,3 @@
-from pathlib import Path
-
 import isaaclab.sim as sim_utils
 from isaaclab.assets import AssetBaseCfg, RigidObjectCfg
 from isaaclab.sensors import CameraCfg, FrameTransformerCfg, TiledCameraCfg
@@ -7,25 +5,25 @@ from isaaclab.sensors.frame_transformer.frame_transformer_cfg import OffsetCfg
 from isaaclab.utils import configclass
 
 from isaaclab_tasks.real2sim.assets.franka import FRANKA_FR3_CFG
-from isaaclab_tasks.real2sim.tasks.pick import mdp
-from isaaclab_tasks.real2sim.tasks.pick.pick_r2s_env_cfg import (
-    EnvCfg,
+from isaaclab_tasks.real2sim.tasks import mdp
+from isaaclab_tasks.real2sim.tasks.config.franka_fr3.ourgripper.joint_vis_env_cfg import (
+    FrankaFr3OurGripperJointVisPickEnvCfg,
+)
+from isaaclab_tasks.real2sim.tasks.pick_r2s_env_cfg import (
     _get_scene_usd_path,
     _get_sim_camera_resolution,
     _get_use_background_replace,
 )
 from isaaclab_tasks.real2sim.utils.camera_cfg import fr3_default_side_cam, fr3_default_wrist_cam
 
-_current = Path(__file__).resolve()
-PROJECT_ROOT = _current
-while PROJECT_ROOT != PROJECT_ROOT.parent:
-    if (PROJECT_ROOT / "models").is_dir():
-        break
-    PROJECT_ROOT = PROJECT_ROOT.parent
-
-
 @configclass
-class FrankaFr3DefaultGripperJointVisPickEnvCfg(EnvCfg):
+class FrankaFr3DefaultGripperJointVisPickEnvCfg(FrankaFr3OurGripperJointVisPickEnvCfg):
+    """FR3 with its stock fingers and calibrated 0.1034 m tool centre.
+
+    Share the collection observations and required top cameras with the FR3
+    collection configuration, then replace the robot, side/wrist cameras and
+    tool frame with the stock-gripper settings.
+    """
     def __post_init__(self):
         super().__post_init__()
 
@@ -44,18 +42,6 @@ class FrankaFr3DefaultGripperJointVisPickEnvCfg(EnvCfg):
             close_command_expr={"fr3_finger_.*": 0.0},
         )
 
-        self.scene.basic_block_red = RigidObjectCfg(
-            prim_path="{ENV_REGEX_NS}/basic_block_red",
-            spawn=sim_utils.UsdFileCfg(
-                usd_path=str(PROJECT_ROOT / "models/rigid_assets/basic_block.usd"),
-                semantic_tags=[("class", "cube")],
-                visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 0.0, 0.0)),
-            ),
-            init_state=RigidObjectCfg.InitialStateCfg(
-                pos=(0.47, 0.068, 0.0483),
-                rot=(1.0, 0.0, 0.0, 0.0),
-            ),
-        )
         self.scene.table = AssetBaseCfg(
             prim_path="{ENV_REGEX_NS}/table",
             spawn=sim_utils.UsdFileCfg(
@@ -90,7 +76,7 @@ class FrankaFr3DefaultGripperJointVisPickEnvCfg(EnvCfg):
             ),
         )
         self.scene.wrist_cam = TiledCameraCfg(
-            prim_path="{ENV_REGEX_NS}/fr3/urdf_01/fr3_hand/wrist_cam",
+            prim_path="{ENV_REGEX_NS}/fr3/fr3_hand/wrist_cam",
             height=_cam_h,
             width=_cam_w,
             data_types=camera_types,
@@ -107,11 +93,11 @@ class FrankaFr3DefaultGripperJointVisPickEnvCfg(EnvCfg):
         )
 
         self.scene.ee_frame = FrameTransformerCfg(
-            prim_path="{ENV_REGEX_NS}/fr3/urdf_01/fr3_link0",
+            prim_path="{ENV_REGEX_NS}/fr3/fr3_link0",
             debug_vis=False,
             target_frames=[
                 FrameTransformerCfg.FrameCfg(
-                    prim_path="{ENV_REGEX_NS}/fr3/urdf_01/fr3_hand",
+                    prim_path="{ENV_REGEX_NS}/fr3/fr3_hand",
                     name="end_effector",
                     offset=OffsetCfg(pos=[0.0, 0.0, 0.1034]),
                 ),
@@ -122,4 +108,3 @@ class FrankaFr3DefaultGripperJointVisPickEnvCfg(EnvCfg):
         self.decimation = 10
         self.sim.dt = 1 / (60 * 2)
         self.sim.render_interval = 10
-        self.set_scene("2")

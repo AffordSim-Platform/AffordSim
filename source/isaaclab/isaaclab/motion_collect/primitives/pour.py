@@ -12,6 +12,8 @@ from ..success.scene_helpers import _get_object_pose_world_from_scene
 from ..tools.affordance_resolver import resolve_affordance_path
 from ..tools.pose_utils import _quat_wxyz_to_matrix
 from .utils import (
+    NoFeasiblePourRotationError,
+    FAILURE_REASON_PLANNING_FAILED,
     FAILURE_REASON_TARGET_MISSING,
     _normalize_xy,
     commit_plan_failures,
@@ -115,6 +117,7 @@ def primitive_compute_pour_pose(collector, mode: Optional[str], params: Dict[str
     all_pour_quat = []
     all_pour_dir = []
     all_pour_meta = []
+    pose_available_mask = list(prev_success_mask)
 
     for env_idx in range(collector.num_envs):
         if not prev_success_mask[env_idx]:
@@ -179,26 +182,37 @@ def primitive_compute_pour_pose(collector, mode: Optional[str], params: Dict[str
         object_center_world = rot_cup @ (pour_geometry["object_center_local"] * object_scale) + obj_pos_w
         container_center_world = rot_container @ (container_center_local * container_scale) + cont_pos_w
 
-        (
-            pour_target_world,
-            ee_target_robot,
-            ee_target_quat,
-            pour_dir_world,
-            candidate_score,
-            score_breakdown,
-        ) = search_best_pour_rotation(
-            container_center_world=container_center_world,
-            effective_pour_world=effective_pour_world,
-            current_ee_world=current_ee_world,
-            object_center_world=object_center_world,
-            env_origin=origin,
-            lift_pos_robot=np.asarray(lift_positions[env_idx], dtype=np.float64),
-            current_grasp_quat_wxyz=np.array(context["all_pick_quat"][env_idx], dtype=np.float64),
-            n_candidates=n_rotation_candidates,
-            tilt_angle_deg=tilt_angle,
-            tilt_lift_height=tilt_lift_height,
-            tilt_horizontal_offset=tilt_horizontal_offset,
-        )
+        try:
+            (
+                pour_target_world,
+                ee_target_robot,
+                ee_target_quat,
+                pour_dir_world,
+                candidate_score,
+                score_breakdown,
+            ) = search_best_pour_rotation(
+                container_center_world=container_center_world,
+                effective_pour_world=effective_pour_world,
+                current_ee_world=current_ee_world,
+                object_center_world=object_center_world,
+                env_origin=origin,
+                lift_pos_robot=np.asarray(lift_positions[env_idx], dtype=np.float64),
+                current_grasp_quat_wxyz=np.array(context["all_pick_quat"][env_idx], dtype=np.float64),
+                n_candidates=n_rotation_candidates,
+                tilt_angle_deg=tilt_angle,
+                tilt_lift_height=tilt_lift_height,
+                tilt_horizontal_offset=tilt_horizontal_offset,
+            )
+        except NoFeasiblePourRotationError as exc:
+            # An empty feasible set is a failed plan for this environment, not
+            # a program exception invalidating every environment in the batch.
+            pose_available_mask[env_idx] = False
+            all_pour_pos.append(np.array(lift_positions[env_idx], dtype=np.float64))
+            all_pour_quat.append(pick_quat_wxyz)
+            all_pour_dir.append(np.array([1.0, 0.0, 0.0], dtype=np.float64))
+            all_pour_meta.append({"status": "no_feasible_rotation", "reason": str(exc)})
+            print(f"   [PLAN_FAILURE] Env {env_idx}: {exc}")
+            continue
 
         all_pour_pos.append(ee_target_robot)
         all_pour_quat.append(ee_target_quat)
@@ -220,6 +234,7 @@ def primitive_compute_pour_pose(collector, mode: Optional[str], params: Dict[str
         "mode": "auto",
         "target_label": container_label,
         "target_available_mask": list(target_available_mask),
+        "pose_available_mask": pose_available_mask,
         "positions": np.array(all_pour_pos, dtype=np.float64),
         "orientations": np.array(all_pour_quat, dtype=np.float64),
         "pour_directions": np.array(all_pour_dir, dtype=np.float64),
@@ -244,11 +259,26 @@ def primitive_execute_pour(collector, params: Dict[str, Any], context: Dict[str,
     prev_alive = get_prev_alive_mask(context, n)
     local_active = init_local_active_mask(context, n)
     target_available_mask = list(pour_pose.get("target_available_mask", [True] * n))
+    pose_available_mask = list(pour_pose.get("pose_available_mask", [True] * n))
     for env_idx in range(n):
         if prev_alive[env_idx] and not target_available_mask[env_idx]:
             mark_local_inactive_with_reason(
                 context, local_active, env_idx, FAILURE_REASON_TARGET_MISSING
             )
+        elif prev_alive[env_idx] and not pose_available_mask[env_idx]:
+            mark_local_inactive_with_reason(
+                context, local_active, env_idx, FAILURE_REASON_PLANNING_FAILED
+            )
+
+    if not any(local_active):
+        commit_plan_failures(context, prev_alive, local_active)
+        context["post_pour_success_mask"] = [False] * n
+        context["env_alive_mask"] = [False] * n
+        context["pour_completed"] = False
+        context["task_success_metrics"] = [
+            {"pour_pose_available": float(pose_available_mask[i])} for i in range(n)
+        ]
+        return False
 
     move_hover_height = float(params.get("move_hover_height", pour_pose.get("move_hover_height", 0.15)))
     tilt_angle = float(params.get("tilt_angle_deg", pour_pose.get("tilt_angle_deg", 90.0)))

@@ -1,0 +1,5728 @@
+{
+  "schema_version": 1,
+  "paths_relative_to": "repository_root",
+  "task_count": 50,
+  "episodes_per_round": 20,
+  "task_set_resolution": "User explicitly chose policy20 precedence: replace banana-to-bowl, three-cups-to-tray, and three-picks-to-paperbox with banana-to-plate, cups-on-plates, and clutter-into-baskets; keep 50 slots and robot allocation.",
+  "range_policy": "Canonical YAMLs contain final tested ranges. Each task's initial_ranges preserves the pre-test baseline for objects and articulations; evaluation.range_scale records the selected final scale. New adaptive runs scale the current canonical ranges again, so use --no-adapt to evaluate released ranges unchanged.",
+  "training20_mapping": {
+    "pick_banana_place_plate": "pick_banana_place_plate",
+    "pick_leek_place_cuttingboard": "pick_leek_place_cuttingboard",
+    "pick_chocolatebox_place_sugarbox": "pick_chocolatebox_place_sugarbox",
+    "pick_cup_place_shelf": "pick_cup_place_woodshelf",
+    "pick_mug_place_coffee_machine": "pick_mugcup_place_coffeemachine",
+    "pick_lid_place_pot": "pick_lid_place_pot",
+    "pick_soupcan_place_microwave": "pick_soupcan_place_microwave",
+    "pour_scoop_into_bowl": "pour_basket",
+    "pour_red_mug_into_bowl": "pour_mugcup",
+    "pour_kettle_into_bowl": "pour_whitekettle",
+    "stack_three_cubes": "stack_cube",
+    "hang_white_cup_on_rack": "hang_cup",
+    "push_can_to_target": "push_coffeecan",
+    "pull_cabinet_open": "pull_cabinet",
+    "open_microwave": "open_microwave",
+    "hang_red_mug_on_rack": "hang_mugcup",
+    "pour_kettle_and_teapot": "composite_double_pour_kettle",
+    "store_cups_on_plates": "store_cups_on_plates",
+    "pour_sugar_pick_mug_into_coffeemachine": "composite_pour_then_place_coffee",
+    "organize_the_clutter_into_baskets": "organize_clutter_into_baskets"
+  },
+  "tasks": [
+    {
+      "task_id": "pick_banana_place_plate",
+      "config_path": "source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/pick/pick_banana_place_plate.yaml",
+      "robot": "franka_default",
+      "env_task_name": "FrankaFr3-DefaultGripper-Joint-VisPick-v0",
+      "robot_cfg_name": "franka_fr3.yml",
+      "robot_type": "franka_fr3",
+      "training_task": true,
+      "difficulty": "Easy",
+      "initial_ranges": {
+        "objects": {
+          "yellow_banana": {
+            "position_range": {
+              "x": [
+                0.5356000000000001,
+                0.6856
+              ],
+              "y": [
+                0.038000000000000006,
+                0.188
+              ],
+              "z": [
+                0.098,
+                0.098
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.5235987755982988,
+                0.5235987755982988
+              ]
+            }
+          },
+          "white_plate": {
+            "position_range": {
+              "x": [
+                0.46,
+                0.61
+              ],
+              "y": [
+                -0.251,
+                -0.10099999999999999
+              ],
+              "z": [
+                0.055,
+                0.055
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.5235987755982988,
+                0.5235987755982988
+              ]
+            }
+          }
+        },
+        "articulations": {}
+      },
+      "config_sha256": "6eb8f326af5c2fd8383e9fda9ed5682539e0c95c26c8401e61b7aaf2cd642786",
+      "evaluation": {
+        "round": "round_02",
+        "range_scale": 0.5,
+        "trials": 20,
+        "successes": 2,
+        "success_rate_percent": 10,
+        "num_envs": 10,
+        "episodes_per_environment": 2,
+        "tested_config_sha256": "2e5beb8edfff8f70b556432aab9a27daa65811471f3d8c5820194419d5c65dd0",
+        "tested_source_sha256": "74464f63df6063a1a1b9e3c9fcb82a7fd3e34d24df46f6ecc12409ec8cf9189a",
+        "report_sha256": "a63d7c6cad6c75f007aaba8b5106e1776b03151dc1346975a5a52f9c91f36654"
+      },
+      "num_envs": 10,
+      "initial_evaluation": {
+        "round": "round_00",
+        "range_scale": 1.0,
+        "trials": 20,
+        "successes": 1,
+        "success_rate_percent": 5,
+        "num_envs": 10,
+        "episodes_per_environment": 2,
+        "tested_config_sha256": "fdb3df311cfd1b7167f1cf4528bcc7e7519a2ef137b32f9084ecb525ea0611d4",
+        "tested_source_sha256": "74464f63df6063a1a1b9e3c9fcb82a7fd3e34d24df46f6ecc12409ec8cf9189a",
+        "report_sha256": "f8394fab5f39415d10d3437d95c97ed15cf3b5f45e509e2ea5349d56dbb39a71"
+      },
+      "final_ranges": {
+        "objects": {
+          "yellow_banana": {
+            "position_range": {
+              "x": [
+                0.5731,
+                0.6481
+              ],
+              "y": [
+                0.07550000000000001,
+                0.1505
+              ],
+              "z": [
+                0.098,
+                0.098
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.2617993877991494,
+                0.2617993877991494
+              ]
+            }
+          },
+          "white_plate": {
+            "position_range": {
+              "x": [
+                0.49750000000000005,
+                0.5725
+              ],
+              "y": [
+                -0.2135,
+                -0.13849999999999998
+              ],
+              "z": [
+                0.055,
+                0.055
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.2617993877991494,
+                0.2617993877991494
+              ]
+            }
+          }
+        },
+        "articulations": {}
+      }
+    },
+    {
+      "task_id": "pick_bottle_place_table",
+      "config_path": "source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/pick/pick_bottle_place_table.yaml",
+      "robot": "franka_long",
+      "env_task_name": "FrankaFr3-OurGripper-Joint-VisPick-v0",
+      "robot_cfg_name": "franka_fr3_our.yml",
+      "robot_type": "franka_fr3",
+      "training_task": false,
+      "difficulty": "Easy",
+      "initial_ranges": {
+        "objects": {
+          "red_mugcup": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "starbuckscup": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "white_100mmcup": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "red_bottle": {
+            "position_range": null,
+            "orientation_range": null
+          }
+        },
+        "articulations": {}
+      },
+      "config_sha256": "d64a0edc7f96775daffe2d0c3946e87de582c3f1c6245ff343fd4cb9d3335774",
+      "evaluation": {
+        "round": "round_00",
+        "range_scale": 1.0,
+        "trials": 20,
+        "successes": 20,
+        "success_rate_percent": 100,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "c4286eef715321f99d27dc58330f0e30e6cecd8d0bf87b44b8a16f5e10472917",
+        "tested_source_sha256": "3ea652026ea4310745ead635793f81d12ccf63c86dbd4286f21caeb27594fba9",
+        "report_sha256": "9291adefe421597eddd38103afd6d1471f26267bf04971a32fb1447547cfd064"
+      },
+      "num_envs": 20,
+      "initial_evaluation": {
+        "round": "round_00",
+        "range_scale": 1.0,
+        "trials": 20,
+        "successes": 20,
+        "success_rate_percent": 100,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "c4286eef715321f99d27dc58330f0e30e6cecd8d0bf87b44b8a16f5e10472917",
+        "tested_source_sha256": "3ea652026ea4310745ead635793f81d12ccf63c86dbd4286f21caeb27594fba9",
+        "report_sha256": "9291adefe421597eddd38103afd6d1471f26267bf04971a32fb1447547cfd064"
+      },
+      "final_ranges": {
+        "objects": {
+          "red_mugcup": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "starbuckscup": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "white_100mmcup": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "red_bottle": {
+            "position_range": null,
+            "orientation_range": null
+          }
+        },
+        "articulations": {}
+      }
+    },
+    {
+      "task_id": "pick_bowl_place_plate",
+      "config_path": "source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/pick/pick_bowl_place_plate.yaml",
+      "robot": "kinova",
+      "env_task_name": "Kinova-Robotiq85-IKRel-EE-VisPick-v0",
+      "robot_cfg_name": "kinova_robotiq85.yml",
+      "robot_type": "kinova_robotiq85",
+      "training_task": false,
+      "difficulty": "Easy",
+      "initial_ranges": {
+        "objects": {
+          "yellow_bigbowl": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "yellow_bowl": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "white_plate": {
+            "position_range": null,
+            "orientation_range": null
+          }
+        },
+        "articulations": {}
+      },
+      "config_sha256": "ad7fa31d24137b7d27e5f742830460ca3b0b2a8bcd40b3cfbc6ed0c79c3c4adc",
+      "evaluation": {
+        "round": "round_00",
+        "range_scale": 1.0,
+        "trials": 20,
+        "successes": 8,
+        "success_rate_percent": 40,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "79ffd3fb92bb690f50a3074de092bcb012eeeeda4498a91aa0639da6688a0814",
+        "tested_source_sha256": "ada1c2a4aaed51882a61de20fa46d49ddcea33172fcb10b3166cd87be03c1ac7",
+        "report_sha256": "a87538d8b94c3f55c0c159cd3c4ebca51588834bd0c4b2ceb08197fe79c54cbd"
+      },
+      "num_envs": 20,
+      "initial_evaluation": {
+        "round": "round_00",
+        "range_scale": 1.0,
+        "trials": 20,
+        "successes": 8,
+        "success_rate_percent": 40,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "79ffd3fb92bb690f50a3074de092bcb012eeeeda4498a91aa0639da6688a0814",
+        "tested_source_sha256": "ada1c2a4aaed51882a61de20fa46d49ddcea33172fcb10b3166cd87be03c1ac7",
+        "report_sha256": "a87538d8b94c3f55c0c159cd3c4ebca51588834bd0c4b2ceb08197fe79c54cbd"
+      },
+      "final_ranges": {
+        "objects": {
+          "yellow_bigbowl": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "yellow_bowl": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "white_plate": {
+            "position_range": null,
+            "orientation_range": null
+          }
+        },
+        "articulations": {}
+      },
+      "previous_canonical_config_sha256": "4b3344b50c8ef343488f4148a675e13ff52baa5345f8e56dc0f3d5222c2328b7",
+      "configuration_adjustment": {
+        "asset": "yellow_bowl",
+        "field": "mass",
+        "previous_kg": 1.0,
+        "current_kg": 0.2,
+        "reason": "Task-specific lighter-bowl experiment; prior evaluations used original asset mass."
+      },
+      "evaluation_provenance_note": "Historical evaluation was performed with the original 1.0 kg bowl and max_depenetration_velocity 0.5."
+    },
+    {
+      "task_id": "pick_carrot_place_bowl",
+      "config_path": "source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/pick/pick_carrot_place_bowl.yaml",
+      "robot": "sawyer",
+      "env_task_name": "Sawyer-Robotiq85-Joint-EE-VisPick-v0",
+      "robot_cfg_name": "sawyer.yml",
+      "robot_type": "sawyer_robotiq85",
+      "training_task": false,
+      "difficulty": "Easy",
+      "initial_ranges": {
+        "objects": {
+          "yellow_bigbowl": {
+            "position_range": {
+              "x": [
+                0.525,
+                0.675
+              ],
+              "y": [
+                0.175,
+                0.325
+              ],
+              "z": [
+                0.0754,
+                0.0754
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.5235987755982988,
+                0.5235987755982988
+              ]
+            }
+          },
+          "orange_carrot": {
+            "position_range": {
+              "x": [
+                0.525,
+                0.675
+              ],
+              "y": [
+                -0.325,
+                -0.175
+              ],
+              "z": [
+                0.0714,
+                0.0714
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.5235987755982988,
+                0.5235987755982988
+              ]
+            }
+          }
+        },
+        "articulations": {}
+      },
+      "config_sha256": "23beeea36626db1c826e67d894f8fb7493c241b898c0e7489540a02d5bffdde5",
+      "evaluation": {
+        "round": "round_00",
+        "range_scale": 1.0,
+        "trials": 20,
+        "successes": 20,
+        "success_rate_percent": 100,
+        "num_envs": 10,
+        "episodes_per_environment": 2,
+        "tested_config_sha256": "f269d1fa15ae455f24db966374ac8440ef245a40fe58bac22b387de8da5cd24d",
+        "tested_source_sha256": "8fbdd46168889650e651e174aee15f353a131a5d0122a52b6b1e23e0618fd28e",
+        "report_sha256": "effbc6cffb25c6199d6943c1d7583a8a1e152690fd0e9864cad92b5e5c6aba97"
+      },
+      "num_envs": 10,
+      "initial_evaluation": {
+        "round": "round_00",
+        "range_scale": 1.0,
+        "trials": 20,
+        "successes": 20,
+        "success_rate_percent": 100,
+        "num_envs": 10,
+        "episodes_per_environment": 2,
+        "tested_config_sha256": "f269d1fa15ae455f24db966374ac8440ef245a40fe58bac22b387de8da5cd24d",
+        "tested_source_sha256": "8fbdd46168889650e651e174aee15f353a131a5d0122a52b6b1e23e0618fd28e",
+        "report_sha256": "effbc6cffb25c6199d6943c1d7583a8a1e152690fd0e9864cad92b5e5c6aba97"
+      },
+      "final_ranges": {
+        "objects": {
+          "yellow_bigbowl": {
+            "position_range": {
+              "x": [
+                0.5250000000000001,
+                0.675
+              ],
+              "y": [
+                0.175,
+                0.325
+              ],
+              "z": [
+                0.0754,
+                0.0754
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.5235987755982988,
+                0.5235987755982988
+              ]
+            }
+          },
+          "orange_carrot": {
+            "position_range": {
+              "x": [
+                0.5250000000000001,
+                0.675
+              ],
+              "y": [
+                -0.325,
+                -0.175
+              ],
+              "z": [
+                0.0714,
+                0.0714
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.5235987755982988,
+                0.5235987755982988
+              ]
+            }
+          }
+        },
+        "articulations": {}
+      }
+    },
+    {
+      "task_id": "pick_carrot_place_plate",
+      "config_path": "source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/pick/pick_carrot_place_plate.yaml",
+      "robot": "xarm7",
+      "env_task_name": "XArm7-UFactory-Joint-EE-VisPick-v0",
+      "robot_cfg_name": "xarm7.yml",
+      "robot_type": "xarm7_ufactory",
+      "training_task": false,
+      "difficulty": "Easy",
+      "initial_ranges": {
+        "objects": {
+          "white_plate": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "orange_carrot": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "green_leek": {
+            "position_range": null,
+            "orientation_range": null
+          }
+        },
+        "articulations": {}
+      },
+      "config_sha256": "7b52e138217011a6f1315f6c81a9d7fd9b4c5e9ff00a8ec1236e2435fcc6b7da",
+      "evaluation": {
+        "round": "round_00",
+        "range_scale": 1.0,
+        "trials": 20,
+        "successes": 20,
+        "success_rate_percent": 100,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "c5a9d531dc7a89ecf6d35670b6af271bf02f660c7f6352058545e4755cce9eaa",
+        "tested_source_sha256": "39d348b7608f52b51c658233958878b1c2b3f7896de3edd804677500376f4ca5",
+        "report_sha256": "fcf5614a02b9090d17fbd25ee91fcc2d7db0cde580fd2c6cea788326c6f1f63f"
+      },
+      "num_envs": 20,
+      "initial_evaluation": {
+        "round": "round_00",
+        "range_scale": 1.0,
+        "trials": 20,
+        "successes": 20,
+        "success_rate_percent": 100,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "c5a9d531dc7a89ecf6d35670b6af271bf02f660c7f6352058545e4755cce9eaa",
+        "tested_source_sha256": "39d348b7608f52b51c658233958878b1c2b3f7896de3edd804677500376f4ca5",
+        "report_sha256": "fcf5614a02b9090d17fbd25ee91fcc2d7db0cde580fd2c6cea788326c6f1f63f"
+      },
+      "final_ranges": {
+        "objects": {
+          "white_plate": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "orange_carrot": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "green_leek": {
+            "position_range": null,
+            "orientation_range": null
+          }
+        },
+        "articulations": {}
+      }
+    },
+    {
+      "task_id": "pick_chocolatebox_place_sugarbox",
+      "config_path": "source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/pick/pick_chocolatebox_place_sugarbox.yaml",
+      "robot": "ur5e",
+      "env_task_name": "UR5e-Robotiq85-IKRel-EE-VisPick-v0",
+      "robot_cfg_name": "ur5e_robotiq_2f_85.yml",
+      "robot_type": "ur5e",
+      "training_task": true,
+      "difficulty": "Easy",
+      "initial_ranges": {
+        "objects": {
+          "brown_chocolatebox": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "red_cheezbox": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "yellow_sugarbox": {
+            "position_range": null,
+            "orientation_range": null
+          }
+        },
+        "articulations": {}
+      },
+      "config_sha256": "2cc400a79e7979e7d38a73a5252d5d14fa81472ee6c1650f677f0a882e2b7678",
+      "evaluation": {
+        "round": "round_00",
+        "range_scale": 1.0,
+        "trials": 20,
+        "successes": 20,
+        "success_rate_percent": 100,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "29627685b2b5aba42fa2bce95f1dcc154214f3faa6425e8c78370e92e684cf88",
+        "tested_source_sha256": "1680466009ae02b447bfcd328afafcdf6191a7673ea583991a35470d15f8b74d",
+        "report_sha256": "b9bea20a76e654fc444f91928c743e3c045578f78bb75e6a5d997e616b4ee113"
+      },
+      "num_envs": 20,
+      "initial_evaluation": {
+        "round": "round_00",
+        "range_scale": 1.0,
+        "trials": 20,
+        "successes": 20,
+        "success_rate_percent": 100,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "29627685b2b5aba42fa2bce95f1dcc154214f3faa6425e8c78370e92e684cf88",
+        "tested_source_sha256": "1680466009ae02b447bfcd328afafcdf6191a7673ea583991a35470d15f8b74d",
+        "report_sha256": "b9bea20a76e654fc444f91928c743e3c045578f78bb75e6a5d997e616b4ee113"
+      },
+      "final_ranges": {
+        "objects": {
+          "brown_chocolatebox": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "red_cheezbox": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "yellow_sugarbox": {
+            "position_range": null,
+            "orientation_range": null
+          }
+        },
+        "articulations": {}
+      }
+    },
+    {
+      "task_id": "pick_cube_place_cup",
+      "config_path": "source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/pick/pick_cube_place_cup.yaml",
+      "robot": "franka_default",
+      "env_task_name": "FrankaFr3-DefaultGripper-Joint-VisPick-v0",
+      "robot_cfg_name": "franka_fr3.yml",
+      "robot_type": "franka_fr3",
+      "training_task": false,
+      "difficulty": "Easy",
+      "initial_ranges": {
+        "objects": {
+          "green_cube": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "doraemoncup": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "white_100mmcup": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "white_95mmcup": {
+            "position_range": null,
+            "orientation_range": null
+          }
+        },
+        "articulations": {}
+      },
+      "config_sha256": "71f84fb2438de876dd8783bf8e73988057bb71bb383b1d2f5d4d0632f38236e3",
+      "evaluation": {
+        "round": "round_00",
+        "range_scale": 1.0,
+        "trials": 20,
+        "successes": 0,
+        "success_rate_percent": 0,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "95847cfa8924e33e78579fdcf109486037ce70f283d71c00bb532a6cfc5ef223",
+        "tested_source_sha256": "04fe8c5ba2be5284689bd779960f83fff32b3c407a41ed0dc10b60e2aebc4368",
+        "report_sha256": "ca07ebf1eedc3ef8cc21198528eb20de6954f0083ba0900155806192c75a09de"
+      },
+      "num_envs": 20,
+      "initial_evaluation": {
+        "round": "round_00",
+        "range_scale": 1.0,
+        "trials": 20,
+        "successes": 0,
+        "success_rate_percent": 0,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "95847cfa8924e33e78579fdcf109486037ce70f283d71c00bb532a6cfc5ef223",
+        "tested_source_sha256": "04fe8c5ba2be5284689bd779960f83fff32b3c407a41ed0dc10b60e2aebc4368",
+        "report_sha256": "ca07ebf1eedc3ef8cc21198528eb20de6954f0083ba0900155806192c75a09de"
+      },
+      "final_ranges": {
+        "objects": {
+          "green_cube": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "doraemoncup": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "white_100mmcup": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "white_95mmcup": {
+            "position_range": null,
+            "orientation_range": null
+          }
+        },
+        "articulations": {}
+      },
+      "previous_canonical_config_sha256": "28262bb013d65b60e5c973bdfb71ca0628a9ccc9d1624fd28ba1527073c3e508",
+      "configuration_adjustment": {
+        "asset": "doraemoncup",
+        "field": "init_pos.z",
+        "previous_m": 0.05,
+        "current_m": 0.09,
+        "reason": "Raise initial collision geometry above tabletop; earlier evaluation predates this change.",
+        "phase_depenetration": {
+          "objects": [
+            "green_cube",
+            "doraemoncup"
+          ],
+          "reset": 2.0,
+          "pick": 2.0,
+          "release": 0.5,
+          "reason": "Preserve grasp during transport and reduce depenetration at release."
+        }
+      },
+      "evaluation_provenance_note": "Historical evaluation was performed before the target cup height and phase-policy adjustments, at constant max_depenetration_velocity 0.5."
+    },
+    {
+      "task_id": "pick_cup_place_coffeemachine",
+      "config_path": "source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/pick/pick_cup_place_coffeemachine.yaml",
+      "robot": "franka_long",
+      "env_task_name": "FrankaFr3-OurGripper-Joint-VisPick-v0",
+      "robot_cfg_name": "franka_fr3_our.yml",
+      "robot_type": "franka_fr3",
+      "training_task": false,
+      "difficulty": "Medium",
+      "initial_ranges": {
+        "objects": {
+          "starbuckscup": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "white_75mmcup": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "coffeemachine2": {
+            "position_range": null,
+            "orientation_range": null
+          }
+        },
+        "articulations": {}
+      },
+      "config_sha256": "67bcdf6430d9bad84ad6ae9424e9abe2b143988ebdf6ead6f7b6b188ae54b58a",
+      "evaluation": {
+        "round": "round_00",
+        "range_scale": 1.0,
+        "trials": 20,
+        "successes": 20,
+        "success_rate_percent": 100,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "5162db2302ba59d3444adeaee1d8396f65e629c4088251ba342dfa71e683621d",
+        "tested_source_sha256": "93bfc46d37c06f2573067c8d64b717980be480f782e997e97444e814e6be03f2",
+        "report_sha256": "b71b624e735043ff201b5836bda9406eb65356c501f17a0abae7ac77bee9c1e4"
+      },
+      "num_envs": 20,
+      "initial_evaluation": {
+        "round": "round_00",
+        "range_scale": 1.0,
+        "trials": 20,
+        "successes": 20,
+        "success_rate_percent": 100,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "5162db2302ba59d3444adeaee1d8396f65e629c4088251ba342dfa71e683621d",
+        "tested_source_sha256": "93bfc46d37c06f2573067c8d64b717980be480f782e997e97444e814e6be03f2",
+        "report_sha256": "b71b624e735043ff201b5836bda9406eb65356c501f17a0abae7ac77bee9c1e4"
+      },
+      "final_ranges": {
+        "objects": {
+          "starbuckscup": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "white_75mmcup": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "coffeemachine2": {
+            "position_range": null,
+            "orientation_range": null
+          }
+        },
+        "articulations": {}
+      }
+    },
+    {
+      "task_id": "pick_cup_place_woodshelf",
+      "config_path": "source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/pick/pick_cup_place_woodshelf.yaml",
+      "robot": "kinova",
+      "env_task_name": "Kinova-Robotiq85-IKRel-EE-VisPick-v0",
+      "robot_cfg_name": "kinova_robotiq85.yml",
+      "robot_type": "kinova_robotiq85",
+      "training_task": true,
+      "difficulty": "Medium",
+      "initial_ranges": {
+        "objects": {
+          "brown_woodshelf": {
+            "position_range": {
+              "x": [
+                0.7,
+                0.8
+              ],
+              "y": [
+                -0.2,
+                -0.1
+              ],
+              "z": [
+                0.35,
+                0.35
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                0,
+                0
+              ]
+            }
+          },
+          "pink_cup": {
+            "position_range": {
+              "x": [
+                0.5,
+                0.6
+              ],
+              "y": [
+                0.1,
+                0.2
+              ],
+              "z": [
+                0.18,
+                0.18
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                0,
+                0
+              ]
+            }
+          }
+        },
+        "articulations": {}
+      },
+      "config_sha256": "a088609241e8b76001ff90bdc43dd60c710abae6f9bd22192a5dff951b2a8252",
+      "evaluation": {
+        "round": "round_00",
+        "range_scale": 1.0,
+        "trials": 20,
+        "successes": 19,
+        "success_rate_percent": 95,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "62c775fd0ddf4f1efc9be454160e9751c95f4969b36b18178d024dabec0c81b8",
+        "tested_source_sha256": "74209beb723a0ddd62195de7b4733a08f5b891b4a4dae3bb242a9b00a911c3a7",
+        "report_sha256": "953328b61802f8f3ed9ffcf59d4baf858df29f6d44432e1ebbf8a34e492b6f05"
+      },
+      "num_envs": 20,
+      "initial_evaluation": {
+        "round": "round_00",
+        "range_scale": 1.0,
+        "trials": 20,
+        "successes": 19,
+        "success_rate_percent": 95,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "62c775fd0ddf4f1efc9be454160e9751c95f4969b36b18178d024dabec0c81b8",
+        "tested_source_sha256": "74209beb723a0ddd62195de7b4733a08f5b891b4a4dae3bb242a9b00a911c3a7",
+        "report_sha256": "953328b61802f8f3ed9ffcf59d4baf858df29f6d44432e1ebbf8a34e492b6f05"
+      },
+      "final_ranges": {
+        "objects": {
+          "brown_woodshelf": {
+            "position_range": {
+              "x": [
+                0.7,
+                0.8
+              ],
+              "y": [
+                -0.2,
+                -0.10000000000000002
+              ],
+              "z": [
+                0.35,
+                0.35
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                0.0,
+                0.0
+              ]
+            }
+          },
+          "pink_cup": {
+            "position_range": {
+              "x": [
+                0.5,
+                0.6000000000000001
+              ],
+              "y": [
+                0.10000000000000002,
+                0.2
+              ],
+              "z": [
+                0.18,
+                0.18
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                0.0,
+                0.0
+              ]
+            }
+          }
+        },
+        "articulations": {}
+      }
+    },
+    {
+      "task_id": "pick_green_bellpepper_place_pan",
+      "config_path": "source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/pick/pick_green_bellpepper_place_pan.yaml",
+      "robot": "sawyer",
+      "env_task_name": "Sawyer-Robotiq85-Joint-EE-VisPick-v0",
+      "robot_cfg_name": "sawyer.yml",
+      "robot_type": "sawyer_robotiq85",
+      "training_task": false,
+      "difficulty": "Medium",
+      "initial_ranges": {
+        "objects": {
+          "green_bellpepper": {
+            "position_range": {
+              "x": [
+                0.5,
+                0.65
+              ],
+              "y": [
+                -0.325,
+                -0.175
+              ],
+              "z": [
+                0.075,
+                0.075
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.3489,
+                0.3489
+              ]
+            }
+          },
+          "white_pan": {
+            "position_range": {
+              "x": [
+                0.5,
+                0.65
+              ],
+              "y": [
+                0.175,
+                0.325
+              ],
+              "z": [
+                0.1,
+                0.1
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.5235987755982988,
+                0.5235987755982988
+              ]
+            }
+          }
+        },
+        "articulations": {}
+      },
+      "config_sha256": "210cdf1b4ba8d4b62593ff336e70ae5fab8a2d968b8bb8ccf01aa872de02a3b0",
+      "evaluation": {
+        "round": "round_00",
+        "range_scale": 1.0,
+        "trials": 20,
+        "successes": 19,
+        "success_rate_percent": 95,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "4219098b6fb2c379f8ec225143da6f51b00f47e0e5cf695093952ccc9cf74f19",
+        "tested_source_sha256": "e9f65b3d11cc3c3c6bc801a5242c18206bdc2f77a4562078896617952d5c25ff",
+        "report_sha256": "21f2bd476fd2b2ee919602d27e23a78d1ef28d4607a62f199209e3df6bfe797d"
+      },
+      "num_envs": 20,
+      "initial_evaluation": {
+        "round": "round_00",
+        "range_scale": 1.0,
+        "trials": 20,
+        "successes": 19,
+        "success_rate_percent": 95,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "4219098b6fb2c379f8ec225143da6f51b00f47e0e5cf695093952ccc9cf74f19",
+        "tested_source_sha256": "e9f65b3d11cc3c3c6bc801a5242c18206bdc2f77a4562078896617952d5c25ff",
+        "report_sha256": "21f2bd476fd2b2ee919602d27e23a78d1ef28d4607a62f199209e3df6bfe797d"
+      },
+      "final_ranges": {
+        "objects": {
+          "green_bellpepper": {
+            "position_range": {
+              "x": [
+                0.49999999999999994,
+                0.6499999999999999
+              ],
+              "y": [
+                -0.325,
+                -0.175
+              ],
+              "z": [
+                0.075,
+                0.075
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.3489,
+                0.3489
+              ]
+            }
+          },
+          "white_pan": {
+            "position_range": {
+              "x": [
+                0.49999999999999994,
+                0.6499999999999999
+              ],
+              "y": [
+                0.175,
+                0.325
+              ],
+              "z": [
+                0.1,
+                0.1
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.5235987755982988,
+                0.5235987755982988
+              ]
+            }
+          }
+        },
+        "articulations": {}
+      }
+    },
+    {
+      "task_id": "pick_kettle_place_base",
+      "config_path": "source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/pick/pick_kettle_place_base.yaml",
+      "robot": "xarm7",
+      "env_task_name": "XArm7-UFactory-Joint-EE-VisPick-v0",
+      "robot_cfg_name": "xarm7.yml",
+      "robot_type": "xarm7_ufactory",
+      "training_task": false,
+      "difficulty": "Medium",
+      "initial_ranges": {
+        "objects": {
+          "red_mugcup": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "white_75mmcup": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "white_kettle7": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "base": {
+            "position_range": null,
+            "orientation_range": null
+          }
+        },
+        "articulations": {}
+      },
+      "config_sha256": "1f9d176f10c160d75b8ea0c80fb30d62f7e9994a79104d99ac753c86b6a9c5d3",
+      "evaluation": {
+        "round": "round_00",
+        "range_scale": 1.0,
+        "trials": 20,
+        "successes": 0,
+        "success_rate_percent": 0,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "b42af84efa0278ae246c376c43ed92121ec5d2d83f9e6f954bf927164b2d0eae",
+        "tested_source_sha256": "dba2d819a4b4989a9e0236db65601b3f6b9b854b2ca9f62c379316c3794ef7bd",
+        "report_sha256": "9d8f2a6fe386450a1e470dc31c502139688fb61417058544508e47ac7934ef70"
+      },
+      "num_envs": 20,
+      "initial_evaluation": {
+        "round": "round_00",
+        "range_scale": 1.0,
+        "trials": 20,
+        "successes": 0,
+        "success_rate_percent": 0,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "b42af84efa0278ae246c376c43ed92121ec5d2d83f9e6f954bf927164b2d0eae",
+        "tested_source_sha256": "dba2d819a4b4989a9e0236db65601b3f6b9b854b2ca9f62c379316c3794ef7bd",
+        "report_sha256": "9d8f2a6fe386450a1e470dc31c502139688fb61417058544508e47ac7934ef70"
+      },
+      "final_ranges": {
+        "objects": {
+          "red_mugcup": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "white_75mmcup": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "white_kettle7": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "base": {
+            "position_range": null,
+            "orientation_range": null
+          }
+        },
+        "articulations": {}
+      }
+    },
+    {
+      "task_id": "pick_leek_place_cuttingboard",
+      "config_path": "source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/pick/pick_leek_place_cuttingboard.yaml",
+      "robot": "ur5e",
+      "env_task_name": "UR5e-Robotiq85-IKRel-EE-VisPick-v0",
+      "robot_cfg_name": "ur5e_robotiq_2f_85.yml",
+      "robot_type": "ur5e",
+      "training_task": true,
+      "difficulty": "Easy",
+      "initial_ranges": {
+        "objects": {
+          "green_leek": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "wood_cuttingboard": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "orange_carrot": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "yellow_banana": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "red_apple": {
+            "position_range": null,
+            "orientation_range": null
+          }
+        },
+        "articulations": {}
+      },
+      "config_sha256": "e1b3b25f67f28cacdd23dd7db280a7b94bbf5423bc4ddb337703308f10f83a0e",
+      "evaluation": {
+        "round": "round_00",
+        "range_scale": 1.0,
+        "trials": 20,
+        "successes": 20,
+        "success_rate_percent": 100,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "9e24da70594f55d4c9614dbba73746d3822a1771d024a52d7b2372189dfe2046",
+        "tested_source_sha256": "46e16a6a753732042d1cd0edd739bb724d9f46a9e8f9d3310ce572ad5da7993c",
+        "report_sha256": "1566612d29f297022420e4241a61467d86a960e5c5c9b7530bea4fabe9ae13b1"
+      },
+      "num_envs": 20,
+      "initial_evaluation": {
+        "round": "round_00",
+        "range_scale": 1.0,
+        "trials": 20,
+        "successes": 20,
+        "success_rate_percent": 100,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "9e24da70594f55d4c9614dbba73746d3822a1771d024a52d7b2372189dfe2046",
+        "tested_source_sha256": "46e16a6a753732042d1cd0edd739bb724d9f46a9e8f9d3310ce572ad5da7993c",
+        "report_sha256": "1566612d29f297022420e4241a61467d86a960e5c5c9b7530bea4fabe9ae13b1"
+      },
+      "final_ranges": {
+        "objects": {
+          "green_leek": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "wood_cuttingboard": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "orange_carrot": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "yellow_banana": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "red_apple": {
+            "position_range": null,
+            "orientation_range": null
+          }
+        },
+        "articulations": {}
+      }
+    },
+    {
+      "task_id": "pick_lid_place_pot",
+      "config_path": "source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/pick/pick_lid_place_pot.yaml",
+      "robot": "franka_default",
+      "env_task_name": "FrankaFr3-DefaultGripper-Joint-VisPick-v0",
+      "robot_cfg_name": "franka_fr3.yml",
+      "robot_type": "franka_fr3",
+      "training_task": true,
+      "difficulty": "Medium",
+      "initial_ranges": {
+        "objects": {
+          "pot": {
+            "position_range": {
+              "x": [
+                0.65,
+                0.75
+              ],
+              "y": [
+                -0.2,
+                -0.1
+              ],
+              "z": [
+                0.1,
+                0.1
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.2618,
+                0.2618
+              ]
+            }
+          },
+          "lid": {
+            "position_range": {
+              "x": [
+                0.55,
+                0.65
+              ],
+              "y": [
+                0.18,
+                0.28
+              ],
+              "z": [
+                0.075,
+                0.075
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.2618,
+                0.2618
+              ]
+            }
+          }
+        },
+        "articulations": {}
+      },
+      "config_sha256": "c69732ef8c444c1c33d8b55a523263e501f607132d48bee1725ed53729e669fc",
+      "evaluation": {
+        "round": "round_02",
+        "range_scale": 0.5,
+        "trials": 20,
+        "successes": 0,
+        "success_rate_percent": 0,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "b06446441d64b6b1585bfcdddbe1e0f22cd97f2ff20f99f050d77970fe76ce08",
+        "tested_source_sha256": "2d178a94deefc466eabdabfcd256d47d68e1ad16c9347d57865036abcff0afc3",
+        "report_sha256": "025fa951826af8a5113eb1f81e99bcb2445180c3cd67b2eca6f152c2eec471f6"
+      },
+      "num_envs": 20,
+      "initial_evaluation": {
+        "round": "round_00",
+        "range_scale": 1.0,
+        "trials": 20,
+        "successes": 0,
+        "success_rate_percent": 0,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "0cbd12621e6bf187e09f610e293c4cf8c770fa5caa29820d0e8895106cc2658c",
+        "tested_source_sha256": "2d178a94deefc466eabdabfcd256d47d68e1ad16c9347d57865036abcff0afc3",
+        "report_sha256": "930457af82e2a9f83b34438a5794964d3bec6bd1378368176048be34d720df66"
+      },
+      "final_ranges": {
+        "objects": {
+          "pot": {
+            "position_range": {
+              "x": [
+                0.6749999999999999,
+                0.725
+              ],
+              "y": [
+                -0.17500000000000002,
+                -0.12500000000000003
+              ],
+              "z": [
+                0.1,
+                0.1
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.1309,
+                0.1309
+              ]
+            }
+          },
+          "lid": {
+            "position_range": {
+              "x": [
+                0.5750000000000001,
+                0.6250000000000001
+              ],
+              "y": [
+                0.20500000000000002,
+                0.255
+              ],
+              "z": [
+                0.075,
+                0.075
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.1309,
+                0.1309
+              ]
+            }
+          }
+        },
+        "articulations": {}
+      }
+    },
+    {
+      "task_id": "pick_mugcup_place_coffeemachine",
+      "config_path": "source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/pick/pick_mugcup_place_coffeemachine.yaml",
+      "robot": "franka_long",
+      "env_task_name": "FrankaFr3-OurGripper-Joint-VisPick-v0",
+      "robot_cfg_name": "franka_fr3_our.yml",
+      "robot_type": "franka_fr3",
+      "training_task": true,
+      "difficulty": "Medium",
+      "initial_ranges": {
+        "objects": {
+          "red_mugcup": {
+            "position_range": {
+              "x": [
+                0.55,
+                0.6
+              ],
+              "y": [
+                0.15,
+                0.2
+              ],
+              "z": [
+                0.09,
+                0.09
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.1745,
+                0.1745
+              ]
+            }
+          },
+          "coffeemachine1": {
+            "position_range": {
+              "x": [
+                0.85,
+                0.9
+              ],
+              "y": [
+                -0.27,
+                -0.23
+              ],
+              "z": [
+                0.23,
+                0.23
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.1745,
+                0.1745
+              ]
+            }
+          }
+        },
+        "articulations": {}
+      },
+      "config_sha256": "3f66d9a418d9502d67b36182ccf83d2e91c1c5418be1f270bf01b7521f2e2b1b",
+      "evaluation": {
+        "round": "round_00",
+        "range_scale": 1.0,
+        "trials": 20,
+        "successes": 17,
+        "success_rate_percent": 85,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "89c002419ffb932ec30cf0218448e07867d21168521952591a4547a47d564212",
+        "tested_source_sha256": "e32e8a9271bbc5fca721306809ef0c8b0f202829eefb920820ef96820dc9a785",
+        "report_sha256": "81c510bbdc580b4b4a5903be19754de0c607e2bbe5bcd0e0d7752554f55876f0"
+      },
+      "num_envs": 20,
+      "initial_evaluation": {
+        "round": "round_00",
+        "range_scale": 1.0,
+        "trials": 20,
+        "successes": 17,
+        "success_rate_percent": 85,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "89c002419ffb932ec30cf0218448e07867d21168521952591a4547a47d564212",
+        "tested_source_sha256": "e32e8a9271bbc5fca721306809ef0c8b0f202829eefb920820ef96820dc9a785",
+        "report_sha256": "81c510bbdc580b4b4a5903be19754de0c607e2bbe5bcd0e0d7752554f55876f0"
+      },
+      "final_ranges": {
+        "objects": {
+          "red_mugcup": {
+            "position_range": {
+              "x": [
+                0.55,
+                0.5999999999999999
+              ],
+              "y": [
+                0.14999999999999997,
+                0.2
+              ],
+              "z": [
+                0.09,
+                0.09
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.1745,
+                0.1745
+              ]
+            }
+          },
+          "coffeemachine1": {
+            "position_range": {
+              "x": [
+                0.85,
+                0.9
+              ],
+              "y": [
+                -0.27,
+                -0.22999999999999998
+              ],
+              "z": [
+                0.23,
+                0.23
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.1745,
+                0.1745
+              ]
+            }
+          }
+        },
+        "articulations": {}
+      }
+    },
+    {
+      "task_id": "pick_mugcup_place_woodshelf",
+      "config_path": "source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/pick/pick_mugcup_place_woodshelf.yaml",
+      "robot": "kinova",
+      "env_task_name": "Kinova-Robotiq85-IKRel-EE-VisPick-v0",
+      "robot_cfg_name": "kinova_robotiq85.yml",
+      "robot_type": "kinova_robotiq85",
+      "training_task": false,
+      "difficulty": "Medium",
+      "initial_ranges": {
+        "objects": {
+          "brown_woodshelf": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "red_mugcup": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "blue_kettle": {
+            "position_range": null,
+            "orientation_range": null
+          }
+        },
+        "articulations": {}
+      },
+      "config_sha256": "05162467139bbde7aec22241bacf9e8ae6ca06cf3c28da783d349d8086f407c8",
+      "evaluation": {
+        "round": "round_00",
+        "range_scale": 1.0,
+        "trials": 20,
+        "successes": 16,
+        "success_rate_percent": 80,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "c30b639be2bebbd47ea94913940ce506ba6cdee5d26e47234e088e9e3f143108",
+        "tested_source_sha256": "b334c6b124be856c3cc4ad7685ff52b599a33594190a6543d69ff8b1816edb4f",
+        "report_sha256": "01c10adc26e875790bf20fbd17162e70bcf5335f005c00eb92d578a37e8f8828"
+      },
+      "num_envs": 20,
+      "initial_evaluation": {
+        "round": "round_00",
+        "range_scale": 1.0,
+        "trials": 20,
+        "successes": 16,
+        "success_rate_percent": 80,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "c30b639be2bebbd47ea94913940ce506ba6cdee5d26e47234e088e9e3f143108",
+        "tested_source_sha256": "b334c6b124be856c3cc4ad7685ff52b599a33594190a6543d69ff8b1816edb4f",
+        "report_sha256": "01c10adc26e875790bf20fbd17162e70bcf5335f005c00eb92d578a37e8f8828"
+      },
+      "final_ranges": {
+        "objects": {
+          "brown_woodshelf": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "red_mugcup": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "blue_kettle": {
+            "position_range": null,
+            "orientation_range": null
+          }
+        },
+        "articulations": {}
+      }
+    },
+    {
+      "task_id": "pick_papercup_place_table",
+      "config_path": "source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/pick/pick_papercup_place_table.yaml",
+      "robot": "sawyer",
+      "env_task_name": "Sawyer-Robotiq85-Joint-EE-VisPick-v0",
+      "robot_cfg_name": "sawyer.yml",
+      "robot_type": "sawyer_robotiq85",
+      "training_task": false,
+      "difficulty": "Medium",
+      "initial_ranges": {
+        "objects": {
+          "red_mugcup": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "blue_kettle": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "white_papercup1": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "box": {
+            "position_range": null,
+            "orientation_range": null
+          }
+        },
+        "articulations": {}
+      },
+      "config_sha256": "7f108bf7f6b4e1df86567fd56b15f52008c08d2b042136ffff823d781c44cb93",
+      "evaluation": {
+        "round": "round_00",
+        "range_scale": 1.0,
+        "trials": 20,
+        "successes": 1,
+        "success_rate_percent": 5,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "d309b161066321eccbadbfd196638275b77eaf4f5f4764a7d25ca23bf5db1bfa",
+        "tested_source_sha256": "ade08852e135df70a2471647392b5f1ac760b361059ab494af1d9c5b7347afbb",
+        "report_sha256": "d7cb8f5502f29715b031fcbc19707d1637d767f6452b55d037484ba618c86ef9"
+      },
+      "num_envs": 20,
+      "initial_evaluation": {
+        "round": "round_00",
+        "range_scale": 1.0,
+        "trials": 20,
+        "successes": 1,
+        "success_rate_percent": 5,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "d309b161066321eccbadbfd196638275b77eaf4f5f4764a7d25ca23bf5db1bfa",
+        "tested_source_sha256": "ade08852e135df70a2471647392b5f1ac760b361059ab494af1d9c5b7347afbb",
+        "report_sha256": "d7cb8f5502f29715b031fcbc19707d1637d767f6452b55d037484ba618c86ef9"
+      },
+      "final_ranges": {
+        "objects": {
+          "red_mugcup": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "blue_kettle": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "white_papercup1": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "box": {
+            "position_range": null,
+            "orientation_range": null
+          }
+        },
+        "articulations": {}
+      }
+    },
+    {
+      "task_id": "pick_pen_place_doraemoncup",
+      "config_path": "source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/pick/pick_pen_place_doraemoncup.yaml",
+      "robot": "xarm7",
+      "env_task_name": "XArm7-UFactory-Joint-EE-VisPick-v0",
+      "robot_cfg_name": "xarm7.yml",
+      "robot_type": "xarm7_ufactory",
+      "training_task": false,
+      "difficulty": "Easy",
+      "initial_ranges": {
+        "objects": {
+          "blue_pen": {
+            "position_range": {
+              "x": [
+                0.525,
+                0.675
+              ],
+              "y": [
+                -0.325,
+                -0.175
+              ],
+              "z": [
+                0.05,
+                0.05
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.5235987755982988,
+                0.5235987755982988
+              ]
+            }
+          },
+          "doraemoncup": {
+            "position_range": {
+              "x": [
+                0.525,
+                0.675
+              ],
+              "y": [
+                0.175,
+                0.325
+              ],
+              "z": [
+                0.08,
+                0.08
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.5235987755982988,
+                0.5235987755982988
+              ]
+            }
+          }
+        },
+        "articulations": {}
+      },
+      "config_sha256": "9383def84857bcc0c7218803f46fe95f88d71061dd687ec33bd143cd7e5b9129",
+      "evaluation": {
+        "round": "round_00",
+        "range_scale": 1.0,
+        "trials": 20,
+        "successes": 15,
+        "success_rate_percent": 75,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "d6909104d055e1180502aca2e595a306468aba7a23223d37082444fce2e81b0c",
+        "tested_source_sha256": "8ed7646662a66abbe0e5576da8adb2876ab340f9d0256eb78a7802e721ab53e2",
+        "report_sha256": "ecf4b46d35633524998f2abe0b5beade75032471305c645751e5bf541f80d60c"
+      },
+      "num_envs": 20,
+      "initial_evaluation": {
+        "round": "round_00",
+        "range_scale": 1.0,
+        "trials": 20,
+        "successes": 15,
+        "success_rate_percent": 75,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "d6909104d055e1180502aca2e595a306468aba7a23223d37082444fce2e81b0c",
+        "tested_source_sha256": "8ed7646662a66abbe0e5576da8adb2876ab340f9d0256eb78a7802e721ab53e2",
+        "report_sha256": "ecf4b46d35633524998f2abe0b5beade75032471305c645751e5bf541f80d60c"
+      },
+      "final_ranges": {
+        "objects": {
+          "blue_pen": {
+            "position_range": {
+              "x": [
+                0.5250000000000001,
+                0.675
+              ],
+              "y": [
+                -0.325,
+                -0.175
+              ],
+              "z": [
+                0.05,
+                0.05
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.5235987755982988,
+                0.5235987755982988
+              ]
+            }
+          },
+          "doraemoncup": {
+            "position_range": {
+              "x": [
+                0.5250000000000001,
+                0.675
+              ],
+              "y": [
+                0.175,
+                0.325
+              ],
+              "z": [
+                0.08,
+                0.08
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.5235987755982988,
+                0.5235987755982988
+              ]
+            }
+          }
+        },
+        "articulations": {}
+      }
+    },
+    {
+      "task_id": "pick_scrubbottle_place_woodshelf",
+      "config_path": "source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/pick/pick_scrubbottle_place_woodshelf.yaml",
+      "robot": "ur5e",
+      "env_task_name": "UR5e-Robotiq85-IKRel-EE-VisPick-v0",
+      "robot_cfg_name": "ur5e_robotiq_2f_85.yml",
+      "robot_type": "ur5e",
+      "training_task": false,
+      "difficulty": "Medium",
+      "initial_ranges": {
+        "objects": {
+          "white_scrubbottle": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "brown_woodshelf": {
+            "position_range": null,
+            "orientation_range": null
+          }
+        },
+        "articulations": {}
+      },
+      "config_sha256": "0d98bbf882ffd0ca25012dbc631d39b99dd6dd42be7862db239d97bdd3936357",
+      "evaluation": {
+        "round": "round_00",
+        "range_scale": 1.0,
+        "trials": 20,
+        "successes": 0,
+        "success_rate_percent": 0,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "db968dcddb3872c29a2b9303d78bb3a91f39fd1c28dbd8863007b269a2fe7ee6",
+        "tested_source_sha256": "6397707b06436565aaeb1f5acf1b4940198a47b18dccf5cbde50e83cbabd71eb",
+        "report_sha256": "50fc2b3a655e7231c8fab9e422d902ff030bfe18107d5642ed89ba2efd2d4b60"
+      },
+      "num_envs": 20,
+      "initial_evaluation": {
+        "round": "round_00",
+        "range_scale": 1.0,
+        "trials": 20,
+        "successes": 0,
+        "success_rate_percent": 0,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "db968dcddb3872c29a2b9303d78bb3a91f39fd1c28dbd8863007b269a2fe7ee6",
+        "tested_source_sha256": "6397707b06436565aaeb1f5acf1b4940198a47b18dccf5cbde50e83cbabd71eb",
+        "report_sha256": "50fc2b3a655e7231c8fab9e422d902ff030bfe18107d5642ed89ba2efd2d4b60"
+      },
+      "final_ranges": {
+        "objects": {
+          "white_scrubbottle": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "brown_woodshelf": {
+            "position_range": null,
+            "orientation_range": null
+          }
+        },
+        "articulations": {}
+      }
+    },
+    {
+      "task_id": "pick_soupcan_place_microwave",
+      "config_path": "source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/pick/pick_soupcan_place_microwave.yaml",
+      "robot": "franka_default",
+      "env_task_name": "FrankaFr3-DefaultGripper-Joint-VisPick-v0",
+      "robot_cfg_name": "franka_fr3.yml",
+      "robot_type": "franka_fr3",
+      "training_task": true,
+      "difficulty": "Medium",
+      "initial_ranges": {
+        "objects": {
+          "red_soupcan": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "tuna": {
+            "position_range": null,
+            "orientation_range": null
+          }
+        },
+        "articulations": {
+          "microwave": {
+            "position_range": null,
+            "orientation_range": null
+          }
+        }
+      },
+      "config_sha256": "7f1493ed01a7c89357bd2a7fb86f47125fb19b3cc068fa49dab0600a67a8ea16",
+      "evaluation": {
+        "round": "round_00",
+        "range_scale": 1.0,
+        "trials": 20,
+        "successes": 0,
+        "success_rate_percent": 0,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "e219d4898276de1060f577bd29bed0f4186a5998906f8b1ce8068288ecee5354",
+        "tested_source_sha256": "306cd5f716a67db4c527b11b289cd60a367fcc903bcbe1ebe6a27f4081348b75",
+        "report_sha256": "c64d7ba7e6c5d325d541d85fc09573d5fe281823efc6a6383bb3f0a06ed6537e"
+      },
+      "num_envs": 20,
+      "initial_evaluation": {
+        "round": "round_00",
+        "range_scale": 1.0,
+        "trials": 20,
+        "successes": 0,
+        "success_rate_percent": 0,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "e219d4898276de1060f577bd29bed0f4186a5998906f8b1ce8068288ecee5354",
+        "tested_source_sha256": "306cd5f716a67db4c527b11b289cd60a367fcc903bcbe1ebe6a27f4081348b75",
+        "report_sha256": "c64d7ba7e6c5d325d541d85fc09573d5fe281823efc6a6383bb3f0a06ed6537e"
+      },
+      "final_ranges": {
+        "objects": {
+          "red_soupcan": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "tuna": {
+            "position_range": null,
+            "orientation_range": null
+          }
+        },
+        "articulations": {
+          "microwave": {
+            "position_range": null,
+            "orientation_range": null
+          }
+        }
+      }
+    },
+    {
+      "task_id": "pick_soupcan_place_table",
+      "config_path": "source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/pick/pick_soupcan_place_table.yaml",
+      "robot": "franka_long",
+      "env_task_name": "FrankaFr3-OurGripper-Joint-VisPick-v0",
+      "robot_cfg_name": "franka_fr3_our.yml",
+      "robot_type": "franka_fr3",
+      "training_task": false,
+      "difficulty": "Easy",
+      "initial_ranges": {
+        "objects": {
+          "red_soupcan": {
+            "position_range": null,
+            "orientation_range": null
+          }
+        },
+        "articulations": {
+          "microwave": {
+            "position_range": null,
+            "orientation_range": null
+          }
+        }
+      },
+      "config_sha256": "f9e4c292e87ea323c89b46c04e44ea732df4a825bb180f3cf012d29fd5cac42e",
+      "evaluation": {
+        "round": "round_00",
+        "range_scale": 1.0,
+        "trials": 20,
+        "successes": 0,
+        "success_rate_percent": 0,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "39da7f82c0f9040f75db7c53abb0304bf5b362b1ec8221649386978fba9dbe07",
+        "tested_source_sha256": "117931590919bff681510e513ddea4a0a94e20fba18100265dc5029bbc0ade43",
+        "report_sha256": "c805c251709c752e491ed04610b3f90c187bb9878e5dd7eecd54d54dfe2ae662"
+      },
+      "num_envs": 20,
+      "initial_evaluation": {
+        "round": "round_00",
+        "range_scale": 1.0,
+        "trials": 20,
+        "successes": 0,
+        "success_rate_percent": 0,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "39da7f82c0f9040f75db7c53abb0304bf5b362b1ec8221649386978fba9dbe07",
+        "tested_source_sha256": "117931590919bff681510e513ddea4a0a94e20fba18100265dc5029bbc0ade43",
+        "report_sha256": "c805c251709c752e491ed04610b3f90c187bb9878e5dd7eecd54d54dfe2ae662"
+      },
+      "final_ranges": {
+        "objects": {
+          "red_soupcan": {
+            "position_range": null,
+            "orientation_range": null
+          }
+        },
+        "articulations": {
+          "microwave": {
+            "position_range": null,
+            "orientation_range": null
+          }
+        }
+      }
+    },
+    {
+      "task_id": "pour_basket",
+      "config_path": "source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/pour/pour_basket.yaml",
+      "robot": "kinova",
+      "env_task_name": "Kinova-Robotiq85-IKRel-EE-VisPick-v0",
+      "robot_cfg_name": "kinova_robotiq85.yml",
+      "robot_type": "kinova_robotiq85",
+      "training_task": true,
+      "difficulty": "Medium",
+      "initial_ranges": {
+        "objects": {
+          "pink_basket": {
+            "position_range": {
+              "x": [
+                0.68,
+                0.78
+              ],
+              "y": [
+                0.1,
+                0.2
+              ],
+              "z": [
+                0.1,
+                0.1
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.3,
+                0.3
+              ]
+            }
+          },
+          "yellow_bowl": {
+            "position_range": {
+              "x": [
+                0.58,
+                0.626
+              ],
+              "y": [
+                -0.1,
+                -0.05
+              ],
+              "z": [
+                0.25,
+                0.25
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                0,
+                0
+              ]
+            }
+          }
+        },
+        "articulations": {}
+      },
+      "config_sha256": "4016cfd5072fcc0070bfb410db4aef43527838aaea8adec00a16f8358e09ba28",
+      "evaluation": {
+        "round": "round_02",
+        "range_scale": 0.5,
+        "trials": 20,
+        "successes": 3,
+        "success_rate_percent": 15,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "33913eca62703904b27b883a14c1f663da833ed48403245904d27c1eb3178337",
+        "tested_source_sha256": "2c8bcbe4746b8f3ca15b62a5114c52effc2a8ddd8cc6fcb7e0a42fdc277962a3",
+        "report_sha256": "588f5f21ffd06c16018e890637e31791fabf21cc79fb22c35a41c549e64bb806"
+      },
+      "num_envs": 20,
+      "initial_evaluation": {
+        "round": "round_00",
+        "range_scale": 1.0,
+        "trials": 20,
+        "successes": 4,
+        "success_rate_percent": 20,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "fc838aa38fe462213e26d216669432b29044998a39cba6fe26fd6333124ee386",
+        "tested_source_sha256": "2c8bcbe4746b8f3ca15b62a5114c52effc2a8ddd8cc6fcb7e0a42fdc277962a3",
+        "report_sha256": "1a26ceba2760f13e0f0c1c7f49c9b88cda3839b19953e932307d04f6a672c4ab"
+      },
+      "final_ranges": {
+        "objects": {
+          "pink_basket": {
+            "position_range": {
+              "x": [
+                0.705,
+                0.755
+              ],
+              "y": [
+                0.12500000000000003,
+                0.17500000000000002
+              ],
+              "z": [
+                0.1,
+                0.1
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.15,
+                0.15
+              ]
+            }
+          },
+          "yellow_bowl": {
+            "position_range": {
+              "x": [
+                0.5914999999999999,
+                0.6145
+              ],
+              "y": [
+                -0.08750000000000001,
+                -0.06250000000000001
+              ],
+              "z": [
+                0.25,
+                0.25
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                0.0,
+                0.0
+              ]
+            }
+          }
+        },
+        "articulations": {}
+      }
+    },
+    {
+      "task_id": "pour_bluekettle",
+      "config_path": "source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/pour/pour_bluekettle.yaml",
+      "robot": "sawyer",
+      "env_task_name": "Sawyer-Robotiq85-Joint-EE-VisPick-v0",
+      "robot_cfg_name": "sawyer.yml",
+      "robot_type": "sawyer_robotiq85",
+      "training_task": false,
+      "difficulty": "Medium",
+      "initial_ranges": {
+        "objects": {
+          "blue_kettle": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "white_plate": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "yellow_bowl": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "red_soupcan": {
+            "position_range": null,
+            "orientation_range": null
+          }
+        },
+        "articulations": {}
+      },
+      "config_sha256": "956253fed0589a1f131d0206c729ac2271f11cea5ba4183031122429708438b0",
+      "evaluation": {
+        "round": "round_00",
+        "range_scale": 1.0,
+        "trials": 20,
+        "successes": 20,
+        "success_rate_percent": 100,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "461286ffd109b4f51e0aee1515200d87a5efd5e48e26707225320d43e474dd26",
+        "tested_source_sha256": "23959ebb3d2e38820f09406591c389b978525724a9b49f84b2f1fe6a403b0bc6",
+        "report_sha256": "71d0c86535e6db600eb2b8a731d408f0349ae9cde60fdc7fedc05acdfadb3db7"
+      },
+      "num_envs": 20,
+      "initial_evaluation": {
+        "round": "round_00",
+        "range_scale": 1.0,
+        "trials": 20,
+        "successes": 20,
+        "success_rate_percent": 100,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "461286ffd109b4f51e0aee1515200d87a5efd5e48e26707225320d43e474dd26",
+        "tested_source_sha256": "23959ebb3d2e38820f09406591c389b978525724a9b49f84b2f1fe6a403b0bc6",
+        "report_sha256": "71d0c86535e6db600eb2b8a731d408f0349ae9cde60fdc7fedc05acdfadb3db7"
+      },
+      "final_ranges": {
+        "objects": {
+          "blue_kettle": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "white_plate": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "yellow_bowl": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "red_soupcan": {
+            "position_range": null,
+            "orientation_range": null
+          }
+        },
+        "articulations": {}
+      }
+    },
+    {
+      "task_id": "pour_mugcup",
+      "config_path": "source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/pour/pour_mugcup.yaml",
+      "robot": "xarm7",
+      "env_task_name": "XArm7-UFactory-Joint-EE-VisPick-v0",
+      "robot_cfg_name": "xarm7.yml",
+      "robot_type": "xarm7_ufactory",
+      "training_task": true,
+      "difficulty": "Medium",
+      "initial_ranges": {
+        "objects": {
+          "red_mugcup": {
+            "position_range": {
+              "x": [
+                0.55,
+                0.6
+              ],
+              "y": [
+                0.15,
+                0.2
+              ],
+              "z": [
+                0.09,
+                0.09
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.1745,
+                0.1745
+              ]
+            }
+          },
+          "yellow_bowl": {
+            "position_range": {
+              "x": [
+                0.58,
+                0.626
+              ],
+              "y": [
+                -0.1,
+                -0.05
+              ],
+              "z": [
+                0.25,
+                0.25
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                0,
+                0
+              ]
+            }
+          }
+        },
+        "articulations": {}
+      },
+      "config_sha256": "6ae398da390df9ebbcc95b5391c08ecf083db27e68a76fc3ea747845c94767b0",
+      "evaluation": {
+        "round": "round_00",
+        "range_scale": 1.0,
+        "trials": 20,
+        "successes": 18,
+        "success_rate_percent": 90,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "8751ab3ed35fc6e941a1c3dc0233bcd22feef5c2b349b2fe42bc7c96e48e894e",
+        "tested_source_sha256": "d5a08d400c19fd3b58be568dd631967a9771147cf028238c13bd091830ea4944",
+        "report_sha256": "7f6c3661c16194f2930bab083bdafae10a93e7cfa19d69442c411ac518739f10"
+      },
+      "num_envs": 20,
+      "initial_evaluation": {
+        "round": "round_00",
+        "range_scale": 1.0,
+        "trials": 20,
+        "successes": 18,
+        "success_rate_percent": 90,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "8751ab3ed35fc6e941a1c3dc0233bcd22feef5c2b349b2fe42bc7c96e48e894e",
+        "tested_source_sha256": "d5a08d400c19fd3b58be568dd631967a9771147cf028238c13bd091830ea4944",
+        "report_sha256": "7f6c3661c16194f2930bab083bdafae10a93e7cfa19d69442c411ac518739f10"
+      },
+      "final_ranges": {
+        "objects": {
+          "red_mugcup": {
+            "position_range": {
+              "x": [
+                0.55,
+                0.5999999999999999
+              ],
+              "y": [
+                0.14999999999999997,
+                0.2
+              ],
+              "z": [
+                0.09,
+                0.09
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.1745,
+                0.1745
+              ]
+            }
+          },
+          "yellow_bowl": {
+            "position_range": {
+              "x": [
+                0.58,
+                0.626
+              ],
+              "y": [
+                -0.1,
+                -0.05000000000000001
+              ],
+              "z": [
+                0.25,
+                0.25
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                0.0,
+                0.0
+              ]
+            }
+          }
+        },
+        "articulations": {}
+      }
+    },
+    {
+      "task_id": "pour_pan",
+      "config_path": "source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/pour/pour_pan.yaml",
+      "robot": "ur5e",
+      "env_task_name": "UR5e-Robotiq85-IKRel-EE-VisPick-v0",
+      "robot_cfg_name": "ur5e_robotiq_2f_85.yml",
+      "robot_type": "ur5e",
+      "training_task": false,
+      "difficulty": "Medium",
+      "initial_ranges": {
+        "objects": {
+          "white_pan": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "white_plate": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "yellow_bigbowl": {
+            "position_range": null,
+            "orientation_range": null
+          }
+        },
+        "articulations": {}
+      },
+      "config_sha256": "36ae6cf0dbc0cc9cf824df347246818cd935c35d181305d363f29166637cc536",
+      "evaluation": {
+        "round": "round_00",
+        "range_scale": 1.0,
+        "trials": 20,
+        "successes": 20,
+        "success_rate_percent": 100,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "37a7ecd01eb648741d709ed3bedaea33225eab8ce03c2315c1a8cea64031953b",
+        "tested_source_sha256": "3132a4514f8583d877c8052c91cc50e8eb2c0565584fef71e953d28e780f7434",
+        "report_sha256": "153a1bfbfe21cbc258cf74a1dfc2327863f9f28faf956aca3d94d3be1fb812ef"
+      },
+      "num_envs": 20,
+      "initial_evaluation": {
+        "round": "round_00",
+        "range_scale": 1.0,
+        "trials": 20,
+        "successes": 20,
+        "success_rate_percent": 100,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "37a7ecd01eb648741d709ed3bedaea33225eab8ce03c2315c1a8cea64031953b",
+        "tested_source_sha256": "3132a4514f8583d877c8052c91cc50e8eb2c0565584fef71e953d28e780f7434",
+        "report_sha256": "153a1bfbfe21cbc258cf74a1dfc2327863f9f28faf956aca3d94d3be1fb812ef"
+      },
+      "final_ranges": {
+        "objects": {
+          "white_pan": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "white_plate": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "yellow_bigbowl": {
+            "position_range": null,
+            "orientation_range": null
+          }
+        },
+        "articulations": {}
+      }
+    },
+    {
+      "task_id": "pour_papercup",
+      "config_path": "source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/pour/pour_papercup.yaml",
+      "robot": "franka_default",
+      "env_task_name": "FrankaFr3-DefaultGripper-Joint-VisPick-v0",
+      "robot_cfg_name": "franka_fr3.yml",
+      "robot_type": "franka_fr3",
+      "training_task": false,
+      "difficulty": "Medium",
+      "initial_ranges": {
+        "objects": {
+          "white_papercup1": {
+            "position_range": {
+              "x": [
+                0.6,
+                0.7
+              ],
+              "y": [
+                0.1,
+                0.2
+              ],
+              "z": [
+                0.077,
+                0.077
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                0,
+                0
+              ]
+            }
+          },
+          "starbuckscup": {
+            "position_range": {
+              "x": [
+                0.519,
+                0.619
+              ],
+              "y": [
+                -0.05,
+                0.05
+              ],
+              "z": [
+                0.098,
+                0.098
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                0,
+                0
+              ]
+            }
+          }
+        },
+        "articulations": {}
+      },
+      "config_sha256": "1b6faec0c56ac33f9d8c319d5114edffac43b01be9ed0befca16af91d3db5496",
+      "evaluation": {
+        "round": "round_02",
+        "range_scale": 0.5,
+        "trials": 20,
+        "successes": 6,
+        "success_rate_percent": 30,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "e99017f7d04aa5a9d14e624e418c9ab33e95b33f50e5cdb931c945190806ac8d",
+        "tested_source_sha256": "5abb86004fff3ae26daa99697c745173aee9b87284dd48478570bc3ca74e9c58",
+        "report_sha256": "66a2e5c43c2b98b2c3f115d3ef7df831b7ededecfca5d2f74e95b17b160e2ae8"
+      },
+      "num_envs": 20,
+      "initial_evaluation": {
+        "round": "round_00",
+        "range_scale": 1.0,
+        "trials": 20,
+        "successes": 7,
+        "success_rate_percent": 35,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "053533702f40c06982109c6c8eac2471cc43793a01fe8a67320049ceb3478804",
+        "tested_source_sha256": "5abb86004fff3ae26daa99697c745173aee9b87284dd48478570bc3ca74e9c58",
+        "report_sha256": "b7652872a712598fdd13989e670126976c132840e9b83b672f8981927077f527"
+      },
+      "final_ranges": {
+        "objects": {
+          "white_papercup1": {
+            "position_range": {
+              "x": [
+                0.6249999999999999,
+                0.6749999999999999
+              ],
+              "y": [
+                0.12500000000000003,
+                0.17500000000000002
+              ],
+              "z": [
+                0.077,
+                0.077
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                0.0,
+                0.0
+              ]
+            }
+          },
+          "starbuckscup": {
+            "position_range": {
+              "x": [
+                0.5439999999999999,
+                0.594
+              ],
+              "y": [
+                -0.025,
+                0.025
+              ],
+              "z": [
+                0.098,
+                0.098
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                0.0,
+                0.0
+              ]
+            }
+          }
+        },
+        "articulations": {}
+      }
+    },
+    {
+      "task_id": "pour_whitekettle",
+      "config_path": "source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/pour/pour_whitekettle.yaml",
+      "robot": "franka_long",
+      "env_task_name": "FrankaFr3-OurGripper-Joint-VisPick-v0",
+      "robot_cfg_name": "franka_fr3_our.yml",
+      "robot_type": "franka_fr3",
+      "training_task": true,
+      "difficulty": "Medium",
+      "initial_ranges": {
+        "objects": {
+          "white_kettle3": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "yellow_bowl": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "white_80mmcup": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "white_75mmcup": {
+            "position_range": null,
+            "orientation_range": null
+          }
+        },
+        "articulations": {}
+      },
+      "config_sha256": "323d05c7720a79d075b5b4a5f5a70d33444251abcbc4a77e3d807bffec4391ab",
+      "evaluation": {
+        "round": "round_00",
+        "range_scale": 1.0,
+        "trials": 20,
+        "successes": 17,
+        "success_rate_percent": 85,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "de1cc08ef833a2ad7c5a205889216aaf26eceffa65f05ab8ec378946d2cfa343",
+        "tested_source_sha256": "5216a52e5c62f6b2aae02c65660b04fa87c3171bb8995e29e9dc8489886aaa84",
+        "report_sha256": "c922d71b18c782ba6e2e20fa286537e48da21b4842f877384bc71b3b3451eba5"
+      },
+      "num_envs": 20,
+      "initial_evaluation": {
+        "round": "round_00",
+        "range_scale": 1.0,
+        "trials": 20,
+        "successes": 17,
+        "success_rate_percent": 85,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "de1cc08ef833a2ad7c5a205889216aaf26eceffa65f05ab8ec378946d2cfa343",
+        "tested_source_sha256": "5216a52e5c62f6b2aae02c65660b04fa87c3171bb8995e29e9dc8489886aaa84",
+        "report_sha256": "c922d71b18c782ba6e2e20fa286537e48da21b4842f877384bc71b3b3451eba5"
+      },
+      "final_ranges": {
+        "objects": {
+          "white_kettle3": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "yellow_bowl": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "white_80mmcup": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "white_75mmcup": {
+            "position_range": null,
+            "orientation_range": null
+          }
+        },
+        "articulations": {}
+      }
+    },
+    {
+      "task_id": "pour_whitekettle4",
+      "config_path": "source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/pour/pour_whitekettle4.yaml",
+      "robot": "kinova",
+      "env_task_name": "Kinova-Robotiq85-IKRel-EE-VisPick-v0",
+      "robot_cfg_name": "kinova_robotiq85.yml",
+      "robot_type": "kinova_robotiq85",
+      "training_task": false,
+      "difficulty": "Medium",
+      "initial_ranges": {
+        "objects": {
+          "white_kettle4": {
+            "position_range": {
+              "x": [
+                0.622,
+                0.722
+              ],
+              "y": [
+                -0.352,
+                -0.252
+              ],
+              "z": [
+                0.18,
+                0.18
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.1,
+                0.1
+              ]
+            }
+          },
+          "yellow_bowl": {
+            "position_range": {
+              "x": [
+                0.6,
+                0.65
+              ],
+              "y": [
+                -0.09,
+                -0.06
+              ],
+              "z": [
+                0.077,
+                0.077
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.2618,
+                0.2618
+              ]
+            }
+          }
+        },
+        "articulations": {}
+      },
+      "config_sha256": "faf6999163df3b27d4e4fd7ab9c7c6bc5ddfda80310cebd068cc6ed0c1326ecf",
+      "evaluation": {
+        "round": "round_02",
+        "range_scale": 0.5,
+        "trials": 20,
+        "successes": 6,
+        "success_rate_percent": 30,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "3a1434490ea3085c7506a2e77ac2299756a5179ee49c2a0381c78c81b3dfeebf",
+        "tested_source_sha256": "dc72cd16d56856a95f8dd6383833b960390626785626aefac09381791c8d832d",
+        "report_sha256": "9d08ff0b6c3164ca9b280bb5b9a8dbc86cccb0e46c02fdc44fc5e142dd6ac174"
+      },
+      "num_envs": 20,
+      "initial_evaluation": {
+        "round": "round_00",
+        "range_scale": 1.0,
+        "trials": 20,
+        "successes": 8,
+        "success_rate_percent": 40,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "8939f4ad8c0e3fd94bf079015c7044c554079e5a260533618a48d1dedfd3df54",
+        "tested_source_sha256": "dc72cd16d56856a95f8dd6383833b960390626785626aefac09381791c8d832d",
+        "report_sha256": "02bf018f2322dd144d2ba7d028af757acf6e6d1800b99fb00dd789ca8aab9614"
+      },
+      "final_ranges": {
+        "objects": {
+          "white_kettle4": {
+            "position_range": {
+              "x": [
+                0.6469999999999999,
+                0.697
+              ],
+              "y": [
+                -0.32699999999999996,
+                -0.277
+              ],
+              "z": [
+                0.18,
+                0.18
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.05,
+                0.05
+              ]
+            }
+          },
+          "yellow_bowl": {
+            "position_range": {
+              "x": [
+                0.6125,
+                0.6375
+              ],
+              "y": [
+                -0.08249999999999999,
+                -0.0675
+              ],
+              "z": [
+                0.077,
+                0.077
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.1309,
+                0.1309
+              ]
+            }
+          }
+        },
+        "articulations": {}
+      }
+    },
+    {
+      "task_id": "pull_cabinet",
+      "config_path": "source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/pull_push/pull_cabinet.yaml",
+      "robot": "sawyer",
+      "env_task_name": "Sawyer-Robotiq85-Joint-EE-VisPick-v0",
+      "robot_cfg_name": "sawyer.yml",
+      "robot_type": "sawyer_robotiq85",
+      "training_task": true,
+      "difficulty": "Medium",
+      "initial_ranges": {
+        "objects": {},
+        "articulations": {
+          "cabinet1": {
+            "position_range": null,
+            "orientation_range": null
+          }
+        }
+      },
+      "config_sha256": "4d96c6d2e24a9aa3e614dfa6aebef3451ad4d8cdba87c33cd70ba8ae50591c9f",
+      "evaluation": {
+        "round": "round_00",
+        "range_scale": 1.0,
+        "trials": 20,
+        "successes": 3,
+        "success_rate_percent": 15,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "8ca99186d04d5656ad200793b024003aa67c83c2293483f70a1bb92a63ac176d",
+        "tested_source_sha256": "a6c19843df05fd9d83a32d1979f21a8ac4ce8d69b3afe943a51088ae12897207",
+        "report_sha256": "3d35af81748a057584b9051115c63b1b472aba16f623a55162f2ee91489e46d5"
+      },
+      "num_envs": 20,
+      "initial_evaluation": {
+        "round": "round_00",
+        "range_scale": 1.0,
+        "trials": 20,
+        "successes": 3,
+        "success_rate_percent": 15,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "8ca99186d04d5656ad200793b024003aa67c83c2293483f70a1bb92a63ac176d",
+        "tested_source_sha256": "a6c19843df05fd9d83a32d1979f21a8ac4ce8d69b3afe943a51088ae12897207",
+        "report_sha256": "3d35af81748a057584b9051115c63b1b472aba16f623a55162f2ee91489e46d5"
+      },
+      "final_ranges": {
+        "objects": {},
+        "articulations": {
+          "cabinet1": {
+            "position_range": null,
+            "orientation_range": null
+          }
+        }
+      }
+    },
+    {
+      "task_id": "pull_cabinet15",
+      "config_path": "source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/pull_push/pull_cabinet15.yaml",
+      "robot": "xarm7",
+      "env_task_name": "XArm7-UFactory-Joint-EE-VisPick-v0",
+      "robot_cfg_name": "xarm7.yml",
+      "robot_type": "xarm7_ufactory",
+      "training_task": false,
+      "difficulty": "Medium",
+      "initial_ranges": {
+        "objects": {},
+        "articulations": {
+          "cabinet15": {
+            "position_range": {
+              "x": [
+                0.8,
+                0.9
+              ],
+              "y": [
+                -0.05,
+                0.05
+              ],
+              "z": [
+                0.4,
+                0.4
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.1745,
+                0.1745
+              ]
+            }
+          }
+        }
+      },
+      "config_sha256": "86738d41c339d7fb5d7e1383dea57ad1ab03f22def5d72c85f4f8cdf390c2919",
+      "evaluation": {
+        "round": "round_02",
+        "range_scale": 0.5,
+        "trials": 20,
+        "successes": 0,
+        "success_rate_percent": 0,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "6f360198e4edc984ab4ce79848785410d38552aaea02166640ed3834f4975ebc",
+        "tested_source_sha256": "138f662de24f3e17c42a5c33a333b7738962279ea33613b2a79f2ec0bd2a67f1",
+        "report_sha256": "fefcb8087b69f3a4e38a364453ff5bb64bfbb3185f82f338a24b908bcaf9dfc4"
+      },
+      "num_envs": 20,
+      "initial_evaluation": {
+        "round": "round_00",
+        "range_scale": 1.0,
+        "trials": 20,
+        "successes": 0,
+        "success_rate_percent": 0,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "53a6e8ec6a8409dbf40fe8238ea05f85d5879a656a7ce6ef7900f99d4568a3d4",
+        "tested_source_sha256": "138f662de24f3e17c42a5c33a333b7738962279ea33613b2a79f2ec0bd2a67f1",
+        "report_sha256": "45f4c554d79ef57f2af8db92638d9da4775aa817df9746fe1c5cf564dd18bbf6"
+      },
+      "final_ranges": {
+        "objects": {},
+        "articulations": {
+          "cabinet15": {
+            "position_range": {
+              "x": [
+                0.8250000000000001,
+                0.8750000000000001
+              ],
+              "y": [
+                -0.025,
+                0.025
+              ],
+              "z": [
+                0.4,
+                0.4
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.08725,
+                0.08725
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "task_id": "pull_cabinet7",
+      "config_path": "source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/pull_push/pull_cabinet7.yaml",
+      "robot": "ur5e",
+      "env_task_name": "UR5e-Robotiq85-IKRel-EE-VisPick-v0",
+      "robot_cfg_name": "ur5e_robotiq_2f_85.yml",
+      "robot_type": "ur5e",
+      "training_task": false,
+      "difficulty": "Medium",
+      "initial_ranges": {
+        "objects": {},
+        "articulations": {
+          "cabinet7": {
+            "position_range": {
+              "x": [
+                0.85,
+                0.95
+              ],
+              "y": [
+                -0.25,
+                -0.15
+              ],
+              "z": [
+                0.4,
+                0.4
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.2618,
+                0.2618
+              ]
+            }
+          }
+        }
+      },
+      "config_sha256": "0b6f7b4d0ce428fe48259a1b9e21b1d5d2a85808cceaf7a72cfae715f77eb5de",
+      "evaluation": {
+        "round": "round_00",
+        "range_scale": 1.0,
+        "trials": 20,
+        "successes": 19,
+        "success_rate_percent": 95,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "c91f6856780bbed808ba5035efc4da0c59084cc5e74714a06c062fab2e147f6a",
+        "tested_source_sha256": "2dbd8d51031a9be77ae89afbc16aea321853f51145d0f0bb111e505f72ffd91a",
+        "report_sha256": "10212fbe4abe3c8ab4ead0a2e88bbb4b5aea313ada86937057673f05f7447fbf"
+      },
+      "num_envs": 20,
+      "initial_evaluation": {
+        "round": "round_00",
+        "range_scale": 1.0,
+        "trials": 20,
+        "successes": 19,
+        "success_rate_percent": 95,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "c91f6856780bbed808ba5035efc4da0c59084cc5e74714a06c062fab2e147f6a",
+        "tested_source_sha256": "2dbd8d51031a9be77ae89afbc16aea321853f51145d0f0bb111e505f72ffd91a",
+        "report_sha256": "10212fbe4abe3c8ab4ead0a2e88bbb4b5aea313ada86937057673f05f7447fbf"
+      },
+      "final_ranges": {
+        "objects": {},
+        "articulations": {
+          "cabinet7": {
+            "position_range": {
+              "x": [
+                0.8499999999999999,
+                0.95
+              ],
+              "y": [
+                -0.25,
+                -0.15000000000000002
+              ],
+              "z": [
+                0.4,
+                0.4
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.2618,
+                0.2618
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "task_id": "push_cheezbox",
+      "config_path": "source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/pull_push/push_cheezbox.yaml",
+      "robot": "franka_default",
+      "env_task_name": "FrankaFr3-DefaultGripper-Joint-VisPick-v0",
+      "robot_cfg_name": "franka_fr3.yml",
+      "robot_type": "franka_fr3",
+      "training_task": false,
+      "difficulty": "Medium",
+      "initial_ranges": {
+        "objects": {
+          "red_cheezbox": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "yellow_sugarbox": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "brown_chocolatebox": {
+            "position_range": null,
+            "orientation_range": null
+          }
+        },
+        "articulations": {}
+      },
+      "config_sha256": "ab9db42fad1529a1f48eaec04373735884f13dc4dd5f7888e706f4fbddd2875b",
+      "evaluation": {
+        "round": "round_00",
+        "range_scale": 1.0,
+        "trials": 20,
+        "successes": 20,
+        "success_rate_percent": 100,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "9dd743758539d7d5809f09684af867e535c96a21456100b38db19a2dd938dc34",
+        "tested_source_sha256": "09139df7bea5cfce843ac8fedb42b3e948bd676b546f9391cca425a29c6d5f1d",
+        "report_sha256": "70420ba385e622e1d55b64fb23a7e7bfe4a27119418a7aaf954a247e8aa51b39"
+      },
+      "num_envs": 20,
+      "initial_evaluation": {
+        "round": "round_00",
+        "range_scale": 1.0,
+        "trials": 20,
+        "successes": 20,
+        "success_rate_percent": 100,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "9dd743758539d7d5809f09684af867e535c96a21456100b38db19a2dd938dc34",
+        "tested_source_sha256": "09139df7bea5cfce843ac8fedb42b3e948bd676b546f9391cca425a29c6d5f1d",
+        "report_sha256": "70420ba385e622e1d55b64fb23a7e7bfe4a27119418a7aaf954a247e8aa51b39"
+      },
+      "final_ranges": {
+        "objects": {
+          "red_cheezbox": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "yellow_sugarbox": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "brown_chocolatebox": {
+            "position_range": null,
+            "orientation_range": null
+          }
+        },
+        "articulations": {}
+      }
+    },
+    {
+      "task_id": "push_coffeecan",
+      "config_path": "source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/pull_push/push_coffeecan.yaml",
+      "robot": "franka_long",
+      "env_task_name": "FrankaFr3-OurGripper-Joint-VisPick-v0",
+      "robot_cfg_name": "franka_fr3_our.yml",
+      "robot_type": "franka_fr3",
+      "training_task": true,
+      "difficulty": "Medium",
+      "initial_ranges": {
+        "objects": {
+          "blue_coffeecan": {
+            "position_range": {
+              "x": [
+                0.479,
+                0.579
+              ],
+              "y": [
+                -0.22,
+                -0.12
+              ],
+              "z": [
+                0.12,
+                0.12
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.2618,
+                0.2618
+              ]
+            }
+          },
+          "red_soupcan": {
+            "position_range": {
+              "x": [
+                0.659,
+                0.659
+              ],
+              "y": [
+                0.28,
+                0.28
+              ],
+              "z": [
+                0.1,
+                0.1
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.2618,
+                0.2618
+              ]
+            }
+          },
+          "tuna": {
+            "position_range": {
+              "x": [
+                0.72,
+                0.72
+              ],
+              "y": [
+                0.15,
+                0.15
+              ],
+              "z": [
+                0.06,
+                0.06
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.2618,
+                0.2618
+              ]
+            }
+          }
+        },
+        "articulations": {}
+      },
+      "config_sha256": "2b41b5306c29765cba748969bb6acf6b537bf424bc46126cd9ceb7deefa1372a",
+      "evaluation": {
+        "round": "round_00",
+        "range_scale": 1.0,
+        "trials": 20,
+        "successes": 20,
+        "success_rate_percent": 100,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "c782adaa02917a16947c28b3bacd2687c323258ad1851d3631c269633de0684d",
+        "tested_source_sha256": "356b720945aaaee620bc16e615f9f3b7c08d2b80a9d027b479b0cd794cdc9012",
+        "report_sha256": "41dccd17a9781d7a66fff1d1a4ce17c96d316862e2991cb8fa4e898ef67cf2fb"
+      },
+      "num_envs": 20,
+      "initial_evaluation": {
+        "round": "round_00",
+        "range_scale": 1.0,
+        "trials": 20,
+        "successes": 20,
+        "success_rate_percent": 100,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "c782adaa02917a16947c28b3bacd2687c323258ad1851d3631c269633de0684d",
+        "tested_source_sha256": "356b720945aaaee620bc16e615f9f3b7c08d2b80a9d027b479b0cd794cdc9012",
+        "report_sha256": "41dccd17a9781d7a66fff1d1a4ce17c96d316862e2991cb8fa4e898ef67cf2fb"
+      },
+      "final_ranges": {
+        "objects": {
+          "blue_coffeecan": {
+            "position_range": {
+              "x": [
+                0.4789999999999999,
+                0.579
+              ],
+              "y": [
+                -0.21999999999999997,
+                -0.11999999999999998
+              ],
+              "z": [
+                0.12,
+                0.12
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.2618,
+                0.2618
+              ]
+            }
+          },
+          "red_soupcan": {
+            "position_range": {
+              "x": [
+                0.659,
+                0.659
+              ],
+              "y": [
+                0.28,
+                0.28
+              ],
+              "z": [
+                0.1,
+                0.1
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.2618,
+                0.2618
+              ]
+            }
+          },
+          "tuna": {
+            "position_range": {
+              "x": [
+                0.72,
+                0.72
+              ],
+              "y": [
+                0.15,
+                0.15
+              ],
+              "z": [
+                0.06,
+                0.06
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.2618,
+                0.2618
+              ]
+            }
+          }
+        },
+        "articulations": {}
+      }
+    },
+    {
+      "task_id": "close_microwave",
+      "config_path": "source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/open_close/close_microwave.yaml",
+      "robot": "kinova",
+      "env_task_name": "Kinova-Robotiq85-IKRel-EE-VisPick-v0",
+      "robot_cfg_name": "kinova_robotiq85.yml",
+      "robot_type": "kinova_robotiq85",
+      "training_task": false,
+      "difficulty": "Medium",
+      "initial_ranges": {
+        "objects": {},
+        "articulations": {
+          "microwave1": {
+            "position_range": null,
+            "orientation_range": null
+          }
+        }
+      },
+      "config_sha256": "8af1d08aee7c97678d2074fcd5c9cfd30ea4344a72e8a7ef36da2af567013069",
+      "evaluation": {
+        "round": "round_00",
+        "range_scale": 1.0,
+        "trials": 20,
+        "successes": 0,
+        "success_rate_percent": 0,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "b1ee204ca486f88a5352c68e62238a7f0ef871b094062f36f7c62b21b38cfe41",
+        "tested_source_sha256": "d3ce51ea3ee9aec4b83db314f3f6471052d34a1c7d2c2349fcd49b88335a0abd",
+        "report_sha256": "158000b0a6775c9df084b994a94a8eab43c610e21d27ce00dcc5856d082c97ca"
+      },
+      "num_envs": 20,
+      "initial_evaluation": {
+        "round": "round_00",
+        "range_scale": 1.0,
+        "trials": 20,
+        "successes": 0,
+        "success_rate_percent": 0,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "b1ee204ca486f88a5352c68e62238a7f0ef871b094062f36f7c62b21b38cfe41",
+        "tested_source_sha256": "d3ce51ea3ee9aec4b83db314f3f6471052d34a1c7d2c2349fcd49b88335a0abd",
+        "report_sha256": "158000b0a6775c9df084b994a94a8eab43c610e21d27ce00dcc5856d082c97ca"
+      },
+      "final_ranges": {
+        "objects": {},
+        "articulations": {
+          "microwave1": {
+            "position_range": null,
+            "orientation_range": null
+          }
+        }
+      }
+    },
+    {
+      "task_id": "open_microwave",
+      "config_path": "source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/open_close/open_microwave.yaml",
+      "robot": "sawyer",
+      "env_task_name": "Sawyer-Robotiq85-Joint-EE-VisPick-v0",
+      "robot_cfg_name": "sawyer.yml",
+      "robot_type": "sawyer_robotiq85",
+      "training_task": true,
+      "difficulty": "Medium",
+      "initial_ranges": {
+        "objects": {},
+        "articulations": {
+          "microwave1": {
+            "position_range": {
+              "x": [
+                0.75,
+                0.85
+              ],
+              "y": [
+                -0.25,
+                -0.15
+              ],
+              "z": [
+                0.16,
+                0.16
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.1745,
+                0.1745
+              ]
+            }
+          }
+        }
+      },
+      "config_sha256": "5db6d1f3a089d4c70ea9f5f855d063bfbcec4df21f9797cd5fe7f47afe9e115a",
+      "evaluation": {
+        "round": "round_00",
+        "range_scale": 1.0,
+        "trials": 20,
+        "successes": 20,
+        "success_rate_percent": 100,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "fe8dd0374f2caa2bbf53ff6b1b8114b43c6d6efcd73ee0c56a6afb9f52d30deb",
+        "tested_source_sha256": "5e2de4456c258db65223ffab9a4897eb32677d60c441922e73ffa40b586fb0bc",
+        "report_sha256": "6fc70ee062eb4cb46735519ab2aaf2b3408d894cd12c185856981a2939626ea1"
+      },
+      "num_envs": 20,
+      "initial_evaluation": {
+        "round": "round_00",
+        "range_scale": 1.0,
+        "trials": 20,
+        "successes": 20,
+        "success_rate_percent": 100,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "fe8dd0374f2caa2bbf53ff6b1b8114b43c6d6efcd73ee0c56a6afb9f52d30deb",
+        "tested_source_sha256": "5e2de4456c258db65223ffab9a4897eb32677d60c441922e73ffa40b586fb0bc",
+        "report_sha256": "6fc70ee062eb4cb46735519ab2aaf2b3408d894cd12c185856981a2939626ea1"
+      },
+      "final_ranges": {
+        "objects": {},
+        "articulations": {
+          "microwave1": {
+            "position_range": {
+              "x": [
+                0.75,
+                0.8500000000000001
+              ],
+              "y": [
+                -0.25,
+                -0.15000000000000002
+              ],
+              "z": [
+                0.16,
+                0.16
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.1745,
+                0.1745
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "task_id": "hang_cup",
+      "config_path": "source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/hang/hang_cup.yaml",
+      "robot": "xarm7",
+      "env_task_name": "XArm7-UFactory-Joint-EE-VisPick-v0",
+      "robot_cfg_name": "xarm7.yml",
+      "robot_type": "xarm7_ufactory",
+      "training_task": true,
+      "difficulty": "Medium",
+      "initial_ranges": {
+        "objects": {
+          "white_cup": {
+            "position_range": {
+              "x": [
+                0.5,
+                0.6
+              ],
+              "y": [
+                0.13,
+                0.23
+              ],
+              "z": [
+                0.1,
+                0.1
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.261799,
+                0.261799
+              ]
+            }
+          },
+          "wood_rack": {
+            "position_range": {
+              "x": [
+                0.73,
+                0.83
+              ],
+              "y": [
+                -0.27,
+                -0.17
+              ],
+              "z": [
+                0.25,
+                0.25
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.261799,
+                0.261799
+              ]
+            }
+          }
+        },
+        "articulations": {}
+      },
+      "config_sha256": "8af1b4b81c213c04180a6f768fb51cdfa79086bfd1cf4e806b37b59569509635",
+      "evaluation": {
+        "round": "round_00",
+        "range_scale": 1.0,
+        "trials": 20,
+        "successes": 15,
+        "success_rate_percent": 75,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "d0e898ae31d98be067a5ce71466f3b2030d0129e9be132be4c9603d708428d4d",
+        "tested_source_sha256": "a2edc54db42ed2f4ec5c7ead4b0ba5736c122e04471e8f218e34f95feb12fcca",
+        "report_sha256": "db55869b169e7749c02ab2847ebe19add540a43350dac7af42cc344ab37be24f"
+      },
+      "num_envs": 20,
+      "initial_evaluation": {
+        "round": "round_00",
+        "range_scale": 1.0,
+        "trials": 20,
+        "successes": 15,
+        "success_rate_percent": 75,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "d0e898ae31d98be067a5ce71466f3b2030d0129e9be132be4c9603d708428d4d",
+        "tested_source_sha256": "a2edc54db42ed2f4ec5c7ead4b0ba5736c122e04471e8f218e34f95feb12fcca",
+        "report_sha256": "db55869b169e7749c02ab2847ebe19add540a43350dac7af42cc344ab37be24f"
+      },
+      "final_ranges": {
+        "objects": {
+          "white_cup": {
+            "position_range": {
+              "x": [
+                0.5,
+                0.6000000000000001
+              ],
+              "y": [
+                0.13,
+                0.22999999999999998
+              ],
+              "z": [
+                0.1,
+                0.1
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.261799,
+                0.261799
+              ]
+            }
+          },
+          "wood_rack": {
+            "position_range": {
+              "x": [
+                0.73,
+                0.8300000000000001
+              ],
+              "y": [
+                -0.27,
+                -0.17000000000000004
+              ],
+              "z": [
+                0.25,
+                0.25
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.261799,
+                0.261799
+              ]
+            }
+          }
+        },
+        "articulations": {}
+      }
+    },
+    {
+      "task_id": "hang_mugcup",
+      "config_path": "source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/hang/hang_mugcup.yaml",
+      "robot": "ur5e",
+      "env_task_name": "UR5e-Robotiq85-IKRel-EE-VisPick-v0",
+      "robot_cfg_name": "ur5e_robotiq_2f_85.yml",
+      "robot_type": "ur5e",
+      "training_task": true,
+      "difficulty": "Hard",
+      "initial_ranges": {
+        "objects": {
+          "red_mugcup": {
+            "position_range": {
+              "x": [
+                0.55,
+                0.65
+              ],
+              "y": [
+                -0.35,
+                -0.25
+              ],
+              "z": [
+                0.09,
+                0.09
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.1745,
+                0.1745
+              ]
+            }
+          },
+          "wood_rack": {
+            "position_range": {
+              "x": [
+                0.75,
+                0.8
+              ],
+              "y": [
+                -0.25,
+                -0.2
+              ],
+              "z": [
+                0.25,
+                0.25
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.1745,
+                0.1745
+              ]
+            }
+          }
+        },
+        "articulations": {}
+      },
+      "config_sha256": "779548e0f565ac83eb2cc506c27160521c3a3b8eff9522bbbba29f942bde3fc3",
+      "evaluation": {
+        "round": "round_02",
+        "range_scale": 0.5,
+        "trials": 20,
+        "successes": 6,
+        "success_rate_percent": 30,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "c8eaf42733b5526ab0c9c6810430802178dee7c9c98b559ae26cee511d15dd8d",
+        "tested_source_sha256": "d86b8d410f3fb4cd7299b128ff3a6b5cba256db576a42a0f3c826d97a4b26d50",
+        "report_sha256": "da2b11b906609017ad5c7d8eb00194bc6582656ef33d8d78531ff38b0f20777d"
+      },
+      "num_envs": 20,
+      "initial_evaluation": {
+        "round": "round_00",
+        "range_scale": 1.0,
+        "trials": 20,
+        "successes": 8,
+        "success_rate_percent": 40,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "db95ea24e9d5684bdc430f1e68e929b6ab7ef593f94d32ec9114454a9a652b6a",
+        "tested_source_sha256": "d86b8d410f3fb4cd7299b128ff3a6b5cba256db576a42a0f3c826d97a4b26d50",
+        "report_sha256": "c5f922089505a2e13621c378d056371db2c858565ad89045d9ffafda3e3f775e"
+      },
+      "final_ranges": {
+        "objects": {
+          "red_mugcup": {
+            "position_range": {
+              "x": [
+                0.5750000000000001,
+                0.6250000000000001
+              ],
+              "y": [
+                -0.32499999999999996,
+                -0.275
+              ],
+              "z": [
+                0.09,
+                0.09
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.08725,
+                0.08725
+              ]
+            }
+          },
+          "wood_rack": {
+            "position_range": {
+              "x": [
+                0.7625,
+                0.7875000000000001
+              ],
+              "y": [
+                -0.2375,
+                -0.21250000000000002
+              ],
+              "z": [
+                0.25,
+                0.25
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.08725,
+                0.08725
+              ]
+            }
+          }
+        },
+        "articulations": {}
+      }
+    },
+    {
+      "task_id": "stack_cube",
+      "config_path": "source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/stack/stack_cube.yaml",
+      "robot": "franka_default",
+      "env_task_name": "FrankaFr3-DefaultGripper-Joint-VisPick-v0",
+      "robot_cfg_name": "franka_fr3.yml",
+      "robot_type": "franka_fr3",
+      "training_task": true,
+      "difficulty": "Medium",
+      "initial_ranges": {
+        "objects": {
+          "red_cube": {
+            "position_range": {
+              "x": [
+                0.53,
+                0.61
+              ],
+              "y": [
+                0.1,
+                0.15
+              ],
+              "z": [
+                0.08,
+                0.08
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.5,
+                0.5
+              ]
+            }
+          },
+          "blue_cube": {
+            "position_range": {
+              "x": [
+                0.57,
+                0.65
+              ],
+              "y": [
+                -0.04,
+                0.04
+              ],
+              "z": [
+                0.08,
+                0.08
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.5,
+                0.5
+              ]
+            }
+          },
+          "green_cube": {
+            "position_range": {
+              "x": [
+                0.51,
+                0.59
+              ],
+              "y": [
+                -0.15,
+                -0.1
+              ],
+              "z": [
+                0.08,
+                0.08
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.5,
+                0.5
+              ]
+            }
+          }
+        },
+        "articulations": {}
+      },
+      "config_sha256": "88601d4f938bdfe13767a2103eb1ee6a9ea318b7d8189f5e5412d50f46a84ca6",
+      "evaluation": {
+        "round": "round_02",
+        "range_scale": 0.5,
+        "trials": 20,
+        "successes": 1,
+        "success_rate_percent": 5,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "6952d6eff3739b5f420ba3834ec963b5ff9e05eb400e6c479ac73e0f6421fd39",
+        "tested_source_sha256": "6487455ab0175c98b51ef73ed5528d52852e589ac2473fb5a3441e478982e875",
+        "report_sha256": "0fca572d317b9ec871cbb48ffa0100bd502440e51c168ffa7f88f094342935fe"
+      },
+      "num_envs": 20,
+      "initial_evaluation": {
+        "round": "round_00",
+        "range_scale": 1.0,
+        "trials": 20,
+        "successes": 1,
+        "success_rate_percent": 5,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "efa2f8651a3bd8316f9cab3779bf7d1664559a66fb640b20ae612b02bcc2a6d8",
+        "tested_source_sha256": "6487455ab0175c98b51ef73ed5528d52852e589ac2473fb5a3441e478982e875",
+        "report_sha256": "52a40dcc766c01079d80feb0142f37e2543c5b17d264a8c25b402d0ce38a315a"
+      },
+      "final_ranges": {
+        "objects": {
+          "red_cube": {
+            "position_range": {
+              "x": [
+                0.55,
+                0.5900000000000001
+              ],
+              "y": [
+                0.1125,
+                0.1375
+              ],
+              "z": [
+                0.08,
+                0.08
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.25,
+                0.25
+              ]
+            }
+          },
+          "blue_cube": {
+            "position_range": {
+              "x": [
+                0.59,
+                0.63
+              ],
+              "y": [
+                -0.02,
+                0.02
+              ],
+              "z": [
+                0.08,
+                0.08
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.25,
+                0.25
+              ]
+            }
+          },
+          "green_cube": {
+            "position_range": {
+              "x": [
+                0.53,
+                0.5700000000000001
+              ],
+              "y": [
+                -0.1375,
+                -0.1125
+              ],
+              "z": [
+                0.08,
+                0.08
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.25,
+                0.25
+              ]
+            }
+          }
+        },
+        "articulations": {}
+      }
+    },
+    {
+      "task_id": "stack_four_cube",
+      "config_path": "source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/stack/stack_four_cube.yaml",
+      "robot": "franka_long",
+      "env_task_name": "FrankaFr3-OurGripper-Joint-VisPick-v0",
+      "robot_cfg_name": "franka_fr3_our.yml",
+      "robot_type": "franka_fr3",
+      "training_task": false,
+      "difficulty": "Hard",
+      "initial_ranges": {
+        "objects": {
+          "red_cube": {
+            "position_range": {
+              "x": [
+                0.45,
+                0.6
+              ],
+              "y": [
+                -0.325,
+                -0.175
+              ],
+              "z": [
+                0.08,
+                0.08
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.5235987755982988,
+                0.5235987755982988
+              ]
+            }
+          },
+          "blue_cube": {
+            "position_range": {
+              "x": [
+                0.5,
+                0.65
+              ],
+              "y": [
+                -0.05,
+                0.05
+              ],
+              "z": [
+                0.08,
+                0.08
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.5235987755982988,
+                0.5235987755982988
+              ]
+            }
+          },
+          "green_cube": {
+            "position_range": {
+              "x": [
+                0.6,
+                0.7
+              ],
+              "y": [
+                -0.325,
+                -0.175
+              ],
+              "z": [
+                0.08,
+                0.08
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.5235987755982988,
+                0.5235987755982988
+              ]
+            }
+          },
+          "yellow_cube": {
+            "position_range": {
+              "x": [
+                0.5,
+                0.65
+              ],
+              "y": [
+                0.175,
+                0.325
+              ],
+              "z": [
+                0.08,
+                0.08
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.5235987755982988,
+                0.5235987755982988
+              ]
+            }
+          }
+        },
+        "articulations": {}
+      },
+      "config_sha256": "45c9905147c128afc86b01385382af5fe612fd9e368132e4305c67b3b5c0171b",
+      "evaluation": {
+        "round": "round_00",
+        "range_scale": 1.0,
+        "trials": 20,
+        "successes": 20,
+        "success_rate_percent": 100,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "e1b9a088b98aecc3a8f938ced7d3f3fd23be82b39c5a4b54e0241b511a86103b",
+        "tested_source_sha256": "c24a3be0df48649596e3a1c749364bdcdb487f38883fce9a55df67e6ff366b48",
+        "report_sha256": "63a4ecf405dcb71d0f84136b0f5fb399cd5a31909325bf367b8012a9780884ba"
+      },
+      "num_envs": 20,
+      "initial_evaluation": {
+        "round": "round_00",
+        "range_scale": 1.0,
+        "trials": 20,
+        "successes": 20,
+        "success_rate_percent": 100,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "e1b9a088b98aecc3a8f938ced7d3f3fd23be82b39c5a4b54e0241b511a86103b",
+        "tested_source_sha256": "c24a3be0df48649596e3a1c749364bdcdb487f38883fce9a55df67e6ff366b48",
+        "report_sha256": "63a4ecf405dcb71d0f84136b0f5fb399cd5a31909325bf367b8012a9780884ba"
+      },
+      "final_ranges": {
+        "objects": {
+          "red_cube": {
+            "position_range": {
+              "x": [
+                0.45000000000000007,
+                0.6
+              ],
+              "y": [
+                -0.325,
+                -0.175
+              ],
+              "z": [
+                0.08,
+                0.08
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.5235987755982988,
+                0.5235987755982988
+              ]
+            }
+          },
+          "blue_cube": {
+            "position_range": {
+              "x": [
+                0.49999999999999994,
+                0.6499999999999999
+              ],
+              "y": [
+                -0.05,
+                0.05
+              ],
+              "z": [
+                0.08,
+                0.08
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.5235987755982988,
+                0.5235987755982988
+              ]
+            }
+          },
+          "green_cube": {
+            "position_range": {
+              "x": [
+                0.5999999999999999,
+                0.7
+              ],
+              "y": [
+                -0.325,
+                -0.175
+              ],
+              "z": [
+                0.08,
+                0.08
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.5235987755982988,
+                0.5235987755982988
+              ]
+            }
+          },
+          "yellow_cube": {
+            "position_range": {
+              "x": [
+                0.49999999999999994,
+                0.6499999999999999
+              ],
+              "y": [
+                0.175,
+                0.325
+              ],
+              "z": [
+                0.08,
+                0.08
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.5235987755982988,
+                0.5235987755982988
+              ]
+            }
+          }
+        },
+        "articulations": {}
+      }
+    },
+    {
+      "task_id": "stack_four_cube_pyramid",
+      "config_path": "source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/stack/stack_four_cube_pyramid.yaml",
+      "robot": "kinova",
+      "env_task_name": "Kinova-Robotiq85-IKRel-EE-VisPick-v0",
+      "robot_cfg_name": "kinova_robotiq85.yml",
+      "robot_type": "kinova_robotiq85",
+      "training_task": false,
+      "difficulty": "Medium",
+      "initial_ranges": {
+        "objects": {
+          "red_cube": {
+            "position_range": {
+              "x": [
+                0.45,
+                0.6
+              ],
+              "y": [
+                -0.325,
+                -0.175
+              ],
+              "z": [
+                0.08,
+                0.08
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.5235987755982988,
+                0.5235987755982988
+              ]
+            }
+          },
+          "blue_cube": {
+            "position_range": {
+              "x": [
+                0.45,
+                0.6
+              ],
+              "y": [
+                0.175,
+                0.325
+              ],
+              "z": [
+                0.08,
+                0.08
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.5235987755982988,
+                0.5235987755982988
+              ]
+            }
+          },
+          "green_cube": {
+            "position_range": {
+              "x": [
+                0.6,
+                0.7
+              ],
+              "y": [
+                -0.325,
+                -0.175
+              ],
+              "z": [
+                0.08,
+                0.08
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.5235987755982988,
+                0.5235987755982988
+              ]
+            }
+          },
+          "yellow_cube": {
+            "position_range": {
+              "x": [
+                0.6,
+                0.7
+              ],
+              "y": [
+                0.175,
+                0.325
+              ],
+              "z": [
+                0.08,
+                0.08
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.5235987755982988,
+                0.5235987755982988
+              ]
+            }
+          }
+        },
+        "articulations": {}
+      },
+      "config_sha256": "72887f2f1ccf2d00bdcac545b8d15a42507c9d329dc07a965798c71dbc16cb26",
+      "evaluation": {
+        "round": "round_02",
+        "range_scale": 0.5,
+        "trials": 20,
+        "successes": 3,
+        "success_rate_percent": 15,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "52bc3b709c68ffb6a5aa91ada2a55393c46e2cd619c61d733f762fea33ba9e42",
+        "tested_source_sha256": "2698f6b99ad15427e304e68b14ef3cd89230116127a4a9ebb38543daf9b443fe",
+        "report_sha256": "7f6d0f10737881143356ebbe0ec0d9e93205113244a059194df24d6ec0763d00"
+      },
+      "num_envs": 20,
+      "initial_evaluation": {
+        "round": "round_00",
+        "range_scale": 1.0,
+        "trials": 20,
+        "successes": 0,
+        "success_rate_percent": 0,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "03271b0938e42c86f8bddf0e7937beaa2113112b218517242c330729ad5b3af2",
+        "tested_source_sha256": "2698f6b99ad15427e304e68b14ef3cd89230116127a4a9ebb38543daf9b443fe",
+        "report_sha256": "6adab2402f8f87701491546cf6a489125154ac29f01eb8c3959235e268a42759"
+      },
+      "final_ranges": {
+        "objects": {
+          "red_cube": {
+            "position_range": {
+              "x": [
+                0.48750000000000004,
+                0.5625
+              ],
+              "y": [
+                -0.2875,
+                -0.2125
+              ],
+              "z": [
+                0.08,
+                0.08
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.2617993877991494,
+                0.2617993877991494
+              ]
+            }
+          },
+          "blue_cube": {
+            "position_range": {
+              "x": [
+                0.48750000000000004,
+                0.5625
+              ],
+              "y": [
+                0.2125,
+                0.2875
+              ],
+              "z": [
+                0.08,
+                0.08
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.2617993877991494,
+                0.2617993877991494
+              ]
+            }
+          },
+          "green_cube": {
+            "position_range": {
+              "x": [
+                0.6249999999999999,
+                0.6749999999999999
+              ],
+              "y": [
+                -0.2875,
+                -0.2125
+              ],
+              "z": [
+                0.08,
+                0.08
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.2617993877991494,
+                0.2617993877991494
+              ]
+            }
+          },
+          "yellow_cube": {
+            "position_range": {
+              "x": [
+                0.6249999999999999,
+                0.6749999999999999
+              ],
+              "y": [
+                0.2125,
+                0.2875
+              ],
+              "z": [
+                0.08,
+                0.08
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.2617993877991494,
+                0.2617993877991494
+              ]
+            }
+          }
+        },
+        "articulations": {}
+      }
+    },
+    {
+      "task_id": "stack_papercup",
+      "config_path": "source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/stack/stack_papercup.yaml",
+      "robot": "sawyer",
+      "env_task_name": "Sawyer-Robotiq85-Joint-EE-VisPick-v0",
+      "robot_cfg_name": "sawyer.yml",
+      "robot_type": "sawyer_robotiq85",
+      "training_task": false,
+      "difficulty": "Medium",
+      "initial_ranges": {
+        "objects": {
+          "white_papercup1": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "white_papercup2": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "white_papercup3": {
+            "position_range": null,
+            "orientation_range": null
+          }
+        },
+        "articulations": {}
+      },
+      "config_sha256": "7442788375b6b2e5c36a4264ffc81c5177ff4c999f3ea82f5a5cf729982f2464",
+      "evaluation": {
+        "round": "round_00",
+        "range_scale": 1.0,
+        "trials": 20,
+        "successes": 1,
+        "success_rate_percent": 5,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "ff868ac69121eac0fab6fa387140d1cca9b1fa996b15a1db3ba11440d802335c",
+        "tested_source_sha256": "862b52671283269d75f27a707125db2bf41ba023453177ec52d7e95245d45a4f",
+        "report_sha256": "e66bed25e1b3bab46f50169020ee405a5b17a2494d88c3623afc5a5a468c1aa5"
+      },
+      "num_envs": 20,
+      "initial_evaluation": {
+        "round": "round_00",
+        "range_scale": 1.0,
+        "trials": 20,
+        "successes": 1,
+        "success_rate_percent": 5,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "ff868ac69121eac0fab6fa387140d1cca9b1fa996b15a1db3ba11440d802335c",
+        "tested_source_sha256": "862b52671283269d75f27a707125db2bf41ba023453177ec52d7e95245d45a4f",
+        "report_sha256": "e66bed25e1b3bab46f50169020ee405a5b17a2494d88c3623afc5a5a468c1aa5"
+      },
+      "final_ranges": {
+        "objects": {
+          "white_papercup1": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "white_papercup2": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "white_papercup3": {
+            "position_range": null,
+            "orientation_range": null
+          }
+        },
+        "articulations": {}
+      }
+    },
+    {
+      "task_id": "composite_2pickplaces",
+      "config_path": "source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/composite/composite_2pickplaces.yaml",
+      "robot": "xarm7",
+      "env_task_name": "XArm7-UFactory-Joint-EE-VisPick-v0",
+      "robot_cfg_name": "xarm7.yml",
+      "robot_type": "xarm7_ufactory",
+      "training_task": false,
+      "difficulty": "Hard",
+      "initial_ranges": {
+        "objects": {
+          "white_plate": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "yellow_banana": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "red_mugcup": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "brown_woodshelf": {
+            "position_range": null,
+            "orientation_range": null
+          }
+        },
+        "articulations": {}
+      },
+      "config_sha256": "24aae5405cb9c3b0d6baabeeac1fcda334778a7f719ffc80561abb0819140e23",
+      "evaluation": {
+        "round": "round_00",
+        "range_scale": 1.0,
+        "trials": 20,
+        "successes": 20,
+        "success_rate_percent": 100,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "3d2e11038ef5b1b25cc3bfd16aee56522df30d6d6dfb6815051bd2dbb9e9f276",
+        "tested_source_sha256": "494f044cf23e130081528a6fb7db856c6a43b2408dff405bf0eed9648aec3b3f",
+        "report_sha256": "9ed727e2f2353847d8dcab0799070a9914a56c38f3543775842966b5e60548fc"
+      },
+      "num_envs": 20,
+      "initial_evaluation": {
+        "round": "round_00",
+        "range_scale": 1.0,
+        "trials": 20,
+        "successes": 20,
+        "success_rate_percent": 100,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "3d2e11038ef5b1b25cc3bfd16aee56522df30d6d6dfb6815051bd2dbb9e9f276",
+        "tested_source_sha256": "494f044cf23e130081528a6fb7db856c6a43b2408dff405bf0eed9648aec3b3f",
+        "report_sha256": "9ed727e2f2353847d8dcab0799070a9914a56c38f3543775842966b5e60548fc"
+      },
+      "final_ranges": {
+        "objects": {
+          "white_plate": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "yellow_banana": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "red_mugcup": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "brown_woodshelf": {
+            "position_range": null,
+            "orientation_range": null
+          }
+        },
+        "articulations": {}
+      }
+    },
+    {
+      "task_id": "composite_2picks_to_plate",
+      "config_path": "source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/composite/composite_2picks_to_plate.yaml",
+      "robot": "ur5e",
+      "env_task_name": "UR5e-Robotiq85-IKRel-EE-VisPick-v0",
+      "robot_cfg_name": "ur5e_robotiq_2f_85.yml",
+      "robot_type": "ur5e",
+      "training_task": false,
+      "difficulty": "Medium",
+      "initial_ranges": {
+        "objects": {
+          "yellow_banana": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "orange_carrot": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "white_plate": {
+            "position_range": null,
+            "orientation_range": null
+          }
+        },
+        "articulations": {}
+      },
+      "config_sha256": "cff09540bbe4986b90e65aff9031a0130b72b850a54945905583837cae752e19",
+      "evaluation": {
+        "round": "round_00",
+        "range_scale": 1.0,
+        "trials": 20,
+        "successes": 2,
+        "success_rate_percent": 10,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "daf6cc90e51c2cd94b196904594dacdcebbc0bdc73670c7b58a7a4b0bc2c166a",
+        "tested_source_sha256": "1cdd0887edf739dc43e7d034102561063d7690aed92c5e4581aeca9e3b054c61",
+        "report_sha256": "e4f406f4d029d1d9af7a73fd51a5438015b8860a5e89b3a1a11b9c2a2dd42914"
+      },
+      "num_envs": 20,
+      "initial_evaluation": {
+        "round": "round_00",
+        "range_scale": 1.0,
+        "trials": 20,
+        "successes": 2,
+        "success_rate_percent": 10,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "daf6cc90e51c2cd94b196904594dacdcebbc0bdc73670c7b58a7a4b0bc2c166a",
+        "tested_source_sha256": "1cdd0887edf739dc43e7d034102561063d7690aed92c5e4581aeca9e3b054c61",
+        "report_sha256": "e4f406f4d029d1d9af7a73fd51a5438015b8860a5e89b3a1a11b9c2a2dd42914"
+      },
+      "final_ranges": {
+        "objects": {
+          "yellow_banana": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "orange_carrot": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "white_plate": {
+            "position_range": null,
+            "orientation_range": null
+          }
+        },
+        "articulations": {}
+      }
+    },
+    {
+      "task_id": "store_cups_on_plates",
+      "config_path": "source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/composite/store_cups_on_plates.yaml",
+      "robot": "franka_default",
+      "env_task_name": "FrankaFr3-DefaultGripper-Joint-VisPick-v0",
+      "robot_cfg_name": "franka_fr3.yml",
+      "robot_type": "franka_fr3",
+      "training_task": true,
+      "difficulty": "Hard",
+      "initial_ranges": {
+        "objects": {
+          "white_75mmcup": {
+            "position_range": {
+              "x": [
+                0.345,
+                0.495
+              ],
+              "y": [
+                -0.395,
+                -0.245
+              ],
+              "z": [
+                0.1,
+                0.1
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.5235987755982988,
+                0.5235987755982988
+              ]
+            }
+          },
+          "white_plate_1": {
+            "position_range": {
+              "x": [
+                0.635,
+                0.785
+              ],
+              "y": [
+                -0.395,
+                -0.245
+              ],
+              "z": [
+                0.045,
+                0.045
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.5235987755982988,
+                0.5235987755982988
+              ]
+            }
+          },
+          "white_papercup2": {
+            "position_range": {
+              "x": [
+                0.345,
+                0.495
+              ],
+              "y": [
+                -0.075,
+                0.075
+              ],
+              "z": [
+                0.1,
+                0.1
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.5235987755982988,
+                0.5235987755982988
+              ]
+            }
+          },
+          "white_plate_2": {
+            "position_range": {
+              "x": [
+                0.635,
+                0.785
+              ],
+              "y": [
+                -0.075,
+                0.075
+              ],
+              "z": [
+                0.045,
+                0.045
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.5235987755982988,
+                0.5235987755982988
+              ]
+            }
+          },
+          "doraemoncup": {
+            "position_range": {
+              "x": [
+                0.345,
+                0.495
+              ],
+              "y": [
+                0.245,
+                0.395
+              ],
+              "z": [
+                0.1,
+                0.1
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.5235987755982988,
+                0.5235987755982988
+              ]
+            }
+          },
+          "white_plate_3": {
+            "position_range": {
+              "x": [
+                0.635,
+                0.785
+              ],
+              "y": [
+                0.245,
+                0.395
+              ],
+              "z": [
+                0.045,
+                0.045
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.5235987755982988,
+                0.5235987755982988
+              ]
+            }
+          }
+        },
+        "articulations": {}
+      },
+      "config_sha256": "3959e6de521976178214f9df5a3d3073133b6d4fbb1944d9425751a45e1c603e",
+      "evaluation": {
+        "round": "round_02",
+        "range_scale": 0.5,
+        "trials": 20,
+        "successes": 0,
+        "success_rate_percent": 0,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "64e486322697ee74d71d5ce8d04fdff5d8d5748e6daac6fd5d51632faf29e687",
+        "tested_source_sha256": "488bffbdbca954d24b61b1d16752c025399a1a84472bfae3dc717d969ebd8e85",
+        "report_sha256": "dd375d3ff77f56185de6e5b76217c8353be3a17f416cf81952b0bbe14909cd7e"
+      },
+      "num_envs": 20,
+      "initial_evaluation": {
+        "round": "round_00",
+        "range_scale": 1.0,
+        "trials": 20,
+        "successes": 0,
+        "success_rate_percent": 0,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "60016c0a7fe12ea05eba6e66aaf2c50a75d426c35c952e7cc7e7334d40c64eb7",
+        "tested_source_sha256": "488bffbdbca954d24b61b1d16752c025399a1a84472bfae3dc717d969ebd8e85",
+        "report_sha256": "8da114ec555a633f31d8ca9436368ab695fc8742e57d1d91926c595eea5399e5"
+      },
+      "final_ranges": {
+        "objects": {
+          "white_75mmcup": {
+            "position_range": {
+              "x": [
+                0.38249999999999995,
+                0.4575
+              ],
+              "y": [
+                -0.35750000000000004,
+                -0.2825
+              ],
+              "z": [
+                0.1,
+                0.1
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.2617993877991494,
+                0.2617993877991494
+              ]
+            }
+          },
+          "white_plate_1": {
+            "position_range": {
+              "x": [
+                0.6725,
+                0.7474999999999999
+              ],
+              "y": [
+                -0.35750000000000004,
+                -0.2825
+              ],
+              "z": [
+                0.045,
+                0.045
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.2617993877991494,
+                0.2617993877991494
+              ]
+            }
+          },
+          "white_papercup2": {
+            "position_range": {
+              "x": [
+                0.38249999999999995,
+                0.4575
+              ],
+              "y": [
+                -0.0375,
+                0.0375
+              ],
+              "z": [
+                0.1,
+                0.1
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.2617993877991494,
+                0.2617993877991494
+              ]
+            }
+          },
+          "white_plate_2": {
+            "position_range": {
+              "x": [
+                0.6725,
+                0.7474999999999999
+              ],
+              "y": [
+                -0.0375,
+                0.0375
+              ],
+              "z": [
+                0.045,
+                0.045
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.2617993877991494,
+                0.2617993877991494
+              ]
+            }
+          },
+          "doraemoncup": {
+            "position_range": {
+              "x": [
+                0.38249999999999995,
+                0.4575
+              ],
+              "y": [
+                0.2825,
+                0.35750000000000004
+              ],
+              "z": [
+                0.1,
+                0.1
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.2617993877991494,
+                0.2617993877991494
+              ]
+            }
+          },
+          "white_plate_3": {
+            "position_range": {
+              "x": [
+                0.6725,
+                0.7474999999999999
+              ],
+              "y": [
+                0.2825,
+                0.35750000000000004
+              ],
+              "z": [
+                0.045,
+                0.045
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.2617993877991494,
+                0.2617993877991494
+              ]
+            }
+          }
+        },
+        "articulations": {}
+      }
+    },
+    {
+      "task_id": "organize_clutter_into_baskets",
+      "config_path": "source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/composite/organize_clutter_into_baskets.yaml",
+      "robot": "franka_long",
+      "env_task_name": "FrankaFr3-OurGripper-Joint-VisPick-v0",
+      "robot_cfg_name": "franka_fr3_our.yml",
+      "robot_type": "franka_fr3",
+      "training_task": true,
+      "difficulty": "Hard",
+      "initial_ranges": {
+        "objects": {
+          "red_soupcan": {
+            "position_range": {
+              "x": [
+                0.325,
+                0.475
+              ],
+              "y": [
+                -0.465,
+                -0.315
+              ],
+              "z": [
+                0.1,
+                0.1
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.5235987755982988,
+                0.5235987755982988
+              ]
+            }
+          },
+          "storage_basket_1": {
+            "position_range": {
+              "x": [
+                0.635,
+                0.785
+              ],
+              "y": [
+                -0.465,
+                -0.315
+              ],
+              "z": [
+                0.03,
+                0.03
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.5235987755982988,
+                0.5235987755982988
+              ]
+            }
+          },
+          "brown_chocolatebox": {
+            "position_range": {
+              "x": [
+                0.325,
+                0.475
+              ],
+              "y": [
+                -0.075,
+                0.075
+              ],
+              "z": [
+                0.1,
+                0.1
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.5235987755982988,
+                0.5235987755982988
+              ]
+            }
+          },
+          "storage_basket_2": {
+            "position_range": {
+              "x": [
+                0.635,
+                0.785
+              ],
+              "y": [
+                -0.075,
+                0.075
+              ],
+              "z": [
+                0.03,
+                0.03
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.5235987755982988,
+                0.5235987755982988
+              ]
+            }
+          },
+          "yellow_sugarbox": {
+            "position_range": {
+              "x": [
+                0.325,
+                0.475
+              ],
+              "y": [
+                0.315,
+                0.465
+              ],
+              "z": [
+                0.1,
+                0.1
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.5235987755982988,
+                0.5235987755982988
+              ]
+            }
+          },
+          "storage_basket_3": {
+            "position_range": {
+              "x": [
+                0.635,
+                0.785
+              ],
+              "y": [
+                0.315,
+                0.465
+              ],
+              "z": [
+                0.03,
+                0.03
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.5235987755982988,
+                0.5235987755982988
+              ]
+            }
+          }
+        },
+        "articulations": {}
+      },
+      "config_sha256": "f2c67ba28551da237d5f2cd39a57461c2b3913ea906279ecd88a5bb5e673cc3c",
+      "evaluation": {
+        "round": "round_02",
+        "range_scale": 0.5,
+        "trials": 20,
+        "successes": 0,
+        "success_rate_percent": 0,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "3001586eedbcaa6aec585baa5a97fe3ef539379b41265168159528acf3c0e9b4",
+        "tested_source_sha256": "ca0c0ccfa18dce966414835bbd0268adf030c99d5bd5ca593f2d41baa6e86261",
+        "report_sha256": "b58df567cf6c1157556258540a280b2e0a26421c7c5914c17072d43a7d2b7599"
+      },
+      "num_envs": 20,
+      "initial_evaluation": {
+        "round": "round_00",
+        "range_scale": 1.0,
+        "trials": 20,
+        "successes": 0,
+        "success_rate_percent": 0,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "4fcfa31fccd3145697276993a276f48b45f40d04aa93a9e825259dfbe7fbee6a",
+        "tested_source_sha256": "ca0c0ccfa18dce966414835bbd0268adf030c99d5bd5ca593f2d41baa6e86261",
+        "report_sha256": "951164ea9fc616363b5b7db6653f75d8f9885c83ec60706fa713b51aefcfd747"
+      },
+      "final_ranges": {
+        "objects": {
+          "red_soupcan": {
+            "position_range": {
+              "x": [
+                0.36250000000000004,
+                0.4375
+              ],
+              "y": [
+                -0.4275,
+                -0.35250000000000004
+              ],
+              "z": [
+                0.1,
+                0.1
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.2617993877991494,
+                0.2617993877991494
+              ]
+            }
+          },
+          "storage_basket_1": {
+            "position_range": {
+              "x": [
+                0.6725,
+                0.7474999999999999
+              ],
+              "y": [
+                -0.4275,
+                -0.35250000000000004
+              ],
+              "z": [
+                0.03,
+                0.03
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.2617993877991494,
+                0.2617993877991494
+              ]
+            }
+          },
+          "brown_chocolatebox": {
+            "position_range": {
+              "x": [
+                0.36250000000000004,
+                0.4375
+              ],
+              "y": [
+                -0.0375,
+                0.0375
+              ],
+              "z": [
+                0.1,
+                0.1
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.2617993877991494,
+                0.2617993877991494
+              ]
+            }
+          },
+          "storage_basket_2": {
+            "position_range": {
+              "x": [
+                0.6725,
+                0.7474999999999999
+              ],
+              "y": [
+                -0.0375,
+                0.0375
+              ],
+              "z": [
+                0.03,
+                0.03
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.2617993877991494,
+                0.2617993877991494
+              ]
+            }
+          },
+          "yellow_sugarbox": {
+            "position_range": {
+              "x": [
+                0.36250000000000004,
+                0.4375
+              ],
+              "y": [
+                0.35250000000000004,
+                0.4275
+              ],
+              "z": [
+                0.1,
+                0.1
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.2617993877991494,
+                0.2617993877991494
+              ]
+            }
+          },
+          "storage_basket_3": {
+            "position_range": {
+              "x": [
+                0.6725,
+                0.7474999999999999
+              ],
+              "y": [
+                0.35250000000000004,
+                0.4275
+              ],
+              "z": [
+                0.03,
+                0.03
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.2617993877991494,
+                0.2617993877991494
+              ]
+            }
+          }
+        },
+        "articulations": {}
+      }
+    },
+    {
+      "task_id": "composite_double_pour_kettle",
+      "config_path": "source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/composite/composite_double_pour_kettle.yaml",
+      "robot": "kinova",
+      "env_task_name": "Kinova-Robotiq85-IKRel-EE-VisPick-v0",
+      "robot_cfg_name": "kinova_robotiq85.yml",
+      "robot_type": "kinova_robotiq85",
+      "training_task": true,
+      "difficulty": "Hard",
+      "initial_ranges": {
+        "objects": {
+          "white_kettle6": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "yellow_bowl": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "white_kettle3": {
+            "position_range": null,
+            "orientation_range": null
+          }
+        },
+        "articulations": {}
+      },
+      "config_sha256": "4da76767fe2442b3c01eef285b824fa8056202ff97e159c63695b7e6ed1ce5db",
+      "evaluation": {
+        "round": "round_00",
+        "range_scale": 1.0,
+        "trials": 20,
+        "successes": 3,
+        "success_rate_percent": 15,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "69483d9f8d8f288b482fab6f7352022cc604da47cace1aa1f54527ada4114580",
+        "tested_source_sha256": "20b92d45476b5f7c8ba6a7cd3b7be1f70608bf792af342189705c69133035155",
+        "report_sha256": "8a63fedcbba5779efb923cea17103fac4f71c26287de4334f81f65ee898e0bdd"
+      },
+      "num_envs": 20,
+      "initial_evaluation": {
+        "round": "round_00",
+        "range_scale": 1.0,
+        "trials": 20,
+        "successes": 3,
+        "success_rate_percent": 15,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "69483d9f8d8f288b482fab6f7352022cc604da47cace1aa1f54527ada4114580",
+        "tested_source_sha256": "20b92d45476b5f7c8ba6a7cd3b7be1f70608bf792af342189705c69133035155",
+        "report_sha256": "8a63fedcbba5779efb923cea17103fac4f71c26287de4334f81f65ee898e0bdd"
+      },
+      "final_ranges": {
+        "objects": {
+          "white_kettle6": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "yellow_bowl": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "white_kettle3": {
+            "position_range": null,
+            "orientation_range": null
+          }
+        },
+        "articulations": {}
+      }
+    },
+    {
+      "task_id": "composite_load_microwave",
+      "config_path": "source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/composite/composite_load_microwave.yaml",
+      "robot": "sawyer",
+      "env_task_name": "Sawyer-Robotiq85-Joint-EE-VisPick-v0",
+      "robot_cfg_name": "sawyer.yml",
+      "robot_type": "sawyer_robotiq85",
+      "training_task": false,
+      "difficulty": "Hard",
+      "initial_ranges": {
+        "objects": {
+          "red_soupcan": {
+            "position_range": {
+              "x": [
+                0.6,
+                0.7
+              ],
+              "y": [
+                -0.4,
+                -0.3
+              ],
+              "z": [
+                0.15,
+                0.15
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.1745,
+                0.1745
+              ]
+            }
+          }
+        },
+        "articulations": {
+          "microwave1": {
+            "position_range": {
+              "x": [
+                0.8,
+                0.8
+              ],
+              "y": [
+                0.2,
+                0.2
+              ],
+              "z": [
+                0.16,
+                0.16
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.0,
+                0.0
+              ]
+            }
+          }
+        }
+      },
+      "config_sha256": "1dcf7bfac11bdbffaae2dbf5dada5c96200329a7356b55292d5b29f0d3093d41",
+      "evaluation": {
+        "round": "round_02",
+        "range_scale": 0.5,
+        "trials": 20,
+        "successes": 0,
+        "success_rate_percent": 0,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "f1959347437934f67401a3fa89376106d6b71319f43ed8f20ba88073aa5af255",
+        "tested_source_sha256": "0473489a62c37e245c0d2b18a7fcd9283638e3c9e0969f898ec0eae49ccc78f6",
+        "report_sha256": "91a41bcf82f46128a7145ad53daf189ebd117604633f8d1fd15814ff439d821a"
+      },
+      "num_envs": 20,
+      "initial_evaluation": {
+        "round": "round_00",
+        "range_scale": 1.0,
+        "trials": 20,
+        "successes": 0,
+        "success_rate_percent": 0,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "a4693ca9458a83e889e07c6b64876f905f6449378cf56602f471cece5dc7d117",
+        "tested_source_sha256": "0473489a62c37e245c0d2b18a7fcd9283638e3c9e0969f898ec0eae49ccc78f6",
+        "report_sha256": "63bc57b8a0f07a9c76346657bb61d7c6901e8188f862295ed70af193f5b4e815"
+      },
+      "final_ranges": {
+        "objects": {
+          "red_soupcan": {
+            "position_range": {
+              "x": [
+                0.6249999999999999,
+                0.6749999999999999
+              ],
+              "y": [
+                -0.375,
+                -0.32499999999999996
+              ],
+              "z": [
+                0.15,
+                0.15
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.08725,
+                0.08725
+              ]
+            }
+          }
+        },
+        "articulations": {
+          "microwave1": {
+            "position_range": {
+              "x": [
+                0.8,
+                0.8
+              ],
+              "y": [
+                0.2,
+                0.2
+              ],
+              "z": [
+                0.16,
+                0.16
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                0.0,
+                0.0
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "task_id": "composite_pour_then_hang",
+      "config_path": "source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/composite/composite_pour_then_hang.yaml",
+      "robot": "xarm7",
+      "env_task_name": "XArm7-UFactory-Joint-EE-VisPick-v0",
+      "robot_cfg_name": "xarm7.yml",
+      "robot_type": "xarm7_ufactory",
+      "training_task": false,
+      "difficulty": "Hard",
+      "initial_ranges": {
+        "objects": {
+          "red_mugcup": {
+            "position_range": {
+              "x": [
+                0.5,
+                0.55
+              ],
+              "y": [
+                -0.3,
+                -0.2
+              ],
+              "z": [
+                0.09,
+                0.09
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.1745,
+                0.1745
+              ]
+            }
+          },
+          "white_95mmcup": {
+            "position_range": {
+              "x": [
+                0.55,
+                0.65
+              ],
+              "y": [
+                -0.05,
+                0.05
+              ],
+              "z": [
+                0.08,
+                0.08
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.1745,
+                0.1745
+              ]
+            }
+          },
+          "wood_rack": {
+            "position_range": {
+              "x": [
+                0.75,
+                0.8
+              ],
+              "y": [
+                -0.25,
+                -0.2
+              ],
+              "z": [
+                0.25,
+                0.25
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.1745,
+                0.1745
+              ]
+            }
+          }
+        },
+        "articulations": {}
+      },
+      "config_sha256": "8b6cc7df01deaefbc39ec1db5460e6e521351fa78ec632c7686f4bdfbf81fad6",
+      "evaluation": {
+        "round": "round_02",
+        "range_scale": 0.5,
+        "trials": 20,
+        "successes": 0,
+        "success_rate_percent": 0,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "1158b4ff908d92b94dca2fdf16c5a7d041e2fb49046f99527492bd0ce8adc27b",
+        "tested_source_sha256": "c552d0a61a83b1d47b82a78a97b993f389d53a0135a656697a88f65e92b7a5a0",
+        "report_sha256": "9416e4134d157a76aa68a06a145b01f95cce75089fa07e7a0cd460e9a4a3abb0"
+      },
+      "num_envs": 20,
+      "initial_evaluation": {
+        "round": "round_00",
+        "range_scale": 1.0,
+        "trials": 20,
+        "successes": 0,
+        "success_rate_percent": 0,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "9eb974da4909eab983b84ab4e89c7eca74328b9c9b98093536553259beceec77",
+        "tested_source_sha256": "c552d0a61a83b1d47b82a78a97b993f389d53a0135a656697a88f65e92b7a5a0",
+        "report_sha256": "1f39e1cd76c8817e9c0dfe78272666e440023c036f49977677a4a118afeecaac"
+      },
+      "final_ranges": {
+        "objects": {
+          "red_mugcup": {
+            "position_range": {
+              "x": [
+                0.5125,
+                0.5375000000000001
+              ],
+              "y": [
+                -0.275,
+                -0.225
+              ],
+              "z": [
+                0.09,
+                0.09
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.08725,
+                0.08725
+              ]
+            }
+          },
+          "white_95mmcup": {
+            "position_range": {
+              "x": [
+                0.5750000000000001,
+                0.6250000000000001
+              ],
+              "y": [
+                -0.025,
+                0.025
+              ],
+              "z": [
+                0.08,
+                0.08
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.08725,
+                0.08725
+              ]
+            }
+          },
+          "wood_rack": {
+            "position_range": {
+              "x": [
+                0.7625,
+                0.7875000000000001
+              ],
+              "y": [
+                -0.2375,
+                -0.21250000000000002
+              ],
+              "z": [
+                0.25,
+                0.25
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                -0.08725,
+                0.08725
+              ]
+            }
+          }
+        },
+        "articulations": {}
+      }
+    },
+    {
+      "task_id": "composite_pour_then_place_coffee",
+      "config_path": "source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/composite/composite_pour_then_place_coffee.yaml",
+      "robot": "ur5e",
+      "env_task_name": "UR5e-Robotiq85-IKRel-EE-VisPick-v0",
+      "robot_cfg_name": "ur5e_robotiq_2f_85.yml",
+      "robot_type": "ur5e",
+      "training_task": true,
+      "difficulty": "Hard",
+      "initial_ranges": {
+        "objects": {
+          "white_papercup1": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "red_mugcup": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "coffeemachine1": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "white_95mmcup": {
+            "position_range": null,
+            "orientation_range": null
+          }
+        },
+        "articulations": {}
+      },
+      "config_sha256": "e15b24f02b80466f10eca91f2c6116ef384d8fc3675bfb2f23eea9a7e08a1366",
+      "evaluation": {
+        "round": "round_00",
+        "range_scale": 1.0,
+        "trials": 20,
+        "successes": 0,
+        "success_rate_percent": 0,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "1cb7cf724632fb5afe54cf346dd3c892fcf534d21d980958e0f4eb49b4cda0c9",
+        "tested_source_sha256": "a6383ee4906396a9273b10151eee1277de85a49ac247acc1cabe829339d79e3c",
+        "report_sha256": "fb7a5c19c6b31bc057a3087df89337beb70b512b2908de620855461d81ab6add"
+      },
+      "num_envs": 20,
+      "initial_evaluation": {
+        "round": "round_00",
+        "range_scale": 1.0,
+        "trials": 20,
+        "successes": 0,
+        "success_rate_percent": 0,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "1cb7cf724632fb5afe54cf346dd3c892fcf534d21d980958e0f4eb49b4cda0c9",
+        "tested_source_sha256": "a6383ee4906396a9273b10151eee1277de85a49ac247acc1cabe829339d79e3c",
+        "report_sha256": "fb7a5c19c6b31bc057a3087df89337beb70b512b2908de620855461d81ab6add"
+      },
+      "final_ranges": {
+        "objects": {
+          "white_papercup1": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "red_mugcup": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "coffeemachine1": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "white_95mmcup": {
+            "position_range": null,
+            "orientation_range": null
+          }
+        },
+        "articulations": {}
+      }
+    },
+    {
+      "task_id": "composite_push_pick_to_shelf",
+      "config_path": "source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/composite/composite_push_pick_to_shelf.yaml",
+      "robot": "franka_default",
+      "env_task_name": "FrankaFr3-DefaultGripper-Joint-VisPick-v0",
+      "robot_cfg_name": "franka_fr3.yml",
+      "robot_type": "franka_fr3",
+      "training_task": false,
+      "difficulty": "Hard",
+      "initial_ranges": {
+        "objects": {
+          "blue_coffeecan": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "red_soupcan": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "brown_woodshelf": {
+            "position_range": null,
+            "orientation_range": null
+          }
+        },
+        "articulations": {}
+      },
+      "config_sha256": "c3293c2ec7104b09e8cb8f5a0fd0f598478591e09aabb3c86232f1347ba6dca9",
+      "evaluation": {
+        "round": "round_00",
+        "range_scale": 1.0,
+        "trials": 20,
+        "successes": 12,
+        "success_rate_percent": 60,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "33b86f5ae389ebaeb2849ea7931a734cc954744cd3e9754104e15ce64e768a35",
+        "tested_source_sha256": "9ee7dee270e9de146581a21aa4b37cffbef97d71e1a89969f8fd60db640273ed",
+        "report_sha256": "95098d6b78ca36e6695bdeee5a77f6f2aed08f473fab522fb75bef1f26b853b0"
+      },
+      "num_envs": 20,
+      "initial_evaluation": {
+        "round": "round_00",
+        "range_scale": 1.0,
+        "trials": 20,
+        "successes": 12,
+        "success_rate_percent": 60,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "33b86f5ae389ebaeb2849ea7931a734cc954744cd3e9754104e15ce64e768a35",
+        "tested_source_sha256": "9ee7dee270e9de146581a21aa4b37cffbef97d71e1a89969f8fd60db640273ed",
+        "report_sha256": "95098d6b78ca36e6695bdeee5a77f6f2aed08f473fab522fb75bef1f26b853b0"
+      },
+      "final_ranges": {
+        "objects": {
+          "blue_coffeecan": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "red_soupcan": {
+            "position_range": null,
+            "orientation_range": null
+          },
+          "brown_woodshelf": {
+            "position_range": null,
+            "orientation_range": null
+          }
+        },
+        "articulations": {}
+      }
+    },
+    {
+      "task_id": "composite_unload_microwave",
+      "config_path": "source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/composite/composite_unload_microwave.yaml",
+      "robot": "franka_long",
+      "env_task_name": "FrankaFr3-OurGripper-Joint-VisPick-v0",
+      "robot_cfg_name": "franka_fr3_our.yml",
+      "robot_type": "franka_fr3",
+      "training_task": false,
+      "difficulty": "Hard",
+      "initial_ranges": {
+        "objects": {
+          "red_soupcan": {
+            "position_range": {
+              "x": [
+                0.73,
+                0.75
+              ],
+              "y": [
+                -0.03,
+                0.03
+              ],
+              "z": [
+                0.16,
+                0.16
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                0.0,
+                0.0
+              ]
+            }
+          }
+        },
+        "articulations": {
+          "microwave1": {
+            "position_range": {
+              "x": [
+                0.8,
+                0.8
+              ],
+              "y": [
+                -0.0,
+                -0.0
+              ],
+              "z": [
+                0.16,
+                0.16
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                0.0,
+                0.0
+              ]
+            }
+          }
+        }
+      },
+      "config_sha256": "58489c9bd7e3086d8eabcd7effaf2b0ea9502765008f9a758672ee2563c011b8",
+      "evaluation": {
+        "round": "round_00",
+        "range_scale": 1.0,
+        "trials": 20,
+        "successes": 13,
+        "success_rate_percent": 65,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "37ffb0a8bfaa5898ca87fdd2108ea16b83acf799b05c12cb96572a6ead15b2e9",
+        "tested_source_sha256": "2095e7b279d66fd8535ebf8d5f715a80346c3e7932d7d3823b9f4451bb6ee539",
+        "report_sha256": "ec5913a9f78105bd602fb1648961bce39e1beea86a5879ec78827be20a861ba2"
+      },
+      "num_envs": 20,
+      "initial_evaluation": {
+        "round": "round_00",
+        "range_scale": 1.0,
+        "trials": 20,
+        "successes": 13,
+        "success_rate_percent": 65,
+        "num_envs": 20,
+        "episodes_per_environment": 1,
+        "tested_config_sha256": "37ffb0a8bfaa5898ca87fdd2108ea16b83acf799b05c12cb96572a6ead15b2e9",
+        "tested_source_sha256": "2095e7b279d66fd8535ebf8d5f715a80346c3e7932d7d3823b9f4451bb6ee539",
+        "report_sha256": "ec5913a9f78105bd602fb1648961bce39e1beea86a5879ec78827be20a861ba2"
+      },
+      "final_ranges": {
+        "objects": {
+          "red_soupcan": {
+            "position_range": {
+              "x": [
+                0.73,
+                0.75
+              ],
+              "y": [
+                -0.03,
+                0.03
+              ],
+              "z": [
+                0.16,
+                0.16
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                0.0,
+                0.0
+              ]
+            }
+          }
+        },
+        "articulations": {
+          "microwave1": {
+            "position_range": {
+              "x": [
+                0.8,
+                0.8
+              ],
+              "y": [
+                -0.0,
+                0.0
+              ],
+              "z": [
+                0.16,
+                0.16
+              ]
+            },
+            "orientation_range": {
+              "yaw": [
+                0.0,
+                0.0
+              ]
+            }
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,10 +1,11 @@
 from typing import Any, Dict, Optional
+from functools import lru_cache
 
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 
-from ..success.constants import PULL_SUCCESS_MIN_DISPLACEMENT
-from ..success.evaluators import _evaluate_open_success_with_metrics
+from ..success.constants import OPEN_SUCCESS_MIN_ANGLE_RAD, PULL_SUCCESS_MIN_DISPLACEMENT
+from ..success.evaluators import _evaluate_open_success_with_metrics, _evaluate_pull_success_with_metrics
 from ..tools.pose_utils import normalize_ee_orientation_wxyz, parse_facing_axis_local
 from .utils import (
     FAILURE_REASON_TARGET_MISSING,
@@ -20,6 +21,49 @@ from .utils import (
 )
 
 FIXED_GRIPPER_STEPS = 3
+
+
+@lru_cache(maxsize=64)
+def _pull_joint_type_from_usd(usd_path: str, joint_name: str) -> str:
+    """Use the asset's physical joint type rather than inferring units from its name."""
+    from pxr import Usd, UsdPhysics
+
+    stage = Usd.Stage.Open(usd_path)
+    if stage is None:
+        raise ValueError(f"Cannot inspect pull target USD: {usd_path}")
+    matches = [
+        prim for prim in stage.Traverse()
+        if prim.GetName() == joint_name and prim.IsA(UsdPhysics.Joint)
+    ]
+    if len(matches) != 1:
+        raise ValueError(f"Pull success joint '{joint_name}' must identify exactly one physical joint in {usd_path}")
+    joint = matches[0]
+    if joint.IsA(UsdPhysics.RevoluteJoint):
+        return "revolute"
+    if joint.IsA(UsdPhysics.PrismaticJoint):
+        return "prismatic"
+    raise ValueError(f"Unsupported pull success joint type {joint.GetTypeName()} in {usd_path}")
+
+
+def _pull_success_threshold(joint_type: str, params: Dict[str, Any]) -> tuple[float, str]:
+    """Return a physical threshold and its unit, honoring explicit same-unit values."""
+    if joint_type == "revolute":
+        keys = ("pull_success_min_angle_rad", "open_success_min_angle_rad", "min_angle_rad")
+        incompatible = ("pull_success_min_displacement", "min_displacement")
+        default, unit = OPEN_SUCCESS_MIN_ANGLE_RAD, "rad"
+    elif joint_type == "prismatic":
+        keys = ("pull_success_min_displacement", "min_displacement")
+        incompatible = ("pull_success_min_angle_rad", "open_success_min_angle_rad", "min_angle_rad")
+        default, unit = PULL_SUCCESS_MIN_DISPLACEMENT, "m"
+    else:
+        raise ValueError(f"Unsupported pull success joint type: {joint_type}")
+    wrong_units = [key for key in incompatible if key in params]
+    if wrong_units:
+        raise ValueError(f"Pull {joint_type} joint requires a {unit} threshold; incompatible parameters: {wrong_units}")
+    threshold = float(next((params[key] for key in keys if key in params), default))
+    if not np.isfinite(threshold) or threshold <= 0:
+        raise ValueError(f"Pull success threshold must be finite and positive ({unit})")
+    return threshold, unit
 
 
 def primitive_pull(collector, mode: Optional[str], params: Dict[str, Any], context: Dict[str, Any]) -> bool:
@@ -126,6 +170,9 @@ def primitive_execute_pull(collector, params: Dict[str, Any], context: Dict[str,
         return False
 
     articulation = collector.scene.articulations[object_key]
+    if success_eval_enabled:
+        success_joint_type = _pull_joint_type_from_usd(str(articulation.cfg.spawn.usd_path), success_joint_name)
+        success_threshold, success_unit = _pull_success_threshold(success_joint_type, params)
 
     # Compute world-frame pull direction per env
     all_pull_dirs_world = []
@@ -183,7 +230,7 @@ def primitive_execute_pull(collector, params: Dict[str, Any], context: Dict[str,
     )
 
     # --- Phase 4: IK pull along the pull direction ---
-    print(f"   [Primitive] Pulling drawer '{target_label}' (distance={pull_distance:.3f}m)...")
+    print(f"   [Primitive] Pulling articulation '{target_label}' (distance={pull_distance:.3f}m)...")
 
     # Read current EE pose as pull start point
     ee_pos_cur, ee_quat_cur = collector.get_current_ee_pose()
@@ -222,36 +269,34 @@ def primitive_execute_pull(collector, params: Dict[str, Any], context: Dict[str,
         )
 
     if success_eval_enabled:
-        min_displacement = float(PULL_SUCCESS_MIN_DISPLACEMENT)
         state_successes = []
         state_metrics = []
         for env_idx in range(n):
-            env_success, env_metrics = _evaluate_open_success_with_metrics(
-                scene=collector.scene,
-                target_label=target_label,
-                joint_name=success_joint_name,
-                min_angle_rad=min_displacement,
-                env_idx=env_idx,
-            )
+            if success_joint_type == "revolute":
+                env_success, env_metrics = _evaluate_open_success_with_metrics(
+                    scene=collector.scene, target_label=target_label,
+                    joint_name=success_joint_name, min_angle_rad=success_threshold,
+                    env_idx=env_idx,
+                )
+            else:
+                env_success, env_metrics = _evaluate_pull_success_with_metrics(
+                    scene=collector.scene, target_label=target_label,
+                    joint_name=success_joint_name, min_displacement=success_threshold,
+                    env_idx=env_idx,
+                )
+            env_metrics.update({
+                "joint_name": success_joint_name, "joint_type": success_joint_type,
+                "joint_unit": success_unit, "success_threshold": success_threshold,
+            })
             state_successes.append(env_success)
             state_metrics.append(env_metrics)
 
         commit_task_failures(context, prev_alive, plan_active_after, list(state_successes))
         context["task_success_metrics"] = list(state_metrics)
-        for env_idx, metrics in enumerate(state_metrics):
-            joint_val = metrics["joint_pos_rad"]
-            disp_ok = np.isfinite(joint_val) and (abs(joint_val) >= min_displacement)
-            range_ok = bool(metrics["articulation_in_range"] > 0.5)
-            joint_text = f"{joint_val:.4f}" if np.isfinite(joint_val) else "nan"
-            # print(
-            #     f"    [TaskCheck][env {env_idx}] "
-            #     f"joint_pos={joint_text} ({'OK' if disp_ok else 'FAIL'}), "
-            #     f"articulation_in_range={'OK' if range_ok else 'FAIL'}"
-            # )
         print(
             f"  [Primitive] Task success (pull): "
             f"{sum(1 for i in range(n) if plan_active_after[i] and state_successes[i])}/{n} "
-            f"(joint_pos>={min_displacement:.3f})"
+            f"({success_joint_type} |joint_pos|>={success_threshold:.3f} {success_unit})"
         )
 
     commit_plan_failures(context, prev_alive, local_active)

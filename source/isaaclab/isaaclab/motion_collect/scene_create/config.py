@@ -25,7 +25,7 @@ TASK_CONFIG_ROOT = os.path.join(
 )
 DEFAULT_LOAD_YAML_PATH = os.path.join(
     TASK_CONFIG_ROOT,
-    "pick/pick_banana_place_bowl.yaml",
+    "pick/pick_banana_place_plate.yaml",
 )
 
 SAVE_YAML_PATH = os.path.join(

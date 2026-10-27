@@ -1,82 +1,77 @@
+# Complete Franka banana-to-bowl example with a calibrated DA3 background.
+# Asset and background paths are relative to the repository root.
 simulation:
   decimation: 30
   dt: 0.00833333
   render_interval: 5
   episode_length_s: 100
+
 scene:
-  num_envs: 5
+  num_envs: 1
   env_spacing: 10
+  name: table
+  usd_path: models/table.usd
+  prim_path: "{ENV_REGEX_NS}/table"
+
 task:
   name: pick_banana_place_bowl
   description: grasp the banana and put it in the bowl
+
 runtime:
-  headless: false
-  episodes: 5
-  save_npy: false
-  save_camera_images: false
-  save_composite_images: false
-  save_mask_images: false
-  save_original_images: true
+  headless: true
+  episodes: 1
+  task_name: FrankaFr3-OurGripper-Joint-VisPick-v0
   enable_motion_planning: true
+  data_dir: outputs/da3_pick_banana_place_bowl
+  save_npy: true
+  save_camera_images: false
+  save_original_images: true
+  save_composite_images: true
+  save_mask_images: true
+  save_depth_images: false
   sim_camera_resolution: [640, 480]
   background_image_size: [640, 480]
   use_background_replace: true
-  cam_side_background: backgrounds/1123_background.png
-  cam_wrist_background: backgrounds/wristbackground_realworld1.png
-  data_dir: data/r2s2r_data/pick_banana_place_bowl
-  task_name: FrankaFr3-OurGripper-Joint-VisPick-v0
-  save_depth_images: false
+  cam_side_background: ""  # Set automatically from the DA3 selection below.
+  cam_wrist_background: ""  # The selected view belongs to the external camera.
+  da3_background:
+    image_path: backgrounds/coffee_shop/orbit_renders/coffee_shop_view_06.png
+    keep_table: true
+
 robot:
   cfg_name: franka_fr3_our.yml
   type: franka_fr3_default
+
 offsets:
-  grasp: [0, 0, 0.0]
-  place: [0, 0, 0.0]
+  grasp: [0, 0, 0]
+  place: [0, 0, 0]
+
 objects:
   yellow_bigbowl:
     usd_path: models/all_object/yellow_bigbowl.usd
-    semantic_tags:
-      -   - class
-          - yellow_bigbowl
+    semantic_tags: [[class, yellow_bigbowl]]
     init_pos: [0.55, 0.25, 0.0754]
     init_rot: [-0.9838, 0.0, 0.0, 0.1791]
     height: 0.0504
     position_range:
-      x:
-        - 0.45
-        - 0.70
-      y:
-        - 0.05
-        - 0.40
-      z:
-        - 0.0754
-        - 0.0754
+      x: [0.45, 0.70]
+      y: [0.05, 0.40]
+      z: [0.0754, 0.0754]
     orientation_range:
-      yaw:
-        - -3.1416
-        - 3.1416
+      yaw: [-3.1416, 3.1416]
   yellow_banana:
     usd_path: models/all_object/yellow_banana.usd
-    semantic_tags:
-      -   - class
-          - yellow_banana
+    semantic_tags: [[class, yellow_banana]]
     init_pos: [0.55, -0.25, 0.0443]
     init_rot: [-0.9838, 0.0, 0.0, 0.1791]
     height: 0.0193
     position_range:
-      x:
-        - 0.45
-        - 0.70
-      y:
-        - -0.40
-        - -0.05
-      z:
-        - 0.0443
-        - 0.0443
+      x: [0.45, 0.70]
+      y: [-0.40, -0.05]
+      z: [0.0443, 0.0443]
     orientation_range:
-      yaw:
-        - -3.1416
-        - 3.1416
+      yaw: [-3.1416, 3.1416]
+
 primitives:
   - type: pick
     mode: affordance
@@ -88,20 +83,17 @@ primitives:
       lift_interpolation_steps: 10
       lift_offset: 0.1
   - type: place
-    mode: on
+    mode: "on"  # Quote this string to avoid YAML boolean conversion.
     params:
       target: yellow_bigbowl
       on_height_margin: 0.01
       success_eval: true
+
+# Keep the scene fixed when checking image/camera alignment.
 enable_random_lights: false
+enable_objects_randomization: false
+enable_objects_randomization_curriculum: false
 image_noise_std: 0
 image_speckle_noise_std: 0
-enable_objects_randomization: true
-enable_objects_randomization_curriculum: false
 texture_randomization:
   enabled: false
-  texture_dir: models/random_pic/table
-  targets:
-    table:
-      prim_path: /World/envs/env_{i}/table/Xform_01/Xform/leg/node_/Cube
-      texture_dir: models/random_pic/table

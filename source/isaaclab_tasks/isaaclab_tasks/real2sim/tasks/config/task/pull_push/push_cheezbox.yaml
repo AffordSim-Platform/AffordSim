@@ -8,7 +8,7 @@ scene:
   env_spacing: 10
 task:
   name: push_cheezbox
-  description: push the red_cheezbox along +X direction
+  description: Push the red cheese box to the specified position.
 runtime:
   headless: false
   episodes: 5
@@ -18,63 +18,101 @@ runtime:
   save_mask_images: false
   save_original_images: true
   enable_motion_planning: true
-  sim_camera_resolution: [640, 480]
-  background_image_size: [640, 480]
+  sim_camera_resolution:
+  - 640
+  - 480
+  background_image_size:
+  - 640
+  - 480
   use_background_replace: true
   cam_side_background: backgrounds/1123_background.png
   cam_wrist_background: backgrounds/wristbackground_realworld1.png
   data_dir: data/r2s2r_data/push_cheezbox
-  task_name: FrankaFr3-OurGripper-Joint-VisPick-v0
+  task_name: FrankaFr3-DefaultGripper-Joint-VisPick-v0
   save_depth_images: false
 robot:
-  cfg_name: franka_fr3_our.yml
-  type: franka_fr3_default
+  cfg_name: franka_fr3.yml
+  type: franka_fr3
 offsets:
-  grasp: [0, 0, 0.0]
-  place: [0, 0, 0.0]
+  grasp:
+  - 0
+  - 0
+  - 0.0
+  place:
+  - 0
+  - 0
+  - 0.0
 objects:
   red_cheezbox:
     usd_path: models/all_object/red_cheezbox.usd
     semantic_tags:
-      -   - class
-          - red_cheezbox
-    init_pos: [0.55, 0.0, 0.073]
-    init_rot: [1, 0, 0, 0]
+    - - class
+      - red_cheezbox
+    init_pos:
+    - 0.6
+    - 0.0
+    - 0.073
+    init_rot:
+    - 1
+    - 0
+    - 0
+    - 0
     height: 0.045
-    position_range:
-      x:
-        - 0.45
-        - 0.65
-      y:
-        - -0.02
-        - 0.02
-      z:
-        - 0.073
-        - 0.073
-    orientation_range:
-      yaw:
-        - 0
-        - 0
+  yellow_sugarbox:
+    usd_path: models/all_object/yellow_sugarbox.usd
+    semantic_tags:
+    - - class
+      - yellow_sugarbox
+    init_pos:
+    - 0.53
+    - -0.27
+    - 0.073
+    init_rot:
+    - 0.9537
+    - 0.0
+    - 0.0
+    - -0.3007
+    height: 0.045
+  brown_chocolatebox:
+    usd_path: models/all_object/brown_chocolatebox.usd
+    semantic_tags:
+    - - class
+      - brown_chocolatebox
+    init_pos:
+    - 0.45
+    - 0.05
+    - 0.04
+    init_rot:
+    - 0.9848
+    - 0.0
+    - 0.0
+    - -0.1736
+    height: 0.06
 primitives:
-  - type: push
-    mode: object_aligned
-    params:
-      target: red_cheezbox
-      pre_height: 0.15
-      pre_push_backoff: 0.08
-      push_contact_retreat: 0.02
-      lift_z_delta: 0.15
-      push_target: [0.75, 0.0, 0.073]
-      success_eval: true
+- type: push
+  mode: object_aligned
+  params:
+    target: red_cheezbox
+    pre_height: 0.15
+    pre_push_backoff: 0.08
+    push_contact_retreat: 0.02
+    lift_z_delta: 0.15
+    push_target:
+    - 0.75
+    - 0.0
+    - 0.073
+    success_eval: true
 enable_random_lights: false
 image_noise_std: 0
 enable_objects_randomization: true
 enable_objects_randomization_curriculum: false
 texture_randomization:
-  enabled: false
+  enabled: true
+  avoid_repeats: true
   texture_dir: models/random_pic/table
   targets:
     table:
-      prim_path: "/World/envs/env_{i}/table/Xform_01/Xform/leg/node_/Cube"
+      prim_path: /World/envs/env_{i}/table/Xform_01/Xform/leg/node_/Cube
       texture_dir: models/random_pic/table
 image_speckle_noise_std: 0
+articulations: {}

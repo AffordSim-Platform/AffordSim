@@ -8,7 +8,7 @@ scene:
   env_spacing: 20
 task:
   name: pick_bowl_place_plate
-  description: grasp the banana and put it in the bowl
+  description: Pick up the yellow bowl; then place the yellow bowl on the white plate.
 runtime:
   headless: false
   episodes: 5
@@ -18,94 +18,112 @@ runtime:
   save_mask_images: false
   save_original_images: true
   enable_motion_planning: true
-  sim_camera_resolution: [640, 480]
-  background_image_size: [640, 480]
+  sim_camera_resolution:
+  - 640
+  - 480
+  background_image_size:
+  - 640
+  - 480
   use_background_replace: true
   cam_side_background: backgrounds/1123_background.png
   cam_wrist_background: backgrounds/wristbackground_realworld1.png
   data_dir: data/r2s2r_data/pick_bowl_place_plate
-  task_name: FrankaFr3-OurGripper-Joint-VisPick-v0
+  task_name: Kinova-Robotiq85-IKRel-EE-VisPick-v0
   save_depth_images: false
 robot:
-  cfg_name: franka_fr3_our.yml
-  type: franka_fr3_default
+  cfg_name: kinova_robotiq85.yml
+  type: kinova_robotiq85
 offsets:
-  grasp: [0, 0, 0.0]
-  place: [0, 0, 0.0]
+  grasp:
+  - 0
+  - 0
+  - 0.0
+  place:
+  - 0
+  - 0
+  - 0.0
 objects:
-  # yellow_bigbowl:
-  #   usd_path: models/all_object/yellow_bigbowl.usd
-  #   semantic_tags:
-  #     -   - class
-  #         - yellow_bigbowl
-  #   init_pos: [0.77, -0.176, 0.077]
-  #   init_rot: [-0.9838, 0.0, 0.0, 0.1791]
-  #   height: 0.054
+  yellow_bigbowl:
+    usd_path: models/all_object/yellow_bigbowl.usd
+    semantic_tags:
+    - - class
+      - yellow_bigbowl
+    init_pos:
+    - 0.77
+    - -0.176
+    - 0.077
+    init_rot:
+    - -0.9838
+    - 0.0
+    - 0.0
+    - 0.1791
+    height: 0.054
   yellow_bowl:
     usd_path: models/all_object/yellow_bowl.usd
+    mass: 0.2
     semantic_tags:
-      -   - class
-          - yellow_bowl
-    init_pos: [0.55, 0.25, 0.077]
-    init_rot: [0, 0, 0, 1]
+    - - class
+      - yellow_bowl
+    init_pos:
+    - 0.67
+    - 0
+    - 0.077
+    init_rot:
+    - 0.3827
+    - 0.0
+    - 0.0
+    - 0.9239
     height: 0.054
-    position_range:
-      x:
-        - 0.45
-        - 0.75
-      y:
-        - 0.15
-        - 0.35
-      z:
-        - 0.077
-        - 0.077
-    orientation_range:
-      yaw:
-        - -0.3489
-        - 0.3489
   white_plate:
     usd_path: models/all_object/white_plate.usd
     semantic_tags:
-      - [class, white_plate]
-    init_pos: [0.55, -0.25, 0.055]
-    init_rot: [-0.5935, 0.0, 0.0, 0.8048]
+    - - class
+      - white_plate
+    init_pos:
+    - 0.56
+    - -0.35
+    - 0.055
+    init_rot:
+    - -0.5935
+    - 0.0
+    - 0.0
+    - 0.8048
     height: 0.059
-    position_range:
-      x:
-        - 0.45
-        - 0.75
-      y:
-        - -0.35
-        - -0.15
-      z:
-        - 0.055
-        - 0.055
-    orientation_range:
-      yaw:
-        - -3.1416
-        - 3.1416
 primitives:
-  - type: pick
-    mode: affordance
-    params:
-      target: yellow_bowl
-      pre_pick_offset: [0.0, 0.0, 0.10]
-      pick_interpolation_steps: 15
-      lift_interpolation_steps: 15
-  - type: place
-    mode: on
-    params:
-      target: white_plate
-      success_eval: true
+- type: pick
+  mode: affordance
+  params:
+    target: yellow_bowl
+    pre_pick_offset:
+    - 0.0
+    - 0.0
+    - 0.1
+    pick_interpolation_steps: 15
+    lift_interpolation_steps: 15
+- type: place
+  mode: 'on'
+  params:
+    target: white_plate
+    success_eval: true
 enable_random_lights: false
 image_noise_std: 0
 image_speckle_noise_std: 0
 enable_objects_randomization: true
 enable_objects_randomization_curriculum: false
 texture_randomization:
-  enabled: false
+  enabled: true
+  avoid_repeats: true
   texture_dir: models/random_pic/table
   targets:
     table:
       prim_path: /World/envs/env_{i}/table/Xform_01/Xform/leg/node_/Cube
       texture_dir: models/random_pic/table
+articulations: {}
+phase_depenetration:
+  objects:
+  - yellow_bowl
+  - white_plate
+  reset: 2.0
+  primitives:
+    pick: 2.0
+    release: 0.5

@@ -4,11 +4,11 @@ import os
 
 data_dir = os.environ.get(
     "COMBINE_DATA_DIR",
-    "train_hdf5/pick_banana_place_bowl/hdf5",
+    "train_hdf5/pick_banana_place_plate/hdf5",
 )
 output_file = os.environ.get(
     "COMBINE_OUTPUT_FILE",
-    "train_hdf5/pick_banana_place_bowl/merged_trajectories.hdf5",
+    "train_hdf5/pick_banana_place_plate/merged_trajectories.hdf5",
 )
 _episodes_env = os.environ.get("COMBINE_EPISODES")
 num_episodes = int(_episodes_env) if _episodes_env else 51

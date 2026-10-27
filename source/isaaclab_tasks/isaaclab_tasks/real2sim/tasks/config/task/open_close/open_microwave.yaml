@@ -8,7 +8,7 @@ scene:
   env_spacing: 10
 task:
   name: open_microwave
-  description: grasp the microwave handle
+  description: Open the microwave 1.
 runtime:
   headless: false
   episodes: 15
@@ -18,76 +18,99 @@ runtime:
   save_mask_images: false
   save_original_images: true
   enable_motion_planning: true
-  sim_camera_resolution: [640, 480]
-  background_image_size: [640, 480]
+  sim_camera_resolution:
+  - 640
+  - 480
+  background_image_size:
+  - 640
+  - 480
   use_background_replace: true
   cam_side_background: backgrounds/1123_background.png
   cam_wrist_background: backgrounds/wristbackground_realworld1.png
   data_dir: data/r2s2r_data/open_microwave
-  task_name: FrankaFr3-OurGripper-Joint-VisPick-v0
+  task_name: Sawyer-Robotiq85-Joint-EE-VisPick-v0
   save_depth_images: false
 robot:
-  cfg_name: franka_fr3_our.yml
-  type: franka_fr3_default
+  cfg_name: sawyer.yml
+  type: sawyer_robotiq85
 offsets:
-  grasp: [0, 0, 0]
-  place: [0, 0, 0]
+  grasp:
+  - 0
+  - 0
+  - 0
+  place:
+  - 0
+  - 0
+  - 0
 articulations:
   microwave1:
     usd_path: models/all_object/microwave1.usd
     semantic_tags:
-      -   - class
-          - microwave1
-    scale: [0.7, 0.6, 0.7]
+    - - class
+      - microwave1
+    scale:
+    - 0.7
+    - 0.6
+    - 0.7
     disable_gravity: false
     enabled_self_collisions: true
-    init_pos: [0.8, -0.2, 0.16]
-    init_rot: [0.7071, 0, 0, -0.7071]
+    init_pos:
+    - 0.8
+    - -0.2
+    - 0.16
+    init_rot:
+    - 0.7071
+    - 0
+    - 0
+    - -0.7071
     position_range:
       x:
-        - 0.7
-        - 0.8
+      - 0.75
+      - 0.8500000000000001
       y:
-        - -0.25
-        - -0.15
+      - -0.25
+      - -0.15000000000000002
       z:
-        - 0.16
-        - 0.16
+      - 0.16
+      - 0.16
     orientation_range:
       yaw:
-        - -0.1745
-        - 0.1745
+      - -0.1745
+      - 0.1745
     joint_pos:
       microjoint: 0.0
     actuators:
       joint:
-        joint_names_expr: ["microjoint"]
+        joint_names_expr:
+        - microjoint
         effort_limit: 1000
         velocity_limit: 1000
         stiffness: 0
         damping: 0
 primitives:
-  - type: open
-    params:
-      target: microwave1
-      fast_pull_distance: 0.2
-      fast_pull_interpolation_steps: 5
-      lift_before_pre_insert: 0.20
-      lift_interpolation_steps: 10
-      pre_insert_outward_offset: 0.03
-      align_above_interpolation_steps: 10
-      door_tangent_move_distance: 0.4
-      success_eval: true
-      success_joint_name: microjoint
+- type: open
+  params:
+    target: microwave1
+    fast_pull_distance: 0.2
+    fast_pull_interpolation_steps: 5
+    lift_before_pre_insert: 0.2
+    lift_interpolation_steps: 10
+    pre_insert_outward_offset: 0.03
+    align_above_interpolation_steps: 10
+    door_tangent_move_distance: 0.4
+    success_eval: true
+    success_joint_name: microjoint
 enable_random_lights: false
 image_noise_std: 0
 image_speckle_noise_std: 0
 enable_objects_randomization: true
 enable_objects_randomization_curriculum: false
 texture_randomization:
-  enabled: false
+  enabled: true
+  avoid_repeats: true
   texture_dir: models/random_pic/table
   targets:
     table:
-      prim_path: "/World/envs/env_{i}/table/Xform_01/Xform/leg/node_/Cube"
+      prim_path: /World/envs/env_{i}/table/Xform_01/Xform/leg/node_/Cube
       texture_dir: models/random_pic/table
+objects: {}

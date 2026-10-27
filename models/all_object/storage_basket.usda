@@ -1,0 +1,27 @@
+#usda 1.0
+(
+    defaultPrim = "StorageBasket"
+    metersPerUnit = 1
+    upAxis = "Z"
+)
+
+def Xform "StorageBasket" (
+    prepend apiSchemas = ["PhysicsRigidBodyAPI"]
+    prepend references = @./box.usd@</World>
+)
+{
+    bool physics:rigidBodyEnabled = 1
+
+    over "box"
+    {
+        over "node_"
+        {
+            over "mesh_" (
+                delete apiSchemas = ["PhysicsRigidBodyAPI"]
+            )
+            {
+            }
+        }
+    }
+}
+

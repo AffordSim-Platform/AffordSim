@@ -7,9 +7,34 @@ Each task corresponds to an independent YAML configuration file.
 
 import yaml
 import numpy as np
+import math
 from pathlib import Path
 from typing import Dict, Optional, Any, Tuple, List, Union
 from dataclasses import dataclass, field
+
+
+def parse_phase_depenetration(data: Optional[Dict[str, Any]], objects: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    """Parse an opt-in policy restricted to named task rigid objects."""
+    if data is None:
+        return None
+    if not isinstance(data, dict) or set(data) != {"objects", "reset", "primitives"}:
+        raise ValueError("phase_depenetration requires exactly objects, reset and primitives")
+    names = data["objects"]
+    if (not isinstance(names, list) or not names or any(not isinstance(n, str) or not n or not all(c.isascii() and (c.isalnum() or c == '_') for c in n) for n in names)
+            or len(names) != len(set(names)) or not set(names) <= set(objects) or "robot" in names):
+        raise ValueError("phase_depenetration objects must be unique names from task objects")
+    phases = data["primitives"]
+    if not isinstance(phases, dict) or set(phases) not in ({"pick", "place"}, {"pick", "release"}):
+        raise ValueError("phase_depenetration primitives must specify pick and exactly one of place or release")
+
+    def value(number):
+        if (isinstance(number, bool) or not isinstance(number, (int, float)) or not math.isfinite(number)
+                or number <= 0 or number > 3.4028234663852886e38):
+            raise ValueError("phase_depenetration values must be in (0, float32 max]")
+        return float(number)
+
+    return {"objects": list(names), "reset": value(data["reset"]),
+            "primitives": {name: value(number) for name, number in phases.items()}}
 
 @dataclass
 class PositionCurriculumConfig:
@@ -134,6 +159,7 @@ class RuntimeConfig:
     background_image_size: Tuple[int, int]  # (width, height) background image / target output size
     cam_side_background: str
     cam_wrist_background: str
+    da3_background: Optional[Dict[str, Any]] = None
     
     @staticmethod
     def _find_project_root(start_dir: Path) -> Path:
@@ -164,6 +190,35 @@ class RuntimeConfig:
             if cam_wrist_bg and not Path(cam_wrist_bg).is_absolute():
                 cam_wrist_bg = str((project_root / cam_wrist_bg).resolve())
 
+        # Keep the rendered background and its camera calibration together.
+        # The export's USER frame is already the metric robot frame.
+        da3_background = None
+        da3_settings = data.get("da3_background")
+        if da3_settings is not None:
+            from .da3_background import load_da3_background_image
+
+            if not isinstance(da3_settings, dict) or not da3_settings.get("image_path"):
+                raise ValueError(
+                    "runtime.da3_background requires image_path; specify the background image "
+                    "path instead of scene_dir/view_index"
+                )
+            project_root = cls._find_project_root(Path(__file__).parent)
+            image_path = Path(da3_settings["image_path"]).expanduser()
+            if not image_path.is_absolute():
+                image_path = project_root / image_path
+            calibration_path = da3_settings.get("calibration_path")
+            if calibration_path is not None:
+                calibration_path = Path(calibration_path).expanduser()
+                if not calibration_path.is_absolute():
+                    calibration_path = project_root / calibration_path
+            da3_background = load_da3_background_image(
+                image_path,
+                calibration_path=calibration_path,
+                output_size=tuple(data.get("sim_camera_resolution", [640, 480])),
+            )
+            da3_background["keep_table"] = bool(da3_settings.get("keep_table", True))
+            cam_side_bg = da3_background["image_path"]
+
         return cls(
             headless=data.get("headless", False),
             episodes=data.get("episodes", 50),
@@ -176,11 +231,12 @@ class RuntimeConfig:
             enable_motion_planning=data.get("enable_motion_planning", True),
             data_dir=data_dir,
             task_name=data.get("task_name", ""),
-            use_background_replace=data.get("use_background_replace", False),
+            use_background_replace=da3_background is not None or data.get("use_background_replace", False),
             sim_camera_resolution=tuple(data.get("sim_camera_resolution", [640, 480])),
             background_image_size=tuple(data.get("background_image_size", [480, 480])),
             cam_side_background=cam_side_bg,
             cam_wrist_background=cam_wrist_bg,
+            da3_background=da3_background,
         )
 
 @dataclass
@@ -241,6 +297,8 @@ class ObjectConfig:
         position_range: Position randomization range {'x': (min, max), 'y': (min, max), 'z': (min, max)}.
         orientation_range: Orientation randomization range {'yaw': (min, max), ...}.
         curriculum: Position curriculum learning configuration (optional).
+        mass: Optional rigid-body mass in kg; omitted preserves the USD value.
+        max_depenetration_velocity: Optional per-object override in m/s.
     """
     name: str
     usd_path: str
@@ -252,6 +310,8 @@ class ObjectConfig:
     position_range: Dict[str, Tuple[float, float]]
     orientation_range: Dict[str, Tuple[float, float]]
     curriculum: Optional[PositionCurriculumConfig] = None
+    mass: Optional[float] = None
+    max_depenetration_velocity: Optional[float] = None
     
     @classmethod
     def from_dict(cls, data: Dict) -> Optional["ObjectConfig"]:
@@ -290,6 +350,16 @@ class ObjectConfig:
         
         # Parse curriculum configuration
         curriculum = PositionCurriculumConfig.from_dict(data.get("curriculum"))
+        mass = data.get("mass")
+        if mass is not None:
+            mass = float(mass)
+            if not np.isfinite(mass) or mass <= 0:
+                raise ValueError(f"Object {data['name']} mass must be a finite positive value in kg")
+        depenetration = data.get("max_depenetration_velocity")
+        if depenetration is not None:
+            depenetration = float(depenetration)
+            if not np.isfinite(depenetration) or depenetration <= 0:
+                raise ValueError(f"Object {data['name']} max_depenetration_velocity must be finite and positive")
         
         return cls(
             name=data["name"],
@@ -301,7 +371,9 @@ class ObjectConfig:
             init_rot=init_rot,
             position_range=position_range,
             orientation_range=orientation_range,
-            curriculum=curriculum
+            curriculum=curriculum,
+            mass=mass,
+            max_depenetration_velocity=depenetration,
         )
     
     def has_curriculum(self) -> bool:
@@ -443,6 +515,7 @@ class TaskConfig:
     enable_objects_randomization_curriculum: bool
     image_noise_std: float
     image_speckle_noise_std: float
+    phase_depenetration: Optional[Dict[str, Any]] = None
     
     @classmethod
     def from_dict(cls, data: Dict, config_dir: Optional[Path] = None) -> "TaskConfig":
@@ -518,7 +591,8 @@ class TaskConfig:
             enable_objects_randomization=data.get("enable_objects_randomization", True),
             enable_objects_randomization_curriculum=data.get("enable_objects_randomization_curriculum", True),
             image_noise_std=data.get("image_noise_std", 0.5),
-            image_speckle_noise_std=data.get("image_speckle_noise_std", 0.0)
+            image_speckle_noise_std=data.get("image_speckle_noise_std", 0.0),
+            phase_depenetration=parse_phase_depenetration(data.get("phase_depenetration"), objects),
         )
     
     def get_all_objects(self) -> List[ObjectConfig]:
@@ -565,10 +639,15 @@ class TaskConfig:
         
         for obj in self.get_all_objects():
             if self.enable_objects_randomization:
-                # Randomization enabled: use configured ranges
+                # Missing axes stay at their initial positions. Keep this fallback
+                # local to reset events: writing it into obj.position_range would
+                # also introduce a new bound in the physical success evaluator.
                 obj_params = {
-                    "position_range": obj.position_range,
-                    "orientation_range": obj.orientation_range
+                    "position_range": {
+                        axis: obj.position_range.get(axis, (obj.init_pos[i], obj.init_pos[i]))
+                        for i, axis in enumerate(("x", "y", "z"))
+                    },
+                    "orientation_range": obj.orientation_range or {"yaw": (0.0, 0.0)}
                 }
                 
                 # If curriculum config exists, add curriculum_config
@@ -590,10 +669,13 @@ class TaskConfig:
         params = {}
 
         for art in self.articulations.values():
-            if self.enable_objects_randomization and art.position_range:
+            if self.enable_objects_randomization:
                 params[art.name] = {
-                    "position_range": art.position_range,
-                    "orientation_range": art.orientation_range,
+                    "position_range": {
+                        axis: art.position_range.get(axis, (art.init_pos[i], art.init_pos[i]))
+                        for i, axis in enumerate(("x", "y", "z"))
+                    },
+                    "orientation_range": art.orientation_range or {"yaw": (0.0, 0.0)},
                 }
             else:
                 params[art.name] = {

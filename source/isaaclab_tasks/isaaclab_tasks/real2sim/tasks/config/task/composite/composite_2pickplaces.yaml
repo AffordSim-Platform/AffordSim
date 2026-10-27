@@ -7,8 +7,9 @@ scene:
   num_envs: 1
   env_spacing: 10
 task:
-  name: composite_pick_banana_place_plate_pick_cup_place_shelf
-  description: pick banana into plate, then pick redcup into shelf
+  name: composite_2pickplaces
+  description: Pick up the yellow banana; then place the yellow banana on the white
+    plate; then pick up the red mug; then place the red mug on the brown wood shelf.
 runtime:
   headless: false
   episodes: 4
@@ -18,144 +19,144 @@ runtime:
   save_mask_images: false
   save_original_images: true
   enable_motion_planning: true
-  sim_camera_resolution: [640, 480]
-  background_image_size: [640, 480]
+  sim_camera_resolution:
+  - 640
+  - 480
+  background_image_size:
+  - 640
+  - 480
   use_background_replace: true
   cam_side_background: backgrounds/1123_background.png
   cam_wrist_background: backgrounds/wristbackground_realworld1.png
   data_dir: data/r2s2r_data/composite_2pickplaces
-  task_name: FrankaFr3-OurGripper-Joint-VisPick-v0
+  task_name: XArm7-UFactory-Joint-EE-VisPick-v0
   save_depth_images: false
 robot:
-  cfg_name: franka_fr3_our.yml
-  type: franka_fr3_default
+  cfg_name: xarm7.yml
+  type: xarm7_ufactory
 offsets:
-  grasp: [0, 0, 0.0]
-  place: [0, 0, 0.0]
+  grasp:
+  - 0
+  - 0
+  - 0.0
+  place:
+  - 0
+  - 0
+  - 0.0
 objects:
   white_plate:
     usd_path: models/all_object/white_plate.usd
     semantic_tags:
-      -   - class
-          - white_plate
-    init_pos: [0.45, 0.15, 0.055]
-    init_rot: [-0.5935, 0.0, 0.0, 0.8048]
+    - - class
+      - white_plate
+    init_pos:
+    - 0.535
+    - -0.176
+    - 0.055
+    init_rot:
+    - -0.5935
+    - 0.0
+    - 0.0
+    - 0.8048
     height: 0.059
-    position_range:
-      x:
-        - 0.45
-        - 0.65
-      y:
-        - -0.0
-        - 0.15
-      z:
-        - 0.055
-        - 0.055
-    orientation_range:
-      yaw:
-        - -3.1416
-        - 3.1416
   yellow_banana:
     usd_path: models/all_object/yellow_banana.usd
     semantic_tags:
-      -   - class
-          - yellow_banana
-    init_pos: [0.55, -0.25, 0.098]
-    init_rot: [0.3994, 0.0, 0.0, 0.9168]
+    - - class
+      - yellow_banana
+    init_pos:
+    - 0.6106
+    - 0.113
+    - 0.098
+    init_rot:
+    - 0.3994
+    - 0.0
+    - 0.0
+    - 0.9168
     height: 0.036
-    position_range:
-      x:
-        - 0.45
-        - 0.55
-      y:
-        - -0.40
-        - -0.20
-      z:
-        - 0.098
-        - 0.098
-    orientation_range:
-      yaw:
-        - -3.1416
-        - 3.1416
   red_mugcup:
     usd_path: models/all_object/red_mugcup.usd
     semantic_tags:
-      -   - class
-          - red_mugcup
-    init_pos: [0.55, 0.2, 0.09]
-    init_rot: [-0.38268343, 0.0, 0.0, 0.92387953]
+    - - class
+      - red_mugcup
+    init_pos:
+    - 0.72
+    - 0.2
+    - 0.09
+    init_rot:
+    - 0.3173
+    - 0.0
+    - 0.0
+    - 0.9483
     height: 0.081
-    position_range:
-      x:
-        - 0.45
-        - 0.70
-      y:
-        - 0.20
-        - 0.40
-      z:
-        - 0.09
-        - 0.09
-    orientation_range:
-      yaw:
-        - -0.5236
-        - 0.5236
   brown_woodshelf:
     usd_path: models/all_object/brown_woodshelf.usd
     semantic_tags:
-      -   - class
-          - brown_woodshelf
-    init_pos: [0.8, -0.2, 0.35]
-    init_rot: [0.92387953, 0.0, 0.0, -0.38268343]
+    - - class
+      - brown_woodshelf
+    init_pos:
+    - 0.8
+    - -0.2
+    - 0.35
+    init_rot:
+    - 0.92387953
+    - 0.0
+    - 0.0
+    - -0.38268343
     height: 0.42
-    position_range:
-      x:
-        - 0.75
-        - 0.80
-      y:
-        - -0.25
-        - -0.15
-      z:
-        - 0.35
-        - 0.35
-    orientation_range:
-      yaw:
-        - -0.1745
-        - 0.1745
 primitives:
-  - type: pick
-    mode: affordance
-    params:
-      target: yellow_banana
-      pre_pick_offset: [0.0, 0.0, 0.10]
-      pick_interpolation_steps: 15
-      lift_interpolation_steps: 15
-  - type: place
-    mode: in
-    params:
-      target: white_plate
-      success_eval: true
-  - type: return_home
-    params:
-      post_settle_steps: 5 
-  - type: pick
-    mode: affordance
-    params:
-      target: red_mugcup
-      pre_pick_offset: [0.0, 0.0, 0.05]
-  - type: place
-    mode: in
-    params:
-      target: brown_woodshelf
-      success_eval: true
+- type: pick
+  mode: affordance
+  params:
+    target: yellow_banana
+    pre_pick_offset:
+    - 0.0
+    - 0.0
+    - 0.1
+    pick_interpolation_steps: 15
+    lift_interpolation_steps: 15
+- type: place
+  mode: in
+  params:
+    target: white_plate
+    success_eval: true
+- type: return_home
+  params:
+    post_settle_steps: 5
+- type: pick
+  mode: affordance
+  params:
+    target: red_mugcup
+    pre_pick_offset:
+    - 0.0
+    - 0.0
+    - 0.05
+- type: place
+  mode: in
+  params:
+    target: brown_woodshelf
+    success_eval: true
 enable_random_lights: false
 image_noise_std: 0
 image_speckle_noise_std: 0
 enable_objects_randomization: true
 enable_objects_randomization_curriculum: false
 texture_randomization:
-  enabled: false
+  enabled: true
+  avoid_repeats: true
   texture_dir: models/random_pic/table
   targets:
     table:
       prim_path: /World/envs/env_{i}/table/Xform_01/Xform/leg/node_/Cube
       texture_dir: models/random_pic/table
+articulations: {}
+phase_depenetration:
+  objects:
+  - yellow_banana
+  - white_plate
+  - red_mugcup
+  - brown_woodshelf
+  reset: 2.0
+  primitives:
+    pick: 2.0
+    release: 0.5

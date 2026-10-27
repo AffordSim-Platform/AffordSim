@@ -524,6 +524,11 @@ def create_rigid_object_cfg(obj_config: ObjectConfig) -> RigidObjectCfg:
             usd_path=obj_config.usd_path,
             semantic_tags=obj_config.semantic_tags,
             scale=obj_config.scale,
+            rigid_props=sim_utils.RigidBodyPropertiesCfg(
+                max_depenetration_velocity=(obj_config.max_depenetration_velocity
+                                            if obj_config.max_depenetration_velocity is not None else 2.0),
+            ),
+            mass_props=sim_utils.MassPropertiesCfg(mass=obj_config.mass) if obj_config.mass is not None else None,
             # visual_material=sim_utils.PreviewSurfaceCfg(
             #     diffuse_color=obj_config.diffuse_color
             # ),
@@ -556,6 +561,7 @@ def create_articulation_cfg(art_config: ArticulationObjectConfig) -> Articulatio
             activate_contact_sensors=False,
             rigid_props=sim_utils.RigidBodyPropertiesCfg(
                 disable_gravity=art_config.disable_gravity,
+                max_depenetration_velocity=2.0,
             ),
             articulation_props=sim_utils.ArticulationRootPropertiesCfg(
                 enabled_self_collisions=art_config.enabled_self_collisions,
@@ -714,6 +720,37 @@ def create_pick_env_cfg_from_yaml(
     
     # Apply YAML configuration
     env_cfg._apply_yaml_config(task_config)
+
+    # DA3 images must use the camera that generated them, not the robot's
+    # legacy fixed-camera calibration. Apply this after the embodiment config.
+    background = task_config.runtime.da3_background
+    if background is not None:
+        camera = getattr(env_cfg.scene, "external_cam_side", None)
+        if camera is None:
+            raise ValueError("DA3 background replacement requires external_cam_side")
+        camera.width, camera.height = background["output_size"]
+        camera.spawn = sim_utils.PinholeCameraCfg.from_intrinsic_matrix(
+            intrinsic_matrix=background["intrinsic_matrix"],
+            width=camera.width,
+            height=camera.height,
+        )
+        camera.offset = CameraCfg.OffsetCfg(
+            pos=background["pos"], rot=background["rot"], convention="ros",
+        )
+        # A reconstructed room need not contain a real table at the simulated
+        # support plane. Preserve that collision surface in the foreground.
+        table = getattr(env_cfg.scene, "table", None)
+        if background["keep_table"] and table is not None:
+            # The bundled table USD also contains a 50 m ground plane. Label
+            # only the table and robot support, not the whole asset root.
+            env_cfg.events.da3_table_semantics = EventTerm(
+                func=mdp.add_semantic_labels_to_scene,
+                mode="startup",
+                params={"prim_path_patterns": {
+                    r"{ENV_REGEX_NS}/table/(Xform_01|FR3_base)(/|$)": "table",
+                }},
+            )
+        task_config.runtime.background_image_size = background["output_size"]
     
     # Apply command-line argument overrides
     if num_envs is not None:
