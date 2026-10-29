@@ -52,7 +52,6 @@ primitives:
     mode: affordance_multidir
     params:
       target: white_kettle3
-      affordance_npz_path: pc_dataset_generate/pc/white_kettle3_pick/grasp_result_5pose_manual.npz
       pre_pick_offset: [0.0, 0.0, 0.10]
       pick_interpolation_steps: 10
       lift_interpolation_steps: 10
