@@ -8,11 +8,7 @@
 </p>
 
 <p align="center">
-  <img src="logs/benchmark_gallery_rows/benchmark_row_1.webp" alt="Easy tasks" width="100%"><br>
-  <img src="logs/benchmark_gallery_rows/benchmark_row_2.webp" alt="Medium tasks, first row" width="100%"><br>
-  <img src="logs/benchmark_gallery_rows/benchmark_row_3.webp" alt="Medium tasks, second row" width="100%"><br>
-  <img src="logs/benchmark_gallery_rows/benchmark_row_4.webp" alt="Medium tasks, third row" width="100%"><br>
-  <img src="logs/benchmark_gallery_rows/benchmark_row_5.webp" alt="Hard tasks" width="100%">
+  <img src="logs/benchmark_gallery.webp" alt="50 AffordSim tasks ordered by difficulty" width="100%">
 </p>
 
 <p align="center">
