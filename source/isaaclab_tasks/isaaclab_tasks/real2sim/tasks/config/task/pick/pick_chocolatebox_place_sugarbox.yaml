@@ -8,8 +8,7 @@ scene:
   env_spacing: 10
 task:
   name: pick_chocolatebox_place_sugarbox
-  description: Pick up the brown chocolate box; then place the brown chocolate box
-    on the yellow sugar box.
+  description: grasp the blue cup and put it on the shelf
 runtime:
   headless: false
   episodes: 3
@@ -25,15 +24,15 @@ runtime:
   background_image_size:
   - 640
   - 480
-  use_background_replace: true
+  use_background_replace: false
   cam_side_background: backgrounds/1123_background.png
   cam_wrist_background: backgrounds/wristbackground_realworld1.png
   data_dir: data/r2s2r_data/pick_chocolatebox_place_sugarbox
-  task_name: UR5e-Robotiq85-IKRel-EE-VisPick-v0
+  task_name: FrankaFr3-OurGripper-Joint-VisPick-v0
   save_depth_images: false
 robot:
-  cfg_name: ur5e_robotiq_2f_85.yml
-  type: ur5e
+  cfg_name: franka_fr3_our.yml
+  type: franka_fr3_default
 offsets:
   grasp:
   - 0
@@ -50,8 +49,8 @@ objects:
     - - class
       - brown_chocolatebox
     init_pos:
-    - 0.7
-    - 0.15
+    - 0.50691
+    - -0.37162
     - 0.04
     init_rot:
     - 0.9239
@@ -59,29 +58,28 @@ objects:
     - 0.0
     - 0.3827
     height: 0.06
-  red_cheezbox:
-    usd_path: models/all_object/red_cheezbox.usd
-    semantic_tags:
-    - - class
-      - red_cheezbox
-    init_pos:
-    - 0.55
-    - 0.0
-    - 0.073
-    init_rot:
-    - 1
-    - 0
-    - 0
-    - 0
-    height: 0.045
+    position_range:
+      x:
+      - 0.40691
+      - 0.70691
+      y:
+      - -0.37162
+      - -0.17162
+      z:
+      - 0.04
+      - 0.04
+    orientation_range:
+      yaw:
+      - -0.3489
+      - 0.3489
   yellow_sugarbox:
     usd_path: models/all_object/yellow_sugarbox.usd
     semantic_tags:
     - - class
       - yellow_sugarbox
     init_pos:
-    - 0.429
-    - -0.37
+    - 0.50691
+    - 0.12838
     - 0.073
     init_rot:
     - 0.6452
@@ -89,18 +87,36 @@ objects:
     - 0.0
     - 0.764
     height: 0.045
+    position_range:
+      x:
+      - 0.40691
+      - 0.70691
+      y:
+      - -0.07162
+      - 0.12838
+      z:
+      - 0.073
+      - 0.073
+    orientation_range:
+      yaw:
+      - -3.1416
+      - 3.1416
 primitives:
 - type: pick
   mode: affordance
   params:
+    pick_interpolation_steps: 5
+    lift_interpolation_steps: 5
     target: brown_chocolatebox
     pre_pick_offset:
     - 0.0
     - 0.0
     - 0.15
 - type: place
-  mode: 'on'
+  mode: true
   params:
+    ik_interpolation_steps: 5
+    post_release_lift_steps: 5
     target: yellow_sugarbox
     success_eval: true
 enable_random_lights: false
@@ -110,18 +126,31 @@ enable_objects_randomization: true
 enable_objects_randomization_curriculum: false
 texture_randomization:
   enabled: true
-  avoid_repeats: true
   texture_dir: models/random_pic/table
   targets:
     table:
       prim_path: /World/envs/env_{i}/table/Xform_01/Xform/leg/node_/Cube
       texture_dir: models/random_pic/table
-articulations: {}
-phase_depenetration:
-  objects:
-  - brown_chocolatebox
-  - yellow_sugarbox
-  reset: 2.0
-  primitives:
-    pick: 2.0
-    release: 0.5
+lighting:
+  type: dome
+  intensity: 1200.0
+  color:
+  - 1.0
+  - 1.0
+  - 1.0
+visibility_check:
+  object_bounds:
+    brown_chocolatebox:
+    - - -0.028413710382478596
+      - -0.022454285454345593
+      - -0.00961763017164446
+    - - 0.028413460042972405
+      - 0.02245419485528621
+      - 0.00961805515275854
+    yellow_sugarbox:
+    - - -0.04633819953341334
+      - -0.08812677186444162
+      - -0.022567469569277687
+    - - 0.04633912936585105
+      - 0.08812668603375506
+      - 0.02256666848286981

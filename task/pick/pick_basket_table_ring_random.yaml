@@ -1,0 +1,122 @@
+simulation:
+  decimation: 30
+  dt: 0.00833333
+  render_interval: 30
+  episode_length_s: 100
+scene:
+  num_envs: 1
+  env_spacing: 10
+task:
+  name: pick_basket_table_ring_random
+  description: pick the table-top pink basket from a four-wall obstacle ring using a random multi-direction grasp
+runtime:
+  headless: false
+  episodes: 5
+  save_npy: false
+  save_camera_images: false
+  save_composite_images: false
+  save_mask_images: false
+  save_original_images: true
+  save_depth_images: false
+  enable_motion_planning: true
+  sim_camera_resolution: [640, 480]
+  background_image_size: [640, 480]
+  use_background_replace: false
+  cam_side_background: ""
+  cam_wrist_background: ""
+  data_dir: data/r2s2r_data/pick_basket_table_ring/random
+  task_name: FrankaFr3-OurGripper-Joint-VisPick-v0
+robot:
+  cfg_name: franka_fr3_our.yml
+  type: franka_fr3_default
+offsets:
+  grasp: [0.0, 0.0, 0.0]
+  place: [0.0, 0.0, 0.0]
+objects:
+  ring_front:
+    usd_path: models/all_object/blue_cube.usd
+    semantic_tags:
+      - [class, ring_front]
+    scale: [0.4, 6.0, 4.8]
+    init_pos: [0.55, 0.0, 0.145]
+    init_rot: [1.0, 0.0, 0.0, 0.0]
+    height: 0.24
+    position_range:
+      x: [0.55, 0.55]
+      y: [0.0, 0.0]
+      z: [0.145, 0.145]
+    orientation_range:
+      yaw: [0.0, 0.0]
+  ring_back:
+    usd_path: models/all_object/green_cube.usd
+    semantic_tags:
+      - [class, ring_back]
+    scale: [0.4, 6.0, 4.8]
+    init_pos: [0.87, 0.0, 0.145]
+    init_rot: [1.0, 0.0, 0.0, 0.0]
+    height: 0.24
+    position_range:
+      x: [0.87, 0.87]
+      y: [0.0, 0.0]
+      z: [0.145, 0.145]
+    orientation_range:
+      yaw: [0.0, 0.0]
+  ring_left:
+    usd_path: models/all_object/red_cube.usd
+    semantic_tags:
+      - [class, ring_left]
+    scale: [6.0, 0.4, 4.8]
+    init_pos: [0.72, -0.15, 0.145]
+    init_rot: [1.0, 0.0, 0.0, 0.0]
+    height: 0.24
+    position_range:
+      x: [0.72, 0.72]
+      y: [-0.15, -0.15]
+      z: [0.145, 0.145]
+    orientation_range:
+      yaw: [0.0, 0.0]
+  ring_right:
+    usd_path: models/all_object/yellow_cube.usd
+    semantic_tags:
+      - [class, ring_right]
+    scale: [6.0, 0.4, 4.8]
+    init_pos: [0.72, 0.15, 0.145]
+    init_rot: [1.0, 0.0, 0.0, 0.0]
+    height: 0.24
+    position_range:
+      x: [0.72, 0.72]
+      y: [0.15, 0.15]
+      z: [0.145, 0.145]
+    orientation_range:
+      yaw: [0.0, 0.0]
+  pink_basket:
+    usd_path: models/all_object/pink_basket.usd
+    semantic_tags:
+      - [class, pink_basket]
+    init_pos: [0.775, 0.0, 0.10]
+    init_rot: [0.0, 0.0, 0.0, 1.0]
+    height: 0.0746
+    position_range:
+      x: [0.75, 0.80]
+      y: [-0.04, 0.04]
+      z: [0.10, 0.10]
+    orientation_range:
+      yaw: [-0.08726646, 0.08726646]
+primitives:
+  - type: pick
+    mode: affordance_multidir_random
+    params:
+      target: pink_basket
+      pre_pick_offset: [0.0, 0.0, 0.10]
+      pick_interpolation_steps: 10
+      lift_interpolation_steps: 10
+      lift_offset: 0.15
+enable_random_lights: false
+image_noise_std: 0
+image_speckle_noise_std: 0
+enable_objects_randomization: true
+enable_objects_randomization_curriculum: false
+texture_randomization:
+  enabled: false
+  texture_dir: models/random_pic/table
+  targets: {}

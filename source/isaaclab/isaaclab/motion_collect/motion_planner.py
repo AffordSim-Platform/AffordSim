@@ -16,6 +16,7 @@ from typing import Optional, Tuple, List, Dict, Any
 from scipy.spatial.transform import Rotation as R, Slerp
 
 from isaaclab.motion_collect.success.constants import IK_MAX_JOINT_JUMP
+from isaaclab.motion_collect.hold_action import make_joint_hold_action
 
 
 class MotionPlanner:
@@ -1204,11 +1205,10 @@ class MotionPlanner:
         max_steps = max(plan_lengths)
 
         for i in tqdm(range(max_steps), desc=desc, leave=False):
-            action = torch.zeros(num_envs, action_dim)
+            action = make_joint_hold_action(env, robot, num_envs)
 
             for env_idx in range(num_envs):
                 if not active_mask[env_idx]:
-                    action[env_idx, :] = robot.data.joint_pos[env_idx, :action_dim].cpu()
                     continue
 
                 if ordered_plans[env_idx] is not None and i < plan_lengths[env_idx]:
@@ -1216,7 +1216,6 @@ class MotionPlanner:
                     action[env_idx, idx_tensor] = cmd_state.position[:len(idx_tensor)].cpu()
                     action[env_idx, -1] = gripper_states[env_idx]
                 else:
-                    action[env_idx, :] = robot.data.joint_pos[env_idx, :action_dim].cpu()
                     action[env_idx, -1] = gripper_states[env_idx]
 
             next_obs, _, term, trunc, _ = env.step(action)
@@ -1242,10 +1241,8 @@ class MotionPlanner:
             if len(active_mask) != num_envs:
                 active_mask = [True] * num_envs
 
-        action_dim = env.env.action_manager.total_action_dim
         for _ in range(steps):
-            action = torch.zeros(num_envs, action_dim)
-            action[:, :] = robot.data.joint_pos[:num_envs, :action_dim].cpu()
+            action = make_joint_hold_action(env, robot, num_envs)
             for env_idx in range(num_envs):
                 if active_mask[env_idx]:
                     action[env_idx, -1] = gripper_actions[env_idx]
@@ -1324,7 +1321,7 @@ class MotionPlanner:
                 print(f"   No active envs remaining at IK step {step}/{interpolation_steps}, stopping early")
                 break
 
-            action = robot.data.joint_pos[:num_envs, :action_dim].cpu().clone()
+            action = make_joint_hold_action(env, robot, num_envs)
 
             for env_idx in range(num_envs):
                 if env_successes[env_idx]:

@@ -1,0 +1,277 @@
+simulation:
+  decimation: 30
+  dt: 0.00833333
+  render_interval: 5
+  episode_length_s: 100
+scene:
+  num_envs: 1
+  env_spacing: 10
+task:
+  name: __REQUIRED__
+  description: __REQUIRED__
+runtime:
+  save_npy: false
+  save_camera_images: false
+  save_composite_images: false
+  save_mask_images: false
+  save_original_images: true
+  save_depth_images: false
+  episodes: 1
+  headless: false
+  enable_motion_planning: true
+  sim_camera_resolution:
+  - 640
+  - 480
+  background_image_size:
+  - 640
+  - 480
+  use_background_replace: true
+  cam_side_background: __REQUIRED__
+  cam_wrist_background: __REQUIRED__
+  data_dir: __REQUIRED__
+  task_name: FrankaFr3-OurGripper-Joint-VisPick-v0
+robot:
+  cfg_name: franka_fr3_our.yml
+  type: franka_fr3_default
+offsets:
+  grasp:
+  - 0
+  - 0
+  - 0.0
+  place:
+  - 0
+  - 0
+  - 0.0
+objects:
+  example_object:
+    usd_path: __REQUIRED__
+    semantic_tags:
+    - - class
+      - example_object
+    init_pos: __REQUIRED__
+    init_rot: __REQUIRED__
+    height: 0.05
+    scale:
+    - 1.0
+    - 1.0
+    - 1.0
+  example_container:
+    usd_path: __REQUIRED__
+    semantic_tags:
+    - - class
+      - example_container
+    init_pos: __REQUIRED__
+    init_rot: __REQUIRED__
+    height: 0.08
+articulations:
+  example_articulation:
+    usd_path: __REQUIRED__
+    semantic_tags:
+    - - class
+      - example_articulation
+    scale:
+    - 1.0
+    - 1.0
+    - 1.0
+    disable_gravity: false
+    enabled_self_collisions: true
+    init_pos: __REQUIRED__
+    init_rot: __REQUIRED__
+    joint_pos:
+      joint_name_1: 0.0
+    actuators:
+      joint:
+        joint_names_expr:
+        - joint_name_1
+        effort_limit: 1000
+        velocity_limit: 1000
+        stiffness: 0
+        damping: 0
+primitives:
+- type: pick
+  mode: affordance
+  params:
+    target: __REQUIRED__
+    pre_pick_offset:
+    - 0.0
+    - 0.0
+    - 0.1
+    pick_interpolation_steps: 15
+    lift_interpolation_steps: 15
+    lift_offset: 0.1
+    grasp_npz_path: /path/to/grasp_result.npz
+- type: pick
+  mode: affordance_multidir
+  params:
+    target: __REQUIRED__
+    pre_pick_offset:
+    - 0.0
+    - 0.0
+    - 0.1
+    pick_interpolation_steps: 10
+    lift_interpolation_steps: 5
+    lift_offset: 0.15
+- type: pick
+  mode: gt
+  params:
+    target: __REQUIRED__
+    grasp_quat:
+    - 0.0
+    - 1.0
+    - 0.0
+    - 0.0
+    pre_pick_offset: 0.1
+    pick_interpolation_steps: 10
+    lift_interpolation_steps: 10
+    lift_offset: 0.1
+- type: pick
+  mode: hang
+  params:
+    target: __REQUIRED__
+    pre_pick_offset:
+    - 0.0
+    - 0.0
+    - 0.08
+    pick_interpolation_steps: 10
+    lift_interpolation_steps: 10
+- type: place
+  mode: 'on'
+  params:
+    target: __REQUIRED__
+    on_height_margin: 0.01
+    ik_interpolation_steps: 30
+    post_release_lift_offset:
+    - 0.0
+    - 0.0
+    - 0.08
+    post_release_lift_steps: 10
+    success_eval: true
+- type: place
+  mode: in
+  params:
+    target: __REQUIRED__
+    ik_interpolation_steps: 30
+    success_eval: true
+- type: place
+  mode: pose
+  params:
+    position:
+    - 0.5
+    - -0.4
+    - 0.1
+    orientation:
+    - 0.0
+    - 0.9239
+    - 0.0
+    - 0.3827
+    success_eval: false
+- type: place
+  mode: affordance
+  params:
+    target: __REQUIRED__
+    pre_place_distance: 0.15
+    ik_interpolation_steps: 30
+    post_release_lift_offset:
+    - 0.0
+    - 0.0
+    - 0.08
+    post_release_lift_steps: 10
+    success_eval: true
+- type: pour
+  params:
+    target: __REQUIRED__
+    tilt_angle_deg: 90.0
+    move_hover_height: 0.15
+    tilt_lift_height: 0.08
+    tilt_horizontal_offset: 0.05
+    success_eval: false
+    tilt_interpolation_steps: 15
+    return_lift_interpolation_steps: 10
+    return_interpolation_steps: 15
+    hold_steps: 3
+- type: push
+  mode: object_aligned
+  params:
+    target: __REQUIRED__
+    push_target: __REQUIRED__
+    pre_height: 0.15
+    pre_push_backoff: 0.08
+    push_contact_retreat: 0.02
+    lift_z_delta: 0.15
+    down_interpolation_steps: 5
+    push_interpolation_steps: 30
+    lift_interpolation_steps: 10
+    success_eval: false
+- type: pull
+  params:
+    target: __REQUIRED__
+    pre_grasp_offset: 0.08
+    pick_interpolation_steps: 10
+    pull_distance: 0.2
+    pull_interpolation_steps: 30
+    release_after_pull: true
+    success_eval: false
+- type: open
+  params:
+    target: __REQUIRED__
+    pre_pick_offset: 0.1
+    pick_interpolation_steps: 10
+    fast_pull_distance: 0.3
+    fast_pull_interpolation_steps: 5
+    lift_before_pre_insert: 0.3
+    lift_interpolation_steps: 10
+    pre_insert_outward_offset: 0.03
+    align_above_interpolation_steps: 10
+    door_tangent_move_distance: 0.2
+    tangent_move_interpolation_steps: 10
+    success_eval: false
+- type: close
+  params:
+    target: __REQUIRED__
+    pre_close_facing_offset: 0.25
+    pre_close_open_normal_offset: 0.4
+    close_facing_offset: 0.15
+    close_open_normal_backoff: 0.15
+    close_height_offset: 0.0
+    close_interpolation_steps: 30
+    success_eval: false
+- type: hang
+  mode: mount
+  params:
+    target: __REQUIRED__
+    pre_hang_distance: 0.1
+    insert_interpolation_steps: 20
+    extra_insert_distance: 0.05
+    extra_insert_interpolation_steps: 10
+    post_release_retreat_distance: 0.1
+    retreat_interpolation_steps: 10
+    success_eval: false
+- type: hold
+  params:
+    position:
+    - 0.5
+    - 0.0
+    - 0.3
+    orientation:
+    - 0.0
+    - 1.0
+    - 0.0
+    - 0.0
+    lift_height: 0.1
+    hold_steps: 10
+    success_eval: false
+- type: return_home
+  params:
+    post_settle_steps: 20
+enable_random_lights: false
+image_noise_std: 0
+image_speckle_noise_std: 0
+enable_objects_randomization: false
+enable_objects_randomization_curriculum: false
+texture_randomization:
+  enabled: false
+  texture_dir: __REQUIRED__
+  targets:
+    table:
+      prim_path: /World/envs/env_{i}/table/Xform_01/Xform/leg/node_/Cube
+      texture_dir: __REQUIRED__

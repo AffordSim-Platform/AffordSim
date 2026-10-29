@@ -1,8 +1,7 @@
 from typing import Any, Dict, Optional
 
 import numpy as np
-import torch
-
+from ..hold_action import make_joint_hold_action
 from ..success.constants import POUR_SUCCESS_TILT_THRESHOLD
 from ..success.evaluators import (
     _evaluate_pour_process_with_metrics,
@@ -284,8 +283,12 @@ def primitive_execute_pour(collector, params: Dict[str, Any], context: Dict[str,
     tilt_angle = float(params.get("tilt_angle_deg", pour_pose.get("tilt_angle_deg", 90.0)))
     tilt_lift_height = float(params.get("tilt_lift_height", pour_pose.get("tilt_lift_height", 0.08)))
     tilt_horizontal_offset = float(params.get("tilt_horizontal_offset", pour_pose.get("tilt_horizontal_offset", 0.05)))
-    hold_steps = 10
-    tilt_interpolation_steps = 30
+    hold_steps = int(params.get("hold_steps", 3))
+    if hold_steps < 0:
+        raise ValueError("pour.hold_steps must be nonnegative")
+    tilt_interpolation_steps = int(params.get("tilt_interpolation_steps", 30))
+    return_lift_interpolation_steps = int(params.get("return_lift_interpolation_steps", 5))
+    return_interpolation_steps = int(params.get("return_interpolation_steps", 10))
     return_lift_height_raw = params.get("return_lift_height", None)
     has_return_lift = return_lift_height_raw is not None
     return_lift_height = float(return_lift_height_raw) if has_return_lift else 0.0
@@ -409,14 +412,17 @@ def primitive_execute_pour(collector, params: Dict[str, Any], context: Dict[str,
     merge_segment_into_local_active(local_active, tilt_segment_successes)
     tilt_active = list(local_active)  # post-tilt plan-active snapshot
 
-    print("   [Primitive] Holding pour pose...")
-    action_dim = collector.env.env.action_manager.total_action_dim
+    print(f"   [Primitive] Holding maximum pour angle for {hold_steps} control steps...")
     for _ in range(hold_steps):
-        action = torch.zeros(n, action_dim, device=collector.device)
-        action[:, :] = collector.robot.data.joint_pos[:n, :action_dim]
+        action = make_joint_hold_action(collector.env, collector.robot, n, device=collector.device)
         for env_idx in range(n):
-            action[env_idx, -1] = -1.0 if tilt_active[env_idx] else 0.0
-        collector.env.step(action)
+            if tilt_active[env_idx]:
+                action[env_idx, -1] = -1.0
+        result = collector.env.step(action)
+        recorder = getattr(collector, "recorder", None)
+        if recorder is not None and getattr(recorder, "preserve_idle_steps", False):
+            obs, _, term, trunc, _ = result
+            recorder.add_step(obs, action, term, trunc)
 
     success_eval_enabled = bool(params.get("success_eval", False))
     axis_metrics: list[dict] = []
@@ -438,7 +444,11 @@ def primitive_execute_pour(collector, params: Dict[str, Any], context: Dict[str,
             return False
 
         axis_successes = []
-        tilt_threshold = float(POUR_SUCCESS_TILT_THRESHOLD)
+        min_tilt_deg = params.get("success_min_tilt_deg")
+        if min_tilt_deg is not None and not 0 < float(min_tilt_deg) <= 180:
+            raise ValueError("success_min_tilt_deg must be in (0, 180]")
+        tilt_threshold = (float(np.cos(np.deg2rad(float(min_tilt_deg))))
+                          if min_tilt_deg is not None else float(POUR_SUCCESS_TILT_THRESHOLD))
         for env_idx in range(n):
             env_success, env_metrics = _evaluate_pour_success_with_metrics(
                 scene=collector.scene,
@@ -549,7 +559,7 @@ def primitive_execute_pour(collector, params: Dict[str, Any], context: Dict[str,
             target_positions=return_positions,
             target_quaternions=all_tilt_quat,
             gripper_states=[-1.0 if s else 0.0 for s in local_active],
-            interpolation_steps=5,
+            interpolation_steps=return_lift_interpolation_steps,
             desc="Primitive Lift Before Return",
             active_mask=list(local_active),
         )
@@ -559,7 +569,7 @@ def primitive_execute_pour(collector, params: Dict[str, Any], context: Dict[str,
             target_positions=return_positions,
             target_quaternions=move_quats,
             gripper_states=[-1.0 if s else 0.0 for s in local_active],
-            interpolation_steps=10,
+            interpolation_steps=return_interpolation_steps,
             desc="Primitive Return Upright",
             active_mask=list(local_active),
         )
@@ -570,7 +580,7 @@ def primitive_execute_pour(collector, params: Dict[str, Any], context: Dict[str,
             target_positions=all_tilt_pos,
             target_quaternions=move_quats,
             gripper_states=[-1.0 if s else 0.0 for s in local_active],
-            interpolation_steps=10,
+            interpolation_steps=return_interpolation_steps,
             desc="Primitive Return Upright",
             active_mask=list(local_active),
         )

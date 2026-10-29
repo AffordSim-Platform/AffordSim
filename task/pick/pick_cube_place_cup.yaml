@@ -1,0 +1,164 @@
+simulation:
+  decimation: 30
+  dt: 0.00833333
+  render_interval: 5
+  episode_length_s: 100
+scene:
+  num_envs: 1
+  env_spacing: 10
+task:
+  name: pick_cube_place_cup
+  description: pick cube 016 and place it on redcup 013
+runtime:
+  headless: false
+  episodes: 5
+  save_npy: false
+  save_camera_images: false
+  save_composite_images: false
+  save_mask_images: false
+  save_original_images: true
+  enable_motion_planning: true
+  sim_camera_resolution:
+  - 640
+  - 480
+  background_image_size:
+  - 640
+  - 480
+  use_background_replace: false
+  cam_side_background: backgrounds/1123_background.png
+  cam_wrist_background: backgrounds/wristbackground_realworld1.png
+  data_dir: data/r2s2r_data/pick_cube_place_cup
+  task_name: FrankaFr3-OurGripper-Joint-VisPick-v0
+  save_depth_images: false
+robot:
+  cfg_name: franka_fr3_our.yml
+  type: franka_fr3_default
+offsets:
+  grasp:
+  - 0
+  - 0
+  - 0.0
+  place:
+  - 0
+  - 0
+  - 0.0
+objects:
+  green_cube:
+    usd_path: models/all_object/green_cube.usd
+    semantic_tags:
+    - - class
+      - green_cube
+    init_pos:
+    - 0.44942
+    - -0.53635
+    - 0.08
+    init_rot:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    height: 0.06
+    position_range:
+      x:
+      - 0.34942
+      - 0.64942
+      y:
+      - -0.73635
+      - -0.33635
+      z:
+      - 0.08
+      - 0.08
+    orientation_range:
+      yaw:
+      - -3.1416
+      - 3.1416
+  doraemoncup:
+    usd_path: models/all_object/doraemoncup.usd
+    semantic_tags:
+    - - class
+      - doraemoncup
+    init_pos:
+    - 0.44942
+    - -0.03635
+    - 0.08
+    init_rot:
+    - 0.9239
+    - 0.0
+    - 0.0
+    - 0.3827
+    height: 0.09
+    position_range:
+      x:
+      - 0.34942
+      - 0.64942
+      y:
+      - -0.23635
+      - 0.16365
+      z:
+      - 0.08
+      - 0.08
+    orientation_range:
+      yaw:
+      - -3.1416
+      - 3.1416
+primitives:
+- type: pick
+  mode: gt
+  params:
+    target: green_cube
+    grasp_quat:
+    - 0.0
+    - 1.0
+    - 0.0
+    - 0.0
+    pre_pick_offset: 0.1
+    pick_interpolation_steps: 5
+    lift_interpolation_steps: 5
+    lift_offset: 0.1
+- type: place
+  mode: 'on'
+  params:
+    post_release_lift_steps: 5
+    target: doraemoncup
+    orientation:
+    - 0.0
+    - 1.0
+    - 0.0
+    - 0.0
+    ik_interpolation_steps: 5
+    success_eval: true
+enable_random_lights: false
+image_noise_std: 0
+image_speckle_noise_std: 0
+enable_objects_randomization: true
+enable_objects_randomization_curriculum: false
+texture_randomization:
+  enabled: true
+  texture_dir: models/random_pic/table
+  targets:
+    table:
+      prim_path: /World/envs/env_{i}/table/Xform_01/Xform/leg/node_/Cube
+      texture_dir: models/random_pic/table
+lighting:
+  type: dome
+  intensity: 1200.0
+  color:
+  - 1.0
+  - 1.0
+  - 1.0
+visibility_check:
+  object_bounds:
+    green_cube:
+    - - -0.025
+      - -0.025
+      - -0.025
+    - - 0.025
+      - 0.025
+      - 0.025
+    doraemoncup:
+    - - -0.042100001126527786
+      - -0.04472199827432634
+      - -0.057245001196861274
+    - - 0.04514700174331665
+      - 0.04230700060725213
+      - 0.03701699897646905

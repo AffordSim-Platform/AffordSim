@@ -7,9 +7,9 @@ scene:
   num_envs: 1
   env_spacing: 10
 task:
-  name: composite_unload_microwave
-  description: Pick up the red soup can; then place the red soup can at the specified
-    position; then close the microwave 1.
+  name: composite_pick_soup_from_microwave_close_microwave
+  description: take the soup out of the microwave, place it on the table, then close
+    the microwave door
 runtime:
   headless: false
   episodes: 4
@@ -25,15 +25,15 @@ runtime:
   background_image_size:
   - 640
   - 480
-  use_background_replace: true
+  use_background_replace: false
   cam_side_background: backgrounds/1123_background.png
   cam_wrist_background: backgrounds/wristbackground_realworld1.png
-  data_dir: data/r2s2r_data/composite_unload_microwave
+  data_dir: data/r2s2r_data/composite_unload _microwave
   task_name: FrankaFr3-OurGripper-Joint-VisPick-v0
   save_depth_images: false
 robot:
   cfg_name: franka_fr3_our.yml
-  type: franka_fr3
+  type: franka_fr3_default
 offsets:
   grasp:
   - 0
@@ -50,8 +50,8 @@ objects:
     - - class
       - red_soupcan
     init_pos:
-    - 0.75
-    - 0.0
+    - 0.72351
+    - -0.07405
     - 0.16
     init_rot:
     - 0.6452
@@ -61,11 +61,11 @@ objects:
     height: 0.1
     position_range:
       x:
-      - 0.73
-      - 0.75
+      - 0.70351
+      - 0.72351
       y:
-      - -0.03
-      - 0.03
+      - -0.10405
+      - -0.04405
       z:
       - 0.16
       - 0.16
@@ -86,8 +86,8 @@ articulations:
     disable_gravity: false
     enabled_self_collisions: true
     init_pos:
-    - 0.8
-    - 0.0
+    - 0.77351
+    - -0.07405
     - 0.16
     init_rot:
     - 0.7071
@@ -96,11 +96,11 @@ articulations:
     - -0.7071
     position_range:
       x:
-      - 0.8
-      - 0.8
+      - 0.77351
+      - 0.77351
       y:
-      - -0.0
-      - 0.0
+      - -0.07405
+      - -0.07405
       z:
       - 0.16
       - 0.16
@@ -114,10 +114,10 @@ articulations:
       joint:
         joint_names_expr:
         - microjoint
-        effort_limit: 1
-        velocity_limit: 1
-        stiffness: 1
-        damping: 1
+        effort_limit: 1000
+        velocity_limit: 1000
+        stiffness: 0
+        damping: 0
 primitives:
 - type: pick
   mode: gt
@@ -129,15 +129,17 @@ primitives:
     - 0
     - 0.3827
     pre_pick_offset: 0.1
-    pick_interpolation_steps: 10
-    lift_interpolation_steps: 10
+    pick_interpolation_steps: 5
+    lift_interpolation_steps: 5
     lift_offset: 0.15
 - type: place
   mode: pose
   params:
+    ik_interpolation_steps: 5
+    post_release_lift_steps: 5
     position:
-    - 0.55
-    - -0.4
+    - 0.52351
+    - -0.47405
     - 0.15
     orientation:
     - 0
@@ -153,11 +155,19 @@ primitives:
     target: microwave1
     pre_close_facing_offset: 0.25
     pre_close_open_normal_offset: 0.4
+    pre_close_approach_height: 0.08
+    pre_close_descent_steps: 10
     close_facing_offset: 0.2
     close_open_normal_backoff: 0.15
-    close_interpolation_steps: 30
+    close_interpolation_steps: 5
     success_eval: true
     success_joint_name: microjoint
+    post_close_lift_offset:
+    - 0
+    - 0
+    - 0.1
+    post_close_interpolation_steps: 5
+    post_close_settle_steps: 6
 enable_random_lights: false
 image_noise_std: 0
 image_speckle_noise_std: 0
@@ -165,16 +175,31 @@ enable_objects_randomization: true
 enable_objects_randomization_curriculum: false
 texture_randomization:
   enabled: true
-  avoid_repeats: true
   texture_dir: models/random_pic/table
   targets:
     table:
       prim_path: /World/envs/env_{i}/table/Xform_01/Xform/leg/node_/Cube
       texture_dir: models/random_pic/table
-phase_depenetration:
-  objects:
-  - red_soupcan
-  reset: 2.0
-  primitives:
-    pick: 2.0
-    release: 0.5
+lighting:
+  type: dome
+  intensity: 1200.0
+  color:
+  - 1.0
+  - 1.0
+  - 1.0
+visibility_check:
+  object_bounds:
+    red_soupcan:
+    - - -0.02706384066444753
+      - -0.02708608174389338
+      - -0.04583520196490648
+    - - 0.027063663281026
+      - 0.027085328341161608
+      - 0.0458343007427132
+    microwave1:
+    - - -0.21845319122076035
+      - -0.149477891536016
+      - -0.12642106041312218
+    - - 0.218453212082386
+      - 0.1494779884815216
+      - 0.12642104998230932

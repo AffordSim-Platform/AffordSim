@@ -8,7 +8,7 @@ scene:
   env_spacing: 20
 task:
   name: pick_bowl_place_plate
-  description: Pick up the yellow bowl; then place the yellow bowl on the white plate.
+  description: Pick up the yellow bowl and place it centered on the white plate.
 runtime:
   headless: false
   episodes: 5
@@ -24,15 +24,15 @@ runtime:
   background_image_size:
   - 640
   - 480
-  use_background_replace: true
+  use_background_replace: false
   cam_side_background: backgrounds/1123_background.png
   cam_wrist_background: backgrounds/wristbackground_realworld1.png
   data_dir: data/r2s2r_data/pick_bowl_place_plate
-  task_name: Kinova-Robotiq85-IKRel-EE-VisPick-v0
+  task_name: FrankaFr3-OurGripper-Joint-VisPick-v0
   save_depth_images: false
 robot:
-  cfg_name: kinova_robotiq85.yml
-  type: kinova_robotiq85
+  cfg_name: franka_fr3_our.yml
+  type: franka_fr3_default
 offsets:
   grasp:
   - 0
@@ -43,45 +43,44 @@ offsets:
   - 0
   - 0.0
 objects:
-  yellow_bigbowl:
-    usd_path: models/all_object/yellow_bigbowl.usd
-    semantic_tags:
-    - - class
-      - yellow_bigbowl
-    init_pos:
-    - 0.77
-    - -0.176
-    - 0.077
-    init_rot:
-    - -0.9838
-    - 0.0
-    - 0.0
-    - 0.1791
-    height: 0.054
   yellow_bowl:
     usd_path: models/all_object/yellow_bowl.usd
-    mass: 0.2
     semantic_tags:
     - - class
       - yellow_bowl
     init_pos:
-    - 0.67
-    - 0
+    - 0.47096
+    - 0.02537
     - 0.077
     init_rot:
-    - 0.3827
-    - 0.0
-    - 0.0
-    - 0.9239
+    - 0
+    - 0
+    - 0
+    - 1
     height: 0.054
+    position_range:
+      x:
+      - 0.37096
+      - 0.67096
+      y:
+      - -0.07463
+      - 0.12537
+      z:
+      - 0.077
+      - 0.077
+    orientation_range:
+      yaw:
+      - -0.3489
+      - 0.3489
+    mass: 0.2
   white_plate:
     usd_path: models/all_object/white_plate.usd
     semantic_tags:
     - - class
       - white_plate
     init_pos:
-    - 0.56
-    - -0.35
+    - 0.47096
+    - -0.47463
     - 0.055
     init_rot:
     - -0.5935
@@ -89,6 +88,20 @@ objects:
     - 0.0
     - 0.8048
     height: 0.059
+    position_range:
+      x:
+      - 0.37096
+      - 0.67096
+      y:
+      - -0.57463
+      - -0.37463
+      z:
+      - 0.055
+      - 0.055
+    orientation_range:
+      yaw:
+      - -3.1416
+      - 3.1416
 primitives:
 - type: pick
   mode: affordance
@@ -98,13 +111,27 @@ primitives:
     - 0.0
     - 0.0
     - 0.1
-    pick_interpolation_steps: 15
-    lift_interpolation_steps: 15
+    pick_interpolation_steps: 5
+    lift_interpolation_steps: 5
 - type: place
-  mode: 'on'
+  mode: true
   params:
+    ik_interpolation_steps: 5
+    post_release_lift_steps: 5
     target: white_plate
     success_eval: true
+    align_object_center: true
+    on_height_margin: 0.04
+    approach_height: 0.07
+    release_settle_steps: 6
+    success_geometry:
+      xy_radius: 0.025
+      z_range:
+      - 0.005
+      - 0.1
+      upright_cos: 0.94
+      max_speed: 0.08
+    trace_placement: true
 enable_random_lights: false
 image_noise_std: 0
 image_speckle_noise_std: 0
@@ -112,13 +139,18 @@ enable_objects_randomization: true
 enable_objects_randomization_curriculum: false
 texture_randomization:
   enabled: true
-  avoid_repeats: true
   texture_dir: models/random_pic/table
   targets:
     table:
       prim_path: /World/envs/env_{i}/table/Xform_01/Xform/leg/node_/Cube
       texture_dir: models/random_pic/table
-articulations: {}
+lighting:
+  type: dome
+  intensity: 1200.0
+  color:
+  - 1.0
+  - 1.0
+  - 1.0
 phase_depenetration:
   objects:
   - yellow_bowl
@@ -127,3 +159,19 @@ phase_depenetration:
   primitives:
     pick: 2.0
     release: 0.5
+visibility_check:
+  object_bounds:
+    yellow_bowl:
+    - - -0.08058199702392521
+      - -0.08073099050050307
+      - -0.02750500178615774
+    - - 0.08058200656066816
+      - 0.08073200139522167
+      - 0.02750400281229903
+    white_plate:
+    - - -0.13386597633361816
+      - -0.13386603355407714
+      - -0.025243499279022245
+    - - 0.1338659334182739
+      - 0.13386587619781493
+      - 0.033679858446121244

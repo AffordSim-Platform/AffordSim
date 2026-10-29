@@ -17,7 +17,7 @@ def Xform "StorageBasket" (
         over "node_"
         {
             over "mesh_" (
-                delete apiSchemas = ["PhysicsRigidBodyAPI"]
+                delete apiSchemas = ["PhysicsRigidBodyAPI", "PhysxRigidBodyAPI"]
             )
             {
             }

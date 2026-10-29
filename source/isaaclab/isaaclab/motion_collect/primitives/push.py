@@ -94,6 +94,7 @@ def select_best_push_candidate(
     pre_height: float,
     pre_push_backoff: float,
     push_contact_retreat: float,
+    push_contact_z_offset: float = 0.0,
 ) -> tuple[Optional[dict], dict]:
     """Select the best affordance push pose for the desired push direction."""
     desired_dir_xy, desired_norm = _normalize_xy(desired_push_delta_env)
@@ -115,6 +116,10 @@ def select_best_push_candidate(
             reference_quat_wxyz=ee_quat,
             object_scale=object_scale,
         )
+        # Lower the contact in world Z before scoring/planning so the approach,
+        # contact and horizontal sweep all use the same adjusted height.
+        grasp_pos = np.asarray(grasp_pos, dtype=np.float64).copy()
+        grasp_pos[2] += push_contact_z_offset
 
         approach_world = rot_obj @ np.asarray(candidate["approach_dir"], dtype=np.float64)
         approach_dir_xy, approach_norm = _normalize_xy(approach_world)
@@ -218,6 +223,9 @@ def primitive_compute_push_pose(collector, params: Dict[str, Any], context: Dict
     pre_push_backoff = abs(pre_push_backoff)
     push_contact_retreat = float(params.get("push_contact_retreat", 0.02))
     push_contact_retreat = abs(push_contact_retreat)
+    push_contact_z_offset = float(params.get("push_contact_z_offset", 0.0))
+    if not np.isfinite(push_contact_z_offset):
+        raise ValueError("push_contact_z_offset must be finite")
 
     push_target_raw = params.get("push_target")
     if push_target_raw is None:
@@ -292,6 +300,7 @@ def primitive_compute_push_pose(collector, params: Dict[str, Any], context: Dict
             pre_height=pre_height,
             pre_push_backoff=pre_push_backoff,
             push_contact_retreat=push_contact_retreat,
+            push_contact_z_offset=push_contact_z_offset,
         )
         selection_infos.append(selection_info)
 
@@ -329,7 +338,8 @@ def primitive_compute_push_pose(collector, params: Dict[str, Any], context: Dict
         push_target_positions.append(push_target.copy())
         print(
             f"   Env {env_idx}: selected push candidate {best_candidate['candidate_index']} "
-            f"(alignment={best_candidate['alignment']:.3f}, total={best_candidate['total_score']:.3f})"
+            f"(alignment={best_candidate['alignment']:.3f}, total={best_candidate['total_score']:.3f}, "
+            f"contact_z={contact_pos[2]:.3f}, z_offset={push_contact_z_offset:.3f})"
         )
         if should_lift:
             lift = push.copy()

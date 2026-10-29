@@ -565,6 +565,7 @@ def create_articulation_cfg(art_config: ArticulationObjectConfig) -> Articulatio
             ),
             articulation_props=sim_utils.ArticulationRootPropertiesCfg(
                 enabled_self_collisions=art_config.enabled_self_collisions,
+                fix_root_link=art_config.fix_root_link,
             ),
         ),
         init_state=ArticulationCfg.InitialStateCfg(
@@ -720,6 +721,33 @@ def create_pick_env_cfg_from_yaml(
     
     # Apply YAML configuration
     env_cfg._apply_yaml_config(task_config)
+
+    if task_config.lighting is not None:
+        light = task_config.lighting
+        if light.get("type") not in {"point", "dome"} or task_config.enable_random_lights:
+            raise ValueError("Explicit lighting requires type: point/dome and enable_random_lights: false")
+        if light["type"] == "dome":
+            env_cfg.scene.light_sphere.spawn.intensity = 0.0
+            env_cfg.scene.task_dome = AssetBaseCfg(
+                prim_path="/World/task_dome_light",
+                spawn=sim_utils.DomeLightCfg(
+                    intensity=float(light.get("intensity", 1200.0)),
+                    color=tuple(light.get("color", [1.0, 1.0, 1.0])),
+                ),
+            )
+        else:
+            env_cfg.scene.light_sphere = AssetBaseCfg(
+                prim_path="{ENV_REGEX_NS}/task_point_light",
+                spawn=sim_utils.SphereLightCfg(
+                    intensity=float(light.get("intensity", 1600.0)),
+                    color=tuple(light.get("color", [1.0, 1.0, 1.0])),
+                    radius=0.01, treat_as_point=True, normalize=True,
+                ),
+                init_state=AssetBaseCfg.InitialStateCfg(pos=tuple(light.get("position", [0.4, 0.0, 2.0]))),
+            )
+        env_cfg.scene.light_distant.spawn.intensity = 0.0
+        env_cfg.scene.light_disk.spawn.intensity = 0.0
+        env_cfg.events.configure_task_lighting = EventTerm(func=mdp.configure_task_lighting, mode="startup")
 
     # DA3 images must use the camera that generated them, not the robot's
     # legacy fixed-camera calibration. Apply this after the embodiment config.

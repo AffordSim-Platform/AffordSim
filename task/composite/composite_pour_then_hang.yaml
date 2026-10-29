@@ -1,0 +1,235 @@
+simulation:
+  decimation: 30
+  dt: 0.00833333
+  render_interval: 5
+  episode_length_s: 200
+scene:
+  num_envs: 1
+  env_spacing: 10
+task:
+  name: composite_pick_cup_pour_cup_pick_cup_hang_rack
+  description: pour from red mugcup into white 95mm cup, then hang mugcup on wood
+    rack
+runtime:
+  headless: false
+  episodes: 4
+  save_npy: false
+  save_camera_images: false
+  save_composite_images: false
+  save_mask_images: false
+  save_original_images: true
+  enable_motion_planning: true
+  sim_camera_resolution:
+  - 640
+  - 480
+  background_image_size:
+  - 640
+  - 480
+  use_background_replace: false
+  cam_side_background: backgrounds/1123_background.png
+  cam_wrist_background: backgrounds/wristbackground_realworld1.png
+  data_dir: data/r2s2r_data/composite_pour_then _hang
+  task_name: FrankaFr3-OurGripper-Joint-VisPick-v0
+  save_depth_images: false
+robot:
+  cfg_name: franka_fr3_our.yml
+  type: franka_fr3
+offsets:
+  grasp:
+  - 0
+  - 0
+  - 0.0
+  place:
+  - 0
+  - 0
+  - 0.0
+objects:
+  red_mugcup:
+    usd_path: models/all_object/red_mugcup.usd
+    semantic_tags:
+    - - class
+      - red_mugcup
+    init_pos:
+    - 0.44356822967529297
+    - -0.2928652763366699
+    - 0.09
+    init_rot:
+    - 0.7132900953292847
+    - -0.0013530778232961893
+    - -0.00043007146450690925
+    - -0.7008674144744873
+    position_range:
+      x:
+      - 0.44356822967529297
+      - 0.44356822967529297
+      y:
+      - -0.2928652763366699
+      - -0.2928652763366699
+      z:
+      - 0.09
+      - 0.09
+    orientation_range:
+      yaw:
+      - 0.0
+      - 0.0
+  white_95mmcup:
+    usd_path: models/all_object/white_95mmcup.usd
+    semantic_tags:
+    - - class
+      - white_95mmcup
+    scale:
+    - 1.2
+    - 1.2
+    - 1.0
+    init_pos:
+    - 0.497375488
+    - 0.026747704
+    - 0.08
+    init_rot:
+    - 0.920844627
+    - -0.001356603
+    - 0.025969202
+    - -0.389061605
+    height: 0.08
+    position_range:
+      x:
+      - 0.497375488
+      - 0.497375488
+      y:
+      - 0.026747704
+      - 0.026747704
+      z:
+      - 0.08
+      - 0.08
+    orientation_range:
+      yaw:
+      - 0.0
+      - 0.0
+  wood_rack:
+    usd_path: models/all_object/wood_rack.usd
+    semantic_tags:
+    - - class
+      - wood_rack
+    init_pos:
+    - 0.6212368011474609
+    - -0.36873912811279297
+    - 0.03734999992325902
+    init_rot:
+    - 0.6522096395492554
+    - 5.994387493046816e-07
+    - -1.2579374697452295e-07
+    - 0.7580385804176331
+    height: 0.3
+    position_range:
+      x:
+      - 0.6212368011474609
+      - 0.6212368011474609
+      y:
+      - -0.36873912811279297
+      - -0.36873912811279297
+      z:
+      - 0.03734999992325902
+      - 0.03734999992325902
+    orientation_range:
+      yaw:
+      - 0.0
+      - 0.0
+primitives:
+- type: pick
+  mode: affordance
+  params:
+    target: red_mugcup
+    pre_pick_offset:
+    - 0.0
+    - 0.0
+    - 0.1
+    pick_interpolation_steps: 5
+    lift_interpolation_steps: 5
+    lift_offset: 0.15
+- type: pour
+  params:
+    tilt_interpolation_steps: 15
+    return_lift_interpolation_steps: 10
+    return_interpolation_steps: 15
+    target: white_95mmcup
+    tilt_angle_deg: 100
+    move_hover_height: 0.12
+    tilt_lift_height: 0.12
+    tilt_horizontal_offset: 0.05
+    success_eval: true
+    hold_steps: 3
+- type: place
+  mode: pose
+  params:
+    ik_interpolation_steps: 5
+    post_release_lift_steps: 5
+    success_eval: true
+    return_to_pick_pose: true
+    return_height_offset: 0.01
+    approach_height: 0.07
+- type: pick
+  mode: hang
+  params:
+    target: red_mugcup
+    pre_pick_offset:
+    - 0.0
+    - 0.0
+    - 0.08
+    pick_interpolation_steps: 5
+    lift_interpolation_steps: 5
+- type: hang
+  mode: mount
+  params:
+    target: wood_rack
+    pre_hang_distance: 0.05
+    insert_interpolation_steps: 5
+    extra_insert_distance: 0.05
+    extra_insert_interpolation_steps: 5
+    post_release_retreat_distance: 0.1
+    retreat_interpolation_steps: 5
+    success_eval: true
+- type: return_home
+  params:
+    post_settle_steps: 20
+enable_random_lights: false
+image_noise_std: 0
+image_speckle_noise_std: 0
+enable_objects_randomization: false
+enable_objects_randomization_curriculum: false
+texture_randomization:
+  enabled: true
+  texture_dir: models/random_pic/table
+  targets:
+    table:
+      prim_path: /World/envs/env_{i}/table/Xform_01/Xform/leg/node_/Cube
+      texture_dir: models/random_pic/table
+lighting:
+  type: dome
+  intensity: 1200.0
+  color:
+  - 1.0
+  - 1.0
+  - 1.0
+visibility_check:
+  object_bounds:
+    red_mugcup:
+    - - -0.05849487650778418
+      - -0.04654441868603657
+      - -0.0406510026147473
+    - - 0.05849521029378746
+      - 0.04654394184892314
+      - 0.04065199920440199
+    white_95mmcup:
+    - - -0.06172319948673248
+      - -0.06254400118246879
+      - -0.03915500017806745
+    - - 0.05923680067062378
+      - 0.058623599615774055
+      - 0.03680200244096086
+    wood_rack:
+    - - -0.05714999884366989
+      - -0.05714999884366989
+      - -0.00634999992325902
+    - - 0.13791100680828094
+      - 0.05714999884366989
+      - 0.38100001215934753

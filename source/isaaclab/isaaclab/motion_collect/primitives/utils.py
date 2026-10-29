@@ -1015,6 +1015,8 @@ def primitive_compute_grasp_pose(collector, mode: Optional[str], params: Dict[st
     if mode == "gt":
         print("   [Primitive] Computing grasp pose from GT pose...")
         grasp_pos_offset, grasp_quat_default = collector._load_grasp_config()
+        if "grasp_offset" in params:
+            grasp_pos_offset = parse_position_offset(params["grasp_offset"], [0.0, 0.0, 0.0])
         has_explicit_grasp_quat = "grasp_quat" in params
         if has_explicit_grasp_quat:
             grasp_quat_default = np.array(params["grasp_quat"], dtype=float)

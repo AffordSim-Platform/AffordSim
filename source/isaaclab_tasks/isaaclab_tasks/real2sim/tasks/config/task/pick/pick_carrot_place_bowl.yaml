@@ -7,9 +7,8 @@ scene:
   num_envs: 5
   env_spacing: 4
 task:
-  name: pick_carrot_place_bowl
-  description: Pick up the orange carrot; then place the orange carrot in the yellow
-    large bowl.
+  name: pick_banana_place_bowl
+  description: grasp the banana and put it in the bowl
 runtime:
   headless: false
   episodes: 5
@@ -25,15 +24,15 @@ runtime:
   background_image_size:
   - 640
   - 480
-  use_background_replace: true
+  use_background_replace: false
   cam_side_background: backgrounds/1123_background.png
   cam_wrist_background: backgrounds/wristbackground_realworld1.png
   data_dir: data/r2s2r_data/pick_carrot_place_bowl
-  task_name: Sawyer-Robotiq85-Joint-EE-VisPick-v0
+  task_name: FrankaFr3-OurGripper-Joint-VisPick-v0
   save_depth_images: false
 robot:
-  cfg_name: sawyer.yml
-  type: sawyer_robotiq85
+  cfg_name: franka_fr3_our.yml
+  type: franka_fr3_default
 offsets:
   grasp:
   - 0
@@ -50,8 +49,8 @@ objects:
     - - class
       - yellow_bigbowl
     init_pos:
-    - 0.55
-    - 0.25
+    - 0.42583
+    - -0.10395
     - 0.0754
     init_rot:
     - -0.9838
@@ -61,26 +60,26 @@ objects:
     height: 0.0504
     position_range:
       x:
-      - 0.5250000000000001
-      - 0.675
+      - 0.32583
+      - 0.62583
       y:
-      - 0.175
-      - 0.325
+      - -0.30395
+      - 0.09605
       z:
       - 0.0754
       - 0.0754
     orientation_range:
       yaw:
-      - -0.5235987755982988
-      - 0.5235987755982988
+      - -3.1416
+      - 3.1416
   orange_carrot:
     usd_path: models/all_object/orange_carrot.usd
     semantic_tags:
     - - class
       - orange_carrot
     init_pos:
-    - 0.55
-    - -0.25
+    - 0.42583
+    - -0.60395
     - 0.0714
     init_rot:
     - 0.1791
@@ -90,30 +89,32 @@ objects:
     height: 0.0264
     position_range:
       x:
-      - 0.5250000000000001
-      - 0.675
+      - 0.32583
+      - 0.62583
       y:
-      - -0.325
-      - -0.175
+      - -0.80395
+      - -0.40395
       z:
       - 0.0714
       - 0.0714
     orientation_range:
       yaw:
-      - -0.5235987755982988
-      - 0.5235987755982988
+      - -3.1416
+      - 3.1416
 primitives:
 - type: pick
   mode: gt
   params:
     target: orange_carrot
     pre_pick_offset: 0.1
-    pick_interpolation_steps: 10
-    lift_interpolation_steps: 10
+    pick_interpolation_steps: 5
+    lift_interpolation_steps: 5
     lift_offset: 0.08
 - type: place
-  mode: 'on'
+  mode: true
   params:
+    ik_interpolation_steps: 5
+    post_release_lift_steps: 5
     target: yellow_bigbowl
     on_height_margin: 0.03
     success_eval: true
@@ -124,17 +125,31 @@ enable_objects_randomization: true
 enable_objects_randomization_curriculum: false
 texture_randomization:
   enabled: true
-  avoid_repeats: true
   texture_dir: models/random_pic/table
   targets:
     table:
       prim_path: /World/envs/env_{i}/table/Xform_01/Xform/leg/node_/Cube
       texture_dir: models/random_pic/table
-phase_depenetration:
-  objects:
-  - orange_carrot
-  - yellow_bigbowl
-  reset: 2.0
-  primitives:
-    pick: 2.0
-    release: 0.5
+lighting:
+  type: dome
+  intensity: 1200.0
+  color:
+  - 1.0
+  - 1.0
+  - 1.0
+visibility_check:
+  object_bounds:
+    yellow_bigbowl:
+    - - -0.09296700358390808
+      - -0.09845600350506896
+      - -0.05038000128648172
+    - - 0.09519600123167038
+      - 0.0889870014658081
+      - 0.03132500335246999
+    orange_carrot:
+    - - -0.07069732984831935
+      - -0.03754122967349683
+      - -0.02638838122265158
+    - - 0.1432788053912191
+      - 0.06276895949932462
+      - 0.023013681615325767

@@ -160,6 +160,8 @@ class DataCollector(
         manual_episode_reset: bool = False,
         rgb_only_cameras: bool = False,
         detect_collision_flyaway: bool = False,
+        trajectory_format: Optional[str] = None,
+        record_trajectories: Optional[bool] = None,
     ):
         """
         Initialize DataCollector with unified environment creation logic
@@ -191,6 +193,10 @@ class DataCollector(
                 that does not use AnyGrasp or background replacement. Defaults to False.
         """
         self.task_name = task_name
+        if trajectory_format not in (None, 'npy', 'hdf5'):
+            raise ValueError(f'Unknown trajectory format: {trajectory_format}')
+        self.trajectory_format = trajectory_format
+        self.record_trajectories = record_trajectories
         self.episode_result_callback = episode_result_callback
         self.manual_episode_reset = manual_episode_reset
         self.disabled_termination_terms = []
@@ -697,6 +703,19 @@ class DataCollector(
                 sim_camera_resolution = tuple(runtime_cfg.sim_camera_resolution)
                 background_image_size = tuple(runtime_cfg.background_image_size)
 
+            if self.record_trajectories is not None:
+                save_npy = self.record_trajectories
+
+            # Formal HDF5 collection stores the camera observations inside the
+            # trajectory. Do not also write frame folders from legacy YAML
+            # flags; preview-only collection retains its existing image output.
+            if save_npy and self.trajectory_format == 'hdf5':
+                save_camera_images = False
+                save_composite_images = False
+                save_mask_images = False
+                save_original_images = False
+                save_depth_images = False
+
             should_save_any_output = any(
                 [
                     save_npy,
@@ -709,9 +728,11 @@ class DataCollector(
             )
 
             if should_save_any_output:
+                save_hdf5 = save_npy and self.trajectory_format == 'hdf5'
                 self.recorder = EpisodeDataRecorder(
                     save_dir=data_dir,
-                    save_npy=save_npy,
+                    save_npy=save_npy and not save_hdf5,
+                    save_hdf5=save_hdf5,
                     save_camera_images=save_camera_images,
                     save_composite_images=save_composite_images,
                     save_mask_images=save_mask_images,
@@ -726,6 +747,31 @@ class DataCollector(
                     image_noise_std=image_noise_std,
                     image_speckle_noise_std=image_speckle_noise_std,
                 )
+                if save_hdf5:
+                    self.recorder.preserve_idle_steps = True
+                    # Record measured joint state in the controller's arm-joint
+                    # order for every embodiment, at the observation timestep.
+                    term = self.env.env.action_manager.get_term('body')
+                    names = list(term._joint_names)
+                    all_names = list(self.robot.joint_names)
+                    if (not names or len(names) != len(set(names)) or len(names) != term.action_dim
+                            or len(all_names) != len(set(all_names)) or any(n not in all_names for n in names)):
+                        raise ValueError(f'Invalid arm joint ordering: {names}')
+                    indices = [all_names.index(n) for n in names]
+                    self.recorder._formal_arm_joint_names = names
+                    original_add_step = self.recorder.add_step
+
+                    def add_step_with_measured_arm(obs, *args, **kwargs):
+                        if not isinstance(obs, dict) or not isinstance(obs.get('policy'), dict):
+                            raise TypeError('HDF5 collection requires policy observations')
+                        updated = dict(obs)
+                        policy = dict(obs['policy'])
+                        policy['q_pos'] = self.robot.data.joint_pos[:, indices].clone()
+                        policy['q_vel'] = self.robot.data.joint_vel[:, indices].clone()
+                        updated['policy'] = policy
+                        return original_add_step(updated, *args, **kwargs)
+
+                    self.recorder.add_step = add_step_with_measured_arm
 
         # Run Episodes
         print(f"\n[INFO] Starting collection for {self.episodes} episodes...")

@@ -1,10 +1,12 @@
 from typing import Any, Dict, Optional
 
 import numpy as np
-import torch
+from ..hold_action import make_joint_hold_action
+from ..success.evaluators import _evaluate_open_success_with_metrics, _evaluate_pull_success_with_metrics
 
 from .utils import (
     commit_plan_failures,
+    commit_task_failures,
     get_prev_alive_mask,
     init_local_active_mask,
     merge_segment_into_local_active,
@@ -43,13 +45,55 @@ def primitive_return_home(collector, mode: Optional[str], params: Dict[str, Any]
 
     post_settle_steps = int(params.get("post_settle_steps", 20))
     if post_settle_steps > 0:
-        action_dim = collector.env.env.action_manager.total_action_dim
         for _ in range(post_settle_steps):
-            action = torch.zeros(n, action_dim, device=collector.device)
-            action[:, :] = collector.robot.data.joint_pos[:n, :action_dim]
-            collector.env.step(action)
+            action = make_joint_hold_action(collector.env, collector.robot, n, device=collector.device)
+            result = collector.env.step(action)
+            recorder = getattr(collector, "recorder", None)
+            if recorder is not None and getattr(recorder, "preserve_idle_steps", False):
+                obs, _, term, trunc, _ = result
+                recorder.add_step(obs, action, term, trunc)
 
     commit_plan_failures(context, prev_alive, local_active)
+
+    if params.get("monitor_robot_cabinet_contact", False):
+        monitor = getattr(collector, "cabinet_retreat_monitor", None)
+        if monitor is None:
+            contact_results = [{"status": "unknown", "contact_detected": None,
+                                "reason": "robot-cabinet contact monitor unavailable"} for _ in range(n)]
+        else:
+            contact_results = monitor.stop()
+        if not isinstance(contact_results, list) or len(contact_results) != n:
+            raise RuntimeError("Robot-cabinet contact monitor returned an invalid environment mapping")
+        clear = [isinstance(result, dict) and result.get("status") == "complete"
+                 and result.get("contact_detected") is False for result in contact_results]
+        commit_task_failures(context, prev_alive, local_active, clear)
+        context["cabinet_retreat_contact"] = contact_results
+        print(f"   [Primitive] Collision-free retreat and return: {sum(clear)}/{n}")
+
+    check = context.pop("pull_after_return_check", None)
+    if check:
+        outcomes, final_metrics = [], []
+        for i in range(n):
+            if check["joint_type"] == "prismatic":
+                ok, metrics = _evaluate_pull_success_with_metrics(
+                    collector.scene, check["target"], check["joint_name"],
+                    min_displacement=check["threshold"], env_idx=i,
+                )
+            else:
+                ok, metrics = _evaluate_open_success_with_metrics(
+                    collector.scene, check["target"], check["joint_name"],
+                    min_angle_rad=check["threshold"], env_idx=i,
+                )
+            outcomes.append(ok)
+            final_metrics.append(metrics)
+        commit_task_failures(context, prev_alive, local_active, outcomes)
+        previous_metrics = context.get("task_success_metrics", [{} for _ in range(n)])
+        context["task_success_metrics"] = [
+            {**(previous_metrics[i] if i < len(previous_metrics) and isinstance(previous_metrics[i], dict) else {}),
+             "post_return_home": final_metrics[i]}
+            for i in range(n)
+        ]
+        print(f"   [Primitive] Drawer remains open after return: {sum(outcomes)}/{n}")
 
     plan_mask_final = list(context.get("plan_success_mask", [True] * n))
     task_mask_final = list(context.get("task_success_mask", [True] * n))

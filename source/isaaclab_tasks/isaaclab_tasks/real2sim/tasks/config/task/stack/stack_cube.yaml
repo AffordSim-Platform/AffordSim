@@ -8,8 +8,7 @@ scene:
   env_spacing: 10
 task:
   name: stack_cube
-  description: Pick up the red cube; then place the red cube on the blue cube; then
-    pick up the green cube; then place the green cube on the blue cube.
+  description: stack three colored cubes by placing cube1 and cube3 on cube2
 runtime:
   headless: false
   episodes: 5
@@ -25,15 +24,15 @@ runtime:
   background_image_size:
   - 640
   - 480
-  use_background_replace: true
+  use_background_replace: false
   cam_side_background: backgrounds/1123_background.png
   cam_wrist_background: backgrounds/wristbackground_realworld1.png
   data_dir: data/r2s2r_data/stack_cube
-  task_name: FrankaFr3-DefaultGripper-Joint-VisPick-v0
+  task_name: FrankaFr3-OurGripper-Joint-VisPick-v0
   save_depth_images: false
 robot:
-  cfg_name: franka_fr3.yml
-  type: franka_fr3
+  cfg_name: franka_fr3_our.yml
+  type: franka_fr3_default
 offsets:
   grasp:
   - 0
@@ -50,37 +49,37 @@ objects:
     - - class
       - red_cube
     init_pos:
-    - 0.57
-    - 0.11
+    - 0.62245
+    - -0.12035
     - 0.08
     init_rot:
-    - 1.0
+    - 0.9397
     - 0.0
     - 0.0
-    - 0.0
+    - -0.342
     height: 0.06
     position_range:
       x:
-      - 0.55
-      - 0.5900000000000001
+      - 0.37245
+      - 0.62245
       y:
-      - 0.1125
-      - 0.1375
+      - -0.12035
+      - 0.22965
       z:
       - 0.08
       - 0.08
     orientation_range:
       yaw:
-      - -0.25
-      - 0.25
+      - -3.1416
+      - 3.1416
   blue_cube:
     usd_path: models/all_object/blue_cube.usd
     semantic_tags:
     - - class
       - blue_cube
     init_pos:
-    - 0.61
-    - 0.0
+    - 0.47245
+    - -0.17035
     - 0.08
     init_rot:
     - 1.0
@@ -90,47 +89,47 @@ objects:
     height: 0.06
     position_range:
       x:
-      - 0.59
-      - 0.63
+      - 0.37245
+      - 0.62245
       y:
-      - -0.02
-      - 0.02
+      - -0.27035
+      - -0.17035
       z:
       - 0.08
       - 0.08
     orientation_range:
       yaw:
-      - -0.25
-      - 0.25
+      - -3.1416
+      - 3.1416
   green_cube:
     usd_path: models/all_object/green_cube.usd
     semantic_tags:
     - - class
       - green_cube
     init_pos:
-    - 0.55
-    - -0.11
+    - 0.47245
+    - -0.47035
     - 0.08
     init_rot:
-    - 1.0
+    - 0.766
     - 0.0
     - 0.0
-    - 0.0
+    - 0.6428
     height: 0.06
     position_range:
       x:
-      - 0.53
-      - 0.5700000000000001
+      - 0.37245
+      - 0.62245
       y:
-      - -0.1375
-      - -0.1125
+      - -0.67035
+      - -0.32035
       z:
       - 0.08
       - 0.08
     orientation_range:
       yaw:
-      - -0.25
-      - 0.25
+      - -3.1416
+      - 3.1416
 primitives:
 - type: pick
   mode: gt
@@ -142,8 +141,8 @@ primitives:
     - 0.0
     - 0.0
     pre_pick_offset: 0.1
-    pick_interpolation_steps: 10
-    lift_interpolation_steps: 10
+    pick_interpolation_steps: 5
+    lift_interpolation_steps: 5
     lift_offset: 0.1
 - type: place
   mode: 'on'
@@ -160,7 +159,7 @@ primitives:
     - 0.0
     - 0.0
     - 0.1
-    post_release_lift_steps: 10
+    post_release_lift_steps: 5
     success_eval: true
 - type: pick
   mode: gt
@@ -172,12 +171,13 @@ primitives:
     - 0.0
     - 0.0
     pre_pick_offset: 0.1
-    pick_interpolation_steps: 10
-    lift_interpolation_steps: 10
+    pick_interpolation_steps: 5
+    lift_interpolation_steps: 5
     lift_offset: 0.1
 - type: place
   mode: 'on'
   params:
+    post_release_lift_steps: 5
     target: blue_cube
     orientation:
     - 0.0
@@ -194,19 +194,38 @@ enable_objects_randomization: true
 enable_objects_randomization_curriculum: false
 texture_randomization:
   enabled: true
-  avoid_repeats: true
   texture_dir: models/random_pic/table
   targets:
     table:
       prim_path: /World/envs/env_{i}/table/Xform_01/Xform/leg/node_/Cube
       texture_dir: models/random_pic/table
-articulations: {}
-phase_depenetration:
-  objects:
-  - red_cube
-  - blue_cube
-  - green_cube
-  reset: 2.0
-  primitives:
-    pick: 2.0
-    release: 0.5
+lighting:
+  type: dome
+  intensity: 1200.0
+  color:
+  - 1.0
+  - 1.0
+  - 1.0
+visibility_check:
+  object_bounds:
+    red_cube:
+    - - -0.025
+      - -0.025
+      - -0.025
+    - - 0.025
+      - 0.025
+      - 0.025
+    blue_cube:
+    - - -0.025
+      - -0.025
+      - -0.025
+    - - 0.025
+      - 0.025
+      - 0.025
+    green_cube:
+    - - -0.025
+      - -0.025
+      - -0.025
+    - - 0.025
+      - 0.025
+      - 0.025

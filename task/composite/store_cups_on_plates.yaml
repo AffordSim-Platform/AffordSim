@@ -1,0 +1,381 @@
+simulation:
+  decimation: 30
+  dt: 0.00833333
+  render_interval: 5
+  episode_length_s: 200
+scene:
+  num_envs: 1
+  env_spacing: 10
+task:
+  name: store_cups_on_plates
+  description: Pick up the white 75 mm cup; then place the white 75 mm cup on the
+    white plate 1; then pick up the white paper cup 2; then place the white paper
+    cup 2 on the white plate 2; then pick up the Doraemon cup; then place the Doraemon
+    cup on the white plate 3.
+runtime:
+  headless: false
+  episodes: 4
+  save_npy: false
+  save_camera_images: false
+  save_composite_images: false
+  save_mask_images: false
+  save_original_images: true
+  enable_motion_planning: true
+  sim_camera_resolution:
+  - 640
+  - 480
+  background_image_size:
+  - 640
+  - 480
+  use_background_replace: false
+  cam_side_background: backgrounds/1123_background.png
+  cam_wrist_background: backgrounds/wristbackground_realworld1.png
+  data_dir: data/r2s2r_data/store_cups_on_plates
+  task_name: FrankaFr3-DefaultGripper-Joint-VisPick-v0
+  save_depth_images: false
+robot:
+  cfg_name: franka_fr3.yml
+  type: franka_fr3
+offsets:
+  grasp:
+  - 0.0
+  - 0.0
+  - 0.0
+  place:
+  - 0.0
+  - 0.0
+  - 0.0
+objects:
+  white_75mmcup:
+    usd_path: models/all_object/white_75mmcup.usd
+    semantic_tags:
+    - - class
+      - white_75mmcup
+    init_pos:
+    - 0.46445
+    - -0.56329
+    - 0.1
+    init_rot:
+    - 0.9659
+    - 0.0
+    - 0.0
+    - -0.2588
+    height: 0.1
+    position_range:
+      x:
+      - 0.42695
+      - 0.50195
+      y:
+      - -0.60079
+      - -0.52579
+      z:
+      - 0.1
+      - 0.1
+    orientation_range:
+      yaw:
+      - -0.2617993877991494
+      - 0.2617993877991494
+  white_plate_1:
+    usd_path: models/all_object/white_plate.usd
+    semantic_tags:
+    - - class
+      - white_plate_1
+    scale:
+    - 0.6
+    - 0.6
+    - 0.6
+    init_rot:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    height: 0.0354
+    init_pos:
+    - 0.65445
+    - -0.56329
+    - 0.045
+    position_range:
+      x:
+      - 0.61695
+      - 0.69195
+      y:
+      - -0.60079
+      - -0.52579
+      z:
+      - 0.045
+      - 0.045
+    orientation_range:
+      yaw:
+      - -0.2617993877991494
+      - 0.2617993877991494
+  white_papercup2:
+    usd_path: models/all_object/white_papercup2.usd
+    semantic_tags:
+    - - class
+      - white_papercup2
+    init_pos:
+    - 0.46445
+    - -0.24329
+    - 0.1
+    init_rot:
+    - 0.9659
+    - 0
+    - 0
+    - 0.2588
+    height: 0.1
+    position_range:
+      x:
+      - 0.42695
+      - 0.50195
+      y:
+      - -0.28079
+      - -0.20579
+      z:
+      - 0.1
+      - 0.1
+    orientation_range:
+      yaw:
+      - -0.2617993877991494
+      - 0.2617993877991494
+  white_plate_2:
+    usd_path: models/all_object/white_plate.usd
+    semantic_tags:
+    - - class
+      - white_plate_2
+    scale:
+    - 0.6
+    - 0.6
+    - 0.6
+    init_rot:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    height: 0.0354
+    init_pos:
+    - 0.65445
+    - -0.24329
+    - 0.045
+    position_range:
+      x:
+      - 0.61695
+      - 0.69195
+      y:
+      - -0.28079
+      - -0.20579
+      z:
+      - 0.045
+      - 0.045
+    orientation_range:
+      yaw:
+      - -0.2617993877991494
+      - 0.2617993877991494
+  doraemoncup:
+    usd_path: models/all_object/doraemoncup.usd
+    semantic_tags:
+    - - class
+      - doraemoncup
+    init_pos:
+    - 0.46445
+    - 0.07671
+    - 0.1
+    init_rot:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    height: 0.1
+    position_range:
+      x:
+      - 0.42695
+      - 0.50195
+      y:
+      - 0.03921
+      - 0.11421
+      z:
+      - 0.1
+      - 0.1
+    orientation_range:
+      yaw:
+      - -0.2617993877991494
+      - 0.2617993877991494
+  white_plate_3:
+    usd_path: models/all_object/white_plate.usd
+    semantic_tags:
+    - - class
+      - white_plate_3
+    scale:
+    - 0.6
+    - 0.6
+    - 0.6
+    init_rot:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    height: 0.0354
+    init_pos:
+    - 0.65445
+    - 0.07671
+    - 0.045
+    position_range:
+      x:
+      - 0.61695
+      - 0.69195
+      y:
+      - 0.03921
+      - 0.11421
+      z:
+      - 0.045
+      - 0.045
+    orientation_range:
+      yaw:
+      - -0.2617993877991494
+      - 0.2617993877991494
+primitives:
+- type: pick
+  mode: affordance
+  params:
+    target: white_75mmcup
+    pre_pick_offset:
+    - 0.0
+    - 0.0
+    - 0.1
+    pick_interpolation_steps: 5
+    lift_interpolation_steps: 5
+    lift_offset: 0.12
+- type: place
+  mode: 'on'
+  params:
+    target: white_plate_1
+    on_height_margin: 0.01
+    ik_interpolation_steps: 5
+    post_release_lift_offset:
+    - 0.0
+    - 0.0
+    - 0.1
+    post_release_lift_steps: 5
+    success_eval: true
+- type: pick
+  mode: affordance
+  params:
+    target: white_papercup2
+    pre_pick_offset:
+    - 0.0
+    - 0.0
+    - 0.1
+    pick_interpolation_steps: 5
+    lift_interpolation_steps: 5
+    lift_offset: 0.12
+- type: place
+  mode: 'on'
+  params:
+    target: white_plate_2
+    on_height_margin: 0.01
+    ik_interpolation_steps: 5
+    post_release_lift_offset:
+    - 0.0
+    - 0.0
+    - 0.1
+    post_release_lift_steps: 5
+    success_eval: true
+- type: pick
+  mode: affordance
+  params:
+    target: doraemoncup
+    pre_pick_offset:
+    - 0.0
+    - 0.0
+    - 0.1
+    pick_interpolation_steps: 5
+    lift_interpolation_steps: 5
+    lift_offset: 0.12
+- type: place
+  mode: 'on'
+  params:
+    target: white_plate_3
+    on_height_margin: 0.01
+    ik_interpolation_steps: 5
+    post_release_lift_offset:
+    - 0.0
+    - 0.0
+    - 0.1
+    post_release_lift_steps: 5
+    success_eval: true
+enable_random_lights: false
+image_noise_std: 0
+image_speckle_noise_std: 0
+enable_objects_randomization: true
+enable_objects_randomization_curriculum: false
+texture_randomization:
+  enabled: true
+  avoid_repeats: true
+  texture_dir: models/random_pic/table
+  targets:
+    table:
+      prim_path: /World/envs/env_{i}/table/Xform_01/Xform/leg/node_/Cube
+      texture_dir: models/random_pic/table
+articulations: {}
+phase_depenetration:
+  objects:
+  - white_75mmcup
+  - white_plate_1
+  - white_papercup2
+  - white_plate_2
+  - doraemoncup
+  - white_plate_3
+  reset: 2.0
+  primitives:
+    pick: 2.0
+    release: 0.5
+lighting:
+  type: dome
+  intensity: 1200.0
+  color:
+  - 1.0
+  - 1.0
+  - 1.0
+visibility_check:
+  object_bounds:
+    white_75mmcup:
+    - - -0.03747599944472313
+      - -0.03807000148031325
+      - -0.03673600122034873
+    - - 0.03932100161910057
+      - 0.03907900017060002
+      - 0.03299100043453497
+    white_plate_1:
+    - - -0.08031958580017089
+      - -0.08031962013244628
+      - -0.015146099567413347
+    - - 0.08031956005096434
+      - 0.08031952571868896
+      - 0.020207915067672746
+    white_papercup2:
+    - - -0.03933600022399425
+      - -0.03933600022399426
+      - -0.0376579990634024
+    - - 0.03933600022399425
+      - 0.039336000223994264
+      - 0.05683799917754529
+    white_plate_2:
+    - - -0.08031958580017089
+      - -0.08031962013244628
+      - -0.015146099567413347
+    - - 0.08031956005096434
+      - 0.08031952571868896
+      - 0.020207915067672746
+    doraemoncup:
+    - - -0.042100001126527786
+      - -0.04472199827432634
+      - -0.057245001196861274
+    - - 0.04514700174331665
+      - 0.04230700060725213
+      - 0.03701699897646905
+    white_plate_3:
+    - - -0.08031958580017089
+      - -0.08031962013244628
+      - -0.015146099567413347
+    - - 0.08031956005096434
+      - 0.08031952571868896
+      - 0.020207915067672746

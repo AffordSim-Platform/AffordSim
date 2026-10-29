@@ -57,6 +57,84 @@ def detector_provenance():
 
 
 class BenchmarkRunnerTests(unittest.TestCase):
+    def test_interpolation_override_handles_positional_keyword_and_default_calls(self):
+        calls = []
+        recorded = []
+        def delegate(*args, **kwargs):
+            calls.append((args, kwargs))
+            return "delegated"
+
+        # Default behavior passes the original call through untouched.
+        result = RUNNER.call_ik_with_override(delegate, None, recorded.append, 1, 2, 3,
+                                              interpolation_steps=30, desc="pour")
+        self.assertEqual(result, "delegated")
+        self.assertEqual(calls[-1], ((1, 2, 3), {"interpolation_steps": 30, "desc": "pour"}))
+        self.assertEqual(recorded, [])
+
+        RUNNER.call_ik_with_override(delegate, 5, recorded.append, 1, 2, 3,
+                                    interpolation_steps=30, desc="pour")
+        self.assertEqual(calls[-1][1]["interpolation_steps"], 5)
+        self.assertEqual(recorded[-1], {"requested": 30, "effective": 5, "desc": "pour"})
+
+        RUNNER.call_ik_with_override(delegate, 5, recorded.append, 1, 2, 3, 10, "retreat")
+        self.assertEqual(calls[-1][0], (1, 2, 3, 5, "retreat"))
+        self.assertEqual(recorded[-1], {"requested": 10, "effective": 5, "desc": "retreat"})
+
+        RUNNER.call_ik_with_override(delegate, 5, recorded.append, 1, 2, 3)
+        self.assertEqual(recorded[-1], {"requested": 30, "effective": 5, "desc": "IK Motion"})
+        for invalid in (0, -1, True, 5.0):
+            with self.assertRaises(ValueError):
+                RUNNER.call_ik_with_override(delegate, invalid, recorded.append, 1, 2, 3)
+
+    def test_render_interval_opt_in_and_resume_protocols_are_isolated(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            config = root / "source.yaml"
+            config.write_text(yaml.safe_dump({"simulation": {"decimation": 30, "render_interval": 5},
+                                              "primitives": [{"type": "pick"}]}))
+            task = {"task_id": "cup", "num_envs": 5, "config_path": str(config), "robot": "robot",
+                    "env_task_name": "env", "robot_cfg_name": "robot.yml", "robot_type": "robot"}
+            manifest = root / "manifest.json"
+            manifest.write_text(json.dumps({"tasks": [task]}))
+            args = SimpleNamespace(manifest=str(manifest), task=None, output_dir=str(root / "results"),
+                no_adapt=True, trials=5, num_envs=5, seed=42, resume=True, device="cpu", timeout=10,
+                preserve_render_interval=True, interpolation_steps=5)
+            commands = []
+            class WorkerDouble:
+                def __init__(self, command, **kwargs):
+                    self.command = command
+                    commands.append(command)
+                def wait(self, timeout):
+                    value = lambda name: self.command[self.command.index(name) + 1]
+                    trials = fake_classified_trials(5, 5)
+                    report = {"completed": True, "summary": RUNNER.summarize(trials, 5), "trials": trials,
+                        "seed": int(value("--seed")), "robot": "robot", "num_envs": int(value("--num-envs")),
+                        "preserve_render_interval": "--preserve-render-interval" in self.command,
+                        "interpolation_steps_override": int(value("--interpolation-steps")),
+                        "interpolation_steps_calls": [{"requested": 30, "effective": 5, "desc": "pour"}],
+                        **detector_provenance()}
+                    RUNNER.write_json(Path(value("--output-dir")) / "report.json", report)
+                    return 0
+            with patch.object(RUNNER.subprocess, "Popen", WorkerDouble), redirect_stdout(StringIO()):
+                RUNNER.run_schedule(args)
+                self.assertEqual(len(commands), 1)
+                self.assertIn("--preserve-render-interval", commands[0])
+                self.assertEqual(commands[0][commands[0].index("--interpolation-steps") + 1], "5")
+                output = root / "results/cup/round_00"
+                self.assertEqual(yaml.safe_load((output / "task.yaml").read_text())["simulation"]["render_interval"], 5)
+                original = (output / "report.json").read_bytes()
+                RUNNER.run_schedule(args)
+                self.assertEqual(len(commands), 1)  # Matching protocol resumes.
+                for field, alternate in (("interpolation_steps", 10), ("interpolation_steps", None),
+                                         ("preserve_render_interval", False)):
+                    old = getattr(args, field)
+                    setattr(args, field, alternate)
+                    result = RUNNER.run_schedule(args)
+                    self.assertEqual(result["tasks"][0]["status"], "existing_report_preserved")
+                    self.assertEqual((output / "report.json").read_bytes(), original)
+                    self.assertEqual(len(commands), 1)
+                    setattr(args, field, old)
+
     def test_resume_requires_successful_worker_exit_and_preserves_interrupted_recordings(self):
         for label, returncode, timed_out, should_resume in (
             ('successful', 0, False, True),
@@ -564,3 +642,21 @@ class BenchmarkRunnerTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+def test_cabinet_initial_state_requires_all_finite_closed_joints():
+    from run_benchmark_50 import cabinet_initial_state_valid
+
+    assert cabinet_initial_state_valid({'joint_0': 0.0, 'joint_1': 0.009})
+    assert not cabinet_initial_state_valid({})
+    assert not cabinet_initial_state_valid({'joint_0': 0.0, 'joint_1': 0.02})
+    assert not cabinet_initial_state_valid({'joint_0': float('nan')})
+
+
+def test_cabinet_initialization_tracks_the_configured_pull_target():
+    from run_benchmark_50 import cabinet_initialization_target
+    import pytest
+
+    steps = [{'type': 'pull', 'params': {'target': 'cabinet5'}}, {'type': 'return_home'}]
+    assert cabinet_initialization_target('pull_cabinet', steps, {'cabinet5': object()}) == 'cabinet5'
+    assert cabinet_initialization_target('other', steps, {'cabinet5': object()}) is None
+    with pytest.raises(ValueError):
+        cabinet_initialization_target('pull_cabinet', steps, {'cabinet1': object()})

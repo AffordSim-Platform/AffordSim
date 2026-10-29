@@ -27,7 +27,7 @@ runtime:
   background_image_size:
   - 640
   - 480
-  use_background_replace: true
+  use_background_replace: false
   cam_side_background: backgrounds/1123_background.png
   cam_wrist_background: backgrounds/wristbackground_realworld1.png
   data_dir: data/r2s2r_data/organize_clutter_into_baskets
@@ -44,7 +44,7 @@ offsets:
   place:
   - 0.0
   - 0.0
-  - 0.0
+  - 0.07
 objects:
   red_soupcan:
     usd_path: models/all_object/red_soupcan.usd
@@ -52,8 +52,8 @@ objects:
     - - class
       - red_soupcan
     init_pos:
-    - 0.4
-    - -0.39
+    - 0.43375
+    - -0.41933
     - 0.1
     init_rot:
     - 1.0
@@ -63,11 +63,11 @@ objects:
     height: 0.1
     position_range:
       x:
-      - 0.36250000000000004
-      - 0.4375
+      - 0.39625
+      - 0.47125
       y:
-      - -0.4275
-      - -0.35250000000000004
+      - -0.45683
+      - -0.38183
       z:
       - 0.1
       - 0.1
@@ -91,16 +91,16 @@ objects:
     - 0.0
     height: 0.0528
     init_pos:
-    - 0.71
-    - -0.39
+    - 0.60375
+    - -0.41933
     - 0.03
     position_range:
       x:
-      - 0.6725
-      - 0.7474999999999999
+      - 0.56625
+      - 0.64125
       y:
-      - -0.4275
-      - -0.35250000000000004
+      - -0.45683
+      - -0.38183
       z:
       - 0.03
       - 0.03
@@ -114,8 +114,8 @@ objects:
     - - class
       - brown_chocolatebox
     init_pos:
-    - 0.4
-    - 0
+    - 0.43375
+    - -0.15933
     - 0.1
     init_rot:
     - 1.0
@@ -125,11 +125,11 @@ objects:
     height: 0.06
     position_range:
       x:
-      - 0.36250000000000004
-      - 0.4375
+      - 0.39625
+      - 0.47125
       y:
-      - -0.0375
-      - 0.0375
+      - -0.19683
+      - -0.12183
       z:
       - 0.1
       - 0.1
@@ -153,16 +153,16 @@ objects:
     - 0.0
     height: 0.0528
     init_pos:
-    - 0.71
-    - 0
+    - 0.60375
+    - -0.15933
     - 0.03
     position_range:
       x:
-      - 0.6725
-      - 0.7474999999999999
+      - 0.56625
+      - 0.64125
       y:
-      - -0.0375
-      - 0.0375
+      - -0.19683
+      - -0.12183
       z:
       - 0.03
       - 0.03
@@ -180,22 +180,22 @@ objects:
     - 0.5
     - 0.5
     init_pos:
-    - 0.4
-    - 0.39
+    - 0.43375
+    - 0.10067
     - 0.1
     init_rot:
     - 1.0
     - 0.0
     - 0.0
     - 0.0
-    height: 0.045
+    height: 0.0226
     position_range:
       x:
-      - 0.36250000000000004
-      - 0.4375
+      - 0.39625
+      - 0.47125
       y:
-      - 0.35250000000000004
-      - 0.4275
+      - 0.06317
+      - 0.13817
       z:
       - 0.1
       - 0.1
@@ -219,16 +219,16 @@ objects:
     - 0.0
     height: 0.0528
     init_pos:
-    - 0.71
-    - 0.39
+    - 0.60375
+    - 0.10067
     - 0.03
     position_range:
       x:
-      - 0.6725
-      - 0.7474999999999999
+      - 0.56625
+      - 0.64125
       y:
-      - 0.35250000000000004
-      - 0.4275
+      - 0.06317
+      - 0.13817
       z:
       - 0.03
       - 0.03
@@ -245,20 +245,22 @@ primitives:
     - 0.0
     - 0.0
     - 0.12
-    pick_interpolation_steps: 10
-    lift_interpolation_steps: 10
+    pick_interpolation_steps: 5
+    lift_interpolation_steps: 5
     lift_offset: 0.14
 - type: place
   mode: in
   params:
     target: storage_basket_1
-    ik_interpolation_steps: 15
+    ik_interpolation_steps: 5
     post_release_lift_offset:
     - 0.0
     - 0.0
     - 0.12
-    post_release_lift_steps: 10
+    post_release_lift_steps: 5
     success_eval: true
+    align_object_center: true
+    release_settle_steps: 4
 - type: pick
   mode: affordance
   params:
@@ -267,20 +269,22 @@ primitives:
     - 0.0
     - 0.0
     - 0.12
-    pick_interpolation_steps: 10
-    lift_interpolation_steps: 10
+    pick_interpolation_steps: 5
+    lift_interpolation_steps: 5
     lift_offset: 0.14
 - type: place
   mode: in
   params:
     target: storage_basket_2
-    ik_interpolation_steps: 15
+    ik_interpolation_steps: 5
     post_release_lift_offset:
     - 0.0
     - 0.0
     - 0.12
-    post_release_lift_steps: 10
+    post_release_lift_steps: 5
     success_eval: true
+    align_object_center: true
+    release_settle_steps: 4
 - type: pick
   mode: gt
   params:
@@ -289,25 +293,57 @@ primitives:
     - 0.0
     - 0.0
     - 0.12
-    pick_interpolation_steps: 10
-    lift_interpolation_steps: 10
+    pick_interpolation_steps: 5
+    lift_interpolation_steps: 5
     lift_offset: 0.14
     grasp_quat:
-    - 0.0
-    - 1.0
-    - 0.0
-    - 0.0
+    - 0
+    - 0.70710678
+    - 0.70710678
+    - 0
+    grasp_offset:
+    - 0
+    - 0
+    - 0.005
 - type: place
   mode: in
   params:
     target: storage_basket_3
-    ik_interpolation_steps: 15
+    ik_interpolation_steps: 5
     post_release_lift_offset:
     - 0.0
     - 0.0
     - 0.12
-    post_release_lift_steps: 10
+    post_release_lift_steps: 5
     success_eval: true
+    align_object_center: true
+    release_settle_steps: 4
+- type: verify
+  params:
+    samples: 3
+    settle_steps: 4
+    relations:
+    - source: red_soupcan
+      target: storage_basket_1
+      xy_radius: 0.045
+      z_range:
+      - 0.0
+      - 0.09
+      max_speed: 0.08
+    - source: brown_chocolatebox
+      target: storage_basket_2
+      xy_radius: 0.045
+      z_range:
+      - 0.0
+      - 0.09
+      max_speed: 0.08
+    - source: yellow_sugarbox
+      target: storage_basket_3
+      xy_radius: 0.045
+      z_range:
+      - 0.0
+      - 0.09
+      max_speed: 0.08
 enable_random_lights: false
 image_noise_std: 0
 image_speckle_noise_std: 0
@@ -334,3 +370,54 @@ phase_depenetration:
   primitives:
     pick: 2.0
     release: 0.5
+lighting:
+  type: dome
+  intensity: 1200.0
+  color:
+  - 1.0
+  - 1.0
+  - 1.0
+visibility_check:
+  object_bounds:
+    red_soupcan:
+    - - -0.02706384066444753
+      - -0.02708608174389338
+      - -0.04583520196490648
+    - - 0.027063663281026
+      - 0.027085328341161608
+      - 0.0458343007427132
+    storage_basket_1:
+    - - -0.0912882
+      - -0.06601911804199219
+      - 2.322723160048902e-22
+    - - 0.09132068671875002
+      - 0.06580395393848419
+      - 0.05280000000000003
+    brown_chocolatebox:
+    - - -0.028413710382478596
+      - -0.022454285454345593
+      - -0.00961763017164446
+    - - 0.028413460042972405
+      - 0.02245419485528621
+      - 0.00961805515275854
+    storage_basket_2:
+    - - -0.0912882
+      - -0.06601911804199219
+      - 2.322723160048902e-22
+    - - 0.09132068671875002
+      - 0.06580395393848419
+      - 0.05280000000000003
+    yellow_sugarbox:
+    - - -0.02316909976670667
+      - -0.04406338593222081
+      - -0.011283734784638844
+    - - 0.023169564682925525
+      - 0.04406334301687753
+      - 0.011283334241434906
+    storage_basket_3:
+    - - -0.0912882
+      - -0.06601911804199219
+      - 2.322723160048902e-22
+    - - 0.09132068671875002
+      - 0.06580395393848419
+      - 0.05280000000000003

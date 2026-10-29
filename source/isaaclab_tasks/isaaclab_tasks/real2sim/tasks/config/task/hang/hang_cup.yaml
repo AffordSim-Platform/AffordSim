@@ -2,16 +2,16 @@ simulation:
   decimation: 30
   dt: 0.00833333
   render_interval: 5
-  episode_length_s: 100
+  episode_length_s: 200
 scene:
   num_envs: 1
   env_spacing: 10
 task:
   name: hang_cup
-  description: Pick up the white cup; then hang the white cup on the wood rack.
+  description: grasp the white cup and hang it on the wood rack
 runtime:
   headless: false
-  episodes: 5
+  episodes: 100
   save_npy: false
   save_camera_images: false
   save_composite_images: false
@@ -24,15 +24,15 @@ runtime:
   background_image_size:
   - 640
   - 480
-  use_background_replace: true
+  use_background_replace: false
   cam_side_background: backgrounds/1123_background.png
   cam_wrist_background: backgrounds/wristbackground_realworld1.png
   data_dir: data/r2s2r_data/hang_cup
-  task_name: XArm7-UFactory-Joint-EE-VisPick-v0
+  task_name: FrankaFr3-OurGripper-Joint-VisPick-v0
   save_depth_images: false
 robot:
-  cfg_name: xarm7.yml
-  type: xarm7_ufactory
+  cfg_name: franka_fr3_our.yml
+  type: franka_fr3_default
 offsets:
   grasp:
   - 0
@@ -49,8 +49,8 @@ objects:
     - - class
       - white_cup
     init_pos:
-    - 0.55
-    - 0.18
+    - 0.46998
+    - 0.02257
     - 0.1
     init_rot:
     - -0.7071
@@ -60,27 +60,27 @@ objects:
     height: 0.15
     position_range:
       x:
-      - 0.5
-      - 0.6000000000000001
+      - 0.36998
+      - 0.61998
       y:
-      - 0.13
-      - 0.22999999999999998
+      - -0.22743
+      - 0.17257
       z:
       - 0.1
       - 0.1
     orientation_range:
       yaw:
-      - -0.261799
-      - 0.261799
+      - -3.1416
+      - 3.1416
   wood_rack:
     usd_path: models/all_object/wood_rack.usd
     semantic_tags:
     - - class
       - wood_rack
     init_pos:
-    - 0.78
-    - -0.22
-    - 0.25
+    - 0.71998
+    - -0.42743
+    - 0.03734999992325902
     init_rot:
     - 0.7071
     - 0.0
@@ -89,18 +89,18 @@ objects:
     height: 0.3
     position_range:
       x:
-      - 0.73
-      - 0.8300000000000001
+      - 0.56998
+      - 0.71998
       y:
-      - -0.27
-      - -0.17000000000000004
+      - -0.47743
+      - -0.27743
       z:
-      - 0.25
-      - 0.25
+      - 0.03734999992325902
+      - 0.03734999992325902
     orientation_range:
       yaw:
-      - -0.261799
-      - 0.261799
+      - -0.1745
+      - 0.1745
 primitives:
 - type: pick
   mode: hang
@@ -110,18 +110,18 @@ primitives:
     - 0.0
     - 0.0
     - 0.08
-    pick_interpolation_steps: 10
-    lift_interpolation_steps: 10
+    pick_interpolation_steps: 5
+    lift_interpolation_steps: 5
 - type: hang
   mode: mount
   params:
     target: wood_rack
     pre_hang_distance: 0.05
-    insert_interpolation_steps: 20
+    insert_interpolation_steps: 5
     extra_insert_distance: 0.05
-    extra_insert_interpolation_steps: 10
+    extra_insert_interpolation_steps: 5
     post_release_retreat_distance: 0.1
-    retreat_interpolation_steps: 10
+    retreat_interpolation_steps: 5
     success_eval: true
 enable_random_lights: false
 image_noise_std: 0
@@ -130,18 +130,31 @@ enable_objects_randomization: true
 enable_objects_randomization_curriculum: false
 texture_randomization:
   enabled: true
-  avoid_repeats: true
   texture_dir: models/random_pic/table
   targets:
     table:
       prim_path: /World/envs/env_{i}/table/Xform_01/Xform/leg/node_/Cube
       texture_dir: models/random_pic/table
-articulations: {}
-phase_depenetration:
-  objects:
-  - white_cup
-  - wood_rack
-  reset: 2.0
-  primitives:
-    pick: 2.0
-    release: 0.5
+lighting:
+  type: dome
+  intensity: 1200.0
+  color:
+  - 1.0
+  - 1.0
+  - 1.0
+visibility_check:
+  object_bounds:
+    white_cup:
+    - - -0.05412000045180321
+      - -0.04398300238621965
+      - -0.06372799827290082
+    - - 0.06173599883913994
+      - 0.040714000912065854
+      - 0.048032001613876225
+    wood_rack:
+    - - -0.05714999884366989
+      - -0.05714999884366989
+      - -0.00634999992325902
+    - - 0.13791100680828094
+      - 0.05714999884366989
+      - 0.38100001215934753

@@ -8,8 +8,7 @@ scene:
   env_spacing: 10
 task:
   name: pour_bluekettle
-  description: Pick up the blue kettle; then pour from the blue kettle into the yellow
-    bowl.
+  description: grasp the blue cup and pour into the bowl
 runtime:
   headless: false
   episodes: 5
@@ -25,15 +24,15 @@ runtime:
   background_image_size:
   - 640
   - 480
-  use_background_replace: true
+  use_background_replace: false
   cam_side_background: backgrounds/1123_background.png
   cam_wrist_background: backgrounds/wristbackground_realworld1.png
   data_dir: data/r2s2r_data/pour_bluekettle
-  task_name: Sawyer-Robotiq85-Joint-EE-VisPick-v0
+  task_name: FrankaFr3-OurGripper-Joint-VisPick-v0
   save_depth_images: false
 robot:
-  cfg_name: sawyer.yml
-  type: sawyer_robotiq85
+  cfg_name: franka_fr3_our.yml
+  type: franka_fr3_default
 offsets:
   grasp:
   - 0
@@ -50,38 +49,37 @@ objects:
     - - class
       - blue_kettle
     init_pos:
-    - 0.722
-    - 0.152
+    - 0.55
+    - -0.25
     - 0.18
     init_rot:
-    - 0.3173
-    - 0
-    - 0
-    - 0.9483
+    - 0.38268343
+    - 0.0
+    - 0.0
+    - 0.92387953
     height: 0.242
-  white_plate:
-    usd_path: models/all_object/white_plate.usd
-    semantic_tags:
-    - - class
-      - white_plate
-    init_pos:
-    - 0.535
-    - -0.476
-    - 0.055
-    init_rot:
-    - -0.5935
-    - 0.0
-    - 0.0
-    - 0.8048
-    height: 0.059
+    position_range:
+      x:
+      - 0.45
+      - 0.7
+      y:
+      - -0.4
+      - -0.1
+      z:
+      - 0.18
+      - 0.18
+    orientation_range:
+      yaw:
+      - -0.5236
+      - 0.5236
   yellow_bowl:
     usd_path: models/all_object/yellow_bowl.usd
     semantic_tags:
     - - class
       - yellow_bowl
     init_pos:
-    - 0.626
-    - -0.076
+    - 0.45
+    - 0.0
     - 0.077
     init_rot:
     - -0.3826834
@@ -89,21 +87,20 @@ objects:
     - 0
     - 0.9238795
     height: 0.054
-  red_soupcan:
-    usd_path: models/all_object/red_soupcan.usd
-    semantic_tags:
-    - - class
-      - red_soupcan
-    init_pos:
-    - 0.7
-    - -0.35
-    - 0.15
-    init_rot:
-    - 0.6452
-    - 0.0
-    - 0.0
-    - 0.764
-    height: 0.1
+    position_range:
+      x:
+      - 0.45
+      - 0.6
+      y:
+      - -0.05
+      - 0.05
+      z:
+      - 0.077
+      - 0.077
+    orientation_range:
+      yaw:
+      - -3.1416
+      - 3.1416
 primitives:
 - type: pick
   mode: affordance
@@ -113,11 +110,14 @@ primitives:
     - 0.0
     - 0.0
     - 0.1
-    pick_interpolation_steps: 10
-    lift_interpolation_steps: 10
+    pick_interpolation_steps: 5
+    lift_interpolation_steps: 5
     lift_offset: 0.15
 - type: pour
   params:
+    tilt_interpolation_steps: 15
+    return_lift_interpolation_steps: 10
+    return_interpolation_steps: 15
     target: yellow_bowl
     tilt_angle_deg: 70
     move_hover_height: 0.35
@@ -125,6 +125,7 @@ primitives:
     tilt_horizontal_offset: 0.05
     return_lift_height: 0.05
     success_eval: true
+    hold_steps: 3
 enable_random_lights: false
 image_noise_std: 0
 image_speckle_noise_std: 0
@@ -132,10 +133,31 @@ enable_objects_randomization: true
 enable_objects_randomization_curriculum: false
 texture_randomization:
   enabled: true
-  avoid_repeats: true
   texture_dir: models/random_pic/table
   targets:
     table:
       prim_path: /World/envs/env_{i}/table/Xform_01/Xform/leg/node_/Cube
       texture_dir: models/random_pic/table
-articulations: {}
+lighting:
+  type: dome
+  intensity: 1200.0
+  color:
+  - 1.0
+  - 1.0
+  - 1.0
+visibility_check:
+  object_bounds:
+    blue_kettle:
+    - - -0.09430887011493283
+      - -0.06655338076587342
+      - -0.12119399981325192
+    - - 0.09430896548236234
+      - 0.06655289439194832
+      - 0.12119298891851578
+    yellow_bowl:
+    - - -0.08058199702392521
+      - -0.08073099050050307
+      - -0.02750500178615774
+    - - 0.08058200656066816
+      - 0.08073200139522167
+      - 0.02750400281229903

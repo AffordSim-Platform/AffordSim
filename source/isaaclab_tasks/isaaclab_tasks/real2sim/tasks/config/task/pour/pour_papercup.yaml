@@ -8,8 +8,7 @@ scene:
   env_spacing: 10
 task:
   name: pour_papercup
-  description: Pick up the white paper cup 1; then pour from the white paper cup 1
-    into the Starbucks cup.
+  description: grasp the beige paper cup and pour into the bowl
 runtime:
   headless: false
   episodes: 5
@@ -25,15 +24,15 @@ runtime:
   background_image_size:
   - 640
   - 480
-  use_background_replace: true
+  use_background_replace: false
   cam_side_background: backgrounds/1123_background.png
   cam_wrist_background: backgrounds/wristbackground_realworld1.png
   data_dir: data/r2s2r_data/pour_papercup
-  task_name: FrankaFr3-DefaultGripper-Joint-VisPick-v0
+  task_name: FrankaFr3-OurGripper-Joint-VisPick-v0
   save_depth_images: false
 robot:
-  cfg_name: franka_fr3.yml
-  type: franka_fr3
+  cfg_name: franka_fr3_our.yml
+  type: franka_fr3_default
 offsets:
   grasp:
   - 0
@@ -50,29 +49,29 @@ objects:
     - - class
       - white_papercup1
     init_pos:
-    - 0.626
-    - 0.176
+    - 0.55
+    - -0.25
     - 0.077
     init_rot:
-    - 0.9914
-    - 0.0
-    - 0.0
-    - -0.1305
+    - 1
+    - 0
+    - 0
+    - 0
     height: 0.094
     position_range:
       x:
-      - 0.6249999999999999
-      - 0.6749999999999999
+      - 0.45
+      - 0.65
       y:
-      - 0.12500000000000003
-      - 0.17500000000000002
+      - -0.45
+      - -0.1
       z:
       - 0.077
       - 0.077
     orientation_range:
       yaw:
-      - 0.0
-      - 0.0
+      - -0.5236
+      - 0.5236
   starbuckscup:
     usd_path: models/all_object/starbuckscup.usd
     semantic_tags:
@@ -82,26 +81,26 @@ objects:
     - -0.9838
     - 0.0
     - 0.0
-    - 0.0791
+    - 0.1791
     init_pos:
-    - 0.519
-    - -0.03
+    - 0.45
+    - 0.0
     - 0.068
     height: 0.054
     position_range:
       x:
-      - 0.5439999999999999
-      - 0.594
+      - 0.45
+      - 0.6
       y:
-      - -0.025
-      - 0.025
+      - -0.05
+      - 0.05
       z:
-      - 0.098
-      - 0.098
+      - 0.068
+      - 0.068
     orientation_range:
       yaw:
-      - 0.0
-      - 0.0
+      - -3.1416
+      - 3.1416
 primitives:
 - type: pick
   mode: affordance
@@ -111,17 +110,21 @@ primitives:
     - 0.0
     - 0.0
     - 0.1
-    pick_interpolation_steps: 10
-    lift_interpolation_steps: 10
+    pick_interpolation_steps: 5
+    lift_interpolation_steps: 5
     lift_offset: 0.15
 - type: pour
   params:
+    tilt_interpolation_steps: 15
+    return_lift_interpolation_steps: 10
+    return_interpolation_steps: 15
     target: starbuckscup
     tilt_angle_deg: 65
     move_hover_height: 0.12
     tilt_lift_height: 0.1
     tilt_horizontal_offset: -0.02
     success_eval: true
+    hold_steps: 3
 enable_random_lights: false
 image_noise_std: 0
 image_speckle_noise_std: 0
@@ -129,10 +132,31 @@ enable_objects_randomization: true
 enable_objects_randomization_curriculum: false
 texture_randomization:
   enabled: true
-  avoid_repeats: true
   texture_dir: models/random_pic/table
   targets:
     table:
       prim_path: /World/envs/env_{i}/table/Xform_01/Xform/leg/node_/Cube
       texture_dir: models/random_pic/table
-articulations: {}
+lighting:
+  type: dome
+  intensity: 1200.0
+  color:
+  - 1.0
+  - 1.0
+  - 1.0
+visibility_check:
+  object_bounds:
+    white_papercup1:
+    - - -0.03933600022399425
+      - -0.03933600022399426
+      - -0.0376579990634024
+    - - 0.03933600022399425
+      - 0.039336000223994264
+      - 0.05683799917754529
+    starbuckscup:
+    - - -0.04090400040149689
+      - -0.043350999427072046
+      - -0.06990700316571576
+    - - 0.04479699954390526
+      - 0.04249600112154576
+      - 0.04762899975109934

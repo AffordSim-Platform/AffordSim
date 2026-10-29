@@ -1,0 +1,162 @@
+simulation:
+  decimation: 30
+  dt: 0.00833333
+  render_interval: 5
+  episode_length_s: 100
+scene:
+  num_envs: 1
+  env_spacing: 10
+task:
+  name: pour_mugcup
+  description: grasp the red mug cup and pour into the bowl
+runtime:
+  headless: false
+  episodes: 5
+  save_npy: false
+  save_camera_images: false
+  save_composite_images: false
+  save_mask_images: false
+  save_original_images: true
+  enable_motion_planning: true
+  sim_camera_resolution:
+  - 640
+  - 480
+  background_image_size:
+  - 640
+  - 480
+  use_background_replace: false
+  cam_side_background: backgrounds/1123_background.png
+  cam_wrist_background: backgrounds/wristbackground_realworld1.png
+  data_dir: data/r2s2r_data/pour_mugcup
+  task_name: FrankaFr3-OurGripper-Joint-VisPick-v0
+  save_depth_images: false
+robot:
+  cfg_name: franka_fr3_our.yml
+  type: franka_fr3_default
+offsets:
+  grasp:
+  - 0
+  - 0
+  - 0.0
+  place:
+  - 0
+  - 0
+  - 0.0
+objects:
+  red_mugcup:
+    usd_path: models/all_object/red_mugcup.usd
+    semantic_tags:
+    - - class
+      - red_mugcup
+    init_pos:
+    - 0.55
+    - -0.25
+    - 0.09
+    init_rot:
+    - 0.38268343
+    - 0.0
+    - 0.0
+    - 0.92387953
+    height: 0.081
+    position_range:
+      x:
+      - 0.45
+      - 0.7
+      y:
+      - -0.4
+      - -0.1
+      z:
+      - 0.09
+      - 0.09
+    orientation_range:
+      yaw:
+      - -0.5236
+      - 0.5236
+  white_papercup1:
+    usd_path: models/all_object/white_papercup1.usd
+    semantic_tags:
+    - - class
+      - white_papercup1
+    init_pos:
+    - 0.55
+    - 0.05
+    - 0.077
+    init_rot:
+    - -0.3826834
+    - 0
+    - 0
+    - 0.9238795
+    height: 0.054
+    position_range:
+      x:
+      - 0.45
+      - 0.65
+      y:
+      - -0.05
+      - 0.05
+      z:
+      - 0.077
+      - 0.077
+    orientation_range:
+      yaw:
+      - -3.1416
+      - 3.1416
+primitives:
+- type: pick
+  mode: affordance
+  params:
+    target: red_mugcup
+    pre_pick_offset:
+    - 0.0
+    - 0.0
+    - 0.1
+    pick_interpolation_steps: 5
+    lift_interpolation_steps: 5
+    lift_offset: 0.15
+- type: pour
+  params:
+    tilt_interpolation_steps: 15
+    return_lift_interpolation_steps: 10
+    return_interpolation_steps: 15
+    target: white_papercup1
+    tilt_angle_deg: 100
+    move_hover_height: 0.12
+    tilt_lift_height: 0.12
+    tilt_horizontal_offset: 0.05
+    success_eval: true
+    hold_steps: 3
+enable_random_lights: false
+image_noise_std: 0
+image_speckle_noise_std: 0
+enable_objects_randomization: true
+enable_objects_randomization_curriculum: false
+texture_randomization:
+  enabled: true
+  texture_dir: models/random_pic/table
+  targets:
+    table:
+      prim_path: /World/envs/env_{i}/table/Xform_01/Xform/leg/node_/Cube
+      texture_dir: models/random_pic/table
+lighting:
+  type: dome
+  intensity: 1200.0
+  color:
+  - 1.0
+  - 1.0
+  - 1.0
+visibility_check:
+  object_bounds:
+    red_mugcup:
+    - - -0.05849487650778418
+      - -0.04654441868603657
+      - -0.0406510026147473
+    - - 0.05849521029378746
+      - 0.04654394184892314
+      - 0.04065199920440199
+    white_papercup1:
+    - - -0.03933600022399425
+      - -0.03933600022399426
+      - -0.0376579990634024
+    - - 0.03933600022399425
+      - 0.039336000223994264
+      - 0.05683799917754529

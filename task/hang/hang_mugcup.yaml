@@ -1,0 +1,160 @@
+simulation:
+  decimation: 30
+  dt: 0.00833333
+  render_interval: 5
+  episode_length_s: 100
+scene:
+  num_envs: 1
+  env_spacing: 10
+task:
+  name: hang_mugcup
+  description: grasp the red mug cup and hang it on the wood rack
+runtime:
+  headless: false
+  episodes: 5
+  save_npy: false
+  save_camera_images: false
+  save_composite_images: false
+  save_mask_images: false
+  save_original_images: true
+  enable_motion_planning: true
+  sim_camera_resolution:
+  - 640
+  - 480
+  background_image_size:
+  - 640
+  - 480
+  use_background_replace: false
+  cam_side_background: backgrounds/1123_background.png
+  cam_wrist_background: backgrounds/wristbackground_realworld1.png
+  data_dir: data/r2s2r_data/hang_mugcup
+  task_name: FrankaFr3-OurGripper-Joint-VisPick-v0
+  save_depth_images: false
+robot:
+  cfg_name: franka_fr3_our.yml
+  type: franka_fr3_default
+offsets:
+  grasp:
+  - 0
+  - 0
+  - 0.0
+  place:
+  - 0
+  - 0
+  - 0.0
+objects:
+  red_mugcup:
+    usd_path: models/all_object/red_mugcup.usd
+    semantic_tags:
+    - - class
+      - red_mugcup
+    init_pos:
+    - 0.48445
+    - -0.43596
+    - 0.09
+    init_rot:
+    - 0.9239
+    - 0.0
+    - 0.0
+    - 0.3827
+    height: 0.081
+    position_range:
+      x:
+      - 0.38445
+      - 0.53445
+      y:
+      - -0.58596
+      - 0.21404
+      z:
+      - 0.09
+      - 0.09
+    orientation_range:
+      yaw:
+      - -3.14
+      - 3.14
+  wood_rack:
+    usd_path: models/all_object/wood_rack.usd
+    semantic_tags:
+    - - class
+      - wood_rack
+    init_pos:
+    - 0.73445
+    - -0.38596
+    - 0.03734999992325902
+    init_rot:
+    - 0.7071
+    - 0.0
+    - 0.0
+    - 0.7071
+    height: 0.3
+    position_range:
+      x:
+      - 0.58445
+      - 0.73445
+      y:
+      - -0.43596
+      - -0.23596
+      z:
+      - 0.03734999992325902
+      - 0.03734999992325902
+    orientation_range:
+      yaw:
+      - -0.1745
+      - 0.1745
+primitives:
+- type: pick
+  mode: hang
+  params:
+    target: red_mugcup
+    pre_pick_offset:
+    - 0.0
+    - 0.0
+    - 0.08
+    pick_interpolation_steps: 5
+    lift_interpolation_steps: 5
+- type: hang
+  mode: mount
+  params:
+    target: wood_rack
+    pre_hang_distance: 0.05
+    insert_interpolation_steps: 5
+    extra_insert_distance: 0.05
+    extra_insert_interpolation_steps: 5
+    post_release_retreat_distance: 0.1
+    retreat_interpolation_steps: 5
+    success_eval: true
+enable_random_lights: false
+image_noise_std: 0
+image_speckle_noise_std: 0
+enable_objects_randomization: true
+enable_objects_randomization_curriculum: false
+texture_randomization:
+  enabled: true
+  texture_dir: models/random_pic/table
+  targets:
+    table:
+      prim_path: /World/envs/env_{i}/table/Xform_01/Xform/leg/node_/Cube
+      texture_dir: models/random_pic/table
+lighting:
+  type: dome
+  intensity: 1200.0
+  color:
+  - 1.0
+  - 1.0
+  - 1.0
+visibility_check:
+  object_bounds:
+    red_mugcup:
+    - - -0.05849487650778418
+      - -0.04654441868603657
+      - -0.0406510026147473
+    - - 0.05849521029378746
+      - 0.04654394184892314
+      - 0.04065199920440199
+    wood_rack:
+    - - -0.05714999884366989
+      - -0.05714999884366989
+      - -0.00634999992325902
+    - - 0.13791100680828094
+      - 0.05714999884366989
+      - 0.38100001215934753

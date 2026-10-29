@@ -170,6 +170,10 @@ def main():
     parser.add_argument("--episodes", type=int, default=None, help="Override number of collection episodes")
     parser.add_argument("--data_dir", type=str, default=None, help="Override data save directory")
     parser.add_argument("--seed", type=int, default=None, help="Override random seed")
+    parser.add_argument("--save_trajectories", action="store_true", default=None,
+                        help="Save successful trajectories (HDF5 by default), overriding runtime.save_npy")
+    parser.add_argument("--trajectory_format", choices=["hdf5"], default="hdf5",
+                        help="Trajectory format when saving is enabled (HDF5)")
 
     # Isaac Lab standard arguments (headless, device, etc.)
     AppLauncher.add_app_launcher_args(parser)
@@ -279,6 +283,8 @@ def main():
             save_depth_images=getattr(runtime, "save_depth_images", False),
             data_dir=data_dir,
             task_name=args_cli.task_name,
+            trajectory_format=args_cli.trajectory_format,
+            record_trajectories=args_cli.save_trajectories,
         )
 
         # Start collection loop

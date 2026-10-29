@@ -8,7 +8,7 @@ scene:
   env_spacing: 10
 task:
   name: pick_pen_place_doraemoncup
-  description: Pick up the blue pen; then place the blue pen in the Doraemon cup.
+  description: grasp the blue pen and place it in the doraemon cup
 runtime:
   headless: false
   episodes: 2
@@ -24,15 +24,15 @@ runtime:
   background_image_size:
   - 640
   - 480
-  use_background_replace: true
+  use_background_replace: false
   cam_side_background: backgrounds/1123_background.png
   cam_wrist_background: backgrounds/wristbackground_realworld1.png
   data_dir: data/r2s2r_data/pick_pen_place_doraemoncup
-  task_name: XArm7-UFactory-Joint-EE-VisPick-v0
+  task_name: FrankaFr3-OurGripper-Joint-VisPick-v0
   save_depth_images: false
 robot:
-  cfg_name: xarm7.yml
-  type: xarm7_ufactory
+  cfg_name: franka_fr3_our.yml
+  type: franka_fr3_default
 offsets:
   grasp:
   - 0
@@ -49,8 +49,8 @@ objects:
     - - class
       - blue_pen
     init_pos:
-    - 0.55
-    - -0.25
+    - 0.44942
+    - -0.53635
     - 0.05
     init_rot:
     - 1
@@ -60,26 +60,26 @@ objects:
     height: 0.02
     position_range:
       x:
-      - 0.5250000000000001
-      - 0.675
+      - 0.34942
+      - 0.64942
       y:
-      - -0.325
-      - -0.175
+      - -0.73635
+      - -0.33635
       z:
       - 0.05
       - 0.05
     orientation_range:
       yaw:
-      - -0.5235987755982988
-      - 0.5235987755982988
+      - -0.785
+      - 0.785
   doraemoncup:
     usd_path: models/all_object/doraemoncup.usd
     semantic_tags:
     - - class
       - doraemoncup
     init_pos:
-    - 0.55
-    - 0.25
+    - 0.44942
+    - -0.03635
     - 0.08
     init_rot:
     - 0.9239
@@ -89,18 +89,18 @@ objects:
     height: 0.09
     position_range:
       x:
-      - 0.5250000000000001
-      - 0.675
+      - 0.34942
+      - 0.64942
       y:
-      - 0.175
-      - 0.325
+      - -0.23635
+      - 0.16365
       z:
       - 0.08
       - 0.08
     orientation_range:
       yaw:
-      - -0.5235987755982988
-      - 0.5235987755982988
+      - -3.1416
+      - 3.1416
 primitives:
 - type: pick
   mode: gt
@@ -110,8 +110,8 @@ primitives:
     - 0.0
     - 0.0
     - 0.1
-    pick_interpolation_steps: 10
-    lift_interpolation_steps: 10
+    pick_interpolation_steps: 5
+    lift_interpolation_steps: 5
     lift_offset: 0.12
 - type: place
   mode: 'on'
@@ -123,12 +123,12 @@ primitives:
     - 0.0
     - -0.7071
     on_height_margin: 0.08
-    ik_interpolation_steps: 30
+    ik_interpolation_steps: 5
     post_release_lift_offset:
     - 0.0
     - 0.0
     - 0.1
-    post_release_lift_steps: 10
+    post_release_lift_steps: 5
     success_eval: true
 - type: return_home
   params:
@@ -140,17 +140,31 @@ enable_objects_randomization: true
 enable_objects_randomization_curriculum: false
 texture_randomization:
   enabled: true
-  avoid_repeats: true
   texture_dir: models/random_pic/table
   targets:
     table:
       prim_path: /World/envs/env_{i}/table/Xform_01/Xform/leg/node_/Cube
       texture_dir: models/random_pic/table
-phase_depenetration:
-  objects:
-  - blue_pen
-  - doraemoncup
-  reset: 2.0
-  primitives:
-    pick: 2.0
-    release: 0.5
+lighting:
+  type: dome
+  intensity: 1200.0
+  color:
+  - 1.0
+  - 1.0
+  - 1.0
+visibility_check:
+  object_bounds:
+    blue_pen:
+    - - -0.08511070013046265
+      - -0.006074399873614334
+      - -0.010360399633646013
+    - - 0.10281059741973878
+      - 0.0061937998980284
+      - 0.006523299962282184
+    doraemoncup:
+    - - -0.042100001126527786
+      - -0.04472199827432634
+      - -0.057245001196861274
+    - - 0.04514700174331665
+      - 0.04230700060725213
+      - 0.03701699897646905

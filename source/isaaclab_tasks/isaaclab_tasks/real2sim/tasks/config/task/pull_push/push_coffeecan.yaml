@@ -8,7 +8,7 @@ scene:
   env_spacing: 10
 task:
   name: push_coffeecan
-  description: Push the blue coffee can to the specified position.
+  description: grasp the cup1 and put it on the cup2
 runtime:
   headless: false
   episodes: 5
@@ -24,7 +24,7 @@ runtime:
   background_image_size:
   - 640
   - 480
-  use_background_replace: true
+  use_background_replace: false
   cam_side_background: backgrounds/1123_background.png
   cam_wrist_background: backgrounds/wristbackground_realworld1.png
   data_dir: data/r2s2r_data/push_coffeecan
@@ -32,7 +32,7 @@ runtime:
   save_depth_images: false
 robot:
   cfg_name: franka_fr3_our.yml
-  type: franka_fr3
+  type: franka_fr3_default
 offsets:
   grasp:
   - 0
@@ -49,95 +49,41 @@ objects:
     - - class
       - blue_coffeecan
     init_pos:
-    - 0.529
-    - -0.17
+    - 0.55
+    - -0.2
     - 0.12
     init_rot:
     - 1
     - 0
     - 0
     - 0
-    position_range:
-      x:
-      - 0.4789999999999999
-      - 0.579
-      y:
-      - -0.21999999999999997
-      - -0.11999999999999998
-      z:
-      - 0.12
-      - 0.12
-    orientation_range:
-      yaw:
-      - -0.2618
-      - 0.2618
     height: 0.045
-  red_soupcan:
-    usd_path: models/all_object/red_soupcan.usd
-    semantic_tags:
-    - - class
-      - red_soupcan
-    init_pos:
-    - 0.659
-    - 0.28
-    - 0.1
-    init_rot:
-    - 0.6452
-    - 0.0
-    - 0.0
-    - 0.764
-    height: 0.1
     position_range:
       x:
-      - 0.659
-      - 0.659
+      - 0.53
+      - 0.57
       y:
-      - 0.28
-      - 0.28
+      - -0.3
+      - 0.0
       z:
-      - 0.1
-      - 0.1
+      - 0.12
+      - 0.12
     orientation_range:
       yaw:
-      - -0.2618
-      - 0.2618
-  tuna:
-    usd_path: models/all_object/blue_tunacan.usd
-    semantic_tags:
-    - - class
-      - tuna
-    init_pos:
-    - 0.72
-    - 0.15
-    - 0.06
-    init_rot:
-    - 0.6452
-    - 0.0
-    - 0.0
-    - 0.764
-    height: 0.03
-    position_range:
-      x:
-      - 0.72
-      - 0.72
-      y:
-      - 0.15
-      - 0.15
-      z:
-      - 0.06
-      - 0.06
-    orientation_range:
-      yaw:
-      - -0.2618
-      - 0.2618
+      - 0
+      - 0
 primitives:
 - type: push
   mode: object_aligned
   params:
+    down_interpolation_steps: 15
+    push_interpolation_steps: 30
+    lift_interpolation_steps: 5
     target: blue_coffeecan
     pre_height: 0.15
     pre_push_backoff: 0.08
     push_contact_retreat: 0.02
+    push_contact_z_offset: -0.03
     lift_z_delta: 0.15
     push_target:
     - 0.55
@@ -151,10 +97,24 @@ enable_objects_randomization: true
 enable_objects_randomization_curriculum: false
 texture_randomization:
   enabled: true
-  avoid_repeats: true
   texture_dir: models/random_pic/table
   targets:
     table:
       prim_path: /World/envs/env_{i}/table/Xform_01/Xform/leg/node_/Cube
       texture_dir: models/random_pic/table
-articulations: {}
+lighting:
+  type: dome
+  intensity: 1200.0
+  color:
+  - 1.0
+  - 1.0
+  - 1.0
+visibility_check:
+  object_bounds:
+    blue_coffeecan:
+    - - -0.051201518821682335
+      - -0.05115464336075142
+      - -0.07008900183988995
+    - - 0.05120226745600398
+      - 0.0511538804212814
+      - 0.07008801001864916

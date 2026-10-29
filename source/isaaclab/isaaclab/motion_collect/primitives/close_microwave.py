@@ -22,7 +22,7 @@ FIXED_GRIPPER_STEPS = 3
 
 
 def primitive_close(collector, mode: Optional[str], params: Dict[str, Any], context: Dict[str, Any]) -> bool:
-    """Microwave close primitive driven by a pre-close CuRobo waypoint and a single IK push."""
+    """Close with an optional elevated approach, then descend and push at contact height."""
     del mode
     return primitive_execute_close(collector, params, context)
 
@@ -82,6 +82,12 @@ def primitive_execute_close(collector, params: Dict[str, Any], context: Dict[str
     close_facing_offset = float(params.get("close_facing_offset", 0.15))
     close_open_normal_backoff = float(params.get("close_open_normal_backoff", 0.15))
     close_height_offset = float(params.get("close_height_offset", 0.0))
+    pre_close_approach_height = float(params.get("pre_close_approach_height", 0.0))
+    pre_close_descent_steps = int(params.get("pre_close_descent_steps", 10))
+    if not np.isfinite(pre_close_approach_height) or pre_close_approach_height < 0.0:
+        raise ValueError("pre_close_approach_height must be finite and nonnegative")
+    if pre_close_approach_height > 0.0 and pre_close_descent_steps < 1:
+        raise ValueError("pre_close_descent_steps must be positive")
     close_interp_steps = int(params.get("close_interpolation_steps", 30))
 
     object_key = collector._find_object_in_scene(target_label)
@@ -172,12 +178,16 @@ def primitive_execute_close(collector, params: Dict[str, Any], context: Dict[str
         active_mask=list(local_active),
     )
 
+    # Raise only the approach waypoint. Descend outside the open door before
+    # starting the sweep, preserving the original door-contact height.
+    approach_positions = np.array(pre_close_positions, dtype=np.float64)
+    approach_positions[:, 2] += pre_close_approach_height
     print(f"   [Primitive] Planning microwave pre-close pose for '{target_label}'")
     pre_close_plans, pre_close_plan_successes = collector.motion_planner.plan_to_pose_batch(
         collector.robot.data.joint_pos[:n].cpu().numpy(),
         collector.robot.data.joint_vel[:n].cpu().numpy(),
         collector.robot.joint_names,
-        np.array(pre_close_positions, dtype=np.float64),
+        approach_positions,
         np.array(close_quaternions, dtype=np.float64),
         target_prim_path=collector.target_prim_path,
     )
@@ -190,6 +200,17 @@ def primitive_execute_close(collector, params: Dict[str, Any], context: Dict[str
         active_mask=list(local_active),
     )
 
+    if pre_close_approach_height > 0.0 and any(local_active):
+        _, descent_successes = collector.execute_ik_motion(
+            target_positions=np.array(pre_close_positions, dtype=np.float64),
+            target_quaternions=np.array(close_quaternions, dtype=np.float64),
+            gripper_states=[1.0 if s else 0.0 for s in local_active],
+            interpolation_steps=pre_close_descent_steps,
+            desc="Primitive Microwave Pre-Close Descent",
+            active_mask=list(local_active),
+        )
+        merge_segment_into_local_active(local_active, descent_successes)
+
     _, close_motion_successes = collector.execute_ik_motion(
         target_positions=np.array(close_positions, dtype=np.float64),
         target_quaternions=np.array(close_quaternions, dtype=np.float64),
@@ -199,6 +220,17 @@ def primitive_execute_close(collector, params: Dict[str, Any], context: Dict[str
         active_mask=list(local_active),
     )
     merge_segment_into_local_active(local_active, close_motion_successes)
+    if "post_close_lift_offset" in params and any(local_active):
+        positions, orientations = collector.get_current_ee_pose()
+        retreat = np.asarray(positions) + np.asarray(params["post_close_lift_offset"], dtype=float)
+        _, retreat_successes = collector.execute_ik_motion(
+            target_positions=retreat, target_quaternions=np.asarray(orientations),
+            gripper_states=[1.0 if s else 0.0 for s in local_active],
+            interpolation_steps=int(params.get("post_close_interpolation_steps", 5)),
+            desc="Primitive Retreat After Closing Door", active_mask=list(local_active))
+        merge_segment_into_local_active(local_active, retreat_successes)
+        collector.control_gripper_batch([1.0 if s else 0.0 for s in local_active],
+            steps=int(params.get("post_close_settle_steps", 4)), active_mask=list(local_active))
     plan_active_after = list(local_active)
 
     if success_eval_enabled:

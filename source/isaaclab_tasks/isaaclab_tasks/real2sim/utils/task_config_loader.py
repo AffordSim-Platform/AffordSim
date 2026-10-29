@@ -423,6 +423,7 @@ class ArticulationObjectConfig:
         scale: Scale factor.
         disable_gravity: Whether to disable gravity.
         enabled_self_collisions: Whether to enable self-collisions.
+        fix_root_link: Optionally anchor the base while keeping internal joints movable.
         init_pos: Initial position [x, y, z].
         init_rot: Initial rotation [w, x, y, z].
         joint_pos: Initial joint positions {joint_name: value}.
@@ -442,6 +443,7 @@ class ArticulationObjectConfig:
     actuators: Dict[str, ActuatorConfig]
     position_range: Dict[str, Tuple[float, float]]
     orientation_range: Dict[str, Tuple[float, float]]
+    fix_root_link: Optional[bool] = None
 
     @classmethod
     def from_dict(cls, data: Dict) -> Optional["ArticulationObjectConfig"]:
@@ -485,6 +487,7 @@ class ArticulationObjectConfig:
             actuators=actuators,
             position_range=position_range,
             orientation_range=orientation_range,
+            fix_root_link=data.get("fix_root_link"),
         )
 
 @dataclass
@@ -516,6 +519,8 @@ class TaskConfig:
     image_noise_std: float
     image_speckle_noise_std: float
     phase_depenetration: Optional[Dict[str, Any]] = None
+    lighting: Optional[Dict[str, Any]] = None
+    visibility_check: Optional[Dict[str, Any]] = None
     
     @classmethod
     def from_dict(cls, data: Dict, config_dir: Optional[Path] = None) -> "TaskConfig":
@@ -593,6 +598,8 @@ class TaskConfig:
             image_noise_std=data.get("image_noise_std", 0.5),
             image_speckle_noise_std=data.get("image_speckle_noise_std", 0.0),
             phase_depenetration=parse_phase_depenetration(data.get("phase_depenetration"), objects),
+            lighting=data.get("lighting"),
+            visibility_check=data.get("visibility_check"),
         )
     
     def get_all_objects(self) -> List[ObjectConfig]:

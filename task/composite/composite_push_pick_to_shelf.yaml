@@ -1,0 +1,215 @@
+simulation:
+  decimation: 30
+  dt: 0.00833333
+  render_interval: 5
+  episode_length_s: 100
+scene:
+  num_envs: 1
+  env_spacing: 10
+task:
+  name: composite_push_can_pick_soup_place_shelf
+  description: push coffeecan aside, then pick soupcan and place on shelf
+runtime:
+  headless: false
+  episodes: 4
+  save_npy: false
+  save_camera_images: false
+  save_composite_images: false
+  save_mask_images: false
+  save_original_images: true
+  enable_motion_planning: true
+  sim_camera_resolution:
+  - 640
+  - 480
+  background_image_size:
+  - 640
+  - 480
+  use_background_replace: false
+  cam_side_background: backgrounds/1123_background.png
+  cam_wrist_background: backgrounds/wristbackground_realworld1.png
+  data_dir: data/r2s2r_data/composite_push_pick_to_shelf
+  task_name: FrankaFr3-OurGripper-Joint-VisPick-v0
+  save_depth_images: false
+robot:
+  cfg_name: franka_fr3_our.yml
+  type: franka_fr3_default
+offsets:
+  grasp:
+  - 0
+  - 0
+  - 0.0
+  place:
+  - 0
+  - 0
+  - 0.0
+objects:
+  blue_coffeecan:
+    usd_path: models/all_object/blue_coffeecan.usd
+    semantic_tags:
+    - - class
+      - blue_coffeecan
+    init_pos:
+    - 0.43014
+    - 0.24495
+    - 0.12
+    init_rot:
+    - 1
+    - 0
+    - 0
+    - 0
+    height: 0.045
+    position_range:
+      x:
+      - 0.42014
+      - 0.44014
+      y:
+      - 0.18245
+      - 0.25745
+      z:
+      - 0.12
+      - 0.12
+    orientation_range:
+      yaw:
+      - 0
+      - 0
+  red_soupcan:
+    usd_path: models/all_object/red_soupcan.usd
+    semantic_tags:
+    - - class
+      - red_soupcan
+    init_pos:
+    - 0.53014
+    - 0.19495
+    - 0.15
+    init_rot:
+    - 1
+    - 0
+    - 0
+    - 0
+    height: 0.1
+    position_range:
+      x:
+      - 0.56764
+      - 0.64264
+      y:
+      - 0.08245
+      - 0.25745
+      z:
+      - 0.15
+      - 0.15
+    orientation_range:
+      yaw:
+      - -0.785
+      - 0.785
+  brown_woodshelf:
+    usd_path: models/all_object/brown_woodshelf.usd
+    semantic_tags:
+    - - class
+      - brown_woodshelf
+    init_pos:
+    - 0.78014
+    - -0.25505
+    - 0.35
+    init_rot:
+    - 0.92387953
+    - 0.0
+    - 0.0
+    - -0.38268343
+    height: 0.42
+    position_range:
+      x:
+      - 0.68014
+      - 0.78014
+      y:
+      - -0.33005
+      - -0.18005
+      z:
+      - 0.35
+      - 0.35
+    orientation_range:
+      yaw:
+      - -0.1745
+      - 0.1745
+primitives:
+- type: push
+  mode: object_aligned
+  params:
+    down_interpolation_steps: 15
+    push_interpolation_steps: 30
+    lift_interpolation_steps: 5
+    target: blue_coffeecan
+    pre_height: 0.15
+    pre_push_backoff: 0.08
+    push_contact_retreat: 0.02
+    push_contact_z_offset: -0.03
+    lift_z_delta: 0.15
+    push_target:
+    - 0.45
+    - -0.4
+    - 0.12
+    success_eval: true
+- type: return_home
+  params:
+    post_settle_steps: 2
+- type: pick
+  mode: affordance
+  params:
+    target: red_soupcan
+    pre_pick_offset:
+    - 0.0
+    - 0.0
+    - 0.1
+    pick_interpolation_steps: 5
+    lift_interpolation_steps: 5
+- type: place
+  mode: in
+  params:
+    ik_interpolation_steps: 5
+    post_release_lift_steps: 5
+    target: brown_woodshelf
+    success_eval: true
+- type: return_home
+  params:
+    post_settle_steps: 20
+enable_random_lights: false
+image_noise_std: 0
+image_speckle_noise_std: 0
+enable_objects_randomization: true
+enable_objects_randomization_curriculum: false
+texture_randomization:
+  enabled: true
+  texture_dir: models/random_pic/table
+  targets:
+    table:
+      prim_path: /World/envs/env_{i}/table/Xform_01/Xform/leg/node_/Cube
+      texture_dir: models/random_pic/table
+lighting:
+  type: dome
+  intensity: 1200.0
+  color:
+  - 1.0
+  - 1.0
+  - 1.0
+visibility_check:
+  object_bounds:
+    blue_coffeecan:
+    - - -0.051201518821682335
+      - -0.05115464336075142
+      - -0.07008900183988995
+    - - 0.05120226745600398
+      - 0.0511538804212814
+      - 0.07008801001864916
+    red_soupcan:
+    - - -0.02706384066444753
+      - -0.02708608174389338
+      - -0.04583520196490648
+    - - 0.027063663281026
+      - 0.027085328341161608
+      - 0.0458343007427132
+    brown_woodshelf:
+    - - -0.05999999999999999
+      - -0.11940963792800902
+      - -0.278077667236328
+    - - 0.09490904235839845
+      - 0.12059036207199095
+      - 0.1449223327636718

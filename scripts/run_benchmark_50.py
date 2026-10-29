@@ -14,6 +14,7 @@ import copy
 from datetime import datetime, timezone
 import hashlib
 import json
+import math
 import os
 from pathlib import Path
 import random
@@ -26,6 +27,22 @@ import time
 import traceback
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def cabinet_initial_state_valid(joints, tolerance=0.01):
+    """All drawer joints must be close to their configured closed position."""
+    return bool(joints) and all(math.isfinite(value) and abs(value) <= tolerance
+                                for value in joints.values())
+
+
+def cabinet_initialization_target(task_id, primitives, articulations):
+    """Resolve the drawer to check from the active task, not a fixed model name."""
+    if task_id not in {'pull_cabinet', 'pull_cabinet7'}:
+        return None
+    targets = [step.get('params', {}).get('target') for step in primitives if step.get('type') == 'pull']
+    if len(targets) != 1 or targets[0] not in articulations:
+        raise ValueError(f'Expected one configured pull articulation for {task_id}: {targets}')
+    return targets[0]
 
 
 def local_path(value):
@@ -78,7 +95,8 @@ def has_tunable_pose_ranges(data):
     return False
 
 
-def prepare_config(source, destination, *, trials, scale, task, num_envs=1):
+def prepare_config(source, destination, *, trials, scale, task, num_envs=1,
+                   preserve_render_interval=False, save_trajectories=False):
     """Keep object/primitive definitions; shrink existing XY/yaw intervals only."""
     import yaml
 
@@ -90,9 +108,10 @@ def prepare_config(source, destination, *, trials, scale, task, num_envs=1):
         raise ValueError("num_envs must be positive and divide the total trials")
     data.setdefault("scene", {})["num_envs"] = num_envs
     simulation = data.setdefault("simulation", {})
-    # One camera render at each recorded control-step boundary. Physics dt
-    # and decimation remain exactly as declared in the source task YAML.
-    simulation["render_interval"] = int(simulation.get("decimation", 30))
+    # The default renders once at each recorded control-step boundary. An
+    # explicit opt-in retains the task's own render interval instead.
+    if not preserve_render_interval:
+        simulation["render_interval"] = int(simulation.get("decimation", 30))
     for section in ("objects", "articulations"):
         for obj in (data.get(section) or {}).values():
             if not isinstance(obj, dict):
@@ -112,7 +131,7 @@ def prepare_config(source, destination, *, trials, scale, task, num_envs=1):
     runtime = data.setdefault("runtime", {})
     runtime.update({
         "headless": True, "episodes": trials // num_envs, "enable_motion_planning": True,
-        "task_name": task["env_task_name"], "save_npy": False,
+        "task_name": task["env_task_name"], "save_npy": bool(save_trajectories),
         "save_camera_images": False, "save_original_images": True,
         "save_composite_images": False, "save_mask_images": False,
         "save_depth_images": False, "use_background_replace": False,
@@ -122,6 +141,8 @@ def prepare_config(source, destination, *, trials, scale, task, num_envs=1):
     # even when use_background_replace is False. Only alter this runtime copy.
     runtime.pop("da3_background", None)
     data.setdefault("robot", {})["cfg_name"] = task["robot_cfg_name"]
+    if task.get("robot_type"):
+        data["robot"]["type"] = task["robot_type"]
     texture = data.setdefault("texture_randomization", {})
     texture["enabled"] = True
     texture.setdefault("texture_dir", "models/random_pic/table")
@@ -136,6 +157,115 @@ def prepare_config(source, destination, *, trials, scale, task, num_envs=1):
     destination.parent.mkdir(parents=True, exist_ok=True)
     destination.write_text(yaml.safe_dump(data, allow_unicode=True, sort_keys=False))
     return data
+
+
+def stage_structured_trajectory(recording_dir, target_dir, episode, env_idx, num_envs, arm_joint_names=None,
+                                *, allow_legacy_npy=False):
+    """Move the recorder's successful episode into its own attempt directory.
+
+    The recorder indexes episodes from zero across environments. The target is
+    unique to one attempted episode, including collision-excluded successes.
+    Missing or duplicate data is an error rather than a silently lost recording.
+    """
+    if not recording_dir:
+        raise FileNotFoundError("Recorder directory is missing for a successful trajectory")
+    # The current recorder writes HDF5 directly. Retain the older NPY branch
+    # below solely for staging legacy recordings, never convert a new episode
+    # to NPY or change its actions while moving it into the trial directory.
+    episode_number = ((episode - 1) * num_envs + env_idx)
+    hdf5_source = Path(recording_dir) / f"episode_{episode_number:04d}.hdf5"
+    if hdf5_source.is_file():
+        import h5py
+        import numpy as np
+
+        destination = Path(target_dir) / "trajectory.hdf5"
+        if destination.exists():
+            raise FileExistsError(f"Refusing to overwrite trajectory: {destination}")
+        with h5py.File(hdf5_source, 'r') as data:
+            action = data['action']
+            qpos, qvel = data['observations/qpos'], data['observations/qvel']
+            if (action.ndim != 2 or not len(action) or qpos.ndim != 2
+                    or qvel.shape != qpos.shape or len(qpos) != len(action)
+                    or not all(np.isfinite(values[...]).all() for values in (action, qpos, qvel))):
+                raise ValueError('Invalid direct HDF5 action or joint state')
+            if arm_joint_names is not None:
+                names = list(arm_joint_names)
+                stored = list(data['recordings/trajectory_fields/arm_joint_names'].asstr()[...])
+                if (not names or len(set(names)) != len(names) or len(names) != qpos.shape[1]
+                        or names != stored):
+                    raise ValueError('HDF5 arm joint names do not match measured joint state')
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.move(str(hdf5_source), str(destination))
+        return str(destination)
+    if not allow_legacy_npy:
+        raise FileNotFoundError(f"Direct HDF5 episode is missing: {hdf5_source}")
+    source = Path(recording_dir) / f"episode_{((episode - 1) * num_envs + env_idx):04d}.npy"
+    if not source.is_file():
+        raise FileNotFoundError(f"Structured trajectory was not saved: {source}")
+    destination = Path(target_dir) / "trajectory.npy"
+    if destination.exists():
+        raise FileExistsError(f"Refusing to overwrite trajectory: {destination}")
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    if arm_joint_names is None:
+        shutil.move(str(source), str(destination))
+    else:
+        import numpy as np
+
+        data = np.load(source, allow_pickle=True).item()
+        names = list(arm_joint_names)
+        if not names or len(set(names)) != len(names):
+            raise ValueError(f"Invalid ordered arm joint names: {names}")
+        rows = len(data['obs_policy_actions'])
+        for key in ('obs_policy_q_pos', 'obs_policy_q_vel'):
+            states = np.asarray(data[key])
+            if states.shape != (rows, len(names)) or not np.isfinite(states).all():
+                raise ValueError(f"Invalid measured {key} shape/values: {states.shape}; expected {(rows, len(names))}")
+        data['arm_joint_names'] = np.asarray(names, dtype=str)
+        temporary = destination.with_suffix('.npy.tmp')
+        with temporary.open('wb') as stream:
+            np.save(stream, data, allow_pickle=True)
+        temporary.replace(destination)
+        source.unlink()
+    return str(destination)
+
+
+def configure_formal_recorder(recorder, enabled, robot=None, action_manager=None):
+    """Preserve timing and record actual arm state in the action term's order."""
+    if enabled:
+        recorder.preserve_idle_steps = True
+        # Direct HDF5 embeds the camera observations; removing them here
+        # makes the episode writer fail and would lose the training images.
+        recorder.separate_image_observations = not bool(getattr(recorder, 'save_hdf5', False))
+        if robot is None or action_manager is None:
+            return None
+        if hasattr(recorder, '_formal_arm_joint_names'):
+            return list(recorder._formal_arm_joint_names)
+        term = action_manager.get_term('body')
+        names = list(term._joint_names)
+        if not names or len(names) != len(set(names)) or len(names) != term.action_dim:
+            raise ValueError(f"Arm action term has invalid joint ordering: {names}")
+        all_names = list(robot.joint_names)
+        if len(all_names) != len(set(all_names)) or any(name not in all_names for name in names):
+            raise ValueError(f"Arm action joints are missing or ambiguous in robot joint names: {names}")
+        indices = [all_names.index(name) for name in names]
+        original_add_step = recorder.add_step
+
+        def add_step_with_measured_arm(obs, *args, **kwargs):
+            if not isinstance(obs, dict) or not isinstance(obs.get('policy'), dict):
+                raise TypeError('Formal collection needs a policy observation dictionary')
+            updated = dict(obs)
+            policy = dict(obs['policy'])
+            # Snapshot the articulation state after the action, at exactly the
+            # same step as the observation and image passed to add_step.
+            policy['q_pos'] = robot.data.joint_pos[:, indices].clone()
+            policy['q_vel'] = robot.data.joint_vel[:, indices].clone()
+            updated['policy'] = policy
+            return original_add_step(updated, *args, **kwargs)
+
+        recorder.add_step = add_step_with_measured_arm
+        recorder._formal_arm_joint_names = tuple(names)
+        return names
+    return None
 
 
 def collision_flyaway_status(trial):
@@ -255,6 +385,30 @@ def split_episode_result(result, num_envs):
     return records
 
 
+def call_ik_with_override(delegate, override, record_call, *motion_args, **motion_kwargs):
+    """Override a collector IK call without changing ordinary collection.
+
+    The bound collector interface permits the interpolation count and
+    description as either positional or keyword arguments. Record the value
+    originally requested by the primitive and the count actually passed on.
+    """
+    if override is None:
+        return delegate(*motion_args, **motion_kwargs)
+    if type(override) is not int or override <= 0:
+        raise ValueError("interpolation_steps override must be a positive integer")
+    args = list(motion_args)
+    kwargs = dict(motion_kwargs)
+    if len(args) > 3:
+        requested = args[3]
+        args[3] = override
+    else:
+        requested = kwargs.get("interpolation_steps", 30)
+        kwargs["interpolation_steps"] = override
+    desc = args[4] if len(args) > 4 else kwargs.get("desc", "IK Motion")
+    record_call({"requested": requested, "effective": override, "desc": str(desc)})
+    return delegate(*args, **kwargs)
+
+
 def run_worker(args):
     # Pin every project module to this checkout before starting Isaac Sim.
     from test_backgrounds import local_modules
@@ -273,6 +427,10 @@ def run_worker(args):
         "episodes": args.trials // args.num_envs, "trials": [], "completed": False,
         "started_at": datetime.now(timezone.utc).isoformat(),
         "modules": local_modules(), "summary": summarize([], args.trials),
+        "preserve_render_interval": bool(getattr(args, "preserve_render_interval", False)),
+        "save_trajectories": bool(getattr(args, "save_trajectories", False)),
+        "interpolation_steps_override": getattr(args, "interpolation_steps", None),
+        "interpolation_steps_calls": [],
     }
     detector_source = ROOT / "source/isaaclab/isaaclab/motion_collect/collision_flyaway.py"
     report["collision_detector_source_sha256"] = digest(detector_source) if detector_source.is_file() else None
@@ -299,6 +457,8 @@ def run_worker(args):
         np.random.seed(args.seed)
 
         task_config = load_task_config(str(config))
+        if getattr(args, "save_trajectories", False) and not task_config.runtime.save_npy:
+            raise ValueError("--save-trajectories requires runtime.save_npy: true in the worker config")
         phase_config = getattr(task_config, "phase_depenetration", None)
         if phase_config is not None:
             source_files = {
@@ -313,8 +473,53 @@ def run_worker(args):
         report["simulation"] = {key: getattr(task_config.simulation, key) for key in ("dt", "decimation", "render_interval")}
 
         class BenchmarkCollector(DataCollector):
+            def execute_ik_motion(self, *motion_args, **motion_kwargs):
+                def record_call(entry):
+                    report["interpolation_steps_calls"].append(entry)
+                    write_json(report_path, report)
+
+                return call_ik_with_override(
+                    super().execute_ik_motion, getattr(args, "interpolation_steps", None),
+                    record_call, *motion_args, **motion_kwargs,
+                )
+
             def _init_environment(self):
                 super()._init_environment()
+                from isaaclab.motion_collect.tools.camera_framing import FrameVisibilityMonitor
+                self.visibility_monitor = FrameVisibilityMonitor(self)
+                self.cabinet_retreat_monitor = None
+                primitives = self._get_primitive_steps()
+                monitor_enabled = any(step.get('type') == 'return_home' and
+                    step.get('params', {}).get('monitor_robot_cabinet_contact', False)
+                    for step in primitives)
+                if monitor_enabled:
+                    from cabinet_retreat_monitor import RobotCabinetContactMonitor, UnavailableRetreatContactMonitor
+                    try:
+                        cabinet_name = cabinet_initialization_target(
+                            args.task_id, primitives, self.task_config.articulations)
+                        if cabinet_name is None:
+                            raise ValueError('Contact monitoring requires a configured cabinet pull task')
+                        self.cabinet_retreat_monitor = RobotCabinetContactMonitor(self, cabinet_name)
+                        manager = self.env.env.recorder_manager
+                        original_post_physics = manager.record_post_physics_decimation_step
+                        def post_physics_with_retreat_contacts():
+                            result = original_post_physics()
+                            self.cabinet_retreat_monitor.after_substep()
+                            return result
+                        manager.record_post_physics_decimation_step = post_physics_with_retreat_contacts
+                    except Exception as exc:
+                        reason = f'{type(exc).__name__}: {exc}'
+                        self.cabinet_retreat_monitor = UnavailableRetreatContactMonitor(self.num_envs, reason)
+                        print(f'[WARN] Cabinet retreat contact monitor unavailable: {reason}', flush=True)
+                original_step = self.env.step
+
+                def step_with_visibility(*args, **kwargs):
+                    result = original_step(*args, **kwargs)
+                    self.visibility_monitor.sample()
+                    return result
+
+                if self.task_config.visibility_check is not None:
+                    self.env.step = step_with_visibility
                 mass_expectations = {name: obj.mass for name, obj in self.task_config.objects.items()
                                      if obj.mass is not None}
                 if args.verify_mass:
@@ -366,9 +571,39 @@ def run_worker(args):
             def _prepare_primitive_episode(self, context):
                 if self.recorder is not None:
                     self.recorder.original_image_format = "webp_lossless"
+                    # Preview-only collection records held poses in the video
+                    # without creating structured imitation-learning data.
+                    if getattr(args, "preview_only", False):
+                        self.recorder.preserve_idle_steps = True
+                    self.formal_arm_joint_names = configure_formal_recorder(
+                        self.recorder, getattr(args, "save_trajectories", False),
+                        robot=self.robot, action_manager=self.env.env.action_manager)
+                    if self.formal_arm_joint_names:
+                        report['arm_joint_names'] = list(self.formal_arm_joint_names)
                 already = context.get("_prepared", False)
                 prepared = super()._prepare_primitive_episode(context)
                 if prepared and not already:
+                    self.visibility_monitor.reset()
+                    self.visibility_monitor.sample()
+                    # These drawer assets can open during settling, before the
+                    # robot acts. Record the real post-settle joints so an
+                    # already-open cabinet cannot count as a successful pull.
+                    cabinet_name = cabinet_initialization_target(
+                        args.task_id, self._get_primitive_steps(), self.task_config.articulations)
+                    if cabinet_name:
+                        cabinet = self.scene[cabinet_name]
+                        joint_values = cabinet.data.joint_pos.detach().cpu().numpy()
+                        self._initial_cabinet_joints = [
+                            dict(zip(cabinet.joint_names, map(float, row))) for row in joint_values
+                        ]
+                        report['cabinet_initialization'] = {
+                            'fixed_base': bool(cabinet.is_fixed_base),
+                            'joint_names': list(cabinet.joint_names),
+                            'joint_stiffness': cabinet.data.joint_stiffness.detach().cpu().tolist(),
+                            'joint_damping': cabinet.data.joint_damping.detach().cpu().tolist(),
+                            'post_settle_joint_positions': self._initial_cabinet_joints,
+                        }
+                        print('INITIAL_CABINET_JOINTS', json.dumps(self._initial_cabinet_joints), flush=True)
                     # Even a plan failure with zero motion retains an initial RGB frame.
                     camera = self.scene["external_cam_side"]
                     for env_idx in range(self.num_envs):
@@ -387,6 +622,19 @@ def run_worker(args):
             for trial in split_episode_result(result, args.num_envs):
                 number = trial["trial"]
                 env_idx = trial["env_idx"]
+                retreat_monitor = getattr(collector, 'cabinet_retreat_monitor', None)
+                if retreat_monitor is not None:
+                    trial['cabinet_retreat_contact'] = retreat_monitor.results()[env_idx]
+                initial_joints = getattr(collector, '_initial_cabinet_joints', None)
+                if initial_joints is not None:
+                    joint_positions = initial_joints[env_idx]
+                    trial['initial_articulation_joints'] = joint_positions
+                    if not cabinet_initial_state_valid(joint_positions):
+                        trial['success_before_initialization_check'] = trial['success']
+                        trial['success'] = False
+                        trial['failure_reason'] = 'cabinet_open_before_robot_action'
+                if collector.task_config.visibility_check is not None:
+                    trial["side_camera_visibility"] = collector.visibility_monitor.summary(env_idx)
                 episode = trial["episode"]
                 classification = collision_flyaway_status(trial)
                 status = ("program_error" if trial["program_error"] else
@@ -394,6 +642,8 @@ def run_worker(args):
                           "collision_unknown" if classification == "unknown" else
                           "success" if trial["success"] else "failure")
                 target = output / status / f"trial_{number:03d}"
+                if getattr(args, "save_trajectories", False) and target.exists():
+                    raise FileExistsError(f"Refusing to overwrite attempt directory: {target}")
                 target.mkdir(parents=True, exist_ok=True)
                 initial = output / "pending" / f"trial_{number:03d}" / "initial.png"
                 if initial.is_file():
@@ -414,7 +664,13 @@ def run_worker(args):
                             destination.parent.mkdir(parents=True, exist_ok=True)
                             shutil.move(str(source), str(destination))
                             frame_counts[f"{category}/{camera.name}"] = sum(1 for p in destination.iterdir() if p.is_file())
-                trial.update({"frame_counts": frame_counts, "directory": str(target)})
+                trajectory = None
+                if getattr(args, "save_trajectories", False) and trial["success"]:
+                    trajectory = stage_structured_trajectory(
+                        recording, target, episode, env_idx, args.num_envs,
+                        arm_joint_names=collector.formal_arm_joint_names)
+                trial.update({"frame_counts": frame_counts, "directory": str(target),
+                              "trajectory_path": trajectory})
                 write_json(target / "trial.json", trial)
                 report["trials"].append(trial)
                 report["summary"] = summarize(report["trials"], args.trials)
@@ -429,7 +685,7 @@ def run_worker(args):
             robot_type=args.robot_type, headless=True, enable_cameras=True,
             enable_motion_planning=True, device=args.device, num_envs=args.num_envs,
             episodes=args.trials // args.num_envs, seed=args.seed, data_dir=output / "recordings",
-            task_name=task_config.task.name, save_npy=False, save_camera_images=False,
+            task_name=task_config.task.name, save_npy=bool(getattr(args, "save_trajectories", False)), save_camera_images=False,
             save_original_images=True, episode_result_callback=on_episode,
             manual_episode_reset=True,
             rgb_only_cameras=True,
@@ -473,6 +729,8 @@ def run_schedule(args):
     scales = [1.0] if args.no_adapt else [1.0, 0.75, 0.5]
     # Validate all selected batch sizes before starting any simulator workers.
     environment_counts = [task_num_envs(task, args.num_envs, args.trials) for task in tasks]
+    if getattr(args, "save_trajectories", False) and (args.trials != 1 or any(n != 1 for n in environment_counts)):
+        raise ValueError("--save-trajectories requires one attempt and one environment per worker")
     stop_file = local_path(args.stop_after_task) if getattr(args, "stop_after_task", None) else None
     summary = {"manifest": str(manifest_path), "manifest_sha256": digest(manifest_path), "tasks": [],
                "stop_after_task_file": str(stop_file) if stop_file is not None else None, "stopped": False}
@@ -537,6 +795,16 @@ def run_schedule(args):
                 and previous.get("seed") == seed and previous.get("robot") == task["robot"]
                 and previous.get("range_scale") == scale
                 and previous.get("num_envs", 1) == num_envs
+                and previous.get("preserve_render_interval", False) == bool(getattr(args, "preserve_render_interval", False))
+                and previous.get("save_trajectories", False) == bool(getattr(args, "save_trajectories", False))
+                and (not getattr(args, "save_trajectories", False) or all(
+                    not t.get("success") or (t.get("trajectory_path") and Path(t["trajectory_path"]).is_file())
+                    for t in previous.get("trials", [])))
+                and previous.get("interpolation_steps_override") == getattr(args, "interpolation_steps", None)
+                and (getattr(args, "interpolation_steps", None) is None or (
+                    isinstance(previous.get("interpolation_steps_calls"), list)
+                    and all(isinstance(call, dict) and call.get("effective") == args.interpolation_steps
+                            for call in previous["interpolation_steps_calls"])))
                 and (phase_source_hashes is None or
                      previous.get("phase_depenetration", {}).get("source_sha256") == phase_source_hashes)
                 and (getattr(args, "verify_depenetration", None) is None or (
@@ -566,7 +834,9 @@ def run_schedule(args):
                     archive = round_dir.with_name(round_dir.name + "_previous_" + datetime.now().strftime("%Y%m%d_%H%M%S"))
                     round_dir.rename(archive)
                 round_dir.mkdir(parents=True, exist_ok=True)
-                prepare_config(source, expected_config, trials=args.trials, scale=scale, task=task, num_envs=num_envs)
+                prepare_config(source, expected_config, trials=args.trials, scale=scale, task=task, num_envs=num_envs,
+                               preserve_render_interval=getattr(args, "preserve_render_interval", False),
+                               save_trajectories=getattr(args, "save_trajectories", False))
                 command = [sys.executable, "-u", str(Path(__file__).resolve()), "--worker",
                            "--config", str(expected_config), "--task-id", task["task_id"],
                            "--robot", task["robot"], "--env-task-name", task["env_task_name"],
@@ -574,6 +844,12 @@ def run_schedule(args):
                            "--trials", str(args.trials), "--seed", str(seed), "--device", args.device,
                            "--num-envs", str(num_envs),
                            "--output-dir", str(round_dir)]
+                if getattr(args, "preserve_render_interval", False):
+                    command.append("--preserve-render-interval")
+                if getattr(args, "save_trajectories", False):
+                    command.append("--save-trajectories")
+                if getattr(args, "interpolation_steps", None) is not None:
+                    command.extend(["--interpolation-steps", str(args.interpolation_steps)])
                 if getattr(args, "verify_depenetration", None) is not None:
                     command.extend(["--verify-depenetration", str(args.verify_depenetration)])
                     for item in getattr(args, "verify_depenetration_override", []):
@@ -644,6 +920,14 @@ def main():
     parser.add_argument("--num-envs", type=int, default=1, help="Default parallel environments; a task's manifest num_envs overrides this; must divide --trials")
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--device", default="cuda:0")
+    parser.add_argument("--preserve-render-interval", action="store_true",
+                        help="Keep each source YAML's render_interval instead of setting it to decimation")
+    parser.add_argument("--save-trajectories", action="store_true",
+                        help="Save structured successful .npy trajectories alongside the original RGB frames")
+    parser.add_argument("--preview-only", action="store_true",
+                        help="Record held frames for a visual preview without structured trajectory data")
+    parser.add_argument("--interpolation-steps", type=int,
+                        help="Override all collector IK interpolation motions for this run")
     parser.add_argument("--timeout", type=float, default=7200, help="Per-task, per-round wall-time limit in seconds")
     parser.add_argument("--verify-depenetration", type=float, help="Verify and record the spawned task assets' PhysX maximum depenetration velocity")
     parser.add_argument("--verify-depenetration-override", action="append", default=[], metavar="ASSET=VALUE", help="Expected per-asset value; repeat for additional overrides")
@@ -661,10 +945,16 @@ def main():
     parser.add_argument("--robot-cfg-name")
     parser.add_argument("--robot-type", default="franka_fr3")
     args = parser.parse_args()
+    if args.preview_only and args.save_trajectories:
+        parser.error("--preview-only and --save-trajectories are mutually exclusive")
     if args.trials <= 0 or args.timeout <= 0:
         parser.error("--trials and --timeout must be positive")
+    if args.interpolation_steps is not None and args.interpolation_steps <= 0:
+        parser.error("--interpolation-steps must be a positive integer")
     if args.num_envs <= 0 or args.trials % args.num_envs:
         parser.error("--num-envs must be positive and divide --trials exactly")
+    if args.save_trajectories and args.worker and (args.trials != 1 or args.num_envs != 1):
+        parser.error("--save-trajectories requires one attempt and one environment per worker")
     if args.worker:
         if not args.config:
             parser.error("--worker requires --config")

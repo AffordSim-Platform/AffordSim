@@ -8,7 +8,7 @@ scene:
   env_spacing: 10
 task:
   name: pour_mugcup
-  description: Pick up the red mug; then pour from the red mug into the yellow bowl.
+  description: grasp the red mug cup and pour into the bowl
 runtime:
   headless: false
   episodes: 5
@@ -24,15 +24,15 @@ runtime:
   background_image_size:
   - 640
   - 480
-  use_background_replace: true
+  use_background_replace: false
   cam_side_background: backgrounds/1123_background.png
   cam_wrist_background: backgrounds/wristbackground_realworld1.png
   data_dir: data/r2s2r_data/pour_mugcup
-  task_name: XArm7-UFactory-Joint-EE-VisPick-v0
+  task_name: FrankaFr3-OurGripper-Joint-VisPick-v0
   save_depth_images: false
 robot:
-  cfg_name: xarm7.yml
-  type: xarm7_ufactory
+  cfg_name: franka_fr3_our.yml
+  type: franka_fr3_default
 offsets:
   grasp:
   - 0
@@ -50,35 +50,36 @@ objects:
       - red_mugcup
     init_pos:
     - 0.55
-    - 0.2
+    - -0.25
     - 0.09
     init_rot:
-    - 0.3173
+    - 0.38268343
     - 0.0
     - 0.0
-    - 0.9483
+    - 0.92387953
+    height: 0.081
     position_range:
       x:
-      - 0.55
-      - 0.5999999999999999
+      - 0.45
+      - 0.7
       y:
-      - 0.14999999999999997
-      - 0.2
+      - -0.4
+      - -0.1
       z:
       - 0.09
       - 0.09
     orientation_range:
       yaw:
-      - -0.1745
-      - 0.1745
-  yellow_bowl:
-    usd_path: models/all_object/yellow_bowl.usd
+      - -0.5236
+      - 0.5236
+  white_papercup1:
+    usd_path: models/all_object/white_papercup1.usd
     semantic_tags:
     - - class
-      - yellow_bowl
+      - white_papercup1
     init_pos:
-    - 0.626
-    - -0.076
+    - 0.55
+    - 0.05
     - 0.077
     init_rot:
     - -0.3826834
@@ -88,18 +89,18 @@ objects:
     height: 0.054
     position_range:
       x:
-      - 0.58
-      - 0.626
+      - 0.45
+      - 0.65
       y:
-      - -0.1
-      - -0.05000000000000001
+      - -0.05
+      - 0.05
       z:
-      - 0.25
-      - 0.25
+      - 0.077
+      - 0.077
     orientation_range:
       yaw:
-      - 0.0
-      - 0.0
+      - -3.1416
+      - 3.1416
 primitives:
 - type: pick
   mode: affordance
@@ -109,17 +110,21 @@ primitives:
     - 0.0
     - 0.0
     - 0.1
-    pick_interpolation_steps: 10
-    lift_interpolation_steps: 10
+    pick_interpolation_steps: 5
+    lift_interpolation_steps: 5
     lift_offset: 0.15
 - type: pour
   params:
-    target: yellow_bowl
+    tilt_interpolation_steps: 15
+    return_lift_interpolation_steps: 10
+    return_interpolation_steps: 15
+    target: white_papercup1
     tilt_angle_deg: 100
     move_hover_height: 0.12
     tilt_lift_height: 0.12
     tilt_horizontal_offset: 0.05
     success_eval: true
+    hold_steps: 3
 enable_random_lights: false
 image_noise_std: 0
 image_speckle_noise_std: 0
@@ -127,10 +132,31 @@ enable_objects_randomization: true
 enable_objects_randomization_curriculum: false
 texture_randomization:
   enabled: true
-  avoid_repeats: true
   texture_dir: models/random_pic/table
   targets:
     table:
       prim_path: /World/envs/env_{i}/table/Xform_01/Xform/leg/node_/Cube
       texture_dir: models/random_pic/table
-articulations: {}
+lighting:
+  type: dome
+  intensity: 1200.0
+  color:
+  - 1.0
+  - 1.0
+  - 1.0
+visibility_check:
+  object_bounds:
+    red_mugcup:
+    - - -0.05849487650778418
+      - -0.04654441868603657
+      - -0.0406510026147473
+    - - 0.05849521029378746
+      - 0.04654394184892314
+      - 0.04065199920440199
+    white_papercup1:
+    - - -0.03933600022399425
+      - -0.03933600022399426
+      - -0.0376579990634024
+    - - 0.03933600022399425
+      - 0.039336000223994264
+      - 0.05683799917754529

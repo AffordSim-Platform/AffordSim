@@ -11,7 +11,7 @@
   <img src="logs/composite.gif" alt="AffordSim Task Gallery" width="100%">
 </p>
 
-The gallery shows the latest banana, bowl, and cube tests alongside 47 earlier results. Each panel labels its physics settings; success rates in the benchmark manifest refer to the earlier evaluation.
+The gallery shows selected recorded trajectories for all 50 tasks, ordered by difficulty from Easy to Medium to Hard. In the `composite_load_microwave` recording, part of the microwave is outside the camera view.
 
 ## Introduction
 
@@ -298,7 +298,7 @@ python scripts/render_benchmark_gallery.py \
 
 The media directory includes `summary.csv`, `summary.json`, individual task GIFs, and the overview. The per-frame RGB images remain under the results directory as lossless WebP (or PNG for earlier recordings). Both encodings are supported by the GIF renderer. Add `--publish` only when replacing `logs/composite.gif`; publication requires complete collision assessments and at least one eligible attempt for each task, and backs up the previous GIF. A task that remains below 50% is displayed with its measured result.
 
-The manifest records the original baseline and final ranges for both objects and articulated assets, the final scale, measured success rates, and hashes of the tested configurations. Released YAMLs use the final ranges; their original baseline ranges remain in each manifest entry's `initial_ranges`. A new adaptive run scales the released ranges again, so use `--no-adapt` to keep them unchanged. All YAML paths are relative to the repository. The standalone calibrated DA3 example is separate from these 50 benchmark tasks.
+The manifest records the current YAML hash, configured object and articulation ranges, and whether object randomization is enabled. Its earlier `initial_ranges`, `final_ranges`, and evaluation fields are retained as historical experiment records; they do not describe the current YAMLs. A new adaptive run scales the released ranges, so use `--no-adapt` to keep them unchanged. All YAML paths are relative to the repository. The standalone calibrated DA3 example is separate from these 50 benchmark tasks.
 
 Objects without pose ranges retain their configured initial poses. Fixed-position bounds are supplied only to reset events, so missing ranges do not introduce extra success conditions.
 
@@ -308,36 +308,38 @@ AffordSim supports multiple imitation learning backends.
 
 #### Data Preprocessing
 
-Before training, convert collected raw data into the HDF5 format required by the IL backends.
-
-1. Convert `episode_*.npy` files to per-episode HDF5 files:
-
-```bash
-python tools/np2hdf5.py \
-    --npy_folder <path_to_npy_episode_dir> \
-    --ref data/reference.hdf5 \
-    --out <path_to_hdf5_episode_dir>
-```
-
-2. Merge the per-episode HDF5 files into a single raw trajectory file:
+For a later training collection, enable trajectory recording; HDF5 is the default format.
+If the task configuration already enables `runtime.save_npy`, the same HDF5 format is
+used automatically. This option is not needed when collecting GIF previews only.
 
 ```bash
-COMBINE_DATA_DIR=<path_to_hdf5_episode_dir> \
-COMBINE_OUTPUT_FILE=<merged_trajectories.hdf5> \
-COMBINE_EPISODES=<num_episodes> \
-python tools/combine_hdf5.py
+python scripts/run_data_collect_improve.py --skip_editor --task_name <task> \
+    --save_trajectories --data_dir <output_dir> --headless
 ```
 
-3. Convert the merged file into robomimic format and generate `dataset_stat.json`:
+Each successful episode is saved as `episode_XXXX.hdf5` under the timestamped
+output directory. Merge episodes of the same robot into grouped HDF5 for ACT and BC:
+
+```bash
+python tools/merge_accepted_hdf5.py --episode-dir <episode_directory> \
+    --robot <robot_type> --output <merged_trajectories.hdf5>
+```
+
+For DP, convert the grouped file to robomimic HDF5 and generate `dataset_stat.json`:
 
 ```bash
 python tools/convert_hdf5_for_robomimic.py \
     --src <merged_trajectories.hdf5> \
     --dst <target_hdf5_path> \
-    --stat <dataset_stat.json>
+    --stat <dataset_stat.json> --no_remove_idle
 ```
 
-The resulting `<target_hdf5_path>` and `<dataset_stat.json>` can be used by BC, ACT, and DP.
+ACT and BC also accept this robomimic file. Pass `--no_remove_idle` to ACT/BC
+when held control steps must be retained. The repository provides VLA-Adapter and
+Pi0.5 rollout scripts, but no training loaders for those models; their training
+interfaces and multi-robot inputs have not been validated here. See
+[`docs/hdf5_trajectory_format.md`](docs/hdf5_trajectory_format.md) for the action
+convention and data layout.
 
 #### Training
 

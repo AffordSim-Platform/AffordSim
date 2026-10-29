@@ -8,7 +8,7 @@ scene:
   env_spacing: 10
 task:
   name: pull_cabinet
-  description: Pull the cabinet 1 open.
+  description: pull the cabinet drawer open
 runtime:
   headless: false
   episodes: 5
@@ -24,15 +24,15 @@ runtime:
   background_image_size:
   - 640
   - 480
-  use_background_replace: true
+  use_background_replace: false
   cam_side_background: backgrounds/1123_background.png
   cam_wrist_background: backgrounds/wristbackground_realworld1.png
   data_dir: data/r2s2r_data/pull_cabinet
-  task_name: Sawyer-Robotiq85-Joint-EE-VisPick-v0
+  task_name: UR5e-Robotiq85-IKRel-EE-VisPick-v0
   save_depth_images: false
 robot:
-  cfg_name: sawyer.yml
-  type: sawyer_robotiq85
+  cfg_name: ur5e_robotiq_2f_85.yml
+  type: ur5e
 offsets:
   grasp:
   - 0
@@ -43,53 +43,74 @@ offsets:
   - 0
   - 0
 articulations:
-  cabinet1:
-    usd_path: models/all_object/cabinet1.usd
+  cabinet5:
+    usd_path: models/all_object/cabinet5.usd
     semantic_tags:
     - - class
-      - cabinet1
+      - cabinet5
     scale:
     - 0.3
     - 0.3
     - 0.3
     disable_gravity: false
-    enabled_self_collisions: true
+    enabled_self_collisions: false
+    fix_root_link: true
     init_pos:
-    - 0.9
-    - 0.0
-    - 0.4
+    - 0.85
+    - -0.1
+    - 0.273741
     init_rot:
     - 1.0
     - 0.0
     - 0.0
     - 0.0
+    position_range:
+      x:
+      - 0.80
+      - 0.90
+      y:
+      - -0.15
+      - -0.05
+      z:
+      - 0.273741
+      - 0.273741
+    orientation_range:
+      yaw:
+      - -0.1745
+      - 0.1745
     joint_pos:
       joint_0: 0.0
       joint_1: 0.0
       joint_2: 0.0
-      joint_3: 0.0
     actuators:
       joint:
         joint_names_expr:
         - joint_0
         - joint_1
         - joint_2
-        - joint_3
         effort_limit: 1000
         velocity_limit: 1000
         stiffness: 0
-        damping: 0
+        damping: 1.0
 primitives:
 - type: pull
   params:
-    target: cabinet1
+    target: cabinet5
     pre_grasp_offset: 0.08
-    pick_interpolation_steps: 10
+    pick_interpolation_steps: 5
     pull_distance: 0.1
-    pull_interpolation_steps: 30
-    release_after_pull: false
+    pull_interpolation_steps: 5
+    release_after_pull: true
+    post_release_retreat_distance: 0.10
+    post_release_lift_height: 0.15
+    post_release_retreat_steps: 5
+    verify_after_return_home: true
     success_eval: true
-    success_joint_name: joint_1
+    success_joint_name: joint_0
+- type: return_home
+  params:
+    post_settle_steps: 20
+    monitor_robot_cabinet_contact: true
 enable_random_lights: false
 image_noise_std: 0
 image_speckle_noise_std: 0
@@ -97,10 +118,24 @@ enable_objects_randomization: true
 enable_objects_randomization_curriculum: false
 texture_randomization:
   enabled: true
-  avoid_repeats: true
   texture_dir: models/random_pic/table
   targets:
     table:
       prim_path: /World/envs/env_{i}/table/Xform_01/Xform/leg/node_/Cube
       texture_dir: models/random_pic/table
-objects: {}
+lighting:
+  type: dome
+  intensity: 1200.0
+  color:
+  - 1.0
+  - 1.0
+  - 1.0
+visibility_check:
+  object_bounds:
+    cabinet5:
+    - - -0.139725
+      - -0.179760
+      - -0.242741
+    - - 0.132250
+      - 0.180648
+      - 0.217781

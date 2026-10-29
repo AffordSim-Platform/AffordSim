@@ -1,0 +1,511 @@
+{
+  "columns": 10,
+  "rows": 5,
+  "width": 1280,
+  "height": 480,
+  "duration_ms": 10000,
+  "source_review": "outputs/collection_50_hdf5_20261029/review/index.html",
+  "tier_note": "Main-paper 20 tasks take precedence. organize_clutter_into_baskets is Hard; composite_2pickplaces is Medium to retain 10/30/10.",
+  "tasks": [
+    {
+      "id": "pick_banana_place_plate",
+      "difficulty": "easy",
+      "skills": [
+        "pick_place"
+      ],
+      "robot": "franka_long",
+      "review_status": "success",
+      "source_gif": "media/pick_banana_place_plate/attempt_0001/trial_001/trajectory.gif"
+    },
+    {
+      "id": "pick_bottle_place_table",
+      "difficulty": "easy",
+      "skills": [
+        "pick_place"
+      ],
+      "robot": "kinova",
+      "review_status": "success",
+      "source_gif": "media/pick_bottle_place_table/attempt_0001/trial_001/trajectory.gif"
+    },
+    {
+      "id": "pick_bowl_place_plate",
+      "difficulty": "easy",
+      "skills": [
+        "pick_place"
+      ],
+      "robot": "sawyer",
+      "review_status": "success",
+      "source_gif": "media/pick_bowl_place_plate/attempt_0003/trial_001/trajectory.gif"
+    },
+    {
+      "id": "pick_carrot_place_bowl",
+      "difficulty": "easy",
+      "skills": [
+        "pick_place"
+      ],
+      "robot": "franka_long",
+      "review_status": "success",
+      "source_gif": "media/pick_carrot_place_bowl/attempt_0001/trial_001/trajectory.gif"
+    },
+    {
+      "id": "pick_carrot_place_plate",
+      "difficulty": "easy",
+      "skills": [
+        "pick_place"
+      ],
+      "robot": "franka_long",
+      "review_status": "success",
+      "source_gif": "media/pick_carrot_place_plate/attempt_0001/trial_001/trajectory.gif"
+    },
+    {
+      "id": "pick_chocolatebox_place_sugarbox",
+      "difficulty": "easy",
+      "skills": [
+        "pick_place"
+      ],
+      "robot": "kinova",
+      "review_status": "success",
+      "source_gif": "media/pick_chocolatebox_place_sugarbox/attempt_0001/trial_001/trajectory.gif"
+    },
+    {
+      "id": "pick_cube_place_cup",
+      "difficulty": "easy",
+      "skills": [
+        "pick_place"
+      ],
+      "robot": "sawyer",
+      "review_status": "success",
+      "source_gif": "media/pick_cube_place_cup/attempt_0001/trial_001/trajectory.gif"
+    },
+    {
+      "id": "pick_leek_place_cuttingboard",
+      "difficulty": "easy",
+      "skills": [
+        "pick_place"
+      ],
+      "robot": "franka_long",
+      "review_status": "success",
+      "source_gif": "media/pick_leek_place_cuttingboard/attempt_0001/trial_001/trajectory.gif"
+    },
+    {
+      "id": "pick_pen_place_doraemoncup",
+      "difficulty": "easy",
+      "skills": [
+        "pick_place"
+      ],
+      "robot": "sawyer",
+      "review_status": "success",
+      "source_gif": "media/pick_pen_place_doraemoncup/attempt_0001/trial_001/trajectory.gif"
+    },
+    {
+      "id": "pick_soupcan_place_table",
+      "difficulty": "easy",
+      "skills": [
+        "pick_place"
+      ],
+      "robot": "sawyer",
+      "review_status": "success",
+      "source_gif": "media/pick_soupcan_place_table/attempt_0001/trial_001/trajectory.gif"
+    },
+    {
+      "id": "close_microwave",
+      "difficulty": "medium",
+      "skills": [
+        "open_close"
+      ],
+      "robot": "ur5e",
+      "review_status": "success",
+      "source_gif": "media/close_microwave/attempt_0001/trial_001/trajectory.gif"
+    },
+    {
+      "id": "open_microwave",
+      "difficulty": "medium",
+      "skills": [
+        "open_close"
+      ],
+      "robot": "ur5e",
+      "review_status": "success",
+      "source_gif": "media/open_microwave/attempt_0001/trial_001/trajectory.gif"
+    },
+    {
+      "id": "hang_cup",
+      "difficulty": "medium",
+      "skills": [
+        "hang"
+      ],
+      "robot": "kinova",
+      "review_status": "success",
+      "source_gif": "media/hang_cup/attempt_0001/trial_001/trajectory.gif"
+    },
+    {
+      "id": "pick_cup_place_coffeemachine",
+      "difficulty": "medium",
+      "skills": [
+        "pick_place"
+      ],
+      "robot": "ur5e",
+      "review_status": "success",
+      "source_gif": "media/pick_cup_place_coffeemachine/attempt_0001/trial_001/trajectory.gif"
+    },
+    {
+      "id": "pick_cup_place_woodshelf",
+      "difficulty": "medium",
+      "skills": [
+        "pick_place"
+      ],
+      "robot": "xarm7",
+      "review_status": "success",
+      "source_gif": "media/pick_cup_place_woodshelf/attempt_0001/trial_001/trajectory.gif"
+    },
+    {
+      "id": "pick_green_bellpepper_place_pan",
+      "difficulty": "medium",
+      "skills": [
+        "pick_place"
+      ],
+      "robot": "sawyer",
+      "review_status": "success",
+      "source_gif": "media/pick_green_bellpepper_place_pan/attempt_0001/trial_001/trajectory.gif"
+    },
+    {
+      "id": "pick_kettle_place_base",
+      "difficulty": "medium",
+      "skills": [
+        "pick_place"
+      ],
+      "robot": "kinova",
+      "review_status": "success",
+      "source_gif": "media/pick_kettle_place_base/attempt_0001/trial_001/trajectory.gif"
+    },
+    {
+      "id": "pick_lid_place_pot",
+      "difficulty": "medium",
+      "skills": [
+        "pick_place"
+      ],
+      "robot": "franka_long",
+      "review_status": "success",
+      "source_gif": "media/pick_lid_place_pot/attempt_0001/trial_001/trajectory.gif"
+    },
+    {
+      "id": "pick_mugcup_place_coffeemachine",
+      "difficulty": "medium",
+      "skills": [
+        "pick_place"
+      ],
+      "robot": "franka_long",
+      "review_status": "success",
+      "source_gif": "media/pick_mugcup_place_coffeemachine/attempt_0005/trial_004/trajectory.gif"
+    },
+    {
+      "id": "pick_mugcup_place_woodshelf",
+      "difficulty": "medium",
+      "skills": [
+        "pick_place"
+      ],
+      "robot": "ur5e",
+      "review_status": "success",
+      "source_gif": "media/pick_mugcup_place_woodshelf/attempt_0001/trial_001/trajectory.gif"
+    },
+    {
+      "id": "pick_papercup_place_table",
+      "difficulty": "medium",
+      "skills": [
+        "pick_place"
+      ],
+      "robot": "kinova",
+      "review_status": "success",
+      "source_gif": "media/pick_papercup_place_table/attempt_0004/trial_001/trajectory.gif"
+    },
+    {
+      "id": "pick_scrubbottle_place_woodshelf",
+      "difficulty": "medium",
+      "skills": [
+        "pick_place"
+      ],
+      "robot": "sawyer",
+      "review_status": "success",
+      "source_gif": "media/pick_scrubbottle_place_woodshelf/attempt_0004/trial_004/trajectory.gif"
+    },
+    {
+      "id": "pick_soupcan_place_microwave",
+      "difficulty": "medium",
+      "skills": [
+        "pick_place"
+      ],
+      "robot": "franka_long",
+      "review_status": "success",
+      "source_gif": "media/pick_soupcan_place_microwave/attempt_0001/trial_001/trajectory.gif"
+    },
+    {
+      "id": "pour_basket",
+      "difficulty": "medium",
+      "skills": [
+        "pour"
+      ],
+      "robot": "kinova",
+      "review_status": "success",
+      "source_gif": "media/pour_basket/attempt_0004/trial_005/trajectory.gif"
+    },
+    {
+      "id": "pour_bluekettle",
+      "difficulty": "medium",
+      "skills": [
+        "pour"
+      ],
+      "robot": "xarm7",
+      "review_status": "success",
+      "source_gif": "media/pour_bluekettle/attempt_0001/trial_001/trajectory.gif"
+    },
+    {
+      "id": "pour_mugcup",
+      "difficulty": "medium",
+      "skills": [
+        "pour"
+      ],
+      "robot": "ur5e",
+      "review_status": "success",
+      "source_gif": "media/pour_mugcup/attempt_0003/trial_005/trajectory.gif"
+    },
+    {
+      "id": "pour_pan",
+      "difficulty": "medium",
+      "skills": [
+        "pour"
+      ],
+      "robot": "franka_long",
+      "review_status": "success",
+      "source_gif": "media/pour_pan/attempt_0005/trial_005/trajectory.gif"
+    },
+    {
+      "id": "pour_papercup",
+      "difficulty": "medium",
+      "skills": [
+        "pour"
+      ],
+      "robot": "xarm7",
+      "review_status": "success",
+      "source_gif": "media/pour_papercup/attempt_0001/trial_001/trajectory.gif"
+    },
+    {
+      "id": "pour_whitekettle",
+      "difficulty": "medium",
+      "skills": [
+        "pour"
+      ],
+      "robot": "sawyer",
+      "review_status": "success",
+      "source_gif": "media/pour_whitekettle/attempt_0001/trial_001/trajectory.gif"
+    },
+    {
+      "id": "pour_whitekettle4",
+      "difficulty": "medium",
+      "skills": [
+        "pour"
+      ],
+      "robot": "sawyer",
+      "review_status": "success",
+      "source_gif": "media/pour_whitekettle4/attempt_0001/trial_001/trajectory.gif"
+    },
+    {
+      "id": "pull_cabinet",
+      "difficulty": "medium",
+      "skills": [
+        "pull_push"
+      ],
+      "robot": "ur5e",
+      "review_status": "success",
+      "source_gif": "media/pull_cabinet/attempt_0018/trial_004/trajectory.gif"
+    },
+    {
+      "id": "pull_cabinet7",
+      "difficulty": "medium",
+      "skills": [
+        "pull_push"
+      ],
+      "robot": "ur5e",
+      "review_status": "success",
+      "source_gif": "media/pull_cabinet7/attempt_0006/trial_004/trajectory.gif"
+    },
+    {
+      "id": "pull_cabinet15",
+      "difficulty": "medium",
+      "skills": [
+        "pull_push"
+      ],
+      "robot": "xarm7",
+      "review_status": "success",
+      "source_gif": "media/pull_cabinet15/attempt_0002/trial_005/trajectory.gif"
+    },
+    {
+      "id": "push_cheezbox",
+      "difficulty": "medium",
+      "skills": [
+        "pull_push"
+      ],
+      "robot": "franka_long",
+      "review_status": "success",
+      "source_gif": "media/push_cheezbox/attempt_0003/trial_005/trajectory.gif"
+    },
+    {
+      "id": "push_coffeecan",
+      "difficulty": "medium",
+      "skills": [
+        "pull_push"
+      ],
+      "robot": "xarm7",
+      "review_status": "success",
+      "source_gif": "media/push_coffeecan/attempt_0004/trial_005/trajectory.gif"
+    },
+    {
+      "id": "stack_cube",
+      "difficulty": "medium",
+      "skills": [
+        "stack"
+      ],
+      "robot": "franka_long",
+      "review_status": "success",
+      "source_gif": "media/stack_cube/attempt_0001/trial_001/trajectory.gif"
+    },
+    {
+      "id": "stack_four_cube_pyramid",
+      "difficulty": "medium",
+      "skills": [
+        "stack"
+      ],
+      "robot": "franka_long",
+      "review_status": "success",
+      "source_gif": "media/stack_four_cube_pyramid/attempt_0003/trial_004/trajectory.gif"
+    },
+    {
+      "id": "stack_papercup",
+      "difficulty": "medium",
+      "skills": [
+        "stack"
+      ],
+      "robot": "xarm7",
+      "review_status": "success",
+      "source_gif": "media/stack_papercup/attempt_0001/trial_001/trajectory.gif"
+    },
+    {
+      "id": "composite_2picks_to_plate",
+      "difficulty": "medium",
+      "skills": [
+        "long_horizon"
+      ],
+      "robot": "ur5e",
+      "review_status": "success",
+      "source_gif": "media/composite_2picks_to_plate/attempt_0001/trial_001/trajectory.gif"
+    },
+    {
+      "id": "composite_2pickplaces",
+      "difficulty": "medium",
+      "skills": [
+        "long_horizon"
+      ],
+      "robot": "xarm7",
+      "review_status": "success",
+      "source_gif": "media/composite_2pickplaces/attempt_0003/trial_003/trajectory.gif"
+    },
+    {
+      "id": "hang_mugcup",
+      "difficulty": "hard",
+      "skills": [
+        "hang"
+      ],
+      "robot": "sawyer",
+      "review_status": "success",
+      "source_gif": "media/hang_mugcup/attempt_0003/trial_003/trajectory.gif"
+    },
+    {
+      "id": "stack_four_cube",
+      "difficulty": "hard",
+      "skills": [
+        "stack"
+      ],
+      "robot": "kinova",
+      "review_status": "success",
+      "source_gif": "media/stack_four_cube/attempt_0003/trial_004/trajectory.gif"
+    },
+    {
+      "id": "composite_load_microwave",
+      "difficulty": "hard",
+      "skills": [
+        "long_horizon"
+      ],
+      "robot": "franka_long",
+      "review_status": "out_of_view",
+      "source_gif": "media/composite_load_microwave/attempt_0008/trial_005/trajectory.gif"
+    },
+    {
+      "id": "organize_clutter_into_baskets",
+      "difficulty": "hard",
+      "skills": [
+        "long_horizon"
+      ],
+      "robot": "ur5e",
+      "review_status": "success",
+      "source_gif": "media/organize_clutter_into_baskets/attempt_0002/trial_001/trajectory.gif"
+    },
+    {
+      "id": "composite_pour_then_hang",
+      "difficulty": "hard",
+      "skills": [
+        "long_horizon"
+      ],
+      "robot": "franka_long",
+      "review_status": "success",
+      "source_gif": "media/composite_pour_then_hang/attempt_0011/trial_005/trajectory.gif"
+    },
+    {
+      "id": "composite_pour_then_place_coffee",
+      "difficulty": "hard",
+      "skills": [
+        "long_horizon"
+      ],
+      "robot": "ur5e",
+      "review_status": "success",
+      "source_gif": "media/composite_pour_then_place_coffee/attempt_0001/trial_001/trajectory.gif"
+    },
+    {
+      "id": "composite_double_pour_kettle",
+      "difficulty": "hard",
+      "skills": [
+        "long_horizon"
+      ],
+      "robot": "franka_long",
+      "review_status": "success",
+      "source_gif": "media/composite_double_pour_kettle/attempt_0001/trial_001/trajectory.gif"
+    },
+    {
+      "id": "composite_unload_microwave",
+      "difficulty": "hard",
+      "skills": [
+        "long_horizon"
+      ],
+      "robot": "xarm7",
+      "review_status": "success",
+      "source_gif": "media/composite_unload_microwave/attempt_0002/trial_001/trajectory.gif"
+    },
+    {
+      "id": "store_cups_on_plates",
+      "difficulty": "hard",
+      "skills": [
+        "long_horizon"
+      ],
+      "robot": "kinova",
+      "review_status": "success",
+      "source_gif": "media/store_cups_on_plates/attempt_0004/trial_005/trajectory.gif"
+    },
+    {
+      "id": "composite_push_pick_to_shelf",
+      "difficulty": "hard",
+      "skills": [
+        "long_horizon"
+      ],
+      "robot": "xarm7",
+      "review_status": "success",
+      "source_gif": "media/composite_push_pick_to_shelf/attempt_0003/trial_004/trajectory.gif"
+    }
+  ]
+}

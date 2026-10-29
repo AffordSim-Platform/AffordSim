@@ -10,6 +10,7 @@ from ..success.evaluators import (
     _merge_gripper_release_metrics,
 )
 from ..tools.affordance_resolver import resolve_affordance_path
+from ..success.relations import evaluate_scene_relation
 from ..tools.pose_utils import (
     _quat_wxyz_to_matrix,
     compute_face_target_place_quat,
@@ -524,7 +525,10 @@ def primitive_compute_place_pose(collector, mode: Optional[str], params: Dict[st
         )
 
     if requested_mode == "pose":
-        target_position = params.get("position")
+        return_to_pick = _parse_bool_param(params.get("return_to_pick_pose"), False)
+        if return_to_pick and any(key in params for key in ("position", "orientation")):
+            raise ValueError("return_to_pick_pose cannot be combined with position/orientation")
+        target_position = context.get("all_pick_pos") if return_to_pick else params.get("position")
         if target_position is None:
             print("[ERROR] Primitive 'compute_place_pose' with mode 'pose' requires `position`.")
             return False
@@ -535,6 +539,13 @@ def primitive_compute_place_pose(collector, mode: Optional[str], params: Dict[st
         else:
             all_place_pos = target_position
         all_place_pos = np.array(all_place_pos, dtype=float) + place_offset
+        if return_to_pick:
+            # Return the held object using its original grasp, not an object-center
+            # coordinate mistaken for an end-effector target. Opt-in per task.
+            clearance = float(params.get("return_height_offset", 0.0))
+            if not np.isfinite(clearance) or clearance < 0:
+                raise ValueError("return_height_offset must be finite and nonnegative")
+            all_place_pos[:, 2] += clearance
 
         target_orientation = params.get("orientation")
         if target_orientation is None:
@@ -548,11 +559,12 @@ def primitive_compute_place_pose(collector, mode: Optional[str], params: Dict[st
         _, ee_quat_w_place = collector.get_current_ee_pose()
         for env_idx in range(collector.num_envs):
             env_ee_quat = ee_quat_w_place[env_idx] if ee_quat_w_place.ndim > 1 else ee_quat_w_place
-            all_place_quat[env_idx] = normalize_ee_orientation_wxyz(
-                np.array(all_place_quat[env_idx], dtype=float),
-                env_ee_quat,
-                mode="place",
-            )
+            if not return_to_pick:
+                all_place_quat[env_idx] = normalize_ee_orientation_wxyz(
+                    np.array(all_place_quat[env_idx], dtype=float),
+                    env_ee_quat,
+                    mode="place",
+                )
         all_place_pos = np.asarray(all_place_pos, dtype=float)
         all_place_quat = np.asarray(all_place_quat, dtype=float)
     else:
@@ -606,6 +618,22 @@ def primitive_compute_place_pose(collector, mode: Optional[str], params: Dict[st
             env_ee_quat = ee_quat_w_place[env_idx] if ee_quat_w_place.ndim > 1 else ee_quat_w_place
             place_quat = normalize_ee_orientation_wxyz(place_quat, env_ee_quat, mode="place")
 
+            if cont_pos is not None and params.get("align_object_center", False):
+                offsets = context.get("held_object_offset_in_ee", [])
+                if env_idx >= len(offsets) or offsets[env_idx] is None:
+                    target_available_mask[env_idx] = False
+                else:
+                    # Place the held object's center above the target center.
+                    # Keep the existing bottom-clearance calculation for Z.
+                    world_offset = _quat_wxyz_to_matrix(place_quat) @ np.asarray(offsets[env_idx])
+                    place_pos[:2] -= world_offset[:2]
+                    if "center_height_above_target" in params:
+                        # Nesting depth is specified for the object itself,
+                        # independently of the grasp height and gripper length.
+                        place_pos[2] = (cont_pos[2] - env_origins[env_idx][2]
+                                        + float(params["center_height_above_target"])
+                                        - world_offset[2])
+
             all_place_pos.append(place_pos)
             all_place_quat.append(place_quat)
 
@@ -647,6 +675,11 @@ def primitive_compute_place_pose(collector, mode: Optional[str], params: Dict[st
                 )
                 execution_mode = "semi_enclosed"
                 enclosing_container_labels[env_idx] = container_name
+
+        approach_height = float(params.get("approach_height", 0.0))
+        if execution_mode == "normal" and approach_height > 0:
+            pre_place_pos = final_place_pos + np.array([0.0, 0.0, approach_height])
+            execution_mode = "overhead"
 
         execution_modes[env_idx] = execution_mode
         pre_place_positions.append(pre_place_pos)
@@ -695,7 +728,7 @@ def primitive_execute_place(collector, params: Dict[str, Any], context: Dict[str
     place_positions = np.array(place_pose["positions"], dtype=float)
     place_quaternions = np.array(place_pose["orientations"])
 
-    two_step_modes = {"semi_enclosed", "affordance"}
+    two_step_modes = {"semi_enclosed", "affordance", "overhead"}
     two_step_active_mask = [
         local_active[env_idx] and execution_modes[env_idx] in two_step_modes
         for env_idx in range(n)
@@ -784,6 +817,13 @@ def primitive_execute_place(collector, params: Dict[str, Any], context: Dict[str
             active_mask=active_for_normal,
         )
 
+    if params.get("trace_placement", False):
+        for i in range(n):
+            source_pose = collector._get_object_pose_global(context.get("pick_target_label"), i)
+            target_pose = collector._get_object_pose_global(place_pose.get("target_label"), i)
+            print(f"[PlaceTrace] env={i} before_release source={source_pose} target={target_pose} "
+                  f"ee_target={place_positions[i]} held_offset={context.get('held_object_offset_in_ee')}")
+
     phase_policy = getattr(collector, "_phase_depenetration", None)
     if phase_policy is not None and any(local_active):
         # In release-only mode keep the pickup setting through the approach;
@@ -805,7 +845,7 @@ def primitive_execute_place(collector, params: Dict[str, Any], context: Dict[str
     post_release_retreat_quaternions = np.array(place_quaternions, dtype=float).copy()
     retreat_to_pre_place_count = 0
     vertical_retreat_count = 0
-    retreat_modes = {"semi_enclosed", "affordance"}
+    retreat_modes = {"semi_enclosed", "affordance", "overhead"}
     for env_idx in range(n):
         if execution_modes[env_idx] in retreat_modes:
             post_release_retreat_positions[env_idx] = np.array(pre_place_positions[env_idx], dtype=float)
@@ -830,6 +870,11 @@ def primitive_execute_place(collector, params: Dict[str, Any], context: Dict[str
             active_mask=list(local_active),
         )
         merge_segment_into_local_active(local_active, post_release_retreat_successes)
+
+    settle_steps = int(params.get("release_settle_steps", 0))
+    if settle_steps > 0 and any(local_active):
+        collector.control_gripper_batch([1.0 if s else 0.0 for s in local_active],
+                                        steps=settle_steps, active_mask=list(local_active))
 
     # ``local_active`` now reflects the cumulative planning chain for this primitive.
     plan_active_after = list(local_active)
@@ -897,7 +942,14 @@ def primitive_execute_place(collector, params: Dict[str, Any], context: Dict[str
             return False
 
         for env_idx in range(n):
-            if place_mode == "pose":
+            if params.get("success_geometry"):
+                rule = {**params["success_geometry"], "source": pick_target, "target": place_target}
+                env_success, env_metrics = evaluate_scene_relation(collector, env_idx, rule)
+                gripper_ok, env_metrics = _merge_gripper_release_metrics(
+                    env_metrics, collector.scene, env_idx, require_gripper_release,
+                    gripper_open_threshold, gripper_joint_name_substr, gripper_open_direction)
+                env_success = env_success and gripper_ok
+            elif place_mode == "pose":
                 env_success, env_metrics = _evaluate_place_pose_success_with_metrics(
                     scene=collector.scene,
                     pick_target=pick_target,
@@ -948,7 +1000,7 @@ def primitive_execute_place(collector, params: Dict[str, Any], context: Dict[str
                         place_target=place_target,
                         env_idx=env_idx,
                         ee_target_quat_wxyz=env_target_quat,
-                        pick_target_offset_in_ee=env_offset_in_ee,
+                        pick_target_offset_in_ee=(None if params.get("align_object_center") else env_offset_in_ee),
                         require_gripper_release=require_gripper_release,
                         gripper_open_threshold=gripper_open_threshold,
                         gripper_joint_name_substr=gripper_joint_name_substr,
@@ -964,6 +1016,9 @@ def primitive_execute_place(collector, params: Dict[str, Any], context: Dict[str
         ]
         context["task_success_metrics"] = list(state_metrics)
         for env_idx, metrics in enumerate(state_metrics):
+            if params.get("success_geometry"):
+                print(f"    [ObjectGeometry][env {env_idx}] {metrics}")
+                continue
             gripper_metric = _format_gripper_release_metric(metrics)
             if place_mode == "pose":
                 dist_ok = metrics["pick_pose_xy_dist"] <= float(PLACE_SUCCESS_XY_THRESHOLD)
@@ -1013,7 +1068,9 @@ def primitive_execute_place(collector, params: Dict[str, Any], context: Dict[str
                     #     f"{gripper_metric}"
                     # )
         gripper_criterion = ", gripper_released" if require_gripper_release else ""
-        if place_mode == "pose":
+        if params.get("success_geometry"):
+            print(f"   [Primitive] Task success (place/geometry): {sum(final_success_mask)}/{n}")
+        elif place_mode == "pose":
             print(
                 "   [Primitive] Task success (place/pose): "
                 f"{sum(final_success_mask)}/{n} "

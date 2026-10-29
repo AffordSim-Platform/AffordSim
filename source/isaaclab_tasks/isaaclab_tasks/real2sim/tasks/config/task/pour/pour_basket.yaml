@@ -8,8 +8,7 @@ scene:
   env_spacing: 10
 task:
   name: pour_basket
-  description: Pick up the pink scoop; then pour from the pink scoop into the yellow
-    bowl.
+  description: grasp the pink basket and pour into the bowl
 runtime:
   headless: false
   episodes: 5
@@ -25,15 +24,15 @@ runtime:
   background_image_size:
   - 640
   - 480
-  use_background_replace: true
+  use_background_replace: false
   cam_side_background: backgrounds/1123_background.png
   cam_wrist_background: backgrounds/wristbackground_realworld1.png
   data_dir: data/r2s2r_data/pour_basket
-  task_name: Kinova-Robotiq85-IKRel-EE-VisPick-v0
+  task_name: FrankaFr3-OurGripper-Joint-VisPick-v0
   save_depth_images: false
 robot:
-  cfg_name: kinova_robotiq85.yml
-  type: kinova_robotiq85
+  cfg_name: franka_fr3_our.yml
+  type: franka_fr3_default
 offsets:
   grasp:
   - 0
@@ -50,8 +49,8 @@ objects:
     - - class
       - pink_basket
     init_pos:
-    - 0.7046
-    - 0.1659
+    - 0.55
+    - -0.25
     - 0.1
     init_rot:
     - -0.2588
@@ -61,47 +60,51 @@ objects:
     height: 0.1
     position_range:
       x:
-      - 0.705
-      - 0.755
+      - 0.45
+      - 0.7
       y:
-      - 0.12500000000000003
-      - 0.17500000000000002
+      - -0.45
+      - -0.1
       z:
       - 0.1
       - 0.1
     orientation_range:
       yaw:
-      - -0.15
-      - 0.15
-  yellow_bowl:
-    usd_path: models/all_object/yellow_bowl.usd
+      - -0.5236
+      - 0.5236
+  white_100mmcup:
+    usd_path: models/all_object/white_100mmcup.usd
     semantic_tags:
     - - class
-      - yellow_bowl
+      - white_100mmcup
+    scale:
+    - 1.2
+    - 1.2
+    - 1.0
     init_pos:
-    - 0.626
-    - -0.076
-    - 0.077
+    - 0.55
+    - 0.0
+    - 0.08
     init_rot:
-    - -0.3826834
-    - 0
-    - 0
-    - 0.9238795
-    height: 0.054
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    height: 0.08
     position_range:
       x:
-      - 0.5914999999999999
-      - 0.6145
+      - 0.55
+      - 0.65
       y:
-      - -0.08750000000000001
-      - -0.06250000000000001
+      - -0.05
+      - 0.05
       z:
-      - 0.25
-      - 0.25
+      - 0.08
+      - 0.08
     orientation_range:
       yaw:
-      - 0.0
-      - 0.0
+      - -3.1416
+      - 3.1416
 primitives:
 - type: pick
   mode: affordance_multidir
@@ -111,17 +114,21 @@ primitives:
     - 0.0
     - 0.0
     - 0.1
-    pick_interpolation_steps: 10
+    pick_interpolation_steps: 5
     lift_interpolation_steps: 5
     lift_offset: 0.15
 - type: pour
   params:
-    target: yellow_bowl
+    tilt_interpolation_steps: 15
+    return_lift_interpolation_steps: 10
+    return_interpolation_steps: 15
+    target: white_100mmcup
     tilt_angle_deg: 100
     move_hover_height: 0.12
     tilt_lift_height: 0.12
     tilt_horizontal_offset: 0.08
     success_eval: true
+    hold_steps: 3
 enable_random_lights: false
 image_noise_std: 0
 image_speckle_noise_std: 0
@@ -129,10 +136,31 @@ enable_objects_randomization: true
 enable_objects_randomization_curriculum: false
 texture_randomization:
   enabled: true
-  avoid_repeats: true
   texture_dir: models/random_pic/table
   targets:
     table:
       prim_path: /World/envs/env_{i}/table/Xform_01/Xform/leg/node_/Cube
       texture_dir: models/random_pic/table
-articulations: {}
+lighting:
+  type: dome
+  intensity: 1200.0
+  color:
+  - 1.0
+  - 1.0
+  - 1.0
+visibility_check:
+  object_bounds:
+    pink_basket:
+    - - -0.06735599786043169
+      - -0.0422330014407635
+      - -0.03776299953460694
+    - - 0.09296900033950807
+      - 0.04636799916625025
+      - 0.03679599985480309
+    white_100mmcup:
+    - - -0.06523679941892624
+      - -0.06527160213419551
+      - -0.04867600031853207
+    - - 0.06071279793977737
+      - 0.060640799876333716
+      - 0.03750000267294972

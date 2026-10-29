@@ -8,8 +8,7 @@ scene:
   env_spacing: 10
 task:
   name: pick_cup_place_coffeemachine
-  description: Pick up the Starbucks cup; then place the Starbucks cup in the coffee
-    machine 2.
+  description: grasp the red mugcup and place it into coffeemachine2 with affordance
 runtime:
   headless: false
   episodes: 5
@@ -25,7 +24,7 @@ runtime:
   background_image_size:
   - 640
   - 480
-  use_background_replace: true
+  use_background_replace: false
   cam_side_background: backgrounds/1123_background.png
   cam_wrist_background: backgrounds/wristbackground_realworld1.png
   data_dir: data/r2s2r_data/pick_cup_place_coffeemachine
@@ -33,7 +32,7 @@ runtime:
   save_depth_images: false
 robot:
   cfg_name: franka_fr3_our.yml
-  type: franka_fr3
+  type: franka_fr3_default
 offsets:
   grasp:
   - 0
@@ -54,8 +53,8 @@ objects:
     - 0.8
     - 0.8
     init_pos:
-    - 0.52
-    - -0.35
+    - 0.6
+    - 0.1
     - 0.1
     init_rot:
     - 1.0
@@ -63,21 +62,20 @@ objects:
     - 0.0
     - 0.0
     height: 0.1
-  white_75mmcup:
-    usd_path: models/all_object/white_75mmcup.usd
-    semantic_tags:
-    - - class
-      - white_75mmcup
-    init_pos:
-    - 0.68
-    - -0.45
-    - 0.08
-    init_rot:
-    - 1.0
-    - 0.0
-    - 0.0
-    - 0.0
-    height: 0.08
+    position_range:
+      x:
+      - 0.575
+      - 0.625
+      y:
+      - 0.075
+      - 0.125
+      z:
+      - 0.1
+      - 0.1
+    orientation_range:
+      yaw:
+      - -0.785
+      - 0.785
   coffeemachine2:
     usd_path: models/all_object/coffeemachine2.usd
     semantic_tags:
@@ -90,36 +88,51 @@ objects:
     disable_gravity: false
     enabled_self_collisions: true
     init_pos:
-    - 0.9
-    - -0.01
+    - 0.65
+    - -0.3
     - 0.23
     init_rot:
-    - 0.9537
+    - 0.999
     - 0.0
     - 0.0
-    - 0.3007
+    - -0.0436
+    position_range:
+      x:
+      - 0.63
+      - 0.67
+      y:
+      - -0.32
+      - -0.28
+      z:
+      - 0.23
+      - 0.23
+    orientation_range:
+      yaw:
+      - -0.1745
+      - 0.1745
 primitives:
 - type: pick
   mode: affordance
   params:
+    lift_interpolation_steps: 5
     target: starbuckscup
     pre_pick_offset:
     - 0.0
     - 0.0
     - 0.1
-    pick_interpolation_steps: 10
+    pick_interpolation_steps: 5
 - type: place
   mode: affordance
   params:
     target: coffeemachine2
     pre_place_distance: 0.15
-    ik_interpolation_steps: 30
+    ik_interpolation_steps: 5
     success_eval: true
     post_release_lift_offset:
     - 0.0
     - 0.0
     - 0.08
-    post_release_lift_steps: 10
+    post_release_lift_steps: 5
 enable_random_lights: false
 image_noise_std: 0
 image_speckle_noise_std: 0
@@ -127,18 +140,31 @@ enable_objects_randomization: true
 enable_objects_randomization_curriculum: false
 texture_randomization:
   enabled: true
-  avoid_repeats: true
   texture_dir: models/random_pic/table
   targets:
     table:
       prim_path: /World/envs/env_{i}/table/Xform_01/Xform/leg/node_/Cube
       texture_dir: models/random_pic/table
-articulations: {}
-phase_depenetration:
-  objects:
-  - starbuckscup
-  - coffeemachine2
-  reset: 2.0
-  primitives:
-    pick: 2.0
-    release: 0.5
+lighting:
+  type: dome
+  intensity: 1200.0
+  color:
+  - 1.0
+  - 1.0
+  - 1.0
+visibility_check:
+  object_bounds:
+    starbuckscup:
+    - - -0.032723200321197514
+      - -0.03468079954165764
+      - -0.05592560253257261
+    - - 0.03583759963512421
+      - 0.033996800897236605
+      - 0.03810319980087948
+    coffeemachine2:
+    - - -0.19401809398230216
+      - -0.18555630551826877
+      - -0.18993481320934255
+    - - 0.13437571950974422
+      - 0.21844321074857642
+      - 0.193349106377649

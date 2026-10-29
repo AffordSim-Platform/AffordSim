@@ -1,0 +1,189 @@
+simulation:
+  decimation: 30
+  dt: 0.00833333
+  render_interval: 5
+  episode_length_s: 200
+scene:
+  num_envs: 1
+  env_spacing: 10
+task:
+  name: composite_open_microwave_pick_soup_place_microwave
+  description: open microwave door, then pick soupcan and place inside
+runtime:
+  headless: false
+  episodes: 4
+  save_npy: false
+  save_camera_images: false
+  save_composite_images: false
+  save_mask_images: false
+  save_original_images: true
+  enable_motion_planning: true
+  sim_camera_resolution:
+  - 640
+  - 480
+  background_image_size:
+  - 640
+  - 480
+  use_background_replace: false
+  cam_side_background: backgrounds/1123_background.png
+  cam_wrist_background: backgrounds/wristbackground_realworld1.png
+  data_dir: data/r2s2r_data/composite_load_microwave
+  task_name: FrankaFr3-OurGripper-Joint-VisPick-v0
+  save_depth_images: false
+robot:
+  cfg_name: franka_fr3_our.yml
+  type: franka_fr3
+offsets:
+  grasp:
+  - 0
+  - 0
+  - 0
+  place:
+  - 0
+  - 0
+  - 0
+objects:
+  red_soupcan:
+    usd_path: models/all_object/red_soupcan.usd
+    semantic_tags:
+    - - class
+      - red_soupcan
+    init_pos:
+    - 0.692317963
+    - -0.395008564
+    - 0.15
+    init_rot:
+    - 0.999996662
+    - -0.000193529
+    - -0.002576634
+    - -0.000002561
+    height: 0.1
+    position_range:
+      x:
+      - 0.692317963
+      - 0.692317963
+      y:
+      - -0.395008564
+      - -0.395008564
+      z:
+      - 0.15
+      - 0.15
+articulations:
+  microwave1:
+    usd_path: models/all_object/microwave1.usd
+    semantic_tags:
+    - - class
+      - microwave1
+    scale:
+    - 0.7
+    - 0.6
+    - 0.7
+    disable_gravity: false
+    enabled_self_collisions: true
+    init_pos:
+    - 0.726284027
+    - 0.236201286
+    - 0.16
+    init_rot:
+    - 0.928305072
+    - 0.000000328
+    - -0.000000295
+    - -0.371819436
+    position_range:
+      x:
+      - 0.726284027
+      - 0.726284027
+      y:
+      - 0.236201286
+      - 0.236201286
+      z:
+      - 0.16
+      - 0.16
+    orientation_range:
+      yaw:
+      - 0.0
+      - 0.0
+    joint_pos:
+      microjoint: 0.0
+    actuators:
+      joint:
+        joint_names_expr:
+        - microjoint
+        effort_limit: 1000
+        velocity_limit: 1000
+        stiffness: 0
+        damping: 0
+primitives:
+- type: open
+  params:
+    pick_interpolation_steps: 5
+    tangent_move_interpolation_steps: 5
+    target: microwave1
+    fast_pull_distance: 0.15
+    fast_pull_interpolation_steps: 5
+    lift_before_pre_insert: 0.2
+    lift_interpolation_steps: 5
+    pre_insert_outward_offset: 0.03
+    align_above_interpolation_steps: 5
+    door_tangent_move_distance: 0.3
+    success_eval: true
+    success_joint_name: microjoint
+- type: return_home
+  params:
+    post_settle_steps: 20
+- type: pick
+  mode: affordance
+  params:
+    target: red_soupcan
+    pre_pick_offset:
+    - 0.0
+    - 0.0
+    - 0.1
+    pick_interpolation_steps: 5
+    lift_interpolation_steps: 5
+    lift_offset: 0.15
+- type: place
+  mode: in
+  params:
+    post_release_lift_steps: 5
+    target: microwave1
+    ik_interpolation_steps: 5
+    success_eval: true
+- type: return_home
+  params:
+    post_settle_steps: 20
+enable_random_lights: false
+image_noise_std: 0
+image_speckle_noise_std: 0
+enable_objects_randomization: false
+enable_objects_randomization_curriculum: false
+texture_randomization:
+  enabled: true
+  texture_dir: models/random_pic/table
+  targets:
+    table:
+      prim_path: /World/envs/env_{i}/table/Xform_01/Xform/leg/node_/Cube
+      texture_dir: models/random_pic/table
+lighting:
+  type: dome
+  intensity: 1200.0
+  color:
+  - 1.0
+  - 1.0
+  - 1.0
+visibility_check:
+  object_bounds:
+    red_soupcan:
+    - - -0.02706384066444753
+      - -0.02708608174389338
+      - -0.04583520196490648
+    - - 0.027063663281026
+      - 0.027085328341161608
+      - 0.0458343007427132
+    microwave1:
+    - - -0.21845319122076035
+      - -0.149477891536016
+      - -0.12642106041312218
+    - - 0.218453212082386
+      - 0.1494779884815216
+      - 0.12642104998230932

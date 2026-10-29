@@ -24,7 +24,7 @@ ROOT = Path(__file__).resolve().parents[1]
 spec = importlib.util.spec_from_file_location('gallery_benchmark_runner', ROOT / 'scripts/run_benchmark_50.py')
 runner = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(runner)
-VERSION = 1
+VERSION = 2
 ROUND_PATTERN = re.compile(r"round_\d{2,}$")
 TASK_PATTERN = re.compile(r"[A-Za-z0-9_-]+$")
 
@@ -108,11 +108,8 @@ def color_for(status):
 
 
 def save_gif(frames, destination, duration=100):
-    destination.parent.mkdir(parents=True, exist_ok=True)
-    temporary = destination.with_name(destination.stem + ".tmp.gif")
-    frames[0].save(temporary, save_all=True, append_images=frames[1:], duration=duration,
-                   loop=0, disposal=2, optimize=False)
-    temporary.replace(destination)
+    from animation_export import save_stable_gif
+    save_stable_gif(frames, destination, duration)
     for frame in frames:
         frame.close()
 
@@ -141,8 +138,7 @@ def render_trial(task, round_name, trial, output):
     animation = []
     for index in sample_indices(len(frames), min(120, len(frames))):
         image = tile(frames[index], 320, 210, 30, labels, color_for(status))
-        animation.append(image.quantize(colors=128, method=Image.Quantize.MEDIANCUT))
-        image.close()
+        animation.append(image)
     save_gif(animation, destination)
     write_json(cache_path, record)
     return record
@@ -271,10 +267,9 @@ def render_gallery(records, output):
             panel = tile(paths[timeline[number]] if paths else None, 256, 192, 60, labels, color_for(status))
             canvas.paste(panel, ((i % 10) * 256, (i // 10) * 252))
             panel.close()
-        animation.append(canvas.quantize(colors=256, method=Image.Quantize.MEDIANCUT))
+        animation.append(canvas)
         if number == 0:
             canvas.save(output / "gallery_10x5.png")
-        canvas.close()
     save_gif(animation, destination)
     write_json(cache_path, {"signature": signature, "normalized_frames": 60, "fps": 10,
                             "task_order": [record["task_id"] for record in records]})

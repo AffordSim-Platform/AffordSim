@@ -85,6 +85,7 @@ class EpisodeDataRecorder:
         image_noise_std: float = 0.5,
         image_speckle_noise_std: float = 0.0,
         original_image_format: str = "png",
+        save_hdf5: bool = False,
     ):
         if save_dir is None:
             save_dir = Path("data") / "episodes" / datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -93,11 +94,16 @@ class EpisodeDataRecorder:
         self.save_dir.mkdir(parents=True, exist_ok=True)
 
         self.save_npy = save_npy
+        self.save_hdf5 = save_hdf5
         self.save_camera_images = save_camera_images
         self.save_composite_images = save_composite_images
         self.save_mask_images = save_mask_images
         self.save_original_images = save_original_images
         self.original_image_format = original_image_format
+        # Opt-in collection settings. Legacy datasets continue to filter idle
+        # steps and may embed image observations as before.
+        self.preserve_idle_steps = False
+        self.separate_image_observations = False
         self.save_depth_images = save_depth_images
         self.image_size = image_size
         self.num_envs = num_envs
@@ -162,6 +168,7 @@ class EpisodeDataRecorder:
         print(f" EpisodeDataRecorder initialized")
         print(f"  Save directory: {self.save_dir}")
         print(f"  Save npy: {save_npy}")
+        print(f"  Save hdf5: {save_hdf5}")
         print(f"  Save camera images: {save_camera_images}")
         print(f"  Save composite images: {save_composite_images}")
         print(f"  Save mask images: {save_mask_images}")
@@ -187,6 +194,7 @@ class EpisodeDataRecorder:
                 "actions": [],
                 "terminations": [],
                 "truncations": [],
+                "frame_indices": [],
                 "metadata": metadata or {},
                 "env_idx": env_idx,
             }
@@ -238,7 +246,7 @@ class EpisodeDataRecorder:
         # RGB/composite/mask files are already written above. Image-only runs
         # need no in-memory trajectory (which otherwise also retains depth and
         # segmentation observations for every step).
-        if not self.save_npy and not self.save_camera_images:
+        if not self.save_npy and not self.save_hdf5 and not self.save_camera_images:
             return
         
         # Split batch data into per-environment data
@@ -290,11 +298,19 @@ class EpisodeDataRecorder:
             self.episode_buffers[env_idx]["actions"].append(action_env)
             self.episode_buffers[env_idx]["terminations"].append(term_env)
             self.episode_buffers[env_idx]["truncations"].append(trunc_env)
+            self.episode_buffers[env_idx]["frame_indices"].append(self.current_step_count - 1)
     
     def _extract_env_obs(self, obs: Dict[str, Any], env_idx: int) -> Dict[str, Any]:
         """Extract observation for a specific environment from batch"""
         obs_env = {}
         for key, value in obs.items():
+            # Images are already saved losslessly before extracting the
+            # per-environment observations. Avoid retaining huge flattened RGB
+            # vectors in the state/action buffer when requested explicitly.
+            shape = getattr(value, "shape", ())
+            if (self.separate_image_observations and self._is_image_key(key)
+                    and shape and int(np.prod(shape)) > 100):
+                continue
             if isinstance(value, torch.Tensor):
                 # Check if tensor has batch dimension
                 if value.shape[0] == self.num_envs:
@@ -440,7 +456,7 @@ class EpisodeDataRecorder:
         """
         saved_paths = []
 
-        if not self.save_npy and not self.save_camera_images:
+        if not self.save_npy and not self.save_hdf5 and not self.save_camera_images:
             self.episode_buffers = [None] * self.num_envs
             self.current_episode_num = None
             return saved_paths
@@ -458,6 +474,7 @@ class EpisodeDataRecorder:
             if episode_buffer is None:
                 continue
             num_steps_raw = len(episode_buffer["observations"])
+            frame_indices = np.asarray(episode_buffer.get("frame_indices", []), dtype=np.int64)
         
             obs_dict_full = self._flatten_observations_for_env(episode_buffer)
             
@@ -467,6 +484,11 @@ class EpisodeDataRecorder:
             ee_poses = obs_dict_full[ee_pose_key]  # Shape: [T, 7] - [x, y, z, qw, qx, qy, qz]
             ee_delta_joint_action = self._compute_ee_pose_delta(ee_poses)  # Shape: [T-1, 6] - [dx, dy, dz, droll, dpitch, dyaw]
             raw_joint_actions = np.array(episode_buffer['actions'])  # Shape: [T, 8] - 7 joints + 1 gripper
+            # Preserve the historical training action definition: EE pose
+            # delta from source to next frame plus the source-frame gripper
+            # command. The next-frame command is also retained separately in
+            # formal recordings so neither convention has to be guessed.
+            next_joint_actions = raw_joint_actions[1:] if self.preserve_idle_steps else None
             ee_delta_gripper_action = raw_joint_actions[:-1, -1:]
             ee_delta_action = np.concatenate([ee_delta_joint_action, ee_delta_gripper_action], axis=-1)  # Add gripper delta if needed
             # actions will be aligned with observations after data alignment below
@@ -489,7 +511,7 @@ class EpisodeDataRecorder:
             active_mask = ee_action_norm > 1e-8  # True for steps where EE actually moved
             num_idle = int((~active_mask).sum())
 
-            if num_idle > 0:
+            if num_idle > 0 and not self.preserve_idle_steps:
                 # Filter actions
                 episode_buffer['actions'] = actions_arr[active_mask]
                 # Filter observations (already aligned 1:1 with actions)
@@ -504,6 +526,17 @@ class EpisodeDataRecorder:
             print(f"  Env {env_idx} - Aligned data: {num_steps_raw} raw steps  to  {num_steps} aligned steps")
             
             save_dict = {}
+            if self.preserve_idle_steps:
+                if len(frame_indices) != num_steps_raw:
+                    raise RuntimeError("Recorded frame indices do not match observation count")
+                # Each delta action maps the observation at this frame to the
+                # next recorded observation, not necessarily frame_index + 1.
+                save_dict['source_frame_index'] = frame_indices[:-1]
+                save_dict['next_frame_index'] = frame_indices[1:]
+                save_dict['action_convention'] = 'legacy_ee_delta_source_gripper'
+                save_dict['observed_next_joint_command'] = next_joint_actions
+                if hasattr(self, '_formal_arm_joint_names'):
+                    save_dict['arm_joint_names'] = np.asarray(self._formal_arm_joint_names, dtype=str)
             episode_dir = self.save_dir / f"episode_{((self.current_episode_num-1)*self.num_envs+env_idx):04d}.npy"
             
             actions = np.array(episode_buffer['actions'])
@@ -530,6 +563,10 @@ class EpisodeDataRecorder:
             if self.save_npy:
                 np.save(episode_dir, save_dict, allow_pickle=True)
                 print(f"   Saved episode {self.current_episode_num} env {env_idx} to {episode_dir.name}")
+            if self.save_hdf5:
+                episode_dir = episode_dir.with_suffix('.hdf5')
+                self._write_hdf5_episode(episode_dir, save_dict)
+                print(f"   Saved episode {self.current_episode_num} env {env_idx} to {episode_dir.name}")
             print(f"    Steps: {num_steps}")
 
             self._append_episode_state_json_entry(
@@ -540,7 +577,7 @@ class EpisodeDataRecorder:
                 metadata=episode_buffer.get("metadata", {}),
             )
             
-            if self.save_npy:
+            if self.save_npy or self.save_hdf5:
                 saved_paths.append(episode_dir)
         
         # Clear buffers
@@ -548,6 +585,78 @@ class EpisodeDataRecorder:
         self.current_episode_num = None
         
         return saved_paths
+
+    def _write_hdf5_episode(self, destination: Path, data: Dict[str, Any]) -> None:
+        """Write legacy-aligned actions and RGB observations directly to HDF5."""
+        import h5py
+        import os
+        import tempfile
+
+        action = np.asarray(data['obs_policy_actions'])
+        qpos = np.asarray(data['obs_policy_q_pos'])
+        qvel = np.asarray(data['obs_policy_q_vel'])
+        if action.ndim != 2 or action.shape[1] != 7 or not len(action):
+            raise ValueError(f'Expected nonempty [T, 7] actions, got {action.shape}')
+        if qpos.ndim != 2 or qpos.shape[0] != len(action) or qvel.shape != qpos.shape:
+            raise ValueError('Joint state and action dimensions do not match')
+        if any(not np.isfinite(value).all() for value in (action, qpos, qvel)):
+            raise ValueError('Non-finite action or joint state')
+        camera_keys = {'front': 'obs_policy_external_cam_side', 'wrist': 'obs_policy_wrist_cam'}
+        cameras = {}
+        for name, key in camera_keys.items():
+            frames = np.asarray(data[key])
+            if len(frames) != len(action):
+                raise ValueError(f'{name} image/action frame counts do not match')
+            cameras[name] = frames
+        if destination.exists():
+            raise FileExistsError(f'Refusing to overwrite {destination}')
+        fd, temporary = tempfile.mkstemp(prefix=f'.{destination.name}.', suffix='.tmp', dir=destination.parent)
+        os.close(fd)
+        try:
+            with h5py.File(temporary, 'w') as out:
+                out.create_dataset('action', data=action, compression='gzip')
+                observations = out.create_group('observations')
+                observations.create_dataset('qpos', data=qpos, compression='gzip')
+                observations.create_dataset('qvel', data=qvel, compression='gzip')
+                images = observations.create_group('images')
+                for name, frames in cameras.items():
+                    target = images.create_dataset(name, shape=(len(action), 256, 256, 3), dtype=np.uint8,
+                                                   chunks=(1, 256, 256, 3), compression='gzip')
+                    for index, frame in enumerate(frames):
+                        image = self._reshape_flat_rgb_image(frame) if frame.ndim == 1 else frame
+                        if image.ndim == 3 and image.shape[0] == 3:
+                            image = image.transpose(1, 2, 0)
+                        if image.ndim != 3 or image.shape[-1] != 3:
+                            raise ValueError(f'Invalid {name} RGB image shape: {image.shape}')
+                        if np.issubdtype(image.dtype, np.floating):
+                            image = (image * 255 if image.max() <= 1 else image).clip(0, 255).astype(np.uint8)
+                        else:
+                            image = image.astype(np.uint8)
+                        height, width = image.shape[:2]
+                        side = min(height, width)
+                        y, x = (height - side) // 2, (width - side) // 2
+                        target[index] = cv2.resize(image[y:y + side, x:x + side], (256, 256),
+                                                   interpolation=cv2.INTER_AREA)
+                recordings = out.create_group('recordings')
+                fields = recordings.create_group('trajectory_fields')
+                for key, value in data.items():
+                    if key in camera_keys.values():
+                        continue
+                    array = np.asarray(value)
+                    if array.dtype.kind in 'biufc':
+                        fields.create_dataset(key, data=array, **({'compression': 'gzip'} if array.ndim and array.size else {}))
+                    elif array.dtype.kind in 'SU':
+                        fields.create_dataset(key, data=array.astype(object) if array.ndim else str(array.item()),
+                                              dtype=h5py.string_dtype('utf-8'))
+                for name in ('source_frame_index', 'next_frame_index'):
+                    recordings.create_dataset(name, data=data[name], compression='gzip')
+                out.attrs['action_convention'] = data['action_convention']
+                out.attrs['action_source'] = 'obs_policy_actions'
+                out.attrs['image_alignment'] = 'source_frame_index'
+                out.attrs['image_color_order'] = 'RGB'
+            os.link(temporary, destination)
+        finally:
+            Path(temporary).unlink(missing_ok=True)
 
     @staticmethod
     def _to_json_compatible(value: Any) -> Any:

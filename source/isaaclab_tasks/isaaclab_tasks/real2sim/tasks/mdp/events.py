@@ -273,11 +273,33 @@ def set_articulation_pose(
         torch.cat([new_pos, quat], dim=-1),
         env_ids=env_ids
     )
+    articulation.write_root_velocity_to_sim(
+        articulation.data.default_root_state[env_ids, 7:13].clone(), env_ids=env_ids
+    )
 
     # Reset joint positions and velocities to defaults
     joint_pos = articulation.data.default_joint_pos[env_ids].clone()
     joint_vel = articulation.data.default_joint_vel[env_ids].clone()
     articulation.write_joint_state_to_sim(joint_pos, joint_vel, env_ids=env_ids)
+    articulation.set_joint_position_target(joint_pos, env_ids=env_ids)
+    articulation.set_joint_velocity_target(joint_vel, env_ids=env_ids)
+
+
+def configure_task_lighting(env, env_ids=None):
+    """Keep only the requested task light; disable lights embedded in assets."""
+    import omni.usd
+    from pxr import UsdLux
+    stage = omni.usd.get_context().get_stage()
+    active = []
+    for prim in stage.Traverse():
+        if not prim.HasAPI(UsdLux.LightAPI):
+            continue
+        if prim.GetName() in {"task_point_light", "task_dome_light"}:
+            active.append({"path": str(prim.GetPath()), "type": prim.GetTypeName(),
+                           "intensity": UsdLux.LightAPI(prim).GetIntensityAttr().Get()})
+        else:
+            UsdLux.LightAPI(prim).GetIntensityAttr().Set(0.0)
+    print(f"[TaskLighting] Active sources: {active}")
 
 
 def randomize_lights(

@@ -11,6 +11,7 @@ from .pull import primitive_pull
 from .push import primitive_push
 from .return_home import primitive_return_home
 from .open_microwave import primitive_open
+from .verify import primitive_verify
 
 
 def build_primitive_context(
@@ -55,4 +56,5 @@ def build_primitive_handlers(collector) -> Dict[str, Any]:
         "pull": partial(primitive_pull, collector),
         "push": partial(primitive_push, collector),
         "return_home": partial(primitive_return_home, collector),
+        "verify": partial(primitive_verify, collector),
     }

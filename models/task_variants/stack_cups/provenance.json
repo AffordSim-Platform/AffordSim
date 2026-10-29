@@ -1,0 +1,116 @@
+{
+  "white_100mmcup": {
+    "original": "models/all_object/white_100mmcup.usd",
+    "original_sha256": "f8b7b76bd2e807afd84916ac779045f854ab5b52e2286de8a003dca21ef9db2d",
+    "variant": "models/task_variants/stack_cups/white_100mmcup_hollow.usda",
+    "voxel_pitch_m": 0.001,
+    "closed": true,
+    "collision_vertices": 85999,
+    "collision_faces": 172998,
+    "cavity_centerline_occupied": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ],
+    "bounds": [
+      [
+        -0.054363999515771866,
+        -0.05439300155774776,
+        -0.04867599927368085
+      ],
+      [
+        0.05059399828314781,
+        0.05053399801055289,
+        0.037500002017890124
+      ]
+    ]
+  },
+  "white_80mmcup": {
+    "original": "models/all_object/white_80mmcup.usd",
+    "original_sha256": "f87646f30ae17853dbb3f1e1fb524d74200d73392025d1b505b1002120d03b09",
+    "variant": "models/task_variants/stack_cups/white_80mmcup_hollow.usda",
+    "voxel_pitch_m": 0.001,
+    "closed": true,
+    "collision_vertices": 41240,
+    "collision_faces": 82592,
+    "cavity_centerline_occupied": [
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ],
+    "bounds": [
+      [
+        -0.04098600149154663,
+        -0.04162000119686126,
+        -0.03684300184249878
+      ],
+      [
+        0.04194800183176994,
+        0.041682001203298576,
+        0.0284000001847744
+      ]
+    ]
+  },
+  "white_75mmcup": {
+    "original": "models/all_object/white_75mmcup.usd",
+    "original_sha256": "7e13748a69ee63f1d098c17aeb219d2dbdd8cdc19a4c0d0722e8596f59bd53b2",
+    "variant": "models/task_variants/stack_cups/white_75mmcup_hollow.usda",
+    "voxel_pitch_m": 0.001,
+    "closed": true,
+    "collision_vertices": 50211,
+    "collision_faces": 101062,
+    "cavity_centerline_occupied": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ],
+    "bounds": [
+      [
+        -0.03747599944472313,
+        -0.03807000133037,
+        -0.03673600011686376
+      ],
+      [
+        0.03932100161910057,
+        0.03907899866461362,
+        0.03299099942025292
+      ]
+    ]
+  }
+}

@@ -7,9 +7,8 @@ scene:
   num_envs: 1
   env_spacing: 10
 task:
-  name: composite_load_microwave
-  description: Open the microwave 1; then pick up the red soup can; then place the
-    red soup can in the microwave 1.
+  name: composite_open_microwave_pick_soup_place_microwave
+  description: open microwave door, then pick soupcan and place inside
 runtime:
   headless: false
   episodes: 4
@@ -25,15 +24,15 @@ runtime:
   background_image_size:
   - 640
   - 480
-  use_background_replace: true
+  use_background_replace: false
   cam_side_background: backgrounds/1123_background.png
   cam_wrist_background: backgrounds/wristbackground_realworld1.png
   data_dir: data/r2s2r_data/composite_load_microwave
-  task_name: Sawyer-Robotiq85-Joint-EE-VisPick-v0
+  task_name: FrankaFr3-OurGripper-Joint-VisPick-v0
   save_depth_images: false
 robot:
-  cfg_name: sawyer.yml
-  type: sawyer_robotiq85
+  cfg_name: franka_fr3_our.yml
+  type: franka_fr3
 offsets:
   grasp:
   - 0
@@ -50,29 +49,25 @@ objects:
     - - class
       - red_soupcan
     init_pos:
-    - 0.7
-    - -0.3
+    - 0.692317963
+    - -0.395008564
     - 0.15
     init_rot:
-    - 1
-    - 0
-    - 0
-    - 0
+    - 0.999996662
+    - -0.000193529
+    - -0.002576634
+    - -0.000002561
     height: 0.1
     position_range:
       x:
-      - 0.6249999999999999
-      - 0.6749999999999999
+      - 0.692317963
+      - 0.692317963
       y:
-      - -0.375
-      - -0.32499999999999996
+      - -0.395008564
+      - -0.395008564
       z:
       - 0.15
       - 0.15
-    orientation_range:
-      yaw:
-      - -0.08725
-      - 0.08725
 articulations:
   microwave1:
     usd_path: models/all_object/microwave1.usd
@@ -86,21 +81,21 @@ articulations:
     disable_gravity: false
     enabled_self_collisions: true
     init_pos:
-    - 0.8
-    - 0.2
+    - 0.726284027
+    - 0.236201286
     - 0.16
     init_rot:
-    - 0.9239
-    - 0.0
-    - 0.0
-    - -0.3827
+    - 0.928305072
+    - 0.000000328
+    - -0.000000295
+    - -0.371819436
     position_range:
       x:
-      - 0.8
-      - 0.8
+      - 0.726284027
+      - 0.726284027
       y:
-      - 0.2
-      - 0.2
+      - 0.236201286
+      - 0.236201286
       z:
       - 0.16
       - 0.16
@@ -121,13 +116,15 @@ articulations:
 primitives:
 - type: open
   params:
+    pick_interpolation_steps: 5
+    tangent_move_interpolation_steps: 5
     target: microwave1
     fast_pull_distance: 0.15
     fast_pull_interpolation_steps: 5
     lift_before_pre_insert: 0.2
-    lift_interpolation_steps: 10
+    lift_interpolation_steps: 5
     pre_insert_outward_offset: 0.03
-    align_above_interpolation_steps: 10
+    align_above_interpolation_steps: 5
     door_tangent_move_distance: 0.3
     success_eval: true
     success_joint_name: microjoint
@@ -142,14 +139,15 @@ primitives:
     - 0.0
     - 0.0
     - 0.1
-    pick_interpolation_steps: 10
-    lift_interpolation_steps: 10
+    pick_interpolation_steps: 5
+    lift_interpolation_steps: 5
     lift_offset: 0.15
 - type: place
   mode: in
   params:
+    post_release_lift_steps: 5
     target: microwave1
-    ik_interpolation_steps: 30
+    ik_interpolation_steps: 5
     success_eval: true
 - type: return_home
   params:
@@ -157,20 +155,35 @@ primitives:
 enable_random_lights: false
 image_noise_std: 0
 image_speckle_noise_std: 0
-enable_objects_randomization: true
+enable_objects_randomization: false
 enable_objects_randomization_curriculum: false
 texture_randomization:
   enabled: true
-  avoid_repeats: true
   texture_dir: models/random_pic/table
   targets:
     table:
       prim_path: /World/envs/env_{i}/table/Xform_01/Xform/leg/node_/Cube
       texture_dir: models/random_pic/table
-phase_depenetration:
-  objects:
-  - red_soupcan
-  reset: 2.0
-  primitives:
-    pick: 2.0
-    release: 0.5
+lighting:
+  type: dome
+  intensity: 1200.0
+  color:
+  - 1.0
+  - 1.0
+  - 1.0
+visibility_check:
+  object_bounds:
+    red_soupcan:
+    - - -0.02706384066444753
+      - -0.02708608174389338
+      - -0.04583520196490648
+    - - 0.027063663281026
+      - 0.027085328341161608
+      - 0.0458343007427132
+    microwave1:
+    - - -0.21845319122076035
+      - -0.149477891536016
+      - -0.12642106041312218
+    - - 0.218453212082386
+      - 0.1494779884815216
+      - 0.12642104998230932

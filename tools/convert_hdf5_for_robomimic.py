@@ -13,13 +13,13 @@ def get_active_mask(src, traj_key):
     return np.abs(action[:, :6]).sum(axis=1) > 1e-8
 
 
-def compute_minmax(src, traj_keys, key_path):
+def compute_minmax(src, traj_keys, key_path, remove_idle=True):
   
     all_data = []
     for traj_key in traj_keys:
         data = np.array(src[traj_key][key_path])
-        mask = get_active_mask(src, traj_key)
-        data = data[mask]
+        if remove_idle:
+            data = data[get_active_mask(src, traj_key)]
         if len(data) > 0:
             all_data.append(data)
     all_data = np.concatenate(all_data, axis=0)
@@ -45,9 +45,9 @@ def convert(src_path: str, dst_path: str, stat_path: str, remove_idle: bool = Tr
 
     
     print("[INFO]  min/max .")
-    action_min, action_max = compute_minmax(src, traj_keys, "action")
-    qpos_min, qpos_max = compute_minmax(src, traj_keys, "observations/qpos")
-    qvel_min, qvel_max = compute_minmax(src, traj_keys, "observations/qvel")
+    action_min, action_max = compute_minmax(src, traj_keys, "action", remove_idle)
+    qpos_min, qpos_max = compute_minmax(src, traj_keys, "observations/qpos", remove_idle)
+    qvel_min, qvel_max = compute_minmax(src, traj_keys, "observations/qvel", remove_idle)
 
     print(f"  action  min: {action_min}")
     print(f"  action  max: {action_max}")

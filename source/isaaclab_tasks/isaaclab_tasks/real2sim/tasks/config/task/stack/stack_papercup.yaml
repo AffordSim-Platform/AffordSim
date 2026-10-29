@@ -8,9 +8,8 @@ scene:
   env_spacing: 10
 task:
   name: stack_papercup
-  description: Pick up the white paper cup 1; then place the white paper cup 1 in
-    the white paper cup 2; then pick up the white paper cup 3; then place the white
-    paper cup 3 in the white paper cup 2.
+  description: Nest three handleless dataset cups, placing the medium cup in the large
+    cup and the small cup in the medium cup.
 runtime:
   headless: false
   episodes: 3
@@ -26,126 +25,225 @@ runtime:
   background_image_size:
   - 640
   - 480
-  use_background_replace: true
+  use_background_replace: false
   cam_side_background: backgrounds/1123_background.png
   cam_wrist_background: backgrounds/wristbackground_realworld1.png
   data_dir: data/r2s2r_data/stack_papercup
-  task_name: Sawyer-Robotiq85-Joint-EE-VisPick-v0
+  task_name: FrankaFr3-OurGripper-Joint-VisPick-v0
   save_depth_images: false
 robot:
-  cfg_name: sawyer.yml
-  type: sawyer_robotiq85
+  cfg_name: franka_fr3_our.yml
+  type: franka_fr3_default
 offsets:
   grasp:
   - 0
   - 0
-  - 0.0
+  - 0.02
   place:
   - 0
   - 0
   - 0.0
 objects:
-  white_papercup1:
-    usd_path: models/all_object/white_papercup1.usd
+  stack_cup_medium:
+    usd_path: models/task_variants/stack_cups/white_80mmcup_hollow.usda
     semantic_tags:
     - - class
-      - white_papercup1
+      - stack_cup_medium
     init_pos:
-    - 0.62
-    - 0.25
-    - 0.1
+    - 0.52048
+    - -0.33272
+    - 0.06415870165824891
     init_rot:
-    - 1.0
-    - 0.0
-    - 0.0
-    - 0.0
-    height: 0.1
-  white_papercup2:
-    usd_path: models/all_object/white_papercup2.usd
-    semantic_tags:
-    - - class
-      - white_papercup2
-    init_pos:
-    - 0.68
+    - 1
     - 0
-    - 0.1
-    init_rot:
-    - 1.0
-    - 0.0
-    - 0.0
-    - 0.0
-    height: 0.1
-  white_papercup3:
-    usd_path: models/all_object/white_papercup3.usd
+    - 0
+    - 0
+    height: 0.05871870182454586
+    position_range:
+      x:
+      - 0.47048
+      - 0.57048
+      y:
+      - -0.38272
+      - -0.28272
+      z:
+      - 0.06415870165824891
+      - 0.06415870165824891
+    orientation_range:
+      yaw:
+      - -0.174533
+      - 0.174533
+    scale:
+    - 0.9
+    - 0.9
+    - 0.9
+    mass: 0.08
+  stack_cup_large:
+    usd_path: models/task_variants/stack_cups/white_100mmcup_hollow.usda
     semantic_tags:
     - - class
-      - white_papercup3
+      - stack_cup_large
     init_pos:
-    - 0.59
-    - -0.27
-    - 0.1
+    - 0.57048
+    - -0.08272
+    - 0.07967599927368085
     init_rot:
+    - 1
+    - 0
+    - 0
+    - 0
+    height: 0.08617600129157098
+    position_range:
+      x:
+      - 0.52048
+      - 0.62048
+      y:
+      - -0.13272
+      - -0.03272
+      z:
+      - 0.07967599927368085
+      - 0.07967599927368085
+    orientation_range:
+      yaw:
+      - -0.174533
+      - 0.174533
+    scale:
     - 1.0
-    - 0.0
-    - 0.0
-    - 0.0
-    height: 0.1
+    - 1.0
+    - 1.0
+    mass: 0.15
+  stack_cup_small:
+    usd_path: models/task_variants/stack_cups/white_75mmcup_hollow.usda
+    semantic_tags:
+    - - class
+      - stack_cup_small
+    init_pos:
+    - 0.52048
+    - 0.16728
+    - 0.06222560009933419
+    init_rot:
+    - 1
+    - 0
+    - 0
+    - 0
+    height: 0.05926794960654918
+    position_range:
+      x:
+      - 0.47048
+      - 0.57048
+      y:
+      - 0.11728
+      - 0.21728
+      z:
+      - 0.06222560009933419
+      - 0.06222560009933419
+    orientation_range:
+      yaw:
+      - -0.174533
+      - 0.174533
+    scale:
+    - 0.85
+    - 0.85
+    - 0.85
+    mass: 0.06
 primitives:
 - type: pick
   mode: gt
   params:
-    target: white_papercup1
-    grasp_quat:
-    - 0.0
-    - 1.0
-    - 0.0
-    - 0.0
+    target: stack_cup_medium
     pre_pick_offset: 0.1
-    pick_interpolation_steps: 10
-    lift_interpolation_steps: 10
-    lift_offset: 0.1
+    pick_interpolation_steps: 5
+    lift_interpolation_steps: 5
+    lift_offset: 0.15
+    grasp_offset:
+    - 0
+    - 0
+    - 0.015
+    grasp_quat:
+    - 0
+    - 1
+    - 0
+    - 0
 - type: place
   mode: 'on'
   params:
-    target: white_papercup2
-    orientation:
-    - 0.0
-    - 1.0
-    - 0.0
-    - 0.0
-    on_height_margin: 0.03
+    target: stack_cup_large
     ik_interpolation_steps: 5
     post_release_lift_offset:
     - 0.0
     - 0.0
     - 0.1
-    post_release_lift_steps: 10
+    post_release_lift_steps: 5
     success_eval: true
+    align_object_center: true
+    approach_height: 0.08
+    release_settle_steps: 6
+    success_geometry:
+      xy_radius: 0.03
+      z_range:
+      - -0.025
+      - 0.1
+      upright_cos: 0.9
+      max_speed: 0.08
+    trace_placement: true
+    center_height_above_target: 0.045
 - type: pick
   mode: gt
   params:
-    target: white_papercup3
-    grasp_quat:
-    - 0.0
-    - 1.0
-    - 0.0
-    - 0.0
+    target: stack_cup_small
     pre_pick_offset: 0.1
-    pick_interpolation_steps: 10
-    lift_interpolation_steps: 10
-    lift_offset: 0.1
+    pick_interpolation_steps: 5
+    lift_interpolation_steps: 5
+    lift_offset: 0.15
+    grasp_offset:
+    - 0
+    - 0
+    - 0.015
+    grasp_quat:
+    - 0
+    - 1
+    - 0
+    - 0
 - type: place
   mode: 'on'
   params:
-    target: white_papercup2
-    orientation:
-    - 0.0
-    - 1.0
-    - 0.0
-    - 0.0
-    on_height_margin: 0.05
+    post_release_lift_steps: 5
+    target: stack_cup_medium
     ik_interpolation_steps: 5
     success_eval: true
+    align_object_center: true
+    approach_height: 0.08
+    release_settle_steps: 6
+    success_geometry:
+      xy_radius: 0.03
+      z_range:
+      - -0.025
+      - 0.1
+      upright_cos: 0.9
+      max_speed: 0.08
+    trace_placement: true
+    center_height_above_target: 0.04
+- type: verify
+  params:
+    relations:
+    - source: stack_cup_medium
+      target: stack_cup_large
+      xy_radius: 0.03
+      z_range:
+      - -0.025
+      - 0.1
+      upright_cos: 0.9
+      max_speed: 0.08
+    - source: stack_cup_small
+      target: stack_cup_medium
+      xy_radius: 0.03
+      z_range:
+      - -0.025
+      - 0.1
+      upright_cos: 0.9
+      max_speed: 0.08
+    samples: 3
+    settle_steps: 4
 enable_random_lights: false
 image_noise_std: 0
 image_speckle_noise_std: 0
@@ -153,19 +251,47 @@ enable_objects_randomization: true
 enable_objects_randomization_curriculum: false
 texture_randomization:
   enabled: true
-  avoid_repeats: true
   texture_dir: models/random_pic/table
   targets:
     table:
       prim_path: /World/envs/env_{i}/table/Xform_01/Xform/leg/node_/Cube
       texture_dir: models/random_pic/table
-articulations: {}
 phase_depenetration:
   objects:
-  - white_papercup1
-  - white_papercup2
-  - white_papercup3
+  - stack_cup_medium
+  - stack_cup_large
+  - stack_cup_small
   reset: 2.0
   primitives:
     pick: 2.0
     release: 0.5
+lighting:
+  type: dome
+  intensity: 1200.0
+  color:
+  - 1.0
+  - 1.0
+  - 1.0
+visibility_check:
+  object_bounds:
+    stack_cup_medium:
+    - - -0.03688740134239197
+      - -0.03745800107717513
+      - -0.033158701658248906
+    - - 0.03775320164859295
+      - 0.03751380108296872
+      - 0.025560000166296958
+    stack_cup_large:
+    - - -0.054363999515771866
+      - -0.05439300155774776
+      - -0.04867599927368085
+    - - 0.05059399828314781
+      - 0.05053399801055289
+      - 0.037500002017890124
+    stack_cup_small:
+    - - -0.03185459952801466
+      - -0.0323595011308145
+      - -0.031225600099334196
+    - - 0.033422851376235484
+      - 0.033217148864921574
+      - 0.028042349507214983

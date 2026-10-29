@@ -36,7 +36,7 @@ _HERE = os.path.dirname(os.path.abspath(__file__))
 if _HERE not in sys.path:
     sys.path.insert(0, _HERE)
 
-from dataset import DiffusionPolicyDataset
+from dataset import DiffusionPolicyDataset, validate_dataset_compatibility
 from ema_model import EMAModel
 from policy import DiffusionPolicy
 
@@ -130,6 +130,9 @@ def train(args):
         load_count=args.load_count,
         use_qvel=args.use_qvel,
     )
+    validate_dataset_compatibility(train_ds, valid_ds)
+    if args.action_dim != train_ds.action_dim:
+        raise ValueError(f"Configured action_dim={args.action_dim} differs from dataset action_dim={train_ds.action_dim}")
     train_loader = DataLoader(
         train_ds, batch_size=args.batch_size, shuffle=True,
         num_workers=args.num_workers, pin_memory=True, drop_last=True,
@@ -144,8 +147,7 @@ def train(args):
 
     #  dataset  use_qvel  args ( ckpt , play ).
     args.use_qvel = train_ds.use_qvel
-    # lowdim_dim  use_qvel  (qpos=7, qvel=7).
-    expected_lowdim = 14 if args.use_qvel else 7
+    expected_lowdim = train_ds.lowdim_dim
     if args.lowdim_dim != expected_lowdim:
         print(f"[INFO] lowdim_dim : {args.lowdim_dim}  to  {expected_lowdim} (use_qvel={args.use_qvel})")
         args.lowdim_dim = expected_lowdim
@@ -352,11 +354,10 @@ def build_parser():
     p.add_argument("--output_dir", type=str, default="logs/dp_rss")
     p.add_argument("--load_count", type=int, default=None)
 
-    # qvel  obs_lowdim.  None= hdf5 ;
-    # --no_qvel  qpos (lowdim_dim=7); --use_qvel  qvel ().
+    # Infer the low-dimensional size from the recorded joint dimensions.
     qvel_grp = p.add_mutually_exclusive_group()
     qvel_grp.add_argument("--no_qvel", dest="use_qvel", action="store_false", default=None,
-                          help=" qvel, obs_lowdim  qpos (lowdim_dim  7)")
+                          help="Use qpos only; its dimension is inferred from the HDF5 dataset")
     qvel_grp.add_argument("--use_qvel", dest="use_qvel", action="store_true", default=None,
                           help=" qvel; hdf5  qvel ")
 

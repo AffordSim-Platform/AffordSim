@@ -1,0 +1,170 @@
+simulation:
+  decimation: 30
+  dt: 0.00833333
+  render_interval: 5
+  episode_length_s: 100
+scene:
+  num_envs: 1
+  env_spacing: 10
+task:
+  name: interactive task
+  description: grasp the red mugcup and place it into coffeemachine1 with affordance
+runtime:
+  headless: false
+  episodes: 5
+  save_npy: false
+  save_camera_images: false
+  save_composite_images: false
+  save_mask_images: false
+  save_original_images: true
+  enable_motion_planning: true
+  sim_camera_resolution:
+  - 640
+  - 480
+  background_image_size:
+  - 640
+  - 480
+  use_background_replace: false
+  cam_side_background: backgrounds/1123_background.png
+  cam_wrist_background: backgrounds/wristbackground_realworld1.png
+  data_dir: data/r2s2r_data/pick_kettle_place_base
+  task_name: FrankaFr3-OurGripper-Joint-VisPick-v0
+  save_depth_images: false
+robot:
+  cfg_name: franka_fr3_our.yml
+  type: franka_fr3_default
+offsets:
+  grasp:
+  - 0
+  - 0
+  - 0.0
+  place:
+  - 0
+  - 0
+  - 0.0
+objects:
+  white_kettle7:
+    usd_path: models/all_object/white_kettle7.usd
+    semantic_tags:
+    - - class
+      - white_kettle7
+    scale:
+    - 0.15
+    - 0.15
+    - 0.15
+    disable_gravity: false
+    enabled_self_collisions: true
+    init_pos:
+    - 0.45677
+    - -0.51529
+    - 0.09939955613306149
+    init_rot:
+    - 0.0
+    - 0.0
+    - 0.0
+    - 1.0
+    position_range:
+      x:
+      - 0.35677
+      - 0.60677
+      y:
+      - -0.66529
+      - -0.31529
+      z:
+      - 0.09939955613306149
+      - 0.09939955613306149
+    orientation_range:
+      yaw:
+      - -0.5236
+      - 0.5236
+  base:
+    usd_path: models/all_object/base.usd
+    scale:
+    - 0.5
+    - 0.5
+    - 0.5
+    semantic_tags:
+    - - class
+      - base
+    disable_gravity: false
+    enabled_self_collisions: true
+    init_pos:
+    - 0.45677
+    - -0.01529
+    - 0.08
+    init_rot:
+    - 0.999
+    - 0.0
+    - 0.0
+    - -0.0436
+    position_range:
+      x:
+      - 0.35677
+      - 0.60677
+      y:
+      - -0.21529
+      - 0.13471
+      z:
+      - 0.08
+      - 0.08
+    orientation_range:
+      yaw:
+      - -3.1416
+      - 3.1416
+primitives:
+- type: pick
+  mode: affordance
+  params:
+    lift_interpolation_steps: 5
+    target: white_kettle7
+    pre_pick_offset:
+    - 0.0
+    - 0.0
+    - 0.1
+    pick_interpolation_steps: 5
+- type: place
+  mode: true
+  params:
+    ik_interpolation_steps: 5
+    post_release_lift_steps: 5
+    target: base
+    on_height_margin: 0.1
+    success_eval: true
+enable_random_lights: false
+image_noise_std: 0
+image_speckle_noise_std: 0
+enable_objects_randomization: true
+enable_objects_randomization_curriculum: false
+texture_randomization:
+  enabled: true
+  texture_dir: models/random_pic/table
+  targets:
+    table:
+      prim_path: /World/envs/env_{i}/table/Xform_01/Xform/leg/node_/Cube
+      texture_dir: models/random_pic/table
+    white_75mmcup:
+      prim_path: /World/envs/env_{i}/white_75mmcup
+      texture_dir: models/random_pic/cup
+lighting:
+  type: dome
+  intensity: 1200.0
+  color:
+  - 1.0
+  - 1.0
+  - 1.0
+visibility_check:
+  object_bounds:
+    white_kettle7:
+    - - -0.12140970366715778
+      - -0.06991305651760099
+      - -0.06839955613306149
+    - - 0.07596705307176392
+      - 0.06989790955421307
+      - 0.14929859601611314
+    base:
+    - - -0.1
+      - -0.1
+      - -0.0125
+    - - 0.1
+      - 0.1
+      - 0.0125

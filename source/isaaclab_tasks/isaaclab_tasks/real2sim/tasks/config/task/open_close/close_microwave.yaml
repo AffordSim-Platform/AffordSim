@@ -8,7 +8,7 @@ scene:
   env_spacing: 10
 task:
   name: close_microwave
-  description: Close the microwave 1.
+  description: close the microwave door
 runtime:
   headless: false
   episodes: 5
@@ -24,15 +24,15 @@ runtime:
   background_image_size:
   - 640
   - 480
-  use_background_replace: true
+  use_background_replace: false
   cam_side_background: backgrounds/1123_background.png
   cam_wrist_background: backgrounds/wristbackground_realworld1.png
   data_dir: data/r2s2r_data/close_microwave
-  task_name: Kinova-Robotiq85-IKRel-EE-VisPick-v0
+  task_name: FrankaFr3-OurGripper-Joint-VisPick-v0
   save_depth_images: false
 robot:
-  cfg_name: kinova_robotiq85.yml
-  type: kinova_robotiq85
+  cfg_name: franka_fr3_our.yml
+  type: franka_fr3_default
 offsets:
   grasp:
   - 0
@@ -63,6 +63,20 @@ articulations:
     - 0
     - 0
     - -0.7071
+    position_range:
+      x:
+      - 0.7
+      - 0.8
+      y:
+      - -0.25
+      - -0.15
+      z:
+      - 0.16
+      - 0.16
+    orientation_range:
+      yaw:
+      - -0.1745
+      - 0.1745
     joint_pos:
       microjoint: -1.57
     actuators:
@@ -81,7 +95,7 @@ primitives:
     pre_close_open_normal_offset: 0.4
     close_facing_offset: 0.2
     close_open_normal_backoff: 0.15
-    close_interpolation_steps: 30
+    close_interpolation_steps: 5
     success_eval: true
     success_joint_name: microjoint
 enable_random_lights: false
@@ -91,10 +105,24 @@ enable_objects_randomization: true
 enable_objects_randomization_curriculum: false
 texture_randomization:
   enabled: true
-  avoid_repeats: true
   texture_dir: models/random_pic/table
   targets:
     table:
       prim_path: /World/envs/env_{i}/table/Xform_01/Xform/leg/node_/Cube
       texture_dir: models/random_pic/table
-objects: {}
+lighting:
+  type: dome
+  intensity: 1200.0
+  color:
+  - 1.0
+  - 1.0
+  - 1.0
+visibility_check:
+  object_bounds:
+    microwave1:
+    - - -0.21845319122076035
+      - -0.149477891536016
+      - -0.12642106041312218
+    - - 0.218453212082386
+      - 0.1494779884815216
+      - 0.12642104998230932

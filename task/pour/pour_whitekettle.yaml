@@ -1,0 +1,173 @@
+simulation:
+  decimation: 30
+  dt: 0.00833333
+  render_interval: 5
+  episode_length_s: 100
+scene:
+  num_envs: 1
+  env_spacing: 10
+task:
+  name: pour_whitekettle
+  description: grasp the blue cup and pour into the bowl
+runtime:
+  headless: false
+  episodes: 30
+  save_npy: false
+  save_camera_images: false
+  save_composite_images: false
+  save_mask_images: false
+  save_original_images: true
+  enable_motion_planning: true
+  sim_camera_resolution:
+  - 640
+  - 480
+  background_image_size:
+  - 640
+  - 480
+  use_background_replace: false
+  cam_side_background: backgrounds/1123_background.png
+  cam_wrist_background: backgrounds/wristbackground_realworld1.png
+  data_dir: data/r2s2r_data/pour_whitekettle
+  task_name: FrankaFr3-OurGripper-Joint-VisPick-v0
+  save_depth_images: false
+robot:
+  cfg_name: franka_fr3_our.yml
+  type: franka_fr3_default
+offsets:
+  grasp:
+  - 0
+  - 0
+  - 0.0
+  place:
+  - 0
+  - 0
+  - 0.0
+objects:
+  white_kettle3:
+    usd_path: models/all_object/white_kettle3.usd
+    semantic_tags:
+    - - class
+      - white_kettle3
+    scale:
+    - 0.15
+    - 0.15
+    - 0.15
+    init_pos:
+    - 0.45858
+    - -0.01011
+    - 0.15
+    init_rot:
+    - 0
+    - 0
+    - 0
+    - 1
+    height: 0.242
+    position_range:
+      x:
+      - 0.35858
+      - 0.55858
+      y:
+      - -0.11011
+      - 0.13989
+      z:
+      - 0.15
+      - 0.15
+    orientation_range:
+      yaw:
+      - -0.5236
+      - 0.5236
+  yellow_bowl:
+    usd_path: models/all_object/yellow_bowl.usd
+    semantic_tags:
+    - - class
+      - yellow_bowl
+    init_pos:
+    - 0.55858
+    - -0.31011
+    - 0.077
+    init_rot:
+    - -0.3826834
+    - 0
+    - 0
+    - 0.9238795
+    height: 0.054
+    position_range:
+      x:
+      - 0.50858
+      - 0.55858
+      y:
+      - -0.36011
+      - -0.31011
+      z:
+      - 0.077
+      - 0.077
+    orientation_range:
+      yaw:
+      - -3.1416
+      - 3.1416
+articulations: {}
+primitives:
+- type: pick
+  mode: affordance
+  params:
+    target: white_kettle3
+    pre_pick_offset:
+    - 0.0
+    - 0.0
+    - 0.1
+    pick_interpolation_steps: 5
+    lift_interpolation_steps: 5
+    lift_offset: 0.15
+- type: pour
+  params:
+    tilt_interpolation_steps: 15
+    return_lift_interpolation_steps: 10
+    return_interpolation_steps: 15
+    target: yellow_bowl
+    tilt_angle_deg: 65
+    move_hover_height: 0.3
+    tilt_lift_height: 0.3
+    tilt_horizontal_offset: 0.13
+    success_eval: true
+    hold_steps: 3
+enable_random_lights: false
+image_noise_std: 0
+image_speckle_noise_std: 0
+enable_objects_randomization: true
+enable_objects_randomization_curriculum: false
+texture_randomization:
+  enabled: true
+  texture_dir: models/random_pic
+  targets:
+    table:
+      prim_path: /World/envs/env_{i}/table/Xform_01/Xform/leg/node_/Cube
+      texture_dir: models/random_pic/table
+    microwave:
+      prim_path: /World/envs/env_{i}/microwave
+      texture_dir: models/random_pic/microwave
+    white_kettle3:
+      prim_path: /World/envs/env_{i}/white_kettle3
+      texture_dir: models/random_pic/kettle
+lighting:
+  type: dome
+  intensity: 1200.0
+  color:
+  - 1.0
+  - 1.0
+  - 1.0
+visibility_check:
+  object_bounds:
+    white_kettle3:
+    - - -0.14693610655063968
+      - -0.08570385266166308
+      - -0.06171810543694484
+    - - 0.13943250059619527
+      - 0.08924760490869874
+      - 0.08671605485680073
+    yellow_bowl:
+    - - -0.08058199702392521
+      - -0.08073099050050307
+      - -0.02750500178615774
+    - - 0.08058200656066816
+      - 0.08073200139522167
+      - 0.02750400281229903

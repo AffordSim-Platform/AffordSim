@@ -8,8 +8,7 @@ scene:
   env_spacing: 10
 task:
   name: pour_pan
-  description: Pick up the white pan; then pour from the white pan into the yellow
-    large bowl; then place the white pan at the specified position.
+  description: grasp the pan and pour into the bowl
 runtime:
   headless: false
   episodes: 5
@@ -25,15 +24,15 @@ runtime:
   background_image_size:
   - 640
   - 480
-  use_background_replace: true
+  use_background_replace: false
   cam_side_background: backgrounds/1123_background.png
   cam_wrist_background: backgrounds/wristbackground_realworld1.png
   data_dir: data/r2s2r_data/pour_pan
-  task_name: UR5e-Robotiq85-IKRel-EE-VisPick-v0
+  task_name: FrankaFr3-OurGripper-Joint-VisPick-v0
   save_depth_images: false
 robot:
-  cfg_name: ur5e_robotiq_2f_85.yml
-  type: ur5e
+  cfg_name: franka_fr3_our.yml
+  type: franka_fr3
 offsets:
   grasp:
   - 0
@@ -50,8 +49,8 @@ objects:
     - - class
       - white_pan
     init_pos:
-    - 0.71
-    - 0.18
+    - 0.48945
+    - -0.12807
     - 0.1
     init_rot:
     - 0.0436
@@ -59,29 +58,28 @@ objects:
     - 0.0
     - 0.999
     height: 0.05
-  white_plate:
-    usd_path: models/all_object/white_plate.usd
-    semantic_tags:
-    - - class
-      - white_plate
-    init_pos:
-    - 0.709
-    - -0.471
-    - 0.12
-    init_rot:
-    - -0.7238
-    - 0.0
-    - 0.0
-    - 0.69
-    height: 0.14
+    position_range:
+      x:
+      - 0.38945
+      - 0.63945
+      y:
+      - -0.22807
+      - 0.07193
+      z:
+      - 0.1
+      - 0.1
+    orientation_range:
+      yaw:
+      - -0.5236
+      - 0.5236
   yellow_bigbowl:
     usd_path: models/all_object/yellow_bigbowl.usd
     semantic_tags:
     - - class
       - yellow_bigbowl
     init_pos:
-    - 0.626
-    - -0.076
+    - 0.48945
+    - -0.37807
     - 0.077
     init_rot:
     - -0.3826834
@@ -89,6 +87,20 @@ objects:
     - 0
     - 0.9238795
     height: 0.054
+    position_range:
+      x:
+      - 0.48945
+      - 0.58945
+      y:
+      - -0.42807
+      - -0.32807
+      z:
+      - 0.077
+      - 0.077
+    orientation_range:
+      yaw:
+      - -3.1416
+      - 3.1416
 primitives:
 - type: pick
   mode: affordance_multidir
@@ -98,23 +110,29 @@ primitives:
     - 0.0
     - 0.0
     - 0.1
-    pick_interpolation_steps: 10
+    pick_interpolation_steps: 5
     lift_interpolation_steps: 5
     lift_offset: 0.15
 - type: pour
   params:
+    tilt_interpolation_steps: 15
+    return_lift_interpolation_steps: 10
+    return_interpolation_steps: 15
     target: yellow_bigbowl
     tilt_angle_deg: 100
     move_hover_height: 0.12
     tilt_lift_height: 0.12
     tilt_horizontal_offset: 0.1
     success_eval: true
+    hold_steps: 3
 - type: place
   mode: pose
   params:
+    ik_interpolation_steps: 5
+    post_release_lift_steps: 5
     position:
-    - 0.71
-    - 0.18
+    - 0.64945
+    - -0.19807
     - 0.1
     orientation:
     - 0
@@ -129,17 +147,31 @@ enable_objects_randomization: true
 enable_objects_randomization_curriculum: false
 texture_randomization:
   enabled: true
-  avoid_repeats: true
   texture_dir: models/random_pic/table
   targets:
     table:
       prim_path: /World/envs/env_{i}/table/Xform_01/Xform/leg/node_/Cube
       texture_dir: models/random_pic/table
-articulations: {}
-phase_depenetration:
-  objects:
-  - white_pan
-  reset: 2.0
-  primitives:
-    pick: 2.0
-    release: 0.5
+lighting:
+  type: dome
+  intensity: 1200.0
+  color:
+  - 1.0
+  - 1.0
+  - 1.0
+visibility_check:
+  object_bounds:
+    white_pan:
+    - - -0.14546300732602396
+      - -0.11183700517483974
+      - -0.041239000856876394
+    - - 0.23583300661918705
+      - 0.10690000248689582
+      - 0.0612520016729832
+    yellow_bigbowl:
+    - - -0.09296700358390808
+      - -0.09845600350506896
+      - -0.05038000128648172
+    - - 0.09519600123167038
+      - 0.0889870014658081
+      - 0.03132500335246999

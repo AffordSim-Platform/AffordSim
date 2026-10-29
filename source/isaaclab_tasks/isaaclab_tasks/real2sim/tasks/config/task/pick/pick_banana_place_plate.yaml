@@ -25,7 +25,7 @@ runtime:
   background_image_size:
   - 640
   - 480
-  use_background_replace: true
+  use_background_replace: false
   cam_side_background: backgrounds/1123_background.png
   cam_wrist_background: backgrounds/wristbackground_realworld1.png
   data_dir: data/r2s2r_data/pick_banana_place_plate
@@ -64,7 +64,7 @@ objects:
       - 0.5731
       - 0.6481
       y:
-      - 0.07550000000000001
+      - 0.0755
       - 0.1505
       z:
       - 0.098
@@ -90,11 +90,11 @@ objects:
     height: 0.059
     position_range:
       x:
-      - 0.49750000000000005
+      - 0.4975
       - 0.5725
       y:
       - -0.2135
-      - -0.13849999999999998
+      - -0.1385
       z:
       - 0.055
       - 0.055
@@ -111,11 +111,13 @@ primitives:
     - 0.0
     - 0.0
     - 0.1
-    pick_interpolation_steps: 15
-    lift_interpolation_steps: 15
+    pick_interpolation_steps: 5
+    lift_interpolation_steps: 5
 - type: place
   mode: in
   params:
+    ik_interpolation_steps: 5
+    post_release_lift_steps: 5
     target: white_plate
     success_eval: true
 enable_random_lights: false
@@ -140,3 +142,26 @@ phase_depenetration:
   primitives:
     pick: 2.0
     release: 0.5
+lighting:
+  type: dome
+  intensity: 1200.0
+  color:
+  - 1.0
+  - 1.0
+  - 1.0
+visibility_check:
+  object_bounds:
+    yellow_banana:
+    - - -0.09858668106973134
+      - -0.03703351004180419
+      - -0.019324160457841796
+    - - 0.0985872723477943
+      - 0.037032780481003044
+      - 0.01932517135261956
+    white_plate:
+    - - -0.13386597633361816
+      - -0.13386603355407714
+      - -0.025243499279022245
+    - - 0.1338659334182739
+      - 0.13386587619781493
+      - 0.033679858446121244

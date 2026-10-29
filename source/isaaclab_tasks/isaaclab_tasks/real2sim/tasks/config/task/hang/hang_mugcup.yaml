@@ -8,7 +8,7 @@ scene:
   env_spacing: 10
 task:
   name: hang_mugcup
-  description: Pick up the red mug; then hang the red mug on the wood rack.
+  description: grasp the red mug cup and hang it on the wood rack
 runtime:
   headless: false
   episodes: 5
@@ -24,15 +24,15 @@ runtime:
   background_image_size:
   - 640
   - 480
-  use_background_replace: true
+  use_background_replace: false
   cam_side_background: backgrounds/1123_background.png
   cam_wrist_background: backgrounds/wristbackground_realworld1.png
   data_dir: data/r2s2r_data/hang_mugcup
-  task_name: UR5e-Robotiq85-IKRel-EE-VisPick-v0
+  task_name: FrankaFr3-OurGripper-Joint-VisPick-v0
   save_depth_images: false
 robot:
-  cfg_name: ur5e_robotiq_2f_85.yml
-  type: ur5e
+  cfg_name: franka_fr3_our.yml
+  type: franka_fr3_default
 offsets:
   grasp:
   - 0
@@ -49,8 +49,8 @@ objects:
     - - class
       - red_mugcup
     init_pos:
-    - 0.6
-    - -0.32
+    - 0.48445
+    - -0.43596
     - 0.09
     init_rot:
     - 0.9239
@@ -60,27 +60,27 @@ objects:
     height: 0.081
     position_range:
       x:
-      - 0.5750000000000001
-      - 0.6250000000000001
+      - 0.38445
+      - 0.53445
       y:
-      - -0.32499999999999996
-      - -0.275
+      - -0.58596
+      - 0.21404
       z:
       - 0.09
       - 0.09
     orientation_range:
       yaw:
-      - -0.08725
-      - 0.08725
+      - -3.14
+      - 3.14
   wood_rack:
     usd_path: models/all_object/wood_rack.usd
     semantic_tags:
     - - class
       - wood_rack
     init_pos:
-    - 0.78
-    - -0.22
-    - 0.25
+    - 0.73445
+    - -0.38596
+    - 0.03734999992325902
     init_rot:
     - 0.7071
     - 0.0
@@ -89,18 +89,18 @@ objects:
     height: 0.3
     position_range:
       x:
-      - 0.7625
-      - 0.7875000000000001
+      - 0.58445
+      - 0.73445
       y:
-      - -0.2375
-      - -0.21250000000000002
+      - -0.43596
+      - -0.23596
       z:
-      - 0.25
-      - 0.25
+      - 0.03734999992325902
+      - 0.03734999992325902
     orientation_range:
       yaw:
-      - -0.08725
-      - 0.08725
+      - -0.1745
+      - 0.1745
 primitives:
 - type: pick
   mode: hang
@@ -110,18 +110,18 @@ primitives:
     - 0.0
     - 0.0
     - 0.08
-    pick_interpolation_steps: 10
-    lift_interpolation_steps: 10
+    pick_interpolation_steps: 5
+    lift_interpolation_steps: 5
 - type: hang
   mode: mount
   params:
     target: wood_rack
     pre_hang_distance: 0.05
-    insert_interpolation_steps: 20
+    insert_interpolation_steps: 5
     extra_insert_distance: 0.05
-    extra_insert_interpolation_steps: 10
+    extra_insert_interpolation_steps: 5
     post_release_retreat_distance: 0.1
-    retreat_interpolation_steps: 10
+    retreat_interpolation_steps: 5
     success_eval: true
 enable_random_lights: false
 image_noise_std: 0
@@ -130,18 +130,31 @@ enable_objects_randomization: true
 enable_objects_randomization_curriculum: false
 texture_randomization:
   enabled: true
-  avoid_repeats: true
   texture_dir: models/random_pic/table
   targets:
     table:
       prim_path: /World/envs/env_{i}/table/Xform_01/Xform/leg/node_/Cube
       texture_dir: models/random_pic/table
-articulations: {}
-phase_depenetration:
-  objects:
-  - red_mugcup
-  - wood_rack
-  reset: 2.0
-  primitives:
-    pick: 2.0
-    release: 0.5
+lighting:
+  type: dome
+  intensity: 1200.0
+  color:
+  - 1.0
+  - 1.0
+  - 1.0
+visibility_check:
+  object_bounds:
+    red_mugcup:
+    - - -0.05849487650778418
+      - -0.04654441868603657
+      - -0.0406510026147473
+    - - 0.05849521029378746
+      - 0.04654394184892314
+      - 0.04065199920440199
+    wood_rack:
+    - - -0.05714999884366989
+      - -0.05714999884366989
+      - -0.00634999992325902
+    - - 0.13791100680828094
+      - 0.05714999884366989
+      - 0.38100001215934753

@@ -8,8 +8,7 @@ scene:
   env_spacing: 10
 task:
   name: pick_scrubbottle_place_woodshelf
-  description: Pick up the white scrub bottle; then place the white scrub bottle on
-    the brown wood shelf.
+  description: grasp the yellow bowl and put it in the microwave
 runtime:
   headless: false
   episodes: 5
@@ -25,15 +24,15 @@ runtime:
   background_image_size:
   - 640
   - 480
-  use_background_replace: true
+  use_background_replace: false
   cam_side_background: backgrounds/1123_background.png
   cam_wrist_background: backgrounds/wristbackground_realworld1.png
   data_dir: data/r2s2r_data/pick_scrubbottle_place_woodshelf
-  task_name: UR5e-Robotiq85-IKRel-EE-VisPick-v0
+  task_name: FrankaFr3-OurGripper-Joint-VisPick-v0
   save_depth_images: false
 robot:
-  cfg_name: ur5e_robotiq_2f_85.yml
-  type: ur5e
+  cfg_name: franka_fr3_our.yml
+  type: franka_fr3_default
 offsets:
   grasp:
   - 0
@@ -49,24 +48,41 @@ objects:
     semantic_tags:
     - - class
       - white_scrubbottle
+    scale:
+    - 0.6
+    - 0.6
+    - 0.6
     init_pos:
-    - 0.7
-    - 0.1
-    - 0.15
+    - 0.53692
+    - 0.2144
+    - 0.16
     init_rot:
-    - 0.9848
-    - 0.0
-    - 0.0
-    - -0.1736
-    height: 0.03
+    - 1
+    - 0
+    - 0
+    - 0
+    position_range:
+      x:
+      - 0.51192
+      - 0.66192
+      y:
+      - 0.0894
+      - 0.2394
+      z:
+      - 0.16
+      - 0.16
+    orientation_range:
+      yaw:
+      - -0.5236
+      - 0.5236
   brown_woodshelf:
     usd_path: models/all_object/brown_woodshelf.usd
     semantic_tags:
     - - class
       - brown_woodshelf
     init_pos:
-    - 0.8
-    - -0.2
+    - 0.78692
+    - -0.2356
     - 0.35
     init_rot:
     - 0.92387953
@@ -74,6 +90,20 @@ objects:
     - 0.0
     - -0.38268343
     height: 0.42
+    position_range:
+      x:
+      - 0.68692
+      - 0.78692
+      y:
+      - -0.3106
+      - -0.1606
+      z:
+      - 0.35
+      - 0.35
+    orientation_range:
+      yaw:
+      - -0.1745
+      - 0.1745
 primitives:
 - type: pick
   mode: affordance
@@ -83,14 +113,15 @@ primitives:
     - 0.0
     - 0.0
     - 0.15
-    pick_interpolation_steps: 10
-    lift_interpolation_steps: 10
+    pick_interpolation_steps: 5
+    lift_interpolation_steps: 5
     lift_offset: 0.15
 - type: place
   mode: in
   params:
+    post_release_lift_steps: 5
     target: brown_woodshelf
-    ik_interpolation_steps: 30
+    ik_interpolation_steps: 5
     success_eval: true
 enable_random_lights: false
 image_noise_std: 0
@@ -99,18 +130,31 @@ enable_objects_randomization: true
 enable_objects_randomization_curriculum: false
 texture_randomization:
   enabled: true
-  avoid_repeats: true
   texture_dir: models/random_pic/table
   targets:
     table:
       prim_path: /World/envs/env_{i}/table/Xform_01/Xform/leg/node_/Cube
       texture_dir: models/random_pic/table
-articulations: {}
-phase_depenetration:
-  objects:
-  - white_scrubbottle
-  - brown_woodshelf
-  reset: 2.0
-  primitives:
-    pick: 2.0
-    release: 0.5
+lighting:
+  type: dome
+  intensity: 1200.0
+  color:
+  - 1.0
+  - 1.0
+  - 1.0
+visibility_check:
+  object_bounds:
+    white_scrubbottle:
+    - - -0.030730198173294986
+      - -0.020309402677617588
+      - -0.07517400070863732
+    - - 0.030729600219511963
+      - 0.020310002061912052
+      - 0.07517400070861681
+    brown_woodshelf:
+    - - -0.05999999999999999
+      - -0.11940963792800902
+      - -0.278077667236328
+    - - 0.09490904235839845
+      - 0.12059036207199095
+      - 0.1449223327636718

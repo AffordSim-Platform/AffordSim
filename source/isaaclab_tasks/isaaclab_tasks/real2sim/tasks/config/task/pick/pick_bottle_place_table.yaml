@@ -8,8 +8,7 @@ scene:
   env_spacing: 10
 task:
   name: pick_bottle_place_table
-  description: Pick up the red bottle; then place the red bottle at the specified
-    position.
+  description: grasp the red mug cup and hang it on the wood rack
 runtime:
   headless: false
   episodes: 5
@@ -25,7 +24,7 @@ runtime:
   background_image_size:
   - 640
   - 480
-  use_background_replace: true
+  use_background_replace: false
   cam_side_background: backgrounds/1123_background.png
   cam_wrist_background: backgrounds/wristbackground_realworld1.png
   data_dir: data/r2s2r_data/pick_bottle_place_table
@@ -33,7 +32,7 @@ runtime:
   save_depth_images: false
 robot:
   cfg_name: franka_fr3_our.yml
-  type: franka_fr3
+  type: franka_fr3_default
 offsets:
   grasp:
   - 0
@@ -44,51 +43,6 @@ offsets:
   - 0
   - 0.0
 objects:
-  red_mugcup:
-    usd_path: models/all_object/red_mugcup.usd
-    semantic_tags:
-    - - class
-      - red_mugcup
-    init_pos:
-    - 0.7
-    - 0.15
-    - 0.09
-    init_rot:
-    - 0.9239
-    - 0.0
-    - 0.0
-    - 0.3827
-    height: 0.081
-  starbuckscup:
-    usd_path: models/all_object/starbuckscup.usd
-    semantic_tags:
-    - - class
-      - starbuckscup
-    init_pos:
-    - 0.48
-    - 0.22
-    - 0.1
-    init_rot:
-    - 1.0
-    - 0.0
-    - 0.0
-    - 0.0
-    height: 0.1
-  white_100mmcup:
-    usd_path: models/all_object/white_100mmcup.usd
-    semantic_tags:
-    - - class
-      - white_100mmcup
-    init_pos:
-    - 0.68
-    - -0.05
-    - 0.08
-    init_rot:
-    - 1.0
-    - 0.0
-    - 0.0
-    - 0.0
-    height: 0.08
   red_bottle:
     usd_path: models/all_object/red_bottle.usd
     semantic_tags:
@@ -99,15 +53,29 @@ objects:
     - 0.1
     - 0.1
     init_pos:
-    - 0.65
-    - -0.25
+    - 0.54303
+    - -0.26811
     - 0.1
     init_rot:
-    - 1
-    - 0
-    - 0
-    - 0
+    - 0.9396926
+    - 0.0
+    - 0.0
+    - 0.3420201
     height: 0.08
+    position_range:
+      x:
+      - 0.54303
+      - 0.74303
+      y:
+      - -0.26811
+      - 0.13189
+      z:
+      - 0.1
+      - 0.1
+    orientation_range:
+      yaw:
+      - -0.3489
+      - 0.3489
 primitives:
 - type: pick
   mode: affordance
@@ -117,14 +85,16 @@ primitives:
     - 0.0
     - 0.0
     - 0.12
-    pick_interpolation_steps: 10
-    lift_interpolation_steps: 10
+    pick_interpolation_steps: 5
+    lift_interpolation_steps: 5
 - type: place
   mode: pose
   params:
+    ik_interpolation_steps: 5
+    post_release_lift_steps: 5
     position:
-    - 0.6
-    - 0.2
+    - 0.59303
+    - 0.18189
     - 0.1
     success_eval: true
 enable_random_lights: false
@@ -134,17 +104,24 @@ enable_objects_randomization: true
 enable_objects_randomization_curriculum: false
 texture_randomization:
   enabled: true
-  avoid_repeats: true
   texture_dir: models/random_pic/table
   targets:
     table:
       prim_path: /World/envs/env_{i}/table/Xform_01/Xform/leg/node_/Cube
       texture_dir: models/random_pic/table
-articulations: {}
-phase_depenetration:
-  objects:
-  - red_bottle
-  reset: 2.0
-  primitives:
-    pick: 2.0
-    release: 0.5
+lighting:
+  type: dome
+  intensity: 1200.0
+  color:
+  - 1.0
+  - 1.0
+  - 1.0
+visibility_check:
+  object_bounds:
+    red_bottle:
+    - - -0.020991202325578547
+      - -0.02095150262018043
+      - -0.06384990381966821
+    - - 0.02015260344911422
+      - 0.020192303154512252
+      - 0.1000700955475627

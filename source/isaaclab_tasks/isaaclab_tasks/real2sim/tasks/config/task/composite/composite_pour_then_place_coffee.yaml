@@ -7,10 +7,9 @@ scene:
   num_envs: 1
   env_spacing: 10
 task:
-  name: composite_pour_then_place_coffee
-  description: Pick up the white paper cup 1; then pour from the white paper cup 1
-    into the red mug; then place the white paper cup 1 at the specified position;
-    then pick up the red mug; then place the red mug in the coffee machine 1.
+  name: composite_pick_cup_pour_cup_pick_cup_place_coffeemachine
+  description: place red_mugcup on coffee machine, then pour from papercup into 95mm
+    cup
 runtime:
   headless: false
   episodes: 10
@@ -26,15 +25,15 @@ runtime:
   background_image_size:
   - 640
   - 480
-  use_background_replace: true
+  use_background_replace: false
   cam_side_background: backgrounds/1123_background.png
   cam_wrist_background: backgrounds/wristbackground_realworld1.png
   data_dir: data/r2s2r_data/composite_pour_then_place_coffee
-  task_name: UR5e-Robotiq85-IKRel-EE-VisPick-v0
+  task_name: FrankaFr3-OurGripper-Joint-VisPick-v0
   save_depth_images: false
 robot:
-  cfg_name: ur5e_robotiq_2f_85.yml
-  type: ur5e
+  cfg_name: franka_fr3_our.yml
+  type: franka_fr3_default
 offsets:
   grasp:
   - 0
@@ -51,15 +50,29 @@ objects:
     - - class
       - white_papercup1
     init_pos:
-    - 0.626
-    - 0.176
+    - 0.46002
+    - 0.01694
     - 0.077
     init_rot:
-    - 0.9914
-    - 0.0
-    - 0.0
-    - -0.1305
+    - 1
+    - 0
+    - 0
+    - 0
     height: 0.094
+    position_range:
+      x:
+      - 0.46002
+      - 0.56002
+      y:
+      - 0.01694
+      - 0.21694
+      z:
+      - 0.077
+      - 0.077
+    orientation_range:
+      yaw:
+      - -0.5236
+      - 0.5236
   red_mugcup:
     usd_path: models/all_object/red_mugcup.usd
     semantic_tags:
@@ -71,10 +84,24 @@ objects:
     - 0.0
     - 0.8434
     init_pos:
-    - 0.519
-    - -0.03
+    - 0.46002
+    - -0.18306
     - 0.068
     height: 0.054
+    position_range:
+      x:
+      - 0.36002
+      - 0.46002
+      y:
+      - -0.18306
+      - -0.08306
+      z:
+      - 0.068
+      - 0.068
+    orientation_range:
+      yaw:
+      - -0.2617
+      - 0.2617
   coffeemachine1:
     usd_path: models/all_object/coffeemachine1.usd
     semantic_tags:
@@ -87,33 +114,28 @@ objects:
     disable_gravity: false
     enabled_self_collisions: true
     init_pos:
-    - 0.95
-    - -0.25
+    - 0.71002
+    - -0.38306
     - 0.23
     init_rot:
     - 0.999
     - 0.0
     - 0.0
     - -0.0436
-  white_95mmcup:
-    usd_path: models/all_object/white_95mmcup.usd
-    semantic_tags:
-    - - class
-      - white_95mmcup
-    scale:
-    - 1.2
-    - 1.2
-    - 1.0
-    init_pos:
-    - 0.55
-    - -0.35
-    - 0.08
-    init_rot:
-    - 1.0
-    - 0.0
-    - 0.0
-    - 0.0
-    height: 0.08
+    position_range:
+      x:
+      - 0.71002
+      - 0.76002
+      y:
+      - -0.53306
+      - -0.38306
+      z:
+      - 0.23
+      - 0.23
+    orientation_range:
+      yaw:
+      - -0.1745
+      - 0.1745
 primitives:
 - type: pick
   mode: affordance
@@ -123,24 +145,30 @@ primitives:
     - 0.0
     - 0.0
     - 0.1
-    pick_interpolation_steps: 10
-    lift_interpolation_steps: 10
+    pick_interpolation_steps: 5
+    lift_interpolation_steps: 5
     lift_offset: 0.15
 - type: pour
   params:
+    tilt_interpolation_steps: 15
+    return_lift_interpolation_steps: 10
+    return_interpolation_steps: 15
     target: red_mugcup
     tilt_angle_deg: 100
     move_hover_height: 0.12
     tilt_lift_height: 0.11
     tilt_horizontal_offset: -0.02
     success_eval: true
+    hold_steps: 3
 - type: place
   mode: pose
   params:
+    ik_interpolation_steps: 5
+    post_release_lift_steps: 5
     target: white_papercup1
     position:
-    - 0.626
-    - 0.176
+    - 0.53602
+    - 0.04294
     - 0.077
     orientation:
     - -0.02622881
@@ -151,24 +179,25 @@ primitives:
 - type: pick
   mode: affordance
   params:
+    lift_interpolation_steps: 5
     target: red_mugcup
     pre_pick_offset:
     - 0.0
     - 0.0
     - 0.1
-    pick_interpolation_steps: 10
+    pick_interpolation_steps: 5
 - type: place
   mode: affordance
   params:
     target: coffeemachine1
     pre_place_distance: 0.15
-    ik_interpolation_steps: 30
+    ik_interpolation_steps: 5
     success_eval: true
     post_release_lift_offset:
     - 0.0
     - 0.0
     - 0.08
-    post_release_lift_steps: 10
+    post_release_lift_steps: 5
 enable_random_lights: false
 image_noise_std: 0
 image_speckle_noise_std: 0
@@ -176,19 +205,41 @@ enable_objects_randomization: true
 enable_objects_randomization_curriculum: false
 texture_randomization:
   enabled: true
-  avoid_repeats: true
   texture_dir: models/random_pic/table
   targets:
     table:
       prim_path: /World/envs/env_{i}/table/Xform_01/Xform/leg/node_/Cube
       texture_dir: models/random_pic/table
-articulations: {}
-phase_depenetration:
-  objects:
-  - white_papercup1
-  - red_mugcup
-  - coffeemachine1
-  reset: 2.0
-  primitives:
-    pick: 2.0
-    release: 0.5
+    white_papercup1:
+      prim_path: /World/envs/env_{i}/white_papercup1
+      texture_dir: models/random_pic/cup
+lighting:
+  type: dome
+  intensity: 1200.0
+  color:
+  - 1.0
+  - 1.0
+  - 1.0
+visibility_check:
+  object_bounds:
+    white_papercup1:
+    - - -0.03933600022399425
+      - -0.03933600022399426
+      - -0.0376579990634024
+    - - 0.03933600022399425
+      - 0.039336000223994264
+      - 0.05683799917754529
+    red_mugcup:
+    - - -0.05849487650778418
+      - -0.04654441868603657
+      - -0.0406510026147473
+    - - 0.05849521029378746
+      - 0.04654394184892314
+      - 0.04065199920440199
+    coffeemachine1:
+    - - -0.2521649862170931
+      - -0.15645900707124447
+      - -0.20500981353346032
+    - - 0.17701651101170734
+      - 0.1562049124323007
+      - 0.2081532193510287

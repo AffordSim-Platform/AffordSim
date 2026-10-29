@@ -1,0 +1,166 @@
+simulation:
+  decimation: 30
+  dt: 0.00833333
+  render_interval: 5
+  episode_length_s: 100
+scene:
+  num_envs: 3
+  env_spacing: 10
+task:
+  name: pour_basket
+  description: grasp the pink basket and pour into the bowl
+runtime:
+  headless: false
+  episodes: 5
+  save_npy: false
+  save_camera_images: false
+  save_composite_images: false
+  save_mask_images: false
+  save_original_images: true
+  enable_motion_planning: true
+  sim_camera_resolution:
+  - 640
+  - 480
+  background_image_size:
+  - 640
+  - 480
+  use_background_replace: false
+  cam_side_background: backgrounds/1123_background.png
+  cam_wrist_background: backgrounds/wristbackground_realworld1.png
+  data_dir: data/r2s2r_data/pour_basket
+  task_name: FrankaFr3-OurGripper-Joint-VisPick-v0
+  save_depth_images: false
+robot:
+  cfg_name: franka_fr3_our.yml
+  type: franka_fr3_default
+offsets:
+  grasp:
+  - 0
+  - 0
+  - 0
+  place:
+  - 0
+  - 0
+  - 0
+objects:
+  pink_basket:
+    usd_path: models/all_object/pink_basket.usd
+    semantic_tags:
+    - - class
+      - pink_basket
+    init_pos:
+    - 0.55
+    - -0.25
+    - 0.1
+    init_rot:
+    - -0.2588
+    - 0
+    - 0
+    - 0.9659
+    height: 0.1
+    position_range:
+      x:
+      - 0.45
+      - 0.7
+      y:
+      - -0.45
+      - -0.1
+      z:
+      - 0.1
+      - 0.1
+    orientation_range:
+      yaw:
+      - -0.5236
+      - 0.5236
+  white_100mmcup:
+    usd_path: models/all_object/white_100mmcup.usd
+    semantic_tags:
+    - - class
+      - white_100mmcup
+    scale:
+    - 1.2
+    - 1.2
+    - 1.0
+    init_pos:
+    - 0.55
+    - 0.0
+    - 0.08
+    init_rot:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    height: 0.08
+    position_range:
+      x:
+      - 0.55
+      - 0.65
+      y:
+      - -0.05
+      - 0.05
+      z:
+      - 0.08
+      - 0.08
+    orientation_range:
+      yaw:
+      - -3.1416
+      - 3.1416
+primitives:
+- type: pick
+  mode: affordance_multidir
+  params:
+    target: pink_basket
+    pre_pick_offset:
+    - 0.0
+    - 0.0
+    - 0.1
+    pick_interpolation_steps: 5
+    lift_interpolation_steps: 5
+    lift_offset: 0.15
+- type: pour
+  params:
+    tilt_interpolation_steps: 15
+    return_lift_interpolation_steps: 10
+    return_interpolation_steps: 15
+    target: white_100mmcup
+    tilt_angle_deg: 100
+    move_hover_height: 0.12
+    tilt_lift_height: 0.12
+    tilt_horizontal_offset: 0.08
+    success_eval: true
+    hold_steps: 3
+enable_random_lights: false
+image_noise_std: 0
+image_speckle_noise_std: 0
+enable_objects_randomization: true
+enable_objects_randomization_curriculum: false
+texture_randomization:
+  enabled: true
+  texture_dir: models/random_pic/table
+  targets:
+    table:
+      prim_path: /World/envs/env_{i}/table/Xform_01/Xform/leg/node_/Cube
+      texture_dir: models/random_pic/table
+lighting:
+  type: dome
+  intensity: 1200.0
+  color:
+  - 1.0
+  - 1.0
+  - 1.0
+visibility_check:
+  object_bounds:
+    pink_basket:
+    - - -0.06735599786043169
+      - -0.0422330014407635
+      - -0.03776299953460694
+    - - 0.09296900033950807
+      - 0.04636799916625025
+      - 0.03679599985480309
+    white_100mmcup:
+    - - -0.06523679941892624
+      - -0.06527160213419551
+      - -0.04867600031853207
+    - - 0.06071279793977737
+      - 0.060640799876333716
+      - 0.03750000267294972

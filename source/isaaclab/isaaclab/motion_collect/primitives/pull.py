@@ -106,6 +106,13 @@ def primitive_execute_pull(collector, params: Dict[str, Any], context: Dict[str,
     pull_distance = float(params.get("pull_distance", 0.20))
     pull_interp_steps = int(params.get("pull_interpolation_steps", 30))
     release_after_pull = bool(params.get("release_after_pull", True))
+    retreat_distance = float(params.get("post_release_retreat_distance", 0.0))
+    retreat_height = float(params.get("post_release_lift_height", 0.0))
+    retreat_steps = int(params.get("post_release_retreat_steps", 5))
+    if not np.isfinite(retreat_distance) or not np.isfinite(retreat_height) or min(retreat_distance, retreat_height) < 0:
+        raise ValueError("Post-release retreat distances must be finite and nonnegative")
+    if (retreat_distance or retreat_height) and (not release_after_pull or retreat_steps < 1):
+        raise ValueError("Post-release retreat requires release_after_pull and positive interpolation steps")
 
     n = collector.num_envs
     prev_alive = get_prev_alive_mask(context, n)
@@ -268,6 +275,29 @@ def primitive_execute_pull(collector, params: Dict[str, Any], context: Dict[str,
             active_mask=list(local_active),
         )
 
+    if retreat_distance or retreat_height:
+        monitor = getattr(collector, "cabinet_retreat_monitor", None)
+        if monitor is not None:
+            monitor.start()
+        for distance, height, description in (
+                (retreat_distance, 0.0, "Primitive Pull Post-Release Retreat"),
+                (0.0, retreat_height, "Primitive Pull Post-Release Lift")):
+            if distance == 0.0 and height == 0.0:
+                continue
+            positions, quaternions = collector.get_current_ee_pose()
+            positions = np.atleast_2d(positions).astype(np.float64, copy=True)
+            quaternions = np.atleast_2d(quaternions).astype(np.float64, copy=True)
+            for i in range(n):
+                if local_active[i]:
+                    positions[i] += distance * all_pull_dirs_world[i] + np.array([0.0, 0.0, height])
+            _, segment_successes = collector.execute_ik_motion(
+                target_positions=positions, target_quaternions=quaternions,
+                gripper_states=[1.0 if s else 0.0 for s in local_active],
+                interpolation_steps=retreat_steps, desc=description, active_mask=list(local_active),
+            )
+            merge_segment_into_local_active(local_active, segment_successes)
+        plan_active_after = list(local_active)
+
     if success_eval_enabled:
         state_successes = []
         state_metrics = []
@@ -311,6 +341,11 @@ def primitive_execute_pull(collector, params: Dict[str, Any], context: Dict[str,
     context["env_alive_mask"] = list(final_alive)
     context["current_gripper_state"] = "open" if release_after_pull else "closed"
     context["pull_completed"] = any(final_alive)
+    if params.get("verify_after_return_home", False) and success_eval_enabled:
+        context["pull_after_return_check"] = {
+            "target": target_label, "joint_name": success_joint_name,
+            "joint_type": success_joint_type, "threshold": success_threshold,
+        }
     context["primitive_executed_motion"] = True
 
     print(f"  [Primitive] Pull success (alive): {sum(final_alive)}/{n}")

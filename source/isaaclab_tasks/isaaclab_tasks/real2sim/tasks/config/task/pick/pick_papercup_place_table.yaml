@@ -8,8 +8,7 @@ scene:
   env_spacing: 10
 task:
   name: pick_papercup_place_table
-  description: Pick up the white paper cup 1; then place the white paper cup 1 at
-    the specified position.
+  description: grasp the beige paper cup
 runtime:
   headless: false
   episodes: 15
@@ -25,15 +24,15 @@ runtime:
   background_image_size:
   - 640
   - 480
-  use_background_replace: true
+  use_background_replace: false
   cam_side_background: backgrounds/1123_background.png
   cam_wrist_background: backgrounds/wristbackground_realworld1.png
   data_dir: data/r2s2r_data/pick_papercup_place_table
-  task_name: Sawyer-Robotiq85-Joint-EE-VisPick-v0
+  task_name: FrankaFr3-OurGripper-Joint-VisPick-v0
   save_depth_images: false
 robot:
-  cfg_name: sawyer.yml
-  type: sawyer_robotiq85
+  cfg_name: franka_fr3_our.yml
+  type: franka_fr3_default
 offsets:
   grasp:
   - 0
@@ -44,44 +43,14 @@ offsets:
   - 0
   - 0.0
 objects:
-  red_mugcup:
-    usd_path: models/all_object/red_mugcup.usd
-    semantic_tags:
-    - - class
-      - red_mugcup
-    init_pos:
-    - 0.482
-    - -0.152
-    - 0.09
-    init_rot:
-    - 0.3173
-    - 0
-    - 0
-    - 0.9483
-    height: 0.081
-  blue_kettle:
-    usd_path: models/all_object/blue_kettle.usd
-    semantic_tags:
-    - - class
-      - blue_kettle
-    init_pos:
-    - 0.722
-    - 0.152
-    - 0.18
-    init_rot:
-    - 0.3173
-    - 0
-    - 0
-    - 0.9483
-    height: 0.242
   white_papercup1:
     usd_path: models/all_object/white_papercup1.usd
     semantic_tags:
     - - class
       - white_papercup1
     init_pos:
-    - 0.519
-    - 0.186
+    - 0.48509
+    - 0.06586
     - 0.068
     init_rot:
     - 1
@@ -89,6 +58,20 @@ objects:
     - 0
     - 0
     height: 0.094
+    position_range:
+      x:
+      - 0.38509
+      - 0.68509
+      y:
+      - -0.13414
+      - 0.16586
+      z:
+      - 0.068
+      - 0.068
+    orientation_range:
+      yaw:
+      - -0.785
+      - 0.785
   box:
     usd_path: models/all_object/box.usd
     scale:
@@ -99,8 +82,8 @@ objects:
     - - class
       - box
     init_pos:
-    - 0.5
-    - -0.4
+    - 0.43509
+    - -0.58414
     - 0.07
     init_rot:
     - 0.707107
@@ -108,6 +91,20 @@ objects:
     - 0.0
     - 0.0
     height: 0.1
+    position_range:
+      x:
+      - 0.43509
+      - 0.43509
+      y:
+      - -0.58414
+      - -0.58414
+      z:
+      - 0.07
+      - 0.07
+    orientation_range:
+      yaw:
+      - 0
+      - 0
 primitives:
 - type: pick
   mode: affordance
@@ -123,9 +120,11 @@ primitives:
 - type: place
   mode: pose
   params:
+    ik_interpolation_steps: 5
+    post_release_lift_steps: 5
     position:
-    - 0.6
-    - -0.5
+    - 0.53509
+    - -0.68414
     - 0.12
     success_eval: true
 enable_random_lights: false
@@ -135,17 +134,31 @@ enable_objects_randomization: true
 enable_objects_randomization_curriculum: false
 texture_randomization:
   enabled: true
-  avoid_repeats: true
   texture_dir: models/random_pic/table
   targets:
     table:
       prim_path: /World/envs/env_{i}/table/Xform_01/Xform/leg/node_/Cube
       texture_dir: models/random_pic/table
-articulations: {}
-phase_depenetration:
-  objects:
-  - white_papercup1
-  reset: 2.0
-  primitives:
-    pick: 2.0
-    release: 0.5
+lighting:
+  type: dome
+  intensity: 1200.0
+  color:
+  - 1.0
+  - 1.0
+  - 1.0
+visibility_check:
+  object_bounds:
+    white_papercup1:
+    - - -0.03933600022399425
+      - -0.03933600022399426
+      - -0.0376579990634024
+    - - 0.03933600022399425
+      - 0.039336000223994264
+      - 0.05683799917754529
+    box:
+    - - -0.15214700000000003
+      - -0.11003186340332033
+      - 3.8712052667481695e-22
+    - - 0.15220114453125003
+      - 0.10967325656414034
+      - 0.08800000000000005

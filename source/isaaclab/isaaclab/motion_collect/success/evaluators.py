@@ -382,8 +382,7 @@ def _evaluate_pour_process_with_metrics(
       2) object local +z in world z (``z_axis_world_z``) is (near-)monotonically
          decreasing (slack allowed), so the pour is a continuous tilt rather
          than a discontinuous flick. Total tilt magnitude is NOT checked here -
-         the terminal check ``POUR_SUCCESS_TILT_THRESHOLD`` already enforces
-         that the final tilt angle is at least 90 deg.
+         the terminal check enforces the selected task tilt threshold.
     """
     nan = float("nan")
     metrics = {

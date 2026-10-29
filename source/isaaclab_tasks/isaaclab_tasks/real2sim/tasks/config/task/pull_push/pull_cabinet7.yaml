@@ -8,7 +8,7 @@ scene:
   env_spacing: 10
 task:
   name: pull_cabinet7
-  description: Pull the cabinet 7 open.
+  description: pull the cabinet drawer open
 runtime:
   headless: false
   episodes: 5
@@ -24,15 +24,15 @@ runtime:
   background_image_size:
   - 640
   - 480
-  use_background_replace: true
+  use_background_replace: false
   cam_side_background: backgrounds/1123_background.png
   cam_wrist_background: backgrounds/wristbackground_realworld1.png
   data_dir: data/r2s2r_data/pull_cabinet7
-  task_name: UR5e-Robotiq85-IKRel-EE-VisPick-v0
+  task_name: FrankaFr3-OurGripper-Joint-VisPick-v0
   save_depth_images: false
 robot:
-  cfg_name: ur5e_robotiq_2f_85.yml
-  type: ur5e
+  cfg_name: franka_fr3_our.yml
+  type: franka_fr3_default
 offsets:
   grasp:
   - 0
@@ -53,11 +53,12 @@ articulations:
     - 0.3
     - 0.3
     disable_gravity: false
-    enabled_self_collisions: true
+    enabled_self_collisions: false
+    fix_root_link: true
     init_pos:
-    - 0.9
-    - -0.2
-    - 0.4
+    - 0.73082
+    - -0.21218
+    - 0.20674240759261842
     init_rot:
     - 0.9239
     - 0.0
@@ -65,18 +66,18 @@ articulations:
     - -0.3827
     position_range:
       x:
-      - 0.8499999999999999
-      - 0.95
+      - 0.68082
+      - 0.78082
       y:
-      - -0.25
-      - -0.15000000000000002
+      - -0.26218
+      - -0.16218
       z:
-      - 0.4
-      - 0.4
+      - 0.20674240759261842
+      - 0.20674240759261842
     orientation_range:
       yaw:
-      - -0.2618
-      - 0.2618
+      - -0.1745
+      - 0.1745
     joint_pos:
       joint_0: 0.0
       joint_1: 0.0
@@ -93,19 +94,27 @@ articulations:
         - joint_4
         effort_limit: 1000
         velocity_limit: 1000
-        stiffness: 0
-        damping: 0
+        stiffness: 0.0
+        damping: 1.0
 primitives:
 - type: pull
   params:
     target: cabinet7
     pre_grasp_offset: 0.08
-    pick_interpolation_steps: 10
+    pick_interpolation_steps: 5
     pull_distance: 0.2
-    pull_interpolation_steps: 30
-    release_after_pull: false
+    pull_interpolation_steps: 5
+    release_after_pull: true
+    post_release_retreat_distance: 0.10
+    post_release_lift_height: 0.15
+    post_release_retreat_steps: 5
+    verify_after_return_home: true
     success_eval: true
     success_joint_name: joint_2
+- type: return_home
+  params:
+    post_settle_steps: 20
+    monitor_robot_cabinet_contact: true
 enable_random_lights: false
 image_noise_std: 0
 image_speckle_noise_std: 0
@@ -113,10 +122,24 @@ enable_objects_randomization: true
 enable_objects_randomization_curriculum: false
 texture_randomization:
   enabled: true
-  avoid_repeats: true
   texture_dir: models/random_pic/table
   targets:
     table:
       prim_path: /World/envs/env_{i}/table/Xform_01/Xform/leg/node_/Cube
       texture_dir: models/random_pic/table
-objects: {}
+lighting:
+  type: dome
+  intensity: 1200.0
+  color:
+  - 1.0
+  - 1.0
+  - 1.0
+visibility_check:
+  object_bounds:
+    cabinet7:
+    - - -0.1913295086470007
+      - -0.17954821141400323
+      - -0.17574240759261847
+    - - 0.18011011676969452
+      - 0.17350320951037365
+      - 0.15784951661480626
