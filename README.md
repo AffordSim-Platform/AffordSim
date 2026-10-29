@@ -238,6 +238,10 @@ After that, proceed to data collection using the new task name.
 
 ### Data Collection
 
+Task configurations are stored under
+`source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/`. For detailed
+parameter documentation, see [`example_parameter_reference.yaml`](source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/example_parameter_reference.yaml).
+
 To collect trajectories for an existing task YAML, run:
 
 ```bash

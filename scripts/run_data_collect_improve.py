@@ -54,7 +54,7 @@ def _resolve_task_config_path(real2sim_root_dir: str, task_name: str) -> Path:
         f"  task_name: {task_name}\n"
         f"  Inferred category: {category}\n"
         f"  Expected path: {categorized_path}\n"
-        "Please verify the YAML is placed under sceneconfig/task/<category>/."
+        "Please verify the YAML is placed under tasks/config/task/<category>/."
     )
 
 def run_scene_editor():
@@ -150,7 +150,7 @@ def main():
     # Pipeline arguments
     parser.add_argument("--task_name", type=str, default="pick",
                         help=(
-                            "Task name. Resolves to sceneconfig/task/<category>/<task_name>.yaml by prefix: "
+                            "Task name. Resolves to tasks/config/task/<category>/<task_name>.yaml by prefix: "
                             "pick_** to pick, pour_** to pour, hang_** to hang, stack_** to stack, "
                             "push_**/pull_** to pull_push, open_**/close_** to open_close, others to composite. "
                             "Only the new directory structure is supported; legacy sceneconfig/<task_name>.yaml is no longer used."
