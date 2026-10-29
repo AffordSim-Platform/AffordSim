@@ -39,7 +39,7 @@ AffordSim addresses this by using **VoxAfford**, an open-vocabulary 3D affordanc
 ## 🐣 Update
 
 - **2026/10/30**, Officially released AffordSim. DA3-based 3D Gaussian reconstruction is coming soon.
-- **2026/09/25**, AffordSim is accepted to *NeurIPS 2026 evaluation and bc track* !
+- **2026/09/25**, AffordSim is accepted to **NeurIPS 2026 · Evaluations & Datasets Track！**
 
 ## Installation
 
