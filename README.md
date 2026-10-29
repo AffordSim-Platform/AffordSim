@@ -7,9 +7,68 @@
   <img src="https://img.shields.io/badge/platform-linux--64-orange.svg" alt="Platform">
 </p>
 
-<p align="center">
-  <img src="logs/composite.gif" alt="AffordSim Task Gallery" width="100%">
-</p>
+<table>
+  <tr>
+    <td><img src="logs/benchmark_tasks/pick_banana_place_plate.gif" alt="pick banana place plate" width="128"></td>
+    <td><img src="logs/benchmark_tasks/pick_bottle_place_table.gif" alt="pick bottle place table" width="128"></td>
+    <td><img src="logs/benchmark_tasks/pick_bowl_place_plate.gif" alt="pick bowl place plate" width="128"></td>
+    <td><img src="logs/benchmark_tasks/pick_carrot_place_bowl.gif" alt="pick carrot place bowl" width="128"></td>
+    <td><img src="logs/benchmark_tasks/pick_carrot_place_plate.gif" alt="pick carrot place plate" width="128"></td>
+    <td><img src="logs/benchmark_tasks/pick_chocolatebox_place_sugarbox.gif" alt="pick chocolatebox place sugarbox" width="128"></td>
+    <td><img src="logs/benchmark_tasks/pick_cube_place_cup.gif" alt="pick cube place cup" width="128"></td>
+    <td><img src="logs/benchmark_tasks/pick_leek_place_cuttingboard.gif" alt="pick leek place cuttingboard" width="128"></td>
+    <td><img src="logs/benchmark_tasks/pick_pen_place_doraemoncup.gif" alt="pick pen place doraemoncup" width="128"></td>
+    <td><img src="logs/benchmark_tasks/pick_soupcan_place_table.gif" alt="pick soupcan place table" width="128"></td>
+  </tr>
+  <tr>
+    <td><img src="logs/benchmark_tasks/close_microwave.gif" alt="close microwave" width="128"></td>
+    <td><img src="logs/benchmark_tasks/open_microwave.gif" alt="open microwave" width="128"></td>
+    <td><img src="logs/benchmark_tasks/hang_cup.gif" alt="hang cup" width="128"></td>
+    <td><img src="logs/benchmark_tasks/pick_cup_place_coffeemachine.gif" alt="pick cup place coffeemachine" width="128"></td>
+    <td><img src="logs/benchmark_tasks/pick_cup_place_woodshelf.gif" alt="pick cup place woodshelf" width="128"></td>
+    <td><img src="logs/benchmark_tasks/pick_green_bellpepper_place_pan.gif" alt="pick green bellpepper place pan" width="128"></td>
+    <td><img src="logs/benchmark_tasks/pick_kettle_place_base.gif" alt="pick kettle place base" width="128"></td>
+    <td><img src="logs/benchmark_tasks/pick_lid_place_pot.gif" alt="pick lid place pot" width="128"></td>
+    <td><img src="logs/benchmark_tasks/pick_mugcup_place_coffeemachine.gif" alt="pick mugcup place coffeemachine" width="128"></td>
+    <td><img src="logs/benchmark_tasks/pick_mugcup_place_woodshelf.gif" alt="pick mugcup place woodshelf" width="128"></td>
+  </tr>
+  <tr>
+    <td><img src="logs/benchmark_tasks/pick_papercup_place_table.gif" alt="pick papercup place table" width="128"></td>
+    <td><img src="logs/benchmark_tasks/pick_scrubbottle_place_woodshelf.gif" alt="pick scrubbottle place woodshelf" width="128"></td>
+    <td><img src="logs/benchmark_tasks/pick_soupcan_place_microwave.gif" alt="pick soupcan place microwave" width="128"></td>
+    <td><img src="logs/benchmark_tasks/pour_basket.gif" alt="pour basket" width="128"></td>
+    <td><img src="logs/benchmark_tasks/pour_bluekettle.gif" alt="pour bluekettle" width="128"></td>
+    <td><img src="logs/benchmark_tasks/pour_mugcup.gif" alt="pour mugcup" width="128"></td>
+    <td><img src="logs/benchmark_tasks/pour_pan.gif" alt="pour pan" width="128"></td>
+    <td><img src="logs/benchmark_tasks/pour_papercup.gif" alt="pour papercup" width="128"></td>
+    <td><img src="logs/benchmark_tasks/pour_whitekettle.gif" alt="pour whitekettle" width="128"></td>
+    <td><img src="logs/benchmark_tasks/pour_whitekettle4.gif" alt="pour whitekettle4" width="128"></td>
+  </tr>
+  <tr>
+    <td><img src="logs/benchmark_tasks/pull_cabinet.gif" alt="pull cabinet" width="128"></td>
+    <td><img src="logs/benchmark_tasks/pull_cabinet7.gif" alt="pull cabinet7" width="128"></td>
+    <td><img src="logs/benchmark_tasks/pull_cabinet15.gif" alt="pull cabinet15" width="128"></td>
+    <td><img src="logs/benchmark_tasks/push_cheezbox.gif" alt="push cheezbox" width="128"></td>
+    <td><img src="logs/benchmark_tasks/push_coffeecan.gif" alt="push coffeecan" width="128"></td>
+    <td><img src="logs/benchmark_tasks/stack_cube.gif" alt="stack cube" width="128"></td>
+    <td><img src="logs/benchmark_tasks/stack_four_cube_pyramid.gif" alt="stack four cube pyramid" width="128"></td>
+    <td><img src="logs/benchmark_tasks/stack_papercup.gif" alt="stack papercup" width="128"></td>
+    <td><img src="logs/benchmark_tasks/composite_2picks_to_plate.gif" alt="composite 2picks to plate" width="128"></td>
+    <td><img src="logs/benchmark_tasks/composite_2pickplaces.gif" alt="composite 2pickplaces" width="128"></td>
+  </tr>
+  <tr>
+    <td><img src="logs/benchmark_tasks/hang_mugcup.gif" alt="hang mugcup" width="128"></td>
+    <td><img src="logs/benchmark_tasks/stack_four_cube.gif" alt="stack four cube" width="128"></td>
+    <td><img src="logs/benchmark_tasks/composite_load_microwave.gif" alt="composite load microwave" width="128"></td>
+    <td><img src="logs/benchmark_tasks/organize_clutter_into_baskets.gif" alt="organize clutter into baskets" width="128"></td>
+    <td><img src="logs/benchmark_tasks/composite_pour_then_hang.gif" alt="composite pour then hang" width="128"></td>
+    <td><img src="logs/benchmark_tasks/composite_pour_then_place_coffee.gif" alt="composite pour then place coffee" width="128"></td>
+    <td><img src="logs/benchmark_tasks/composite_double_pour_kettle.gif" alt="composite double pour kettle" width="128"></td>
+    <td><img src="logs/benchmark_tasks/composite_unload_microwave.gif" alt="composite unload microwave" width="128"></td>
+    <td><img src="logs/benchmark_tasks/store_cups_on_plates.gif" alt="store cups on plates" width="128"></td>
+    <td><img src="logs/benchmark_tasks/composite_push_pick_to_shelf.gif" alt="composite push pick to shelf" width="128"></td>
+  </tr>
+</table>
 
 The gallery shows selected recorded trajectories for all 50 tasks, ordered by difficulty from Easy to Medium to Hard. In the `composite_load_microwave` recording, part of the microwave is outside the camera view.
 
