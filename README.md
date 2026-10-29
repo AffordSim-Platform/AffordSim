@@ -15,6 +15,11 @@
   <img src="logs/benchmark_gallery_rows/benchmark_row_5.webp" alt="Hard tasks" width="100%">
 </p>
 
+<p align="center">
+  <a href="https://affordsim-platform.github.io/AffordSim.io/"><img src="https://img.shields.io/badge/Project-Website-24718a?logo=googlechrome&amp;logoColor=white" alt="Project website"></a>
+  <a href="https://arxiv.org/abs/2604.11674"><img src="https://img.shields.io/badge/Paper-arXiv-b31b1b?logo=arxiv&amp;logoColor=white" alt="Paper on arXiv"></a>
+</p>
+
 The gallery shows selected recorded trajectories for all 50 tasks, ordered by difficulty from Easy to Medium to Hard.
 
 ## Introduction
@@ -621,11 +626,17 @@ The AffordSim framework is released under [BSD-3 License](LICENSE). The `isaacla
 If you find AffordSim useful in your research, please cite:
 
 ```bibtex
-@article{anonymous2026affordsim,
-  title={AffordSim: A Scalable Data Generator and Benchmark for Affordance-Aware Robotic Manipulation},
-  author={Anonymous},
-  journal={Under review},
-  year={2026}
+@inproceedings{li2026affordsim,
+  title     = {AffordSim: A Scalable Data Generator and Benchmark
+               for Affordance-Aware Robotic Manipulation},
+  author    = {Li, Mingyang and Xu, Haofan and Sun, Haowen and
+               Chen, Xinzhe and Ren, Sihua and Huang, Liqi and
+               Sui, Xinyang and Miao, Chenyang and Ye, Jiawei and
+               Cui, Qiongjie and Chen, Xingyu and Liu, Zeyang and
+               Lan, Xuguang},
+  booktitle = {The Fortieth Annual Conference on Neural Information
+               Processing Systems, Track on Evaluations and Datasets},
+  year      = {2026}
 }
 ```
 
