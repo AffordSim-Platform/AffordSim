@@ -29,8 +29,8 @@ DEFAULT_LOAD_YAML_PATH = os.path.join(
 )
 
 SAVE_YAML_PATH = os.path.join(
-    TASK_CONFIG_ROOT,
-    "pick/scene_editor_output.yaml",
+    PROJECT_ROOT,
+    "outputs/scene_editor_output.yaml",
 )
 
 # Table Constraints

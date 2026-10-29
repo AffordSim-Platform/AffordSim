@@ -158,7 +158,7 @@ Type `Yes`. The first startup may take a while.
 
 ### Scene Editor
 
-The scene editor is optional. This repository includes 50 benchmark task YAML files, plus standalone examples, under `source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/`, so you do not need the editor to run the provided benchmark tasks.
+The scene editor is optional. This repository includes 50 benchmark task YAML files under `source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/`, so you do not need the editor to run the provided benchmark tasks.
 
 Use the scene editor only if you want to create or modify your own tabletop scene and task configuration.
 
@@ -225,13 +225,14 @@ This starts the interactive editor and does not collect data. A typical workflow
 By default, the exported YAML is written to:
 
 ```text
-source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/pick/scene_editor_output.yaml
+outputs/scene_editor_output.yaml
 ```
 
-You should then rename or move this file to a proper task name, for example:
+To collect data with the generated task, move it into the appropriate task
+category under a distinct task name, without overwriting a benchmark configuration:
 
 ```text
-source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/pick/pick_banana_place_plate.yaml
+source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/pick/pick_custom_task.yaml
 ```
 
 After that, proceed to data collection using the new task name.
@@ -239,8 +240,7 @@ After that, proceed to data collection using the new task name.
 ### Data Collection
 
 Task configurations are stored under
-`source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/`. For detailed
-parameter documentation, see [`example_parameter_reference.yaml`](source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/example_parameter_reference.yaml).
+`source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/`.
 
 To collect trajectories for an existing task YAML, run:
 
@@ -496,9 +496,9 @@ image path to its matching camera extrinsics, intrinsics, image size, and pose.
 Its `cameras` object uses repository-relative image paths as keys, such as
 `backgrounds/coffee_shop/orbit_renders/coffee_shop_view_06.png`.
 
-The complete task example is available in
-[pick_banana_place_bowl_da3.yaml](source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/pick/pick_banana_place_bowl_da3.yaml).
-The relevant settings in its `runtime` section are:
+To use a calibrated background with the benchmark task
+[pick_banana_place_plate.yaml](source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/pick/pick_banana_place_plate.yaml),
+add the following settings to its `runtime` section (they are not enabled by default):
 
 ```yaml
 runtime:
@@ -529,12 +529,12 @@ paths configured as described in Installation, run one collection episode:
 
 ```bash
 python scripts/run_data_collect_improve.py --skip_editor \
-  --task_name pick_banana_place_bowl_da3 \
+  --task_name pick_banana_place_plate \
   --num_envs 1 --episodes 1 --seed 42 --headless --enable_cameras
 ```
 
-Trajectory data, original camera images, masks, and composites are saved under
-`outputs/da3_pick_banana_place_bowl/`.
+Outputs are saved under the task's configured `runtime.data_dir`, according to
+its enabled recording options.
 
 To validate the image/calibration mapping or render all 12 backgrounds:
 
@@ -549,7 +549,7 @@ result report, use the local-checkout smoke-test runner:
 
 ```bash
 python scripts/test_collection.py \
-  --config source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/pick/pick_banana_place_bowl_da3.yaml \
+  --config source/isaaclab_tasks/isaaclab_tasks/real2sim/tasks/config/task/pick/pick_banana_place_plate.yaml \
   --headless --enable_cameras
 ```
 
