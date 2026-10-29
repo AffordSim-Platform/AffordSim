@@ -603,19 +603,35 @@ Each task is trained on 300 demonstrations with object pose randomization applie
 ```
 AffordSim/
 ├── source/
-│   ├── isaaclab/                 # Core framework (simulation, assets, sensors, controllers)
-│   │   └── isaaclab/motion_collect/  # Affordance-aware motion collection module
-│   ├── isaaclab_tasks/           # 30+ task environment implementations
+│   ├── isaaclab/                 # Simulation framework and motion collection
+│   │   └── isaaclab/motion_collect/  # Affordance-aware trajectory generation
+│   ├── isaaclab_tasks/           # Task environments and benchmark configurations
+│   │   └── isaaclab_tasks/real2sim/tasks/config/task/  # 50 benchmark YAMLs
 │   ├── isaaclab_assets/          # Robot and sensor asset definitions
-│   └── isaaclab_mimic/           # Imitation learning (cuRobo integration)
+│   ├── isaaclab_rl/              # Reinforcement learning integrations
+│   └── isaaclab_mimic/           # Demonstration generation and mimic environments
 ├── scripts/
 │   ├── run_data_collect_improve.py   # Main data collection entry point
-│   ├── run_eval.py               # Evaluation script
-│   └── imitation_learning/       # IL training and rollout scripts (BC, ACT, DP, robomimic, Pi 0.5)
-├── curobo/                       # GPU-accelerated motion planning library
-├── backgrounds/                  # DA3 Gaussian background assets
-├── isaaclab.sh                   # Build and execution interface
+│   ├── run_benchmark_50.py       # Batch benchmark evaluation and reports
+│   ├── collect_50_trajectories.py # Benchmark trajectory collection
+│   ├── run_eval.py               # Legacy pick/pour evaluation example
+│   └── imitation_learning/       # BC, ACT, DP and robomimic training/rollout;
+│                                 # VLA-Adapter and Pi 0.5 rollout
+├── benchmarks/                   # 50-task manifest and gallery metadata
+├── configs/curobo_overrides/     # cuRobo configuration and code overrides
+├── curobo.zip                    # cuRobo source archive; extract to curobo/
+├── curobo/                       # Locally extracted cuRobo source (Git-ignored)
+├── models/                       # Robot, object, scene and texture assets
+├── pc_dataset_generate/pc/       # Object point clouds and affordance/grasp data
+├── backgrounds/                  # DA3-rendered backgrounds and camera calibration
+├── tools/                        # HDF5 conversion/merging and other utilities
+├── docs/                         # HDF5 trajectory format documentation
+├── tests/                        # Repository tests
+├── outputs/                      # Local generated results (Git-ignored)
+└── isaaclab.sh                   # Build and execution interface
 ```
+
+`curobo/` is created locally by extracting `curobo.zip` and is not tracked by Git.
 
 ## License
 
