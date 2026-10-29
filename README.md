@@ -36,6 +36,10 @@ AffordSim addresses this by using **VoxAfford**, an open-vocabulary 3D affordanc
 </p>
 
 
+## 🐣 Update
+
+**2026/10/30**, Officially released AffordSim. DA3-based 3D Gaussian reconstruction is coming soon.
+
 ## Installation
 
 ### Prerequisites
